@@ -1,0 +1,73 @@
+@import "tailwindcss";
+
+/* ---- Theme variables: light (warm oat-cream) & dark (charcoal + pastels) ---- */
+:root {
+  --bg: #EFE9DD;
+  --surface: #FBF8F2;
+  --inset: #EFE9DD;
+  --border: #E2D9C8;
+  --text: #24201C;
+  --muted: #736B62;
+  /* aliases used by newer components */
+  --bg-card: var(--surface);
+  --bg-inner: var(--inset);
+}
+
+[data-theme="dark"] {
+  --bg: #13151A;
+  --surface: #1B1E26;
+  --inset: #232733;
+  --border: #2A2F3D;
+  --text: #EDEBE6;
+  --muted: #9AA0AE;
+}
+
+@layer base {
+  /* remove the browser tap/focus "circle" artifact on interactive rows;
+     keyboard users still get a clear focus ring */
+  button:focus,
+  [role="button"]:focus {
+    outline: none;
+  }
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: 2px solid var(--muted);
+    outline-offset: 1px;
+  }
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 16px);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

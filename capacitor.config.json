@@ -1,0 +1,14 @@
+{
+  "appId": "com.kcalsync.app",
+  "appName": "Kakcalculator",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "backgroundColor": "#EFE9DD",
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}
