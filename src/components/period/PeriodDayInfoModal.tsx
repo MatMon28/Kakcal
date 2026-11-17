@@ -1,0 +1,329 @@
+import React from 'react';
+import { Footprints, Scale, Droplets, ArrowUpRight, Sparkles } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import { Modal } from '../common/Modal';
+import { PoopIcon } from '../common/PoopIcon';
+import { BristolIcon } from '../common/BristolIcon';
+import { TrackerIcon } from '../common/TrackerIcon';
+import {
+  calculateBMR,
+  calculateMacros,
+  calculateTEF,
+  calculateTotalActivityCalories,
+  calculateTotalCalories,
+} from '../../utils/calculations';
+import { formatFullDate, formatKcal } from '../../utils/formatters';
+import { formatTrackerAmount, getTrackerValue } from '../../utils/customTrackers';
+import type { PoopSize } from '../../types';
+
+interface PeriodDayInfoModalProps {
+  date: string | null;
+  onClose: () => void;
+}
+
+export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, onClose }) => {
+  const {
+    allDayLogs,
+    userProfile,
+    settings,
+    language,
+    setSelectedDate,
+    setActiveTab,
+    t,
+  } = useApp();
+
+  if (!date) return null;
+
+  const log = allDayLogs[date];
+  const allItems = log
+    ? [
+        ...log.meals.breakfast,
+        ...log.meals.mid_morning,
+        ...log.meals.lunch,
+        ...log.meals.midday_snack,
+        ...log.meals.dinner,
+        ...log.meals.extra,
+      ]
+    : [];
+
+  const intake = calculateTotalCalories(allItems);
+  const macros = calculateMacros(allItems);
+  const bmr = calculateBMR(userProfile);
+  const activities = log?.activities ?? [];
+  const actExp = calculateTotalActivityCalories(activities);
+  const tef = calculateTEF(macros.carbsGrams, macros.proteinGrams, macros.fatGrams).totalTEF;
+  const burned = bmr + actExp + tef;
+  const net = intake - burned;
+  const netPos = net > 0;
+
+  const waterEntries = log?.waterEntries ?? [];
+  const waterMl = waterEntries.reduce((sum, entry) => sum + entry.ml, 0);
+  const showWater = settings.quickAdd.water || waterMl > 0;
+  const weightKg = log?.weightKg;
+  const poops = log?.poops ?? [];
+
+  const loggedTrackers = settings.customButtons
+    .map((tracker) => ({ tracker, value: getTrackerValue(log, tracker) }))
+    .filter(({ value }) => value === true || (typeof value === 'number' && value > 0));
+
+  const sizeLabel = (size: PoopSize) => {
+    switch (size) {
+      case 'very_little':
+        return t.poop.veryLittle;
+      case 'little':
+        return t.poop.little;
+      case 'normal':
+        return t.poop.normal;
+      case 'a_lot':
+        return t.poop.aLot;
+      case 'huge':
+        return t.poop.huge;
+    }
+  };
+
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={t.period.daySummaryTitle}
+      subtitle={formatFullDate(date, language)}
+      maxWidth="max-w-md"
+    >
+      <div className="space-y-3">
+        {/* Intake & Burned */}
+        <div className="grid grid-cols-2 gap-2.5">
+          <div className="bg-[#F6D0D0] rounded-2xl p-3.5">
+            <div className="flex items-center justify-between gap-1 min-h-[20px]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C3A3A]">
+                {t.energy.intake}
+              </span>
+              {netPos && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-[#8A2D2D] text-[#FFE9E9]">
+                  +{formatKcal(net)}
+                </span>
+              )}
+            </div>
+            <div className="flex items-baseline gap-1 mt-1 tabular-nums">
+              <span className="text-xl font-extrabold text-[#2B1818]">{formatKcal(intake)}</span>
+              <span className="text-[11px] font-semibold text-[#8C3A3A]">kcal</span>
+            </div>
+          </div>
+
+          <div className="bg-[#C9EFD3] rounded-2xl p-3.5">
+            <div className="flex items-center justify-between gap-1 min-h-[20px]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#25633E]">
+                {t.energy.expenditure}
+              </span>
+              {!netPos && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-[#1E5E3A] text-[#EDFFF2]">
+                  {net === 0 ? '0' : `-${formatKcal(Math.abs(net))}`}
+                </span>
+              )}
+            </div>
+            <div className="flex items-baseline gap-1 mt-1 tabular-nums">
+              <span className="text-xl font-extrabold text-[#142E1F]">{formatKcal(burned)}</span>
+              <span className="text-[11px] font-semibold text-[#25633E]">kcal</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Macros summary when food was logged */}
+        {allItems.length > 0 && (
+          <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
+            <div className="bg-[#FAE0B4] rounded-xl p-1.5 text-[#7D4E14]">
+              <span className="text-[10px] font-bold block">C</span>
+              <span className="text-xs font-extrabold">{macros.carbsGrams}g</span>
+            </div>
+            <div className="bg-[#F6D0D0] rounded-xl p-1.5 text-[#7A2727]">
+              <span className="text-[10px] font-bold block">P</span>
+              <span className="text-xs font-extrabold">{macros.proteinGrams}g</span>
+            </div>
+            <div className="bg-[#E2D6FF] rounded-xl p-1.5 text-[#4D3582]">
+              <span className="text-[10px] font-bold block">F</span>
+              <span className="text-xs font-extrabold">{macros.fatGrams}g</span>
+            </div>
+            <div className="bg-[var(--inset)] rounded-xl p-1.5 text-[var(--muted)]">
+              <span className="text-[10px] font-bold block truncate">{t.macros.fiber}</span>
+              <span className="text-xs font-extrabold text-[var(--text)]">{macros.fiberGrams}g</span>
+            </div>
+            <div className="bg-[var(--inset)] rounded-xl p-1.5 text-[var(--muted)]">
+              <span className="text-[10px] font-bold block truncate">{t.macros.salt}</span>
+              <span className="text-xs font-extrabold text-[var(--text)]">{macros.saltGrams}g</span>
+            </div>
+          </div>
+        )}
+
+        {/* Movement */}
+        <div className="bg-[#E2D6FF] rounded-2xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-[#4D3582]">
+              <span className="size-7 rounded-full bg-[#F0E9FF] flex items-center justify-center shrink-0">
+                <Footprints size={14} />
+              </span>
+              {t.activities.title}
+            </span>
+            <span className="text-[11px] font-bold tabular-nums text-[#6E5BA8]">
+              {t.energy.bmrShort} {bmr} · {t.energy.activitiesShort} {actExp} · {t.energy.tefShort} {tef}
+            </span>
+          </div>
+          {activities.length === 0 ? (
+            <p className="text-xs font-medium text-[#6E5BA8] pl-0.5">{t.activities.noActivities}</p>
+          ) : (
+            <div className="space-y-1.5">
+              {activities.map((act) => {
+                const label =
+                  act.type === 'custom'
+                    ? act.customName || t.activities.custom
+                    : act.type === 'walking'
+                    ? t.activities.walking
+                    : t.activities.running;
+                const detail =
+                  act.method === 'distance' && act.distanceKm !== undefined
+                    ? `${act.distanceKm} ${t.activities.km}`
+                    : act.durationMin !== undefined
+                    ? `${act.durationMin} ${t.activities.min}`
+                    : '';
+                return (
+                  <div
+                    key={act.id}
+                    className="px-3 py-2 rounded-xl bg-[#F0E9FF] flex items-center justify-between gap-2 text-xs"
+                  >
+                    <span className="min-w-0 truncate">
+                      <span className="font-bold text-[#4D3582]">{label}</span>
+                      {(detail || act.notes) && (
+                        <span className="text-[#6E5BA8] font-medium ml-1.5 tabular-nums">
+                          {detail}
+                          {detail && act.notes ? ' · ' : ''}
+                          {act.notes || ''}
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-extrabold tabular-nums text-[#4D3582] shrink-0">
+                      -{act.caloriesBurned} kcal
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Weight (& Water if active/logged) */}
+        <div className={`grid gap-2.5 ${showWater ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <div className="bg-[#F6D0D0] rounded-2xl p-3.5 flex items-center gap-2.5">
+            <span className="size-8 rounded-full bg-[#FBE9E9] text-[#7A2727] flex items-center justify-center shrink-0">
+              <Scale size={15} />
+            </span>
+            <div className="min-w-0">
+              <span className="block text-[11px] font-bold text-[#8C3A3A]">{t.quickAdd.weight}</span>
+              <span className="block text-sm font-extrabold tabular-nums text-[#2B1818] truncate">
+                {typeof weightKg === 'number' ? `${weightKg.toFixed(1)} kg` : t.period.notRecorded}
+              </span>
+            </div>
+          </div>
+
+          {showWater && (
+            <div className="bg-[#CFE7FE] rounded-2xl p-3.5 flex items-center gap-2.5">
+              <span className="size-8 rounded-full bg-[#E8F3FF] text-[#183B5E] flex items-center justify-center shrink-0">
+                <Droplets size={15} />
+              </span>
+              <div className="min-w-0">
+                <span className="block text-[11px] font-bold text-[#436B94]">{t.quickAdd.water}</span>
+                <span className="block text-sm font-extrabold tabular-nums text-[#183B5E] truncate">
+                  {waterMl} ml
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Poop */}
+        {!settings.hidePoop && (
+          <div className="bg-[#FAE0B4] rounded-2xl p-3.5 space-y-2">
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-[#7D4E14]">
+                <span className="size-7 rounded-full bg-[#FDF3E0] text-[#8A5A2B] flex items-center justify-center shrink-0">
+                  <PoopIcon size={15} />
+                </span>
+                {t.quickAdd.poop}
+              </span>
+              <span className="text-xs font-extrabold tabular-nums text-[#7D4E14]">
+                {poops.length}
+              </span>
+            </div>
+            {poops.length === 0 ? (
+              <p className="text-xs font-medium text-[#9B6E32] pl-0.5">{t.period.noPoopEntries}</p>
+            ) : (
+              <div className="space-y-1.5">
+                {poops.map((p) => (
+                  <div
+                    key={p.id}
+                    className="px-3 py-2 rounded-xl bg-[#FDF3E0] flex items-center gap-2 text-xs"
+                  >
+                    <PoopIcon size={13} className="text-[#8A5A2B] shrink-0" />
+                    <span className="font-bold text-[#7D4E14] shrink-0">{sizeLabel(p.size)}</span>
+                    {p.bristol && (
+                      <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] text-[10px] font-extrabold shrink-0">
+                        <BristolIcon type={p.bristol} size={12} className="text-[#7D4E14]" />
+                        B{p.bristol}
+                      </span>
+                    )}
+                    {p.description && (
+                      <span className="text-[#9B6E32] font-medium truncate">{p.description}</span>
+                    )}
+                    <span className="text-[#9B6E32] font-medium tabular-nums shrink-0 ml-auto">
+                      {new Date(p.timestamp).toLocaleTimeString(language === 'it' ? 'it-IT' : 'en-US', {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Custom trackers logged that day */}
+        {loggedTrackers.length > 0 && (
+          <div className="bg-[#E2D6FF] rounded-2xl p-3.5 space-y-1.5">
+            <span className="flex items-center gap-1.5 text-xs font-extrabold text-[#4D3582]">
+              <Sparkles size={13} />
+              {t.quickAdd.custom}
+            </span>
+            {loggedTrackers.map(({ tracker, value }) => (
+              <div
+                key={tracker.id}
+                className="px-3 py-1.5 rounded-xl bg-[#F0E9FF] flex items-center justify-between gap-2 text-xs text-[#4D3582]"
+              >
+                <span className="flex items-center gap-2 font-bold truncate">
+                  <TrackerIcon icon={tracker.icon} size={13} className="shrink-0" />
+                  <span className="truncate">{tracker.name}</span>
+                </span>
+                <span className="font-extrabold tabular-nums shrink-0">
+                  {typeof value === 'number'
+                    ? `${formatTrackerAmount(value, language)}${tracker.unit ? ` ${tracker.unit}` : ''}`
+                    : `✓ ${t.settings.done}`}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Jump to full day log */}
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedDate(date);
+            onClose();
+            setActiveTab('today');
+          }}
+          className="pressable w-full py-2.5 px-4 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-xs font-extrabold text-[var(--text)] flex items-center justify-center gap-1.5"
+        >
+          <span>{t.period.openInToday}</span>
+          <ArrowUpRight size={14} />
+        </button>
+      </div>
+    </Modal>
+  );
+};

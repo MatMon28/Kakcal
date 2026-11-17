@@ -8,11 +8,20 @@ export type FoodCategory =
   | 'bakery'
   | 'produce_fruit'
   | 'produce_veg'
+  | 'legumes'
+  | 'nuts_seeds'
   | 'grains_pasta'
   | 'snacks_sweets'
   | 'drinks'
   | 'condiments_oils'
-  | 'prepared';
+  | 'prepared'
+  | 'soups'
+  | 'desserts';
+
+export interface FoodSource {
+  label: string;
+  url: `https://${string}`;
+}
 
 export interface FoodItem {
   id: string;
@@ -29,6 +38,7 @@ export interface FoodItem {
   fat: number | null;
   fiber: number | null;
   salt: number | null;
+  source?: FoodSource;
   barcode?: string;
   isCustom?: boolean;
   isRecipe?: boolean; // created from the recipe builder (multi-ingredient)
@@ -124,6 +134,12 @@ export interface CustomButtonDef {
   showStats?: boolean; // show this tracker in Statistics
 }
 
+export interface CustomQuantityEntry {
+  id: string;
+  amount: number;
+  timestamp?: string; // unknown for migrated daily totals
+}
+
 export interface DayLog {
   date: string; // YYYY-MM-DD
   meals: {
@@ -139,7 +155,8 @@ export interface DayLog {
   waterMl?: number; // legacy total (migrated to waterEntries on load)
   waterEntries?: WaterEntry[];
   poops?: PoopEntry[];
-  custom?: Record<string, number | boolean>; // customButtonId -> value
+  custom?: Record<string, number | boolean>; // toggles; numbers are read from legacy backups
+  customEntries?: Record<string, CustomQuantityEntry[]>;
 }
 
 export interface MacroSummary {
@@ -165,8 +182,10 @@ export interface EnergyExpenditureSummary {
 
 export type ActiveTab = 'today' | 'prebuilt' | 'period' | 'database' | 'history';
 
+export type Theme = 'light' | 'lite-dark' | 'dark';
+
 export interface Settings {
-  theme: 'light' | 'dark';
+  theme: Theme;
   quickAdd: {
     food: boolean;
     movement: boolean;
@@ -177,6 +196,7 @@ export interface Settings {
   };
   hidePoop: boolean;
   hidePeriod: boolean;
+  hidePeriodCustomized?: boolean;
   quickFoods: string[]; // food ids for the 3 quick-add shortcut buttons
   customButtons: CustomButtonDef[]; // user-defined quick-add trackers (one button, picker if several)
 }
@@ -195,6 +215,7 @@ export interface PeriodDayLog {
   moods: string[]; // tag ids
   symptoms: string[]; // tag ids
   pillTaken?: boolean;
+  intercourse?: boolean;
   notes?: string;
   updatedAt: string;
 }
@@ -209,9 +230,8 @@ export interface PeriodSettings {
   pillTrackingSince: string | null; // date pill tracking was enabled
   showNutrition: boolean;
   showPhaseBandsInStats: boolean;
-  customMoods: PeriodTag[];
-  customSymptoms: PeriodTag[];
-  hiddenBuiltins: string[]; // built-in tag ids hidden from the chip lists
+  moodTags: PeriodTag[];
+  symptomTags: PeriodTag[];
 }
 
 export interface PeriodData {

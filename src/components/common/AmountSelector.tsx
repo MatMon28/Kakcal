@@ -19,12 +19,12 @@ export const AmountSelector: React.FC<Props> = ({ value, onChange, unit, compact
           key={q}
           type="button"
           onClick={() => onChange(q)}
-          className={`flex-1 min-w-[44px] rounded-xl ${
-            compact ? 'py-1 text-[11px]' : 'py-1.5 text-xs'
-          } font-bold transition-colors border ${
+          className={`pressable flex-1 min-w-[46px] rounded-xl tabular-nums ${
+            compact ? 'py-1.5 text-[11px]' : 'py-1.5 text-xs'
+          } font-bold border ${
             value === q
               ? 'bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
-              : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-[var(--inset)]'
+              : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
           }`}
         >
           {q}{unit}

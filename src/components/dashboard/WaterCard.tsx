@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { dailyWaterTargetMl } from '../../utils/waterTarget';
-import { Droplets, Plus, Trash2 } from 'lucide-react';
+import { Droplets, Plus, Trash2, Check } from 'lucide-react';
 
 const BLOCK = 250; // each block = one glass = 250 ml
 
@@ -22,22 +22,30 @@ export const WaterCard: React.FC = () => {
   const entries = currentDayLog.waterEntries || [];
   const totalMl = entries.reduce((a, w) => a + w.ml, 0);
   const targetMl = dailyWaterTargetMl(userProfile, currentExpenditure.activityExpenditure);
+  const goalReached = totalMl >= targetMl && targetMl > 0;
 
   const blockCount = Math.max(1, Math.ceil(targetMl / BLOCK));
   const filledBlocks = totalMl / BLOCK; // fractional allowed (e.g. 120ml = 0.48 of a block)
 
   return (
-    <div className="bg-[#CFE7FE] rounded-3xl p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-[#E8F3FF] text-[#183B5E] flex items-center justify-center">
+    <div className="bg-[#CFE7FE] rounded-3xl p-4 sm:p-5 space-y-3">
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-10 h-10 shrink-0 rounded-full bg-[#E8F3FF] text-[#183B5E] flex items-center justify-center">
             <Droplets size={18} />
           </div>
-          <div>
-            <span className="text-sm font-extrabold text-[#183B5E] block">
-              {t.quickAdd.water}
-            </span>
-            <span className="text-xs font-medium text-[#436B94]" title={t.water.targetNote}>
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-sm sm:text-base font-extrabold text-[#183B5E]">
+                {t.quickAdd.water}
+              </span>
+              {goalReached && (
+                <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-[#1E5E3A] text-white">
+                  <Check size={11} strokeWidth={3} />
+                </span>
+              )}
+            </div>
+            <span className="text-xs font-medium tabular-nums text-[#436B94]" title={t.water.targetNote}>
               {totalMl} / {targetMl} ml
             </span>
           </div>
@@ -45,7 +53,7 @@ export const WaterCard: React.FC = () => {
         <button
           type="button"
           onClick={() => setIsWaterOpen(true)}
-          className="w-9 h-9 rounded-full bg-[var(--surface)] hover:opacity-80 text-[#183B5E] flex items-center justify-center transition-colors"
+          className="pressable w-9 h-9 shrink-0 rounded-full bg-[#FBF8F2] hover:bg-white text-[#183B5E] flex items-center justify-center"
           title={t.water.add}
           aria-label={t.water.add}
         >
@@ -64,7 +72,7 @@ export const WaterCard: React.FC = () => {
               title={`${Math.round(fill * BLOCK)} ml`}
             >
               <div
-                className="h-full bg-[#2E7CC4] transition-all duration-300"
+                className="h-full bg-[#2E7CC4] transition-[width] duration-300 ease-out"
                 style={{ width: `${fill * 100}%` }}
               />
             </div>
@@ -80,8 +88,8 @@ export const WaterCard: React.FC = () => {
               key={w.id}
               className="px-3.5 py-2 rounded-2xl bg-[#E8F3FF] flex items-center justify-between gap-3"
             >
-              <span className="flex items-center gap-2 text-xs sm:text-sm">
-                <Droplets size={13} className="text-[#2E7CC4]" />
+              <span className="flex items-center gap-2 text-xs sm:text-sm tabular-nums">
+                <Droplets size={13} className="text-[#2E7CC4] shrink-0" />
                 <span className="font-bold text-[#183B5E]">{w.ml} ml</span>
                 <span className="text-[#436B94] font-medium">
                   {new Date(w.timestamp).toLocaleTimeString([], {
@@ -93,7 +101,7 @@ export const WaterCard: React.FC = () => {
               <button
                 type="button"
                 onClick={() => removeWaterEntry(w.id)}
-                className="w-6 h-6 rounded-full text-[#436B94] hover:text-[#8C2D32] flex items-center justify-center"
+                className="pressable w-8 h-8 rounded-full text-[#436B94] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
                 title={t.common.delete}
                 aria-label={t.common.delete}
               >

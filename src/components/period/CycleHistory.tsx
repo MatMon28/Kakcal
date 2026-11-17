@@ -116,12 +116,15 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
         {/* Bar chart */}
         {chart.length > 0 && (
           <div className="pt-1">
-            <span className="block text-[11px] font-bold text-[var(--muted)] mb-1.5">
-              {t.period.chartTitle} · <span className="text-[#7A2727]">— {t.period.reference} {settings.cycleLength}</span>
+            <span className="block text-[11px] font-bold tabular-nums text-[var(--muted)] mb-1.5">
+              {t.period.chartTitle} ·{' '}
+              <span className="text-[var(--text-warn)]">
+                — {t.period.reference} {settings.cycleLength}
+              </span>
             </span>
             <div className="relative h-24">
               <div
-                className="absolute left-0 right-0 border-t-2 border-dashed border-[#7A2727]/60 pointer-events-none"
+                className="absolute left-0 right-0 border-t-2 border-dashed border-[var(--text-warn)] opacity-70 pointer-events-none"
                 style={{ bottom: `${(settings.cycleLength / maxLen) * 100}%` }}
               />
               <div className="absolute inset-0 flex items-end gap-1">

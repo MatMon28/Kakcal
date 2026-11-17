@@ -1,18 +1,58 @@
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatDateDisplay, addDaysToDateString, getTodayDateString } from '../../utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar } from 'lucide-react';
 
 // Day changer for the Today view: prev/next arrows + date pill with calendar popover + back-to-today
 export const DayNavigator: React.FC = () => {
-  const { language, t, selectedDate, setSelectedDate } = useApp();
+  const { language, t, selectedDate, setSelectedDate, allDayLogs } = useApp();
 
   const todayStr = getTodayDateString();
   const isToday = selectedDate === todayStr;
+  const mondayFirst = language === 'it';
+  const locale = language === 'it' ? 'it-IT' : 'en-US';
 
   const [calOpen, setCalOpen] = useState(false);
   const [viewYear, setViewYear] = useState(() => Number(selectedDate.slice(0, 4)));
   const [viewMonth, setViewMonth] = useState(() => Number(selectedDate.slice(5, 7)) - 1);
+
+  useEffect(() => {
+    if (!calOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setCalOpen(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [calOpen]);
+
+  const weekdayLabels = useMemo(() => {
+    const base = new Date(2024, 0, 7); // Sunday
+    const labels = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(base);
+      d.setDate(base.getDate() + i);
+      return d.toLocaleDateString(locale, { weekday: 'narrow' }).toUpperCase();
+    });
+    return mondayFirst ? [...labels.slice(1), labels[0]] : labels;
+  }, [locale, mondayFirst]);
+
+  const dayHasData = (ds: string) => {
+    const log = allDayLogs[ds];
+    if (!log) return false;
+    return (
+      log.meals.breakfast.length > 0 ||
+      log.meals.mid_morning.length > 0 ||
+      log.meals.lunch.length > 0 ||
+      log.meals.midday_snack.length > 0 ||
+      log.meals.dinner.length > 0 ||
+      log.meals.extra.length > 0 ||
+      log.activities.length > 0 ||
+      typeof log.weightKg === 'number' ||
+      (log.waterEntries || []).length > 0 ||
+      (log.poops || []).length > 0 ||
+      Object.keys(log.custom ?? {}).length > 0 ||
+      Object.values(log.customEntries ?? {}).some((entries) => entries.length > 0)
+    );
+  };
 
   const openCalendar = () => {
     setViewYear(Number(selectedDate.slice(0, 4)));
@@ -41,12 +81,13 @@ export const DayNavigator: React.FC = () => {
     setCalOpen(false);
   };
 
-  const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+  const rawFirst = new Date(viewYear, viewMonth, 1).getDay();
+  const firstDay = mondayFirst ? (rawFirst + 6) % 7 : rawFirst;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString(
-    language === 'it' ? 'it-IT' : 'en-US',
-    { month: 'long', year: 'numeric' }
-  );
+  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString(locale, {
+    month: 'long',
+    year: 'numeric',
+  });
 
   const cells: (number | null)[] = [
     ...Array.from({ length: firstDay }, () => null),
@@ -54,11 +95,11 @@ export const DayNavigator: React.FC = () => {
   ];
 
   return (
-    <div className="flex items-center justify-center gap-1.5">
+    <div className="flex items-center justify-center gap-1.5 flex-wrap" data-no-swipe>
       <button
         type="button"
         onClick={() => setSelectedDate(addDaysToDateString(selectedDate, -1))}
-        className="w-9 h-9 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center transition-colors"
+        className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
         aria-label="Previous day"
       >
         <ChevronLeft size={17} />
@@ -68,25 +109,26 @@ export const DayNavigator: React.FC = () => {
         <button
           type="button"
           onClick={openCalendar}
-          className="flex items-center gap-2 bg-[var(--surface)] border border-[var(--border)] rounded-full px-4 py-2 text-sm font-bold text-[var(--text)] hover:bg-[var(--inset)] transition-colors"
+          aria-expanded={calOpen}
+          className="pressable flex items-center gap-2 bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] rounded-full px-4 py-2 text-sm font-bold text-[var(--text)]"
         >
           <Calendar size={15} className="text-[var(--muted)]" />
           <span>{formatDateDisplay(selectedDate, language)}</span>
           <ChevronDown
             size={14}
-            className={`text-[var(--muted)] transition-transform ${calOpen ? 'rotate-180' : ''}`}
+            className={`text-[var(--muted)] transition-transform duration-200 ${calOpen ? 'rotate-180' : ''}`}
           />
         </button>
 
         {calOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setCalOpen(false)} />
-            <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-72 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4">
+            <div className="anim-pop absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-72 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 shadow-xl shadow-black/15">
               <div className="flex items-center justify-between mb-3">
                 <button
                   type="button"
                   onClick={prevMonth}
-                  className="w-8 h-8 rounded-full bg-[var(--inset)] text-[var(--muted)] flex items-center justify-center"
+                  className="pressable w-8 h-8 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
                   aria-label="Previous month"
                 >
                   <ChevronLeft size={16} />
@@ -97,7 +139,7 @@ export const DayNavigator: React.FC = () => {
                 <button
                   type="button"
                   onClick={nextMonth}
-                  className="w-8 h-8 rounded-full bg-[var(--inset)] text-[var(--muted)] flex items-center justify-center"
+                  className="pressable w-8 h-8 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
                   aria-label="Next month"
                 >
                   <ChevronRight size={16} />
@@ -105,7 +147,7 @@ export const DayNavigator: React.FC = () => {
               </div>
 
               <div className="grid grid-cols-7 gap-1 text-center">
-                {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => (
+                {weekdayLabels.map((d, i) => (
                   <span key={i} className="text-[10px] font-bold text-[var(--muted)] py-1">
                     {d}
                   </span>
@@ -115,12 +157,13 @@ export const DayNavigator: React.FC = () => {
                   const ds = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                   const isSel = ds === selectedDate;
                   const isTodayCell = ds === todayStr;
+                  const logged = dayHasData(ds);
                   return (
                     <button
                       key={i}
                       type="button"
                       onClick={() => pickDay(day)}
-                      className={`w-9 h-9 rounded-full text-xs font-bold flex items-center justify-center transition-colors ${
+                      className={`pressable relative w-9 h-9 rounded-full text-xs font-bold tabular-nums flex items-center justify-center ${
                         isSel
                           ? 'bg-[var(--text)] text-[var(--surface)]'
                           : isTodayCell
@@ -129,10 +172,34 @@ export const DayNavigator: React.FC = () => {
                       }`}
                     >
                       {day}
+                      {logged && (
+                        <span
+                          className={`absolute bottom-1 w-1 h-1 rounded-full ${
+                            isSel
+                              ? 'bg-[var(--surface)]'
+                              : isTodayCell
+                              ? 'bg-[#1D5C38]'
+                              : 'bg-[var(--muted)]'
+                          }`}
+                        />
+                      )}
                     </button>
                   );
                 })}
               </div>
+
+              {!isToday && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedDate(todayStr);
+                    setCalOpen(false);
+                  }}
+                  className="pressable mt-3 w-full py-2 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#1D5C38] text-xs font-extrabold"
+                >
+                  {t.header.today}
+                </button>
+              )}
             </div>
           </>
         )}
@@ -141,7 +208,7 @@ export const DayNavigator: React.FC = () => {
       <button
         type="button"
         onClick={() => setSelectedDate(addDaysToDateString(selectedDate, 1))}
-        className="w-9 h-9 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center transition-colors"
+        className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
         aria-label="Next day"
       >
         <ChevronRight size={17} />
@@ -151,7 +218,7 @@ export const DayNavigator: React.FC = () => {
         <button
           type="button"
           onClick={() => setSelectedDate(todayStr)}
-          className="px-3.5 py-2 text-xs font-extrabold rounded-full bg-[#C9EFD3] text-[#1D5C38] hover:bg-[#B8E6C4] transition-colors"
+          className="pressable px-3.5 py-2 text-xs font-extrabold rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#1D5C38]"
         >
           {t.header.today}
         </button>

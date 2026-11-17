@@ -1,7 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useId, useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../../types';
 import { Modal } from '../common/Modal';
+import { ActionDock } from '../common/ActionDock';
 import { AmountSelector } from '../common/AmountSelector';
 import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
 import { formatKcal } from '../../utils/formatters';
@@ -14,18 +15,109 @@ import {
   Search,
   ArrowLeft,
   Edit2,
-  ScanBarcode,
   ChefHat as ChefHatIcon,
   ChevronDown,
   BookOpen,
+  ScanBarcode,
+  X,
 } from 'lucide-react';
 import { usePersistentState } from '../../utils/usePersistentState';
 
-export const PreBuiltMealsView: React.FC = () => {
+function LibrarySectionHeader({ title, summary, tone, createLabel, onCreate, searchLabel, query, setQuery }: {
+  title: string;
+  summary?: string;
+  tone: string;
+  createLabel: string;
+  onCreate: () => void;
+  searchLabel: string;
+  query: string;
+  setQuery: (value: string) => void;
+}) {
+  const { t } = useApp();
+  const [searchOpen, setSearchOpen] = useState(false);
+  const inputId = useId();
+  const closeSearch = () => {
+    setQuery('');
+    setSearchOpen(false);
+    document.getElementById(`${inputId}-toggle`)?.focus();
+  };
+  return (
+    <div className={`space-y-2 ${tone}`}>
+      <div className="flex items-center justify-between gap-2">
+        <h2 className="text-base sm:text-lg font-extrabold">{title}</h2>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            id={`${inputId}-toggle`}
+            type="button"
+            onClick={() => searchOpen ? closeSearch() : setSearchOpen(true)}
+            aria-label={searchLabel}
+            aria-expanded={searchOpen}
+            aria-controls={searchOpen ? inputId : undefined}
+            title={searchLabel}
+            className={`pressable size-9 rounded-full flex items-center justify-center ${searchOpen ? 'bg-white ring-1 ring-current' : 'bg-[#FBF8F2] hover:bg-white'}`}
+          >
+            <Search size={15} />
+          </button>
+          <button
+            type="button"
+            onClick={onCreate}
+            aria-label={createLabel}
+            title={createLabel}
+            className="pressable size-9 rounded-full bg-[#FBF8F2] hover:bg-white flex items-center justify-center"
+          >
+            <Plus size={18} strokeWidth={2.4} />
+          </button>
+        </div>
+      </div>
+      {summary && <p className="text-xs font-medium opacity-85">{summary}</p>}
+      {searchOpen && (
+        <form
+          id={inputId}
+          role="search"
+          aria-label={searchLabel}
+          onSubmit={(event) => event.preventDefault()}
+          className="relative w-full"
+        >
+          <Search
+            size={15}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none"
+          />
+          <input
+            autoFocus
+            type="text"
+            enterKeyHint="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.stopPropagation();
+                closeSearch();
+              }
+            }}
+            aria-label={searchLabel}
+            placeholder={`${searchLabel}…`}
+            className="w-full bg-[var(--surface)] rounded-2xl border border-[var(--border)] pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
+          />
+          <button
+            type="button"
+            onClick={closeSearch}
+            aria-label={t.common.close}
+            className="pressable absolute right-2 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
+          >
+            <X size={14} />
+          </button>
+        </form>
+      )}
+    </div>
+  );
+}
+
+export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
   const {
     preBuiltMeals,
     addPreBuiltMeal,
     addCustomFood,
+    deleteCustomFood,
     updatePreBuiltMeal,
     deletePreBuiltMeal,
     logPreBuiltMealToSlot,
@@ -35,6 +127,8 @@ export const PreBuiltMealsView: React.FC = () => {
     selectedDate,
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
+    setActiveTab,
+
     t,
   } = useApp();
 
@@ -103,7 +197,8 @@ export const PreBuiltMealsView: React.FC = () => {
     };
   };
 
-  const newMealNutrition = useMemo(() => calculateMealNutrition(newIngredients), [newIngredients, allFoods]); // eslint-disable-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const newMealNutrition = useMemo(() => calculateMealNutrition(newIngredients), [newIngredients, allFoods]);
 
   const openNewMealModal = () => {
     setEditingMealId(null);
@@ -159,10 +254,13 @@ export const PreBuiltMealsView: React.FC = () => {
     }
     const validIngs = finalIngs.filter((i) => i.amount > 0);
     if (validIngs.length === 0) return;
-    const fallbackName = validIngs.slice(0, 2).map((i) => {
-      const f = allFoods.find((x) => x.id === i.foodId);
-      return f ? nameOf(f).split(' ')[0] : 'Meal';
-    }).join(' + ');
+    const fallbackName = validIngs
+      .slice(0, 2)
+      .map((i) => {
+        const f = allFoods.find((x) => x.id === i.foodId);
+        return f ? nameOf(f).split(' ')[0] : 'Meal';
+      })
+      .join(' + ');
     const finalName = newMealName.trim() || fallbackName;
 
     if (editingMealId) {
@@ -190,7 +288,15 @@ export const PreBuiltMealsView: React.FC = () => {
     const q = ingredientSearch.trim();
     if (q.length < 2) return [];
     return allFoods
-      .map((f) => ({ f, score: Math.min(fuzzyScore(q, f.name_de), fuzzyScore(q, f.name_it), fuzzyScore(q, f.name_en), fuzzyScore(q, f.brand || '')) }))
+      .map((f) => ({
+        f,
+        score: Math.min(
+          fuzzyScore(q, f.name_de),
+          fuzzyScore(q, f.name_it),
+          fuzzyScore(q, f.name_en),
+          fuzzyScore(q, f.brand || '')
+        ),
+      }))
       .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
       .sort((a, b) => a.score - b.score)
       .slice(0, 35)
@@ -201,8 +307,11 @@ export const PreBuiltMealsView: React.FC = () => {
     const q = recipeSearch.trim();
     if (q.length < 2) return [];
     return allFoods
-      .map((f) => ({ f, score: Math.min(fuzzyScore(q, f.name_de), fuzzyScore(q, f.name_it), fuzzyScore(q, f.name_en)) }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en]))
+      .map((f) => ({
+        f,
+        score: Math.min(fuzzyScore(q, f.name_de), fuzzyScore(q, f.name_it), fuzzyScore(q, f.name_en)),
+      }))
+      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
       .sort((a, b) => a.score - b.score)
       .slice(0, 35)
       .map((x) => x.f);
@@ -263,7 +372,6 @@ export const PreBuiltMealsView: React.FC = () => {
       isRecipe: true,
     });
     setIsRecipeOpen(false);
-    alert(t.prebuilt.recipeSaved);
   };
 
   const pendingKcal = pendingFood ? Math.round((pendingFood.calories * pendingAmount) / 100) : 0;
@@ -299,73 +407,78 @@ export const PreBuiltMealsView: React.FC = () => {
       .map((x) => x.f);
   }, [savedRecipes, recipeQuery]);
 
-  const visibleMeals = mealQuery.trim().length >= 2 ? mealResults : preBuiltMeals;
-  const visibleRecipes = recipeQuery.trim().length >= 2 ? recipeListResults : savedRecipes;
+  const isMealFiltering = mealQuery.trim().length >= 2;
+  const isRecipeFiltering = recipeQuery.trim().length >= 2;
+  const visibleMeals = isMealFiltering ? mealResults : preBuiltMeals;
+  const visibleRecipes = isRecipeFiltering ? recipeListResults : savedRecipes;
 
   const searchInput = (value: string, onChange: (v: string) => void, placeholder?: string) => (
     <div className="relative">
-      <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
+      <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
       <input
         type="text"
+        enterKeyHint="search"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder || t.settings.searchText}
-        className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none"
+        className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
       />
       {value && (
         <button
           type="button"
           onClick={() => onChange('')}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--muted)] text-xs font-bold"
-          aria-label={t.common.close}
+          className="pressable absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+          aria-label={t.common.clear}
         >
-          ✕
+          <X size={14} />
         </button>
       )}
     </div>
   );
 
   return (
-    <div className="space-y-4 pb-24">
-      {/* ============ MEALS (peach section, white buttons) ============ */}
+    <div className="space-y-4">
+      {/* ============ MEALS (peach section, cream buttons) ============ */}
       <section className="bg-[#FAE0B4] rounded-3xl p-4 sm:p-5 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-[var(--surface)] text-[#7D4E14] flex items-center justify-center shrink-0">
-              <UtensilsCrossed size={17} />
-            </div>
-            <h2 className="text-base sm:text-lg font-extrabold text-[#7D4E14]">{t.prebuilt.title}</h2>
-          </div>
-          <button
-            type="button"
-            onClick={openNewMealModal}
-            className="shrink-0 px-4 py-2.5 rounded-full bg-[var(--surface)] hover:opacity-90 text-[#7D4E14] font-extrabold text-xs sm:text-sm flex items-center gap-1.5 transition-opacity"
-          >
-            <Plus size={15} strokeWidth={2.5} />
-            <span>{t.prebuilt.createNew}</span>
-          </button>
-        </div>
+        <LibrarySectionHeader
+          title={t.prebuilt.title}
+          tone="text-[#7D4E14]"
+          createLabel={t.prebuilt.createNew}
+          onCreate={openNewMealModal}
+          searchLabel={t.prebuilt.searchMeals}
+          query={mealQuery}
+          setQuery={setMealQuery}
+        />
 
-        <div className="flex gap-2">
-          <div className="flex-1">{searchInput(mealQuery, setMealQuery)}</div>
-        </div>
-
-        {visibleMeals.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {preBuiltMeals.length === 0 ? (
+          <p className="text-xs font-medium text-[#7D4E14]/80 px-1 py-1">
+            {t.common.emptyMeals}
+          </p>
+        ) : visibleMeals.length === 0 ? (
+          <p className="text-xs font-medium text-[#7D4E14]/80 px-1 py-2 text-center">
+            {t.prebuilt.noMatches}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
             {visibleMeals.map((meal) => {
               const nut = calculateMealNutrition(meal.ingredients);
               const isOpen = openMeals.includes(meal.id);
               return (
-                <div key={meal.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col justify-between gap-3">
+                <div
+                  key={meal.id}
+                  className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col justify-between gap-3"
+                >
                   <button
                     type="button"
                     onClick={() =>
-                      setOpenMeals((prev) => (prev.includes(meal.id) ? prev.filter((x) => x !== meal.id) : [...prev, meal.id]))
+                      setOpenMeals((prev) =>
+                        prev.includes(meal.id) ? prev.filter((x) => x !== meal.id) : [...prev, meal.id]
+                      )
                     }
-                    className="w-full flex items-start justify-between gap-2 text-left"
+                    className="w-full flex items-center justify-between gap-2 text-left"
                     aria-expanded={isOpen}
                   >
-                    <div className="min-w-0">
+                    <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
                         <h3 className="text-sm sm:text-base font-extrabold text-[var(--text)]">{meal.name}</h3>
                         {meal.slot && (
@@ -374,7 +487,7 @@ export const PreBuiltMealsView: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 mt-1 text-[11px] font-bold text-[var(--muted)] flex-wrap">
+                      <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold tabular-nums text-[var(--muted)] flex-wrap">
                         <span className="text-[var(--text)]">{formatKcal(nut.totalKcal)} kcal</span>
                         <span>·</span>
                         <span>C {nut.carbs}g</span>
@@ -382,59 +495,71 @@ export const PreBuiltMealsView: React.FC = () => {
                         <span>P {nut.protein}g</span>
                         <span>·</span>
                         <span>F {nut.fat}g</span>
-                        <ChevronDown size={13} className={`ml-auto transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
                     </div>
+                    <ChevronDown
+                      size={15}
+                      className={`shrink-0 text-[var(--muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                    />
                   </button>
 
-                  {isOpen && (
-                    <div>
-                      {meal.description && <p className="text-xs text-[var(--muted)]">{meal.description}</p>}
-                      <div className="grid grid-cols-5 gap-1.5 pt-3 text-center">
-                        <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
-                          <span className="text-[10px] font-bold block">C</span>
-                          <span className="text-xs font-extrabold">{nut.carbs}g</span>
+                  <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
+                    <div className="accordion-inner">
+                      <div className="pt-1 space-y-3">
+                        {meal.description && (
+                          <p className="text-xs text-[var(--muted)]">{meal.description}</p>
+                        )}
+                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
+                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
+                            <span className="text-[10px] font-bold block">C</span>
+                            <span className="text-xs font-extrabold">{nut.carbs}g</span>
+                          </div>
+                          <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
+                            <span className="text-[10px] font-bold block">P</span>
+                            <span className="text-xs font-extrabold">{nut.protein}g</span>
+                          </div>
+                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
+                            <span className="text-[10px] font-bold block">F</span>
+                            <span className="text-xs font-extrabold">{nut.fat}g</span>
+                          </div>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
+                            <span className="text-[10px] font-bold block">{t.macros.fiber}</span>
+                            <span className="text-xs font-extrabold">{nut.fiber}g</span>
+                          </div>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
+                            <span className="text-[10px] font-bold block">{t.macros.salt}</span>
+                            <span className="text-xs font-extrabold">{nut.salt}g</span>
+                          </div>
                         </div>
-                        <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
-                          <span className="text-[10px] font-bold block">P</span>
-                          <span className="text-xs font-extrabold">{nut.protein}g</span>
-                        </div>
-                        <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
-                          <span className="text-[10px] font-bold block">F</span>
-                          <span className="text-xs font-extrabold">{nut.fat}g</span>
-                        </div>
-                        <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                          <span className="text-[10px] font-bold block">Fib</span>
-                          <span className="text-xs font-extrabold">{nut.fiber}g</span>
-                        </div>
-                        <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                          <span className="text-[10px] font-bold block">Salt</span>
-                          <span className="text-xs font-extrabold">{nut.salt}g</span>
-                        </div>
-                      </div>
 
-                      <div className="mt-3 bg-[var(--inset)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
-                        {meal.ingredients.map((ing, idx) => {
-                          const food = allFoods.find((f) => f.id === ing.foodId);
-                          return (
-                            <div key={idx} className="py-1 flex items-center justify-between text-xs text-[var(--text)]">
-                              <span className="font-medium truncate pr-2">{food ? nameOf(food) : ing.foodId}</span>
-                              <span className="font-bold text-[var(--muted)] shrink-0">
-                                {ing.amount}
-                                {food?.unit || 'g'}
-                              </span>
-                            </div>
-                          );
-                        })}
+                        <div className="bg-[var(--inset)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                          {meal.ingredients.map((ing, idx) => {
+                            const food = allFoods.find((f) => f.id === ing.foodId);
+                            return (
+                              <div
+                                key={idx}
+                                className="py-1.5 flex items-center justify-between text-xs text-[var(--text)]"
+                              >
+                                <span className="font-medium truncate pr-2">
+                                  {food ? nameOf(food) : ing.foodId}
+                                </span>
+                                <span className="font-bold tabular-nums text-[var(--muted)] shrink-0">
+                                  {ing.amount}
+                                  {food?.unit || 'g'}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
                     </div>
-                  )}
+                  </div>
 
-                  <div className="flex items-center gap-2 pt-1 border-t border-[var(--border)]">
+                  <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
                     <button
                       type="button"
                       onClick={() => handleOpenLogModal(meal)}
-                      className="flex-1 py-2.5 px-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-colors"
+                      className="pressable flex-1 py-2.5 px-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5"
                     >
                       <Plus size={15} strokeWidth={2.5} />
                       <span>{t.prebuilt.logMeal}</span>
@@ -442,16 +567,18 @@ export const PreBuiltMealsView: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => openEditMealModal(meal)}
-                      className="w-9 h-9 rounded-2xl bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center transition-colors"
+                      className="pressable w-9 h-9 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
                       title={t.common.edit}
+                      aria-label={t.common.edit}
                     >
                       <Edit2 size={14} />
                     </button>
                     <button
                       type="button"
                       onClick={() => deletePreBuiltMeal(meal.id)}
-                      className="w-9 h-9 rounded-2xl bg-[var(--inset)] text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center transition-colors"
+                      className="pressable w-9 h-9 rounded-2xl bg-[var(--inset)] hover:bg-[#F6D0D0] text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center"
                       title={t.common.delete}
+                      aria-label={t.common.delete}
                     >
                       <Trash2 size={14} />
                     </button>
@@ -463,34 +590,29 @@ export const PreBuiltMealsView: React.FC = () => {
         )}
       </section>
 
-      {/* ============ RECIPES (lavender section, white buttons) ============ */}
+      {/* ============ RECIPES (lavender section, cream buttons) ============ */}
       <section className="bg-[#E2D6FF] rounded-3xl p-4 sm:p-5 space-y-3">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-full bg-[var(--surface)] text-[#4D3582] flex items-center justify-center shrink-0">
-              <ChefHatIcon size={17} />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-extrabold text-[#4D3582]">{t.prebuilt.recipesTitle}</h2>
-              <p className="text-[11px] font-medium text-[#4D3582]/70 truncate">{t.prebuilt.recipesDesc}</p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={openRecipeModal}
-            className="shrink-0 px-4 py-2.5 rounded-full bg-[var(--surface)] hover:opacity-90 text-[#4D3582] font-extrabold text-xs sm:text-sm flex items-center gap-1.5 transition-opacity"
-          >
-            <Plus size={15} strokeWidth={2.5} />
-            <span>{t.prebuilt.createRecipe}</span>
-          </button>
-        </div>
+        <LibrarySectionHeader
+          title={t.prebuilt.recipesTitle}
+          summary={t.prebuilt.recipesDesc}
+          tone="text-[#4D3582]"
+          createLabel={t.prebuilt.createRecipe}
+          onCreate={openRecipeModal}
+          searchLabel={t.prebuilt.searchRecipes}
+          query={recipeQuery}
+          setQuery={setRecipeQuery}
+        />
 
-        <div className="flex gap-2">
-          <div className="flex-1">{searchInput(recipeQuery, setRecipeQuery)}</div>
-        </div>
-
-        {visibleRecipes.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {savedRecipes.length === 0 ? (
+          <p className="text-xs font-medium text-[#4D3582]/80 px-1 py-1">
+            {t.prebuilt.noRecipes}
+          </p>
+        ) : visibleRecipes.length === 0 ? (
+          <p className="text-xs font-medium text-[#4D3582]/80 px-1 py-2 text-center">
+            {t.prebuilt.noMatches}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
               const kcal = (amt: number) => Math.round((recipe.calories * amt) / 100);
@@ -499,62 +621,80 @@ export const PreBuiltMealsView: React.FC = () => {
                   <button
                     type="button"
                     onClick={() =>
-                      setOpenRecipes((prev) => (prev.includes(recipe.id) ? prev.filter((x) => x !== recipe.id) : [...prev, recipe.id]))
+                      setOpenRecipes((prev) =>
+                        prev.includes(recipe.id) ? prev.filter((x) => x !== recipe.id) : [...prev, recipe.id]
+                      )
                     }
                     className="w-full flex items-center justify-between gap-2 text-left"
                     aria-expanded={isOpen}
                   >
-                    <span className="min-w-0">
+                    <span className="min-w-0 flex-1">
                       <span className="block text-sm sm:text-base font-extrabold text-[var(--text)] truncate">
                         {nameOf(recipe)}
                       </span>
-                      <span className="block text-[11px] font-bold text-[var(--muted)] mt-0.5">
+                      <span className="block text-[11px] font-bold tabular-nums text-[var(--muted)] mt-0.5">
                         {recipe.calories} kcal/100{recipe.unit} · C {recipe.carbs ?? '—'}g · P {recipe.protein ?? '—'}g · F {recipe.fat ?? '—'}g
                       </span>
                     </span>
-                    <ChevronDown size={15} className={`shrink-0 text-[var(--muted)] transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      size={15}
+                      className={`shrink-0 text-[var(--muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                    />
                   </button>
 
-                  {isOpen && (
-                    <div className="pt-3 space-y-2.5">
-                      <div className="grid grid-cols-5 gap-1.5 text-center">
-                        <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
-                          <span className="text-[10px] font-bold block">C</span>
-                          <span className="text-xs font-extrabold">{recipe.carbs ?? '—'}g</span>
+                  <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
+                    <div className="accordion-inner">
+                      <div className="pt-3 space-y-2.5">
+                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
+                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
+                            <span className="text-[10px] font-bold block">C</span>
+                            <span className="text-xs font-extrabold">{recipe.carbs ?? '—'}g</span>
+                          </div>
+                          <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
+                            <span className="text-[10px] font-bold block">P</span>
+                            <span className="text-xs font-extrabold">{recipe.protein ?? '—'}g</span>
+                          </div>
+                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
+                            <span className="text-[10px] font-bold block">F</span>
+                            <span className="text-xs font-extrabold">{recipe.fat ?? '—'}g</span>
+                          </div>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
+                            <span className="text-[10px] font-bold block">{t.macros.fiber}</span>
+                            <span className="text-xs font-extrabold">{recipe.fiber ?? '—'}g</span>
+                          </div>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
+                            <span className="text-[10px] font-bold block">{t.macros.salt}</span>
+                            <span className="text-xs font-extrabold">{recipe.salt ?? '—'}g</span>
+                          </div>
                         </div>
-                        <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
-                          <span className="text-[10px] font-bold block">P</span>
-                          <span className="text-xs font-extrabold">{recipe.protein ?? '—'}g</span>
-                        </div>
-                        <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
-                          <span className="text-[10px] font-bold block">F</span>
-                          <span className="text-xs font-extrabold">{recipe.fat ?? '—'}g</span>
-                        </div>
-                        <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                          <span className="text-[10px] font-bold block">Fib</span>
-                          <span className="text-xs font-extrabold">{recipe.fiber ?? '—'}g</span>
-                        </div>
-                        <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                          <span className="text-[10px] font-bold block">Salt</span>
-                          <span className="text-xs font-extrabold">{recipe.salt ?? '—'}g</span>
+                        <div className="flex items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setActiveRecipeToLog(recipe);
+                              setRecipeLogSlot('lunch');
+                              setRecipeLogAmount(getLastAmount(recipe.id));
+                            }}
+                            className="pressable flex-1 py-2.5 px-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5 tabular-nums"
+                          >
+                            <Plus size={15} strokeWidth={2.5} />
+                            <span>
+                              {t.prebuilt.logRecipe} · {kcal(100)} kcal/100g
+                            </span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => deleteCustomFood(recipe.id)}
+                            className="pressable w-9 h-9 rounded-2xl bg-[var(--inset)] hover:bg-[#F6D0D0] text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center shrink-0"
+                            title={t.common.delete}
+                            aria-label={t.common.delete}
+                          >
+                            <Trash2 size={14} />
+                          </button>
                         </div>
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setActiveRecipeToLog(recipe);
-                          setRecipeLogSlot('lunch');
-                          setRecipeLogAmount(100);
-                        }}
-                        className="w-full py-2.5 px-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5 transition-colors"
-                      >
-                        <Plus size={15} strokeWidth={2.5} />
-                        <span>
-                          {t.prebuilt.logRecipe} · {kcal(100)} kcal/100g
-                        </span>
-                      </button>
                     </div>
-                  )}
+                  </div>
                 </div>
               );
             })}
@@ -562,36 +702,50 @@ export const PreBuiltMealsView: React.FC = () => {
         )}
       </section>
 
-      {/* ============ FOODS (mint section, white buttons, with icon) ============ */}
+      {/* ============ FOODS (mint section, cream buttons) ============ */}
       <section className="bg-[#C9EFD3] rounded-3xl p-4 sm:p-5 space-y-3">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-[var(--surface)] text-[#174A2B] flex items-center justify-center shrink-0">
-            <BookOpen size={17} />
-          </div>
-          <div className="min-w-0">
-            <h2 className="text-base sm:text-lg font-extrabold text-[#174A2B]">{t.database.title}</h2>
-            <p className="text-[11px] font-medium text-[#174A2B]/70 truncate">{t.settings.foodsDesc}</p>
-          </div>
+        <div>
+          <h2 className="text-base sm:text-lg font-extrabold text-[#174A2B]">{t.database.title}</h2>
+          <p className="text-xs font-medium text-[#174A2B]/80">{t.settings.foodsDesc}</p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <button
-            type="button"
-            onClick={() => setIsCustomFoodOpen(true)}
-            className="w-full min-w-0 px-3 py-2.5 rounded-full bg-[var(--surface)] text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90"
-          >
-            <Plus size={16} strokeWidth={2.5} className="shrink-0" />
-            <span className="truncate">{t.prebuilt.addCustomFoodBtn}</span>
-          </button>
+        <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
             onClick={() => setIsBarcodeOpen(true)}
-            className="w-full min-w-0 px-3 py-2.5 rounded-full bg-[var(--surface)] text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-opacity hover:opacity-90"
+            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
           >
             <ScanBarcode size={16} className="shrink-0" />
             <span className="truncate">{t.prebuilt.barcode}</span>
           </button>
+          <button
+            type="button"
+            onClick={() => setIsCustomFoodOpen(true)}
+            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+          >
+            <Plus size={16} strokeWidth={2.5} className="shrink-0" />
+            <span className="truncate">{t.database.customFood}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('database')}
+            className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+          >
+            <BookOpen size={16} className="shrink-0" />
+            <span className="truncate">{t.database.browseAll}</span>
+          </button>
         </div>
       </section>
+
+      {!hideDock && !isCreateOpen && !isRecipeOpen && !activeMealToLog && !activeRecipeToLog && (
+        <ActionDock
+          label={t.prebuilt.creationDock}
+          actions={[
+            { id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: openNewMealModal },
+            { id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openRecipeModal },
+            { id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: () => setIsCustomFoodOpen(true) },
+          ]}
+        />
+      )}
 
       {/* ============ Log meal to slot picker ============ */}
       <Modal
@@ -608,10 +762,10 @@ export const PreBuiltMealsView: React.FC = () => {
                 key={slot.id}
                 type="button"
                 onClick={() => setSelectedSlot(slot.id)}
-                className={`p-3 rounded-2xl border text-xs font-bold text-center transition-colors ${
+                className={`pressable p-3 rounded-2xl border text-xs font-bold text-center ${
                   selectedSlot === slot.id
                     ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                    : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
                 {slot.label}
@@ -621,7 +775,7 @@ export const PreBuiltMealsView: React.FC = () => {
           <button
             type="button"
             onClick={confirmLogToSlot}
-            className="w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+            className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
@@ -646,10 +800,10 @@ export const PreBuiltMealsView: React.FC = () => {
                 key={slot.id}
                 type="button"
                 onClick={() => setRecipeLogSlot(slot.id)}
-                className={`p-3 rounded-2xl border text-xs font-bold text-center transition-colors ${
+                className={`pressable p-3 rounded-2xl border text-xs font-bold text-center ${
                   recipeLogSlot === slot.id
                     ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                    : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
                 {slot.label}
@@ -663,12 +817,13 @@ export const PreBuiltMealsView: React.FC = () => {
             type="button"
             onClick={() => {
               if (activeRecipeToLog && recipeLogAmount > 0) {
+                setLastAmount(activeRecipeToLog.id, recipeLogAmount);
                 logFoodItem(recipeLogSlot, activeRecipeToLog, recipeLogAmount, selectedDate);
                 setActiveRecipeToLog(null);
               }
             }}
             disabled={recipeLogAmount <= 0}
-            className="w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+            className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
@@ -694,19 +849,19 @@ export const PreBuiltMealsView: React.FC = () => {
             <button
               type="button"
               onClick={() => setPendingFood(null)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+              className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
             >
               <ArrowLeft size={14} />
               <span>{t.common.back}</span>
             </button>
 
-            <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-4 py-3">
-              <span className="text-xs font-bold text-[var(--muted)]">
-                {pendingFood.store} · {pendingFood.calories} kcal / 100{pendingFood.unit}
+            <div className="flex items-center justify-between bg-[#FAE0B4] rounded-2xl px-4 py-3 tabular-nums">
+              <span className="text-xs font-bold text-[#7D4E14]">
+                {pendingFood.calories} kcal / 100{pendingFood.unit}
               </span>
               <div>
-                <span className="text-2xl font-extrabold text-[#174A2B]">{pendingKcal}</span>
-                <span className="text-xs font-bold text-[#25633E] ml-1">kcal</span>
+                <span className="text-2xl font-extrabold text-[#2D1E0B]">{pendingKcal}</span>
+                <span className="text-xs font-bold text-[#7D4E14] ml-1">kcal</span>
               </div>
             </div>
 
@@ -717,7 +872,7 @@ export const PreBuiltMealsView: React.FC = () => {
                 type="button"
                 onClick={handleConfirmAndAddAnother}
                 disabled={pendingAmount <= 0}
-                className="w-full py-3 px-4 bg-[var(--inset)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm transition-colors disabled:opacity-40"
+                className="pressable w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
               >
                 <Plus size={16} strokeWidth={2.5} />
                 <span>{t.prebuilt.addAnotherIngredient}</span>
@@ -726,7 +881,7 @@ export const PreBuiltMealsView: React.FC = () => {
                 type="button"
                 onClick={() => handleSaveMeal(true)}
                 disabled={pendingAmount <= 0 && newIngredients.length === 0}
-                className="w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm transition-colors disabled:opacity-40"
+                className="pressable w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums disabled:opacity-40"
               >
                 <Check size={17} strokeWidth={2.5} />
                 <span>{t.prebuilt.saveMeal} ({newMealNutrition.totalKcal + pendingKcal} kcal)</span>
@@ -740,7 +895,15 @@ export const PreBuiltMealsView: React.FC = () => {
               value={newMealName}
               onChange={(e) => setNewMealName(e.target.value)}
               placeholder={t.prebuilt.mealNamePlaceholder}
-              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-[var(--text)] placeholder-[var(--muted)] text-sm font-bold focus:outline-none"
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-[var(--text)] placeholder-[var(--muted)] text-sm font-bold focus:outline-none focus:border-[var(--muted)]"
+            />
+
+            <input
+              type="text"
+              value={newMealDesc}
+              onChange={(e) => setNewMealDesc(e.target.value)}
+              placeholder={t.prebuilt.descPlaceholder}
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2 text-[var(--text)] placeholder-[var(--muted)] text-xs font-medium focus:outline-none focus:border-[var(--muted)]"
             />
 
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
@@ -749,10 +912,10 @@ export const PreBuiltMealsView: React.FC = () => {
                   key={s.id}
                   type="button"
                   onClick={() => setNewMealSlot(s.id)}
-                  className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition-colors ${
+                  className={`pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
                     newMealSlot === s.id
                       ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
-                      : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                      : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
                   {s.label}
@@ -766,14 +929,19 @@ export const PreBuiltMealsView: React.FC = () => {
                   <span className="text-xs font-extrabold text-[var(--text)]">
                     {t.prebuilt.ingredientsCount.replace('{count}', String(newIngredients.length))}
                   </span>
-                  <span className="text-xs font-extrabold text-[#174A2B]">{newMealNutrition.totalKcal} kcal</span>
+                  <span className="text-xs font-extrabold tabular-nums px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B]">
+                    {newMealNutrition.totalKcal} kcal
+                  </span>
                 </div>
                 <div className="space-y-1.5 max-h-36 overflow-y-auto">
                   {newIngredients.map((ing, idx) => {
                     const food = allFoods.find((f) => f.id === ing.foodId);
                     const kcal = food ? Math.round((food.calories * ing.amount) / 100) : 0;
                     return (
-                      <div key={idx} className="px-3 py-2 rounded-xl bg-[var(--surface)] flex items-center justify-between gap-2 text-xs">
+                      <div
+                        key={idx}
+                        className="px-3 py-2 rounded-xl bg-[var(--surface)] flex items-center justify-between gap-2 text-xs"
+                      >
                         <button
                           type="button"
                           onClick={() => {
@@ -788,12 +956,13 @@ export const PreBuiltMealsView: React.FC = () => {
                           {food ? nameOf(food) : ing.foodId} ({ing.amount}
                           {food?.unit || 'g'})
                         </button>
-                        <div className="flex items-center gap-2 shrink-0">
+                        <div className="flex items-center gap-2 shrink-0 tabular-nums">
                           <span className="font-bold text-[var(--muted)]">{kcal} kcal</span>
                           <button
                             type="button"
                             onClick={() => setNewIngredients((prev) => prev.filter((_, i) => i !== idx))}
-                            className="text-[#8C2D32] hover:opacity-75"
+                            className="pressable w-6 h-6 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                            aria-label={t.common.delete}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -807,8 +976,13 @@ export const PreBuiltMealsView: React.FC = () => {
 
             {/* Ingredient search — same behaviour as Add Food (fuzzy, results only while typing) */}
             <div className="space-y-2">
-              <span className="text-xs font-bold text-[var(--muted)] block">{t.prebuilt.pickIngredientPrompt}</span>
+              <span className="text-xs font-bold text-[var(--muted)] block">
+                {t.prebuilt.pickIngredientPrompt}
+              </span>
               {searchInput(ingredientSearch, setIngredientSearch, t.foodModal.searchPlaceholder)}
+              {ingredientSearch.trim().length === 1 && (
+                <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
+              )}
               {ingredientSearch.trim().length >= 2 && (
                 <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
                   {filteredFoodsForSearch.length === 0 ? (
@@ -819,13 +993,15 @@ export const PreBuiltMealsView: React.FC = () => {
                         key={food.id}
                         type="button"
                         onClick={() => handleSelectFood(food)}
-                        className="w-full p-3 hover:bg-[var(--border)] text-left flex items-center justify-between gap-3 transition-colors"
+                        className="w-full p-3 hover:bg-[var(--hover)] text-left flex items-center justify-between gap-3 transition-colors"
                       >
                         <span className="min-w-0">
-                          <span className="text-sm font-bold text-[var(--text)] truncate block">{nameOf(food)}</span>
+                          <span className="text-sm font-bold text-[var(--text)] truncate block">
+                            {nameOf(food)}
+                          </span>
                           <span className="text-[11px] text-[var(--muted)]">{food.store}</span>
                         </span>
-                        <span className="text-xs font-extrabold text-[var(--muted)] shrink-0">
+                        <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
                           {food.calories} kcal/100{food.unit}
                         </span>
                       </button>
@@ -839,7 +1015,7 @@ export const PreBuiltMealsView: React.FC = () => {
               <button
                 type="button"
                 onClick={() => handleSaveMeal(false)}
-                className="w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+                className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums"
               >
                 <Check size={18} strokeWidth={2.5} />
                 <span>
@@ -854,7 +1030,10 @@ export const PreBuiltMealsView: React.FC = () => {
       {/* ============ Create recipe modal ============ */}
       <Modal
         isOpen={isRecipeOpen}
-        onClose={() => setIsRecipeOpen(false)}
+        onClose={() => {
+          setIsRecipeOpen(false);
+          setRecipePendingFood(null);
+        }}
         title={recipePendingFood ? nameOf(recipePendingFood) : t.prebuilt.recipeTitle}
         maxWidth="max-w-xl"
       >
@@ -863,17 +1042,17 @@ export const PreBuiltMealsView: React.FC = () => {
             <button
               type="button"
               onClick={() => setRecipePendingFood(null)}
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+              className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
             >
               <ArrowLeft size={14} />
               <span>{t.common.back}</span>
             </button>
 
-            <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-4 py-3">
-              <span className="text-xs font-bold text-[var(--muted)]">
+            <div className="flex items-center justify-between bg-[#E2D6FF] rounded-2xl px-4 py-3 tabular-nums">
+              <span className="text-xs font-bold text-[#4D3582]">
                 {recipePendingFood.calories} kcal / 100{recipePendingFood.unit}
               </span>
-              <span className="text-lg font-extrabold text-[#4D3582]">
+              <span className="text-xl font-extrabold text-[#1F1636]">
                 {Math.round((recipePendingFood.calories * recipePendingAmt) / 100)} kcal
               </span>
             </div>
@@ -882,6 +1061,7 @@ export const PreBuiltMealsView: React.FC = () => {
 
             <button
               type="button"
+              disabled={recipePendingAmt <= 0}
               onClick={() => {
                 if (recipePendingAmt > 0) {
                   setLastAmount(recipePendingFood.id, recipePendingAmt);
@@ -890,7 +1070,7 @@ export const PreBuiltMealsView: React.FC = () => {
                 setRecipePendingFood(null);
                 setRecipeSearch('');
               }}
-              className="w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+              className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
             >
               <Plus size={17} strokeWidth={2.5} />
               <span>{t.prebuilt.addIngredient}</span>
@@ -903,18 +1083,20 @@ export const PreBuiltMealsView: React.FC = () => {
               value={recipeName}
               onChange={(e) => setRecipeName(e.target.value)}
               placeholder={t.prebuilt.recipeNamePlaceholder}
-              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none"
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
             />
 
             {recipeIngs.length > 0 && (
               <div className="bg-[var(--inset)] rounded-2xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-[var(--text)]">
+                  <span className="text-xs font-extrabold tabular-nums text-[var(--text)]">
                     {t.prebuilt.ingredientsCount.replace('{count}', String(recipeIngs.length))} · {recipeTotals.grams}g
                   </span>
-                  <span className="text-xs font-extrabold text-[#4D3582]">{recipeTotals.kcal100} kcal/100g</span>
+                  <span className="text-xs font-extrabold tabular-nums px-2 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582]">
+                    {recipeTotals.kcal100} kcal/100g
+                  </span>
                 </div>
-                <div className="grid grid-cols-5 gap-1 text-center text-[10px] font-bold">
+                <div className="grid grid-cols-5 gap-1 text-center text-[10px] font-bold tabular-nums">
                   <span className="bg-[#FAE0B4] text-[#7D4E14] rounded-lg py-1">C {recipeTotals.c100}</span>
                   <span className="bg-[#F6D0D0] text-[#7A2727] rounded-lg py-1">P {recipeTotals.p100}</span>
                   <span className="bg-[#E2D6FF] text-[#4D3582] rounded-lg py-1">F {recipeTotals.f100}</span>
@@ -925,15 +1107,29 @@ export const PreBuiltMealsView: React.FC = () => {
                   {recipeIngs.map((ing, idx) => {
                     const food = allFoods.find((f) => f.id === ing.foodId);
                     return (
-                      <div key={idx} className="px-3 py-1.5 rounded-xl bg-[var(--surface)] flex items-center justify-between text-xs">
-                        <span className="font-bold text-[var(--text)] truncate">
+                      <div
+                        key={idx}
+                        className="px-3 py-1.5 rounded-xl bg-[var(--surface)] flex items-center justify-between gap-2 text-xs"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (food) {
+                              setRecipeIngs((prev) => prev.filter((_, i) => i !== idx));
+                              setRecipePendingFood(food);
+                              setRecipePendingAmt(ing.amount);
+                            }
+                          }}
+                          className="font-bold text-[var(--text)] truncate text-left hover:underline"
+                        >
                           {food ? nameOf(food) : ing.foodId} ({ing.amount}
                           {food?.unit || 'g'})
-                        </span>
+                        </button>
                         <button
                           type="button"
                           onClick={() => setRecipeIngs((prev) => prev.filter((_, i) => i !== idx))}
-                          className="text-[#8C2D32]"
+                          className="pressable w-6 h-6 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
+                          aria-label={t.common.delete}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -947,6 +1143,9 @@ export const PreBuiltMealsView: React.FC = () => {
             {/* Ingredient search — same behaviour as Add Food */}
             <div className="space-y-2">
               {searchInput(recipeSearch, setRecipeSearch, t.foodModal.searchPlaceholder)}
+              {recipeSearch.trim().length === 1 && (
+                <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
+              )}
               {recipeSearch.trim().length >= 2 && (
                 <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
                   {recipeResults.length === 0 ? (
@@ -960,13 +1159,15 @@ export const PreBuiltMealsView: React.FC = () => {
                           setRecipePendingFood(food);
                           setRecipePendingAmt(getLastAmount(food.id));
                         }}
-                        className="w-full p-3 hover:bg-[var(--border)] text-left flex items-center justify-between gap-3 transition-colors"
+                        className="w-full p-3 hover:bg-[var(--hover)] text-left flex items-center justify-between gap-3 transition-colors"
                       >
                         <span className="min-w-0">
-                          <span className="text-sm font-bold text-[var(--text)] truncate block">{nameOf(food)}</span>
+                          <span className="text-sm font-bold text-[var(--text)] truncate block">
+                            {nameOf(food)}
+                          </span>
                           <span className="text-[11px] text-[var(--muted)]">{food.store}</span>
                         </span>
-                        <span className="text-xs font-extrabold text-[var(--muted)] shrink-0">
+                        <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
                           {food.calories} kcal/100{food.unit}
                         </span>
                       </button>
@@ -981,11 +1182,11 @@ export const PreBuiltMealsView: React.FC = () => {
                 type="button"
                 onClick={saveRecipe}
                 disabled={!recipeName.trim()}
-                className="w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+                className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
               >
                 <Check size={18} strokeWidth={2.5} />
                 <span>
-                  {t.prebuilt.saveMeal} · {t.prebuilt.recipeNote}: {recipeTotals.kcal100} kcal
+                  {t.common.save} · {t.prebuilt.recipeNote}: {recipeTotals.kcal100} kcal
                 </span>
               </button>
             )}

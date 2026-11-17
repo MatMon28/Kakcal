@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { tagDefs } from '../../utils/period';
 import { getTodayDateString } from '../../utils/formatters';
-import { ChevronDown, Pill, Lock, Trash2, Check, Pencil } from 'lucide-react';
+import { ChevronDown, Pill, Lock } from 'lucide-react';
 
 /** Integer field validated on blur: clamps to [min,max], reverts empty/non-numeric to the last valid value. */
 const IntField: React.FC<{
@@ -31,26 +30,32 @@ const IntField: React.FC<{
       <input
         type="text"
         inputMode="numeric"
+        enterKeyHint="done"
         value={text}
         onChange={(e) => setText(e.target.value)}
+        onFocus={(e) => e.currentTarget.select()}
         onBlur={commit}
         onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-        className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-[var(--text)] text-base font-bold focus:outline-none"
+        className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-[var(--text)] text-base font-bold tabular-nums focus:outline-none focus:border-[var(--muted)]"
       />
       {hint && <span className="text-[10px] font-medium text-[var(--muted)]">{hint}</span>}
     </div>
   );
 };
 
-const Toggle: React.FC<{ on: boolean; onClick: () => void }> = ({ on, onClick }) => (
-  <button
-    type="button"
-    onClick={onClick}
-    className={`w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 ${on ? 'bg-[#C9EFD3]' : 'bg-[var(--surface)] border border-[var(--border)]'}`}
-    aria-pressed={on}
+const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
+  <span
+    aria-hidden="true"
+    className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
+      on ? 'bg-[#C9EFD3] border-[#9ADBB0]' : 'bg-[var(--border)] border-[var(--border)]'
+    }`}
   >
-    <span className={`block w-5 h-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-5' : 'translate-x-0'}`} />
-  </button>
+    <span
+      className={`block w-5 h-5 rounded-full shadow-sm transition-transform duration-150 ${
+        on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
+      }`}
+    />
+  </span>
 );
 
 export const PeriodSettingsAccordion: React.FC = () => {
@@ -58,168 +63,133 @@ export const PeriodSettingsAccordion: React.FC = () => {
     t,
     periodData,
     updatePeriodSettings,
-    renamePeriodTag,
-    deletePeriodTag,
   } = useApp();
   const s = periodData.settings;
   const [open, setOpen] = useState(false);
-  const [editing, setEditing] = useState<{ id: string; group: 'mood' | 'symptom'; text: string } | null>(null);
-
-  const builtinLabel = (g: 'mood' | 'symptom') => (k: string) =>
-    t.period[`${g === 'mood' ? 'mood' : 'sym'}_${k}` as keyof typeof t.period] as string;
-
-  const TagManager: React.FC<{ group: 'mood' | 'symptom'; title: string }> = ({ group, title }) => {
-    const defs = tagDefs(group, s, builtinLabel(group));
-    return (
-      <div className="space-y-1.5">
-        <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">{title}</span>
-        <div className="space-y-1">
-          {defs.map((d) => {
-            const isEditing = editing?.id === d.id;
-            return (
-              <div key={d.id} className="flex items-center justify-between gap-2 bg-[var(--inset)] rounded-xl px-3 py-2">
-                {isEditing ? (
-                  <input
-                    autoFocus
-                    value={editing!.text}
-                    maxLength={24}
-                    onChange={(e) => setEditing({ ...editing!, text: e.target.value })}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        if (renamePeriodTag(group, d.id, editing!.text)) setEditing(null);
-                      }
-                      if (e.key === 'Escape') setEditing(null);
-                    }}
-                    className="flex-1 bg-[var(--surface)] border border-[var(--border)] rounded-lg px-2 py-1 text-xs font-bold text-[var(--text)] focus:outline-none"
-                  />
-                ) : (
-                  <span className={`text-xs font-bold ${d.hidden ? 'text-[var(--muted)] line-through' : 'text-[var(--text)]'}`}>
-                    {d.label}
-                    {!d.builtin && (
-                      <span className="ml-1.5 text-[10px] font-bold text-[var(--muted)]">
-                        {t.period.customTags}
-                      </span>
-                    )}
-                  </span>
-                )}
-                <span className="flex items-center gap-1 shrink-0">
-                  {d.builtin ? null : isEditing ? (
-                    <button
-                      type="button"
-                      onClick={() => renamePeriodTag(group, d.id, editing!.text) && setEditing(null)}
-                      className="w-7 h-7 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center"
-                      title={t.common.save}
-                    >
-                      <Check size={13} />
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        onClick={() => setEditing({ id: d.id, group, text: d.label })}
-                        className="w-7 h-7 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
-                        title={t.period.rename}
-                      >
-                        <Pencil size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deletePeriodTag(group, d.id)}
-                        className="w-7 h-7 rounded-full text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center"
-                        title={t.common.delete}
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </>
-                  )}
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between"
+        className="w-full flex items-center justify-between text-left"
         aria-expanded={open}
       >
-        <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.period.settingsTitle}</span>
-        <ChevronDown size={16} className={`text-[var(--muted)] transition-transform ${open ? 'rotate-180' : ''}`} />
+        <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">
+          {t.period.settingsTitle}
+        </span>
+        <ChevronDown
+          size={16}
+          className={`text-[var(--muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
       </button>
 
-      {open && (
-        <div className="pt-4 space-y-4">
-          <div className="grid grid-cols-2 gap-2.5">
-            <IntField label={t.period.cycleLength} value={s.cycleLength} min={15} max={60} hint={t.period.cycleLengthHint}
-              onCommit={(v) => updatePeriodSettings({ cycleLength: v })} />
-            <IntField label={t.period.periodDuration} value={s.periodDuration} min={1} max={15} hint={t.period.periodDurationHint}
-              onCommit={(v) => updatePeriodSettings({ periodDuration: v })} />
-          </div>
-
-          {/* Pill */}
-          <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-3 py-2.5">
-            <span className="flex items-center gap-2 text-sm font-bold text-[var(--text)]">
-              <Pill size={15} className="text-[var(--muted)]" /> {t.period.trackPill}
-            </span>
-            <Toggle on={s.trackPill} onClick={() => updatePeriodSettings({ trackPill: !s.trackPill })} />
-          </div>
-          {s.trackPill && (
-            <div className="space-y-2.5">
-              <div className="grid grid-cols-2 gap-2.5">
-                <IntField label={t.period.packLength} value={s.packLength} min={1} max={365} hint={t.period.packLengthHint}
-                  onCommit={(v) => updatePeriodSettings({ packLength: v })} />
-                <IntField label={t.period.inactiveDaysLabel} value={s.inactiveDays} min={0} max={Math.max(0, s.packLength - 1)} hint={t.period.inactiveHint}
-                  onCommit={(v) => updatePeriodSettings({ inactiveDays: v })} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[var(--text)] mb-1">{t.period.packStart}</label>
-                <div className="flex gap-2">
-                  <input
-                    type="date"
-                    value={s.packStart || ''}
-                    onChange={(e) => e.target.value && updatePeriodSettings({ packStart: e.target.value })}
-                    className="flex-1 bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] focus:outline-none"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => updatePeriodSettings({ packStart: getTodayDateString() })}
-                    className="px-3 py-2 rounded-xl bg-[#E2D6FF] text-[#4D3582] text-xs font-extrabold whitespace-nowrap"
-                  >
-                    {t.period.startPackToday}
-                  </button>
-                </div>
-                {!s.packStart && <p className="text-[11px] font-medium text-[#7D4E14] mt-1">{t.period.noPackStart}</p>}
-              </div>
+      <div className="accordion-grid" data-open={open} inert={!open}>
+        <div className="accordion-inner">
+          <div className="pt-4 space-y-4">
+            <div className="grid grid-cols-2 gap-2.5">
+              <IntField
+                label={t.period.cycleLength}
+                value={s.cycleLength}
+                min={15}
+                max={60}
+                hint={t.period.cycleLengthHint}
+                onCommit={(v) => updatePeriodSettings({ cycleLength: v })}
+              />
+              <IntField
+                label={t.period.periodDuration}
+                value={s.periodDuration}
+                min={1}
+                max={15}
+                hint={t.period.periodDurationHint}
+                onCommit={(v) => updatePeriodSettings({ periodDuration: v })}
+              />
             </div>
-          )}
 
-          <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-3 py-2.5">
-            <span className="text-sm font-bold text-[var(--text)]">{t.period.showNutrition}</span>
-            <Toggle on={s.showNutrition} onClick={() => updatePeriodSettings({ showNutrition: !s.showNutrition })} />
-          </div>
-          <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-3 py-2.5">
-            <span className="text-sm font-bold text-[var(--text)]">{t.period.showBands}</span>
-            <Toggle on={s.showPhaseBandsInStats} onClick={() => updatePeriodSettings({ showPhaseBandsInStats: !s.showPhaseBandsInStats })} />
-          </div>
+            {/* Pill */}
+            <button
+              type="button"
+              aria-pressed={s.trackPill}
+              onClick={() => updatePeriodSettings({ trackPill: !s.trackPill })}
+              className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2 text-sm font-bold text-[var(--text)]">
+                <Pill size={15} className="text-[var(--muted)] shrink-0" />
+                <span>{t.period.trackPill}</span>
+              </span>
+              <SwitchVisual on={s.trackPill} />
+            </button>
 
-          {/* Tags */}
-          <div className="space-y-3">
-            <span className="block text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.period.manageTags}</span>
-            <TagManager group="mood" title={t.period.mood} />
-            <TagManager group="symptom" title={t.period.symptoms} />
-          </div>
+            {s.trackPill && (
+              <div className="space-y-2.5">
+                <div className="grid grid-cols-2 gap-2.5">
+                  <IntField
+                    label={t.period.packLength}
+                    value={s.packLength}
+                    min={1}
+                    max={365}
+                    hint={t.period.packLengthHint}
+                    onCommit={(v) => updatePeriodSettings({ packLength: v })}
+                  />
+                  <IntField
+                    label={t.period.inactiveDaysLabel}
+                    value={s.inactiveDays}
+                    min={0}
+                    max={Math.max(0, s.packLength - 1)}
+                    hint={t.period.inactiveHint}
+                    onCommit={(v) => updatePeriodSettings({ inactiveDays: v })}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[var(--text)] mb-1">{t.period.packStart}</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="date"
+                      value={s.packStart || ''}
+                      onChange={(e) => e.target.value && updatePeriodSettings({ packStart: e.target.value })}
+                      className="flex-1 bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] focus:outline-none focus:border-[var(--muted)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updatePeriodSettings({ packStart: getTodayDateString() })}
+                      className="pressable px-3 py-2 rounded-xl bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] text-xs font-extrabold whitespace-nowrap"
+                    >
+                      {t.period.startPackToday}
+                    </button>
+                  </div>
+                  {!s.packStart && (
+                    <p className="text-[11px] font-medium text-[var(--text-pos)] mt-1">{t.period.noPackStart}</p>
+                  )}
+                </div>
+              </div>
+            )}
 
-          <p className="flex items-start gap-1.5 text-[11px] font-medium text-[var(--muted)]">
-            <Lock size={12} className="mt-0.5 shrink-0" /> {t.period.privacyNote}
-          </p>
+            <button
+              type="button"
+              aria-pressed={s.showNutrition}
+              onClick={() => updatePeriodSettings({ showNutrition: !s.showNutrition })}
+              className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
+            >
+              <span className="text-sm font-bold text-[var(--text)]">{t.period.showNutrition}</span>
+              <SwitchVisual on={s.showNutrition} />
+            </button>
+
+            <button
+              type="button"
+              aria-pressed={s.showPhaseBandsInStats}
+              onClick={() => updatePeriodSettings({ showPhaseBandsInStats: !s.showPhaseBandsInStats })}
+              className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
+            >
+              <span className="text-sm font-bold text-[var(--text)]">{t.period.showBands}</span>
+              <SwitchVisual on={s.showPhaseBandsInStats} />
+            </button>
+
+            <p className="flex items-start gap-1.5 text-[11px] font-medium text-[var(--muted)]">
+              <Lock size={12} className="mt-0.5 shrink-0" /> {t.period.privacyNote}
+            </p>
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 };

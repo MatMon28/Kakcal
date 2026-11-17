@@ -1,5 +1,6 @@
 import { FoodItem } from '../types';
 import { EXTRA_FOODS } from './extraFoods';
+import { REFERENCE_FOODS } from './referenceFoods';
 
 const CURATED_FOODS: FoodItem[] = [
   // ================= KEBAB (DÖNER & DÜRÜM) & PREPARED =================
@@ -2007,4 +2008,4 @@ const CURATED_FOODS: FoodItem[] = [
   },
 ];
 
-export const VERIFIED_FOODS: FoodItem[] = [...CURATED_FOODS, ...EXTRA_FOODS];
+export const VERIFIED_FOODS: FoodItem[] = [...CURATED_FOODS, ...REFERENCE_FOODS, ...EXTRA_FOODS];

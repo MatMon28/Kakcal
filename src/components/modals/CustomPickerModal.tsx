@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { ChevronRight } from 'lucide-react';
 import { TrackerIcon } from '../common/TrackerIcon';
+import { formatTrackerAmount, getTrackerValue } from '../../utils/customTrackers';
 
 // Shown when the single personalized quick-add button is pressed
 // and several custom trackers exist: user picks which one to log.
@@ -13,6 +14,7 @@ export const CustomPickerModal: React.FC = () => {
     setCustomButtonOpenId,
     settings,
     currentDayLog,
+    language,
     t,
   } = useApp();
 
@@ -23,33 +25,32 @@ export const CustomPickerModal: React.FC = () => {
       <div className="space-y-2">
         <p className="text-xs font-medium text-[var(--muted)]">{t.settings.customPickerHint}</p>
         {settings.customButtons.map((b) => {
-          const val = currentDayLog.custom?.[b.id];
+          const val = getTrackerValue(currentDayLog, b);
           return (
             <button
               key={b.id}
               type="button"
               onClick={() => {
-                close();
-                // open the chosen tracker right after the picker closes
-                setTimeout(() => setCustomButtonOpenId(b.id), 60);
+                setIsCustomPickerOpen(false);
+                setCustomButtonOpenId(b.id);
               }}
-              className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--border)] rounded-2xl px-3 py-3 transition-colors"
+              className="pressable w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-3 text-left"
             >
               <span className="flex items-center gap-2.5 min-w-0">
                 <span className="w-9 h-9 rounded-full bg-[#E2D6FF] text-[#4D3582] flex items-center justify-center shrink-0">
                   <TrackerIcon icon={b.icon} size={16} />
                 </span>
-                <span className="text-left min-w-0">
+                <span className="min-w-0">
                   <span className="block text-sm font-extrabold text-[var(--text)] truncate">
                     {b.name}
                   </span>
-                  <span className="block text-[11px] font-bold text-[var(--muted)]">
+                  <span className="block text-[11px] font-bold tabular-nums text-[var(--muted)]">
                     {b.type === 'toggle'
                       ? val
-                        ? t.settings.done
+                        ? `✓ ${t.settings.done}`
                         : t.settings.notDone
                       : typeof val === 'number'
-                      ? `${val}${b.unit ? ' ' + b.unit : ''}`
+                      ? `${formatTrackerAmount(val, language)}${b.unit ? ' ' + b.unit : ''}`
                       : '—'}
                   </span>
                 </span>

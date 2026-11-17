@@ -4,10 +4,18 @@ import { User, Settings } from 'lucide-react';
 import { Tabs } from './Tabs';
 
 export const Header: React.FC = () => {
-  const { t, setIsProfileOpen, setIsSettingsOpen } = useApp();
+  const { t, activeTab, setActiveTab, setIsProfileOpen, setIsSettingsOpen } = useApp();
+
+  const handleTitleClick = () => {
+    if (activeTab !== 'today') {
+      setActiveTab('today');
+    } else {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   return (
-    <header className="sticky top-0 z-40 bg-[var(--bg)]/95 backdrop-blur-md border-b border-[var(--border)] px-4 sm:px-6 pt-3 pb-1">
+    <header className="sticky top-0 z-40 bg-[var(--bg)]/95 backdrop-blur-md border-b border-[var(--border)] px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1">
       <div className="max-w-4xl mx-auto">
         {/* Profile (left) · app name (top center) · settings (right) */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
@@ -15,7 +23,7 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsProfileOpen(true)}
-              className="w-9 h-9 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center transition-colors"
+              className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
               title={t.profile.title}
               aria-label={t.profile.title}
             >
@@ -23,15 +31,19 @@ export const Header: React.FC = () => {
             </button>
           </div>
 
-          <h1 className="text-lg sm:text-xl font-extrabold tracking-tight text-[var(--text)] text-center">
+          <button
+            type="button"
+            onClick={handleTitleClick}
+            className="text-lg sm:text-xl font-extrabold tracking-tight text-[var(--text)] text-center hover:opacity-80 transition-opacity"
+          >
             {t.appName}
-          </h1>
+          </button>
 
           <div className="flex items-center justify-end">
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              className="w-9 h-9 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center transition-colors"
+              className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
               title={t.settings.title}
               aria-label={t.settings.title}
             >
@@ -40,7 +52,7 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Today / My Meals / Statistics bar */}
+        {/* Today / Meals / Period / Statistics pill bar */}
         <Tabs />
       </div>
     </header>

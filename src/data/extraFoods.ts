@@ -66,13 +66,13 @@ Süßkartoffel|Patata Dolce|Sweet Potato|86|17.7|1.6|0.1|3.0|0.05|produce_veg|g|
 Mais|Mais Dolce|Sweetcorn|86|14.5|2.9|1.2|2.7|0.45|produce_veg|g|1
 Erbse|Pisello|Green Peas|81|14.5|5.4|0.4|5.1|0.005|produce_veg|g|1
 Grüne Bohne|Fagiolino|Green Bean|31|7.0|1.8|0.1|2.7|0.006|produce_veg|g|1
-Kichererbse|Cece|Chickpea|364|61.0|19.3|6.0|17.4|0.024|produce_veg|g|1
-Linse|Lenticchia|Lentil|353|60.1|25.0|1.1|30.5|0.006|produce_veg|g|1
-Kidneybohne|Fagiolo Rosso|Kidney Bean|333|60.0|23.6|0.8|24.9|0.012|produce_veg|g|1
-Weiße Bohne|Fagiolo Bianco|White Bean|333|60.0|23.4|0.9|24.9|0.016|produce_veg|g|1
-Sojabohne|Soia|Soybean|446|30.2|36.5|19.9|9.3|0.002|produce_veg|g|1
-Tofu|Tofu|Tofu|144|2.8|17.3|8.7|2.3|0.01|produce_veg|g|1
-Tempeh|Tempeh|Tempeh|195|7.6|19.9|11.4|5.5|0.009|produce_veg|g|1
+Kichererbse|Cece|Chickpea|364|61.0|19.3|6.0|17.4|0.024|legumes|g|1
+Linse|Lenticchia|Lentil|353|60.1|25.0|1.1|30.5|0.006|legumes|g|1
+Kidneybohne|Fagiolo Rosso|Kidney Bean|333|60.0|23.6|0.8|24.9|0.012|legumes|g|1
+Weiße Bohne|Fagiolo Bianco|White Bean|333|60.0|23.4|0.9|24.9|0.016|legumes|g|1
+Sojabohne|Soia|Soybean|446|30.2|36.5|19.9|9.3|0.002|legumes|g|1
+Tofu|Tofu|Tofu|144|2.8|17.3|8.7|2.3|0.01|legumes|g|1
+Tempeh|Tempeh|Tempeh|195|7.6|19.9|11.4|5.5|0.009|legumes|g|1
 Champignon|Champignon|Mushroom|22|0.6|3.1|0.3|1.9|0.01|produce_veg|g|1
 Austernpilz|Pleuroto|Oyster Mushroom|33|6.1|3.3|0.4|2.3|0.02|produce_veg|g|1
 Shiitake|Shiitake|Shiitake|34|6.8|2.2|0.5|2.5|0.009|produce_veg|g|1
@@ -104,11 +104,11 @@ Buchweizen|Grano Saraceno|Buckwheat|343|71.5|13.3|3.4|10.0|0.001|grains_pasta|g|
 Polenta Maisgrieß|Farina di Mais|Polenta Cornmeal|362|76.9|8.1|3.6|7.3|0.002|grains_pasta|g|1
 Haferkleie|Crusca d'Avena|Oat Bran|246|66.2|17.3|7.0|15.4|0.003|grains_pasta|g|1
 Dinkel|Farro|Spelt Grain|338|70.0|14.6|2.4|10.7|0.002|grains_pasta|g|1
-Chiasamen|Semi di Chia|Chia Seeds|486|42.1|16.5|30.7|34.4|0.04|grains_pasta|g|0
-Leinsamen|Semi di Lino|Flaxseed|534|28.9|18.3|42.2|27.3|0.03|grains_pasta|g|0
-Kürbiskerne|Semi di Zucca|Pumpkin Seeds|559|10.7|30.2|49.1|6.0|0.02|grains_pasta|g|0
-Sonnenblumenkerne|Semi di Girasole|Sunflower Seeds|584|20.0|20.8|51.5|8.6|0.009|grains_pasta|g|0
-Sesam|Semi di Sesamo|Sesame Seeds|573|23.4|17.7|49.7|11.8|0.011|grains_pasta|g|0
+Chiasamen|Semi di Chia|Chia Seeds|486|42.1|16.5|30.7|34.4|0.04|nuts_seeds|g|0
+Leinsamen|Semi di Lino|Flaxseed|534|28.9|18.3|42.2|27.3|0.03|nuts_seeds|g|0
+Kürbiskerne|Semi di Zucca|Pumpkin Seeds|559|10.7|30.2|49.1|6.0|0.02|nuts_seeds|g|0
+Sonnenblumenkerne|Semi di Girasole|Sunflower Seeds|584|20.0|20.8|51.5|8.6|0.009|nuts_seeds|g|0
+Sesam|Semi di Sesamo|Sesame Seeds|573|23.4|17.7|49.7|11.8|0.011|nuts_seeds|g|0
 Hähnchenbrust|Petto di Pollo|Chicken Breast|165|0.0|31.0|3.6|0.0|0.16|meat_fish|g|1
 Hähnchenschenkel|Coscia di Pollo|Chicken Thigh|209|0.0|26.0|10.9|0.0|0.19|meat_fish|g|1
 Putenbrust|Petto di Tacchino|Turkey Breast|135|0.0|29.0|1.6|0.0|0.15|meat_fish|g|1
@@ -167,12 +167,12 @@ Pizza Margherita|Pizza Margherita|Pizza Margherita|266|33.0|11.0|10.0|2.3|1.20|p
 Apfelmus|Passata di Mela|Apple Sauce|68|15.0|0.2|0.1|1.0|0.01|snacks_sweets|g|0
 Zartbitterschokolade|Cioccolato Fondente|Dark Chocolate|546|45.9|7.8|35.0|10.9|0.02|snacks_sweets|g|0
 Vollmilchschokolade|Cioccolato al Latte|Milk Chocolate|535|59.0|7.6|29.7|3.4|0.11|snacks_sweets|g|0
-Mandeln|Mandorle|Almonds|579|21.6|21.2|49.9|12.5|0.003|snacks_sweets|g|0
-Haselnüsse|Nocciole|Hazelnuts|628|16.7|15.0|60.7|9.7|0.001|snacks_sweets|g|0
-Walnüsse|Noci|Walnuts|654|13.7|15.2|65.2|6.7|0.005|snacks_sweets|g|0
-Erdnüsse|Arachidi|Peanuts|567|16.1|25.8|49.2|8.5|0.005|snacks_sweets|g|0
-Cashewkerne|Anacardi|Cashews|553|30.2|18.2|43.9|3.3|0.012|snacks_sweets|g|0
-Pistazien|Pistacchi|Pistachios|560|27.2|20.2|45.3|10.6|0.02|snacks_sweets|g|0
+Mandeln|Mandorle|Almonds|579|21.6|21.2|49.9|12.5|0.003|nuts_seeds|g|0
+Haselnüsse|Nocciole|Hazelnuts|628|16.7|15.0|60.7|9.7|0.001|nuts_seeds|g|0
+Walnüsse|Noci|Walnuts|654|13.7|15.2|65.2|6.7|0.005|nuts_seeds|g|0
+Erdnüsse|Arachidi|Peanuts|567|16.1|25.8|49.2|8.5|0.005|nuts_seeds|g|0
+Cashewkerne|Anacardi|Cashews|553|30.2|18.2|43.9|3.3|0.012|nuts_seeds|g|0
+Pistazien|Pistacchi|Pistachios|560|27.2|20.2|45.3|10.6|0.02|nuts_seeds|g|0
 Popcorn|Popcorn|Popcorn|375|74.0|11.0|4.3|14.5|0.02|snacks_sweets|g|0
 Honig|Miele|Honey|304|82.4|0.3|0.0|0.2|0.004|condiments_oils|g|0
 Zucker|Zucchero|Sugar|400|100.0|0.0|0.0|0.0|0.001|condiments_oils|g|0
@@ -200,9 +200,9 @@ Sojadrink|Bevanda di Soia|Soy Milk|54|3.0|3.3|2.0|0.6|0.09|drinks|ml|0
 Mandeldrink|Bevanda di Mandorla|Almond Milk|24|3.0|0.6|1.1|0.3|0.10|drinks|ml|0
 Cola|Cola|Cola|42|10.6|0.0|0.0|0.0|0.01|drinks|ml|0
 Kebab Hähnchen Teller|Piatto Kebab di Pollo|Chicken Kebab Plate|198|16.0|14.0|9.0|1.8|1.30|prepared|g|0
-Gemüsesuppe|Zuppa di Verdure|Vegetable Soup|35|5.0|1.2|1.1|1.0|0.55|prepared|g|0
-Hühnersuppe|Brodo di Pollo|Chicken Soup|42|2.0|4.0|2.0|0.0|0.75|prepared|g|0
-Linsensuppe|Zuppa di Lenticchie|Lentil Soup|60|8.5|3.5|1.2|2.5|0.60|prepared|g|0
+Gemüsesuppe|Zuppa di Verdure|Vegetable Soup|35|5.0|1.2|1.1|1.0|0.55|soups|g|0
+Hühnersuppe|Brodo di Pollo|Chicken Soup|42|2.0|4.0|2.0|0.0|0.75|soups|g|0
+Linsensuppe|Zuppa di Lenticchie|Lentil Soup|60|8.5|3.5|1.2|2.5|0.60|soups|g|0
 Omelett|Omelette|Omelette|184|1.4|12.5|14.0|0.0|0.50|prepared|g|0
 Rührei|Uova Strapazzate|Scrambled Eggs|199|1.6|13.6|15.2|0.0|0.45|prepared|g|0
 Pfannkuchen|Pancake|Pancake|227|28.3|6.4|9.7|0.9|0.60|prepared|g|0

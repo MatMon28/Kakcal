@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { AmountSelector } from '../common/AmountSelector';
@@ -17,6 +17,7 @@ import {
   Trash2,
   Plus,
   PlusCircle,
+  X,
 } from 'lucide-react';
 
 interface QueuedEntry {
@@ -24,6 +25,15 @@ interface QueuedEntry {
   food: FoodItem;
   amount: number;
 }
+
+const SLOTS: MealSlotId[] = [
+  'breakfast',
+  'mid_morning',
+  'lunch',
+  'midday_snack',
+  'dinner',
+  'extra',
+];
 
 export const AddFoodModal: React.FC = () => {
   const {
@@ -41,6 +51,7 @@ export const AddFoodModal: React.FC = () => {
     selectedDate,
     settings,
     setIsCustomFoodOpen,
+
     t,
   } = useApp();
 
@@ -48,6 +59,14 @@ export const AddFoodModal: React.FC = () => {
   const [activeFood, setActiveFood] = useState<FoodItem | null>(null);
   const [currentAmount, setCurrentAmount] = useState<number>(100);
   const [queuedItems, setQueuedItems] = useState<QueuedEntry[]>([]);
+  const activeSlotRef = useRef<HTMLButtonElement | null>(null);
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (isAddFoodOpen && !activeFood) {
+      activeSlotRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+  }, [isAddFoodOpen, targetMealSlot, activeFood]);
 
   const nameOf = (f: FoodItem) =>
     language === 'it' ? f.name_it : f.name_en || f.name_de;
@@ -63,11 +82,14 @@ export const AddFoodModal: React.FC = () => {
     [settings.quickFoods, allFoods]
   );
 
-  // Search results: only shown while typing, fuzzy matched.
-  // Includes individual foods AND saved meals / recipes (whole-meal quick add).
+  const trimmedQuery = searchTerm.trim();
+  const isSearching = trimmedQuery.length >= 2;
+
+  // Search results: only shown while typing (>=2 chars), fuzzy matched.
+  // Includes individual foods, recipes (tagged), AND saved meals (one-tap log).
   const searchResults = useMemo(() => {
-    const q = searchTerm.trim();
-    if (q.length < 2) return [];
+    if (!isSearching) return [];
+    const q = trimmedQuery;
     const foods = allFoods
       .map((f) => ({
         kind: 'food' as const,
@@ -84,7 +106,7 @@ export const AddFoodModal: React.FC = () => {
       .map((m) => ({ kind: 'meal' as const, m, score: fuzzyScore(q, m.name) }))
       .filter((x) => fuzzyMatch(q, [x.m.name]));
     return [...meals, ...foods].sort((a, b) => a.score - b.score).slice(0, 30);
-  }, [allFoods, preBuiltMeals, searchTerm]);
+  }, [allFoods, preBuiltMeals, trimmedQuery, isSearching]);
 
   // Saved meals tagged for this slot
   const slotMeals = useMemo(
@@ -128,6 +150,12 @@ export const AddFoodModal: React.FC = () => {
   const handlePickFood = (food: FoodItem) => {
     setActiveFood(food);
     setCurrentAmount(getLastAmount(food.id));
+  };
+
+  const handleEditQueued = (entry: QueuedEntry) => {
+    setQueuedItems((prev) => prev.filter((q) => q.key !== entry.key));
+    setActiveFood(entry.food);
+    setCurrentAmount(entry.amount);
   };
 
   const handleAddAnother = () => {
@@ -192,20 +220,11 @@ export const AddFoodModal: React.FC = () => {
 
   const queuedTotalKcal = queuedItems.reduce((s, e) => s + kcalOf(e.food, e.amount), 0);
 
-  const slots: MealSlotId[] = [
-    'breakfast',
-    'mid_morning',
-    'lunch',
-    'midday_snack',
-    'dinner',
-    'extra',
-  ];
-
   const pill = (active: boolean) =>
-    `px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-colors border ${
+    `pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
       active
         ? 'bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
-        : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:text-[var(--text)]'
+        : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
     }`;
 
   return (
@@ -221,28 +240,26 @@ export const AddFoodModal: React.FC = () => {
         <div className="space-y-4">
           <button
             type="button"
-            onClick={() => {
-              setActiveFood(null);
-                      }}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+            onClick={() => setActiveFood(null)}
+            className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
           >
             <ArrowLeft size={14} />
             <span>{t.common.back}</span>
           </button>
 
-          <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-4 py-3">
-            <span className="text-xs font-bold text-[var(--muted)]">
+          <div className="flex items-center justify-between bg-[#C9EFD3] rounded-2xl px-4 py-3">
+            <span className="text-xs font-bold tabular-nums text-[#1D5C38]">
               {activeFood.calories} kcal / 100{activeFood.unit}
             </span>
-            <div className="text-right">
-              <span className="text-2xl font-extrabold text-[#1A5632]">{preview.kcal}</span>
-              <span className="text-xs font-bold text-[#25633E] ml-1">kcal</span>
+            <div className="text-right tabular-nums">
+              <span className="text-2xl font-extrabold text-[#142E1F]">{preview.kcal}</span>
+              <span className="text-xs font-bold text-[#1D5C38] ml-1">kcal</span>
             </div>
           </div>
 
           <AmountSelector value={currentAmount} onChange={setCurrentAmount} unit={activeFood.unit} />
 
-          <div className="grid grid-cols-5 gap-1.5 text-center">
+          <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
             {(
               [
                 ['C', preview.carbs, 'bg-[#FAE0B4] text-[#7D4E14]'],
@@ -253,8 +270,8 @@ export const AddFoodModal: React.FC = () => {
               ] as const
             ).map(([label, val, cls]) => (
               <div key={label} className={`rounded-2xl p-2 ${cls}`}>
-                <span className="text-[10px] font-bold uppercase block opacity-80">{label}</span>
-                <span className="text-xs font-extrabold">{val ?? '—'}g</span>
+                <span className="text-[10px] font-bold uppercase block opacity-80 truncate">{label}</span>
+                <span className="text-xs font-extrabold">{val !== null ? `${val}g` : '—'}</span>
               </div>
             ))}
           </div>
@@ -267,18 +284,23 @@ export const AddFoodModal: React.FC = () => {
               {queuedItems.map((q) => (
                 <div
                   key={q.key}
-                  className="flex items-center justify-between text-xs bg-[var(--surface)] rounded-xl px-3 py-1.5"
+                  className="flex items-center justify-between text-xs bg-[var(--surface)] rounded-xl px-3 py-2"
                 >
-                  <span className="font-bold text-[var(--text)] truncate pr-2">
+                  <button
+                    type="button"
+                    onClick={() => handleEditQueued(q)}
+                    className="font-bold text-[var(--text)] hover:underline truncate pr-2 text-left"
+                  >
                     {nameOf(q.food)} ({q.amount}
                     {q.food.unit})
-                  </span>
-                  <div className="flex items-center gap-2 shrink-0">
+                  </button>
+                  <div className="flex items-center gap-2 shrink-0 tabular-nums">
                     <span className="font-bold text-[var(--muted)]">{kcalOf(q.food, q.amount)} kcal</span>
                     <button
                       type="button"
                       onClick={() => removeQueued(q.key)}
-                      className="text-[#8C2D32] hover:opacity-75"
+                      className="pressable w-6 h-6 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                      aria-label={t.common.delete}
                     >
                       <Trash2 size={13} />
                     </button>
@@ -293,7 +315,7 @@ export const AddFoodModal: React.FC = () => {
               type="button"
               onClick={handleAddAnother}
               disabled={currentAmount <= 0}
-              className="w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--border)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm transition-colors disabled:opacity-40"
+              className="pressable w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
             >
               <Plus size={16} strokeWidth={2.5} />
               <span>{t.foodModal.addAnotherBtn}</span>
@@ -303,7 +325,7 @@ export const AddFoodModal: React.FC = () => {
               type="button"
               onClick={handleLogNow}
               disabled={currentAmount <= 0 && queuedItems.length === 0}
-              className="w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm transition-colors disabled:opacity-40"
+              className="pressable w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums disabled:opacity-40"
             >
               <Check size={17} strokeWidth={2.5} />
               <span>
@@ -319,158 +341,84 @@ export const AddFoodModal: React.FC = () => {
         <div className="space-y-3.5">
           {/* Slot selector */}
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-            {slots.map((s) => (
-              <button key={s} type="button" onClick={() => setTargetMealSlot(s)} className={pill(targetMealSlot === s)}>
-                {t.mealSlots[s]}
-              </button>
-            ))}
-          </div>
-
-          {/* Quick food shortcuts (salt / bread / olive oil — configurable in settings) */}
-          <div className="grid grid-cols-3 gap-2">
-            {quickFoods.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => handlePickFood(f)}
-                className="py-2.5 px-2 rounded-2xl bg-[var(--inset)] hover:bg-[var(--border)] text-center transition-colors"
-              >
-                <span className="block text-xs font-extrabold text-[var(--text)] truncate">
-                  {nameOf(f)}
-                </span>
-                <span className="block text-[10px] font-bold text-[var(--muted)]">
-                  {f.calories} kcal/100{f.unit}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          {/* Saved meals for this slot */}
-          {slotMeals.length > 0 && (
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] px-1">
-                {t.foodModal.savedMeals}
-              </span>
-              <div className="space-y-1.5">
-                {slotMeals.map((m) => {
-                  const kcal = Math.round(
-                    m.ingredients.reduce((s, ing) => {
-                      const f = allFoods.find((x) => x.id === ing.foodId);
-                      return s + (f ? (f.calories * ing.amount) / 100 : 0);
-                    }, 0)
-                  );
-                  return (
-                    <button
-                      key={m.id}
-                      type="button"
-                      onClick={() => {
-                        logPreBuiltMealToSlot(m.id, targetMealSlot);
-                        close();
-                      }}
-                      className="w-full flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#FAE0B4]/60 hover:bg-[#FAE0B4] text-left transition-colors"
-                    >
-                      <span className="flex items-center gap-2 min-w-0">
-                        <UtensilsCrossed size={14} className="text-[#7D4E14] shrink-0" />
-                        <span className="text-xs sm:text-sm font-bold text-[#2D1E0B] truncate">{m.name}</span>
-                      </span>
-                      <span className="text-xs font-extrabold text-[#7D4E14] shrink-0">{kcal} kcal</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-
-          {/* Recent items in this slot (last 7 days) */}
-          {recentItems.length > 0 && !searchTerm && (
-            <div className="space-y-1.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] px-1">
-                {t.foodModal.recentItems}
-              </span>
-              <div className="flex flex-wrap gap-1.5">
-                {recentItems.map((f) => (
-                  <button
-                    key={f.id}
-                    type="button"
-                    onClick={() => handlePickFood(f)}
-                    className="px-3 py-1.5 rounded-full bg-[var(--inset)] hover:bg-[var(--border)] text-xs font-bold text-[var(--text)] transition-colors"
-                  >
-                    {nameOf(f)}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Whole-day quick copy from previous days */}
-          {!searchTerm && previousMeals.length > 0 && (
-            <div className="space-y-1.5">
-              {previousMeals.slice(0, 3).map((p) => (
+            {SLOTS.map((s) => {
+              const active = targetMealSlot === s;
+              return (
                 <button
-                  key={p.date}
+                  key={s}
+                  ref={active ? activeSlotRef : null}
                   type="button"
-                  onClick={() => {
-                    logItemsToSlot(targetMealSlot, p.items);
-                    close();
-                  }}
-                  className="w-full flex items-center justify-between gap-2 p-2.5 rounded-2xl bg-[#CFE7FE]/60 hover:bg-[#CFE7FE] text-left transition-colors"
+                  onClick={() => setTargetMealSlot(s)}
+                  className={pill(active)}
                 >
-                  <span className="flex items-center gap-2 min-w-0">
-                    <History size={14} className="text-[#1A4670] shrink-0" />
-                    <span className="min-w-0">
-                      <span className="text-xs sm:text-sm font-bold text-[#183B5E] block">
-                        {formatDateDisplay(p.date, language)}
-                      </span>
-                      <span className="text-[11px] font-medium text-[#436B94] truncate block">
-                        {p.items.map((i) => i.name).join(', ')}
-                      </span>
-                    </span>
-                  </span>
-                  <span className="text-xs font-extrabold text-[#183B5E] shrink-0">
-                    {calculateTotalCalories(p.items)} kcal
-                  </span>
+                  {t.mealSlots[s]}
                 </button>
-              ))}
-            </div>
-          )}
-
-          {/* Search — results appear only while typing (fuzzy) */}
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
-              <input
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={t.foodModal.typeToSearch}
-                className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-9 pr-3 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none"
-              />
-            </div>
-            <button
-              type="button"
-              onClick={() => {
-                setIsAddFoodOpen(false);
-                setIsBarcodeOpen(true);
-              }}
-              className="px-3.5 bg-[var(--inset)] hover:bg-[var(--border)] border border-[var(--border)] rounded-2xl text-[var(--text)] flex items-center gap-1.5 text-xs font-bold"
-              title={t.foodModal.barcodeScan}
-            >
-              <ScanBarcode size={17} />
-            </button>
+              );
+            })}
           </div>
 
-          {searchTerm.trim().length >= 2 && (
-            <div className="max-h-64 overflow-y-auto divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
+          {/* Search + Barcode — immediately accessible without scrolling */}
+          <div className="space-y-1">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  enterKeyHint="search"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder={t.foodModal.typeToSearch}
+                  className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
+                />
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSearchTerm('');
+                      searchInputRef.current?.focus();
+                    }}
+                    className="pressable absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
+                    aria-label={t.common.clear}
+                  >
+                    <X size={14} />
+                  </button>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAddFoodOpen(false);
+                  setIsBarcodeOpen(true);
+                }}
+                className="pressable px-3.5 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] rounded-2xl text-[var(--text)] flex items-center gap-1.5 text-xs font-bold shrink-0"
+                title={t.foodModal.barcodeScan}
+                aria-label={t.foodModal.barcodeScan}
+              >
+                <ScanBarcode size={17} />
+              </button>
+            </div>
+            {trimmedQuery.length === 1 && (
+              <p className="text-[11px] font-medium text-[var(--muted)] px-1">
+                {t.foodModal.minCharsHint}
+              </p>
+            )}
+          </div>
+
+          {/* Search results (type-to-search, min 2 chars, fuzzy) */}
+          {isSearching ? (
+            <div className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
               {searchResults.length === 0 ? (
-                <div className="p-4 space-y-2.5 text-center">
-                  <p className="text-xs text-[var(--muted)]">{t.foodModal.noResults}</p>
-                  <div className="flex gap-2 justify-center">
+                <div className="p-5 space-y-3 text-center">
+                  <p className="text-xs font-medium text-[var(--muted)]">{t.foodModal.noResults}</p>
+                  <div className="flex flex-wrap gap-2 justify-center">
                     <button
                       type="button"
                       onClick={() => {
                         setIsAddFoodOpen(false);
                         setIsCustomFoodOpen(true);
                       }}
-                      className="px-3 py-2 rounded-full bg-[#C9EFD3] text-[#174A2B] text-xs font-extrabold flex items-center gap-1"
+                      className="pressable px-3.5 py-2 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold flex items-center gap-1.5"
                     >
                       <PlusCircle size={14} />
                       {t.foodModal.addCustomFood}
@@ -481,7 +429,7 @@ export const AddFoodModal: React.FC = () => {
                         setIsAddFoodOpen(false);
                         setIsBarcodeOpen(true);
                       }}
-                      className="px-3 py-2 rounded-full bg-[#CFE7FE] text-[#183F66] text-xs font-extrabold flex items-center gap-1"
+                      className="pressable px-3.5 py-2 rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183F66] text-xs font-extrabold flex items-center gap-1.5"
                     >
                       <ScanBarcode size={14} />
                       {t.foodModal.orBarcode}
@@ -498,21 +446,23 @@ export const AddFoodModal: React.FC = () => {
                         logPreBuiltMealToSlot(res.m.id, targetMealSlot);
                         close();
                       }}
-                      className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--border)] transition-colors"
+                      className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors"
                     >
-                      <span className="flex items-center gap-2 min-w-0">
-                        <UtensilsCrossed size={14} className="text-[#7D4E14] shrink-0" />
+                      <span className="flex items-center gap-2.5 min-w-0">
+                        <span className="w-7 h-7 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center shrink-0">
+                          <UtensilsCrossed size={13} />
+                        </span>
                         <span className="min-w-0">
                           <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate block">
                             {res.m.name}
                           </span>
-                          <span className="text-[10px] font-bold text-[#7D4E14]">
-                            {t.prebuilt.savedAsRecipe}
+                          <span className="inline-block mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
+                            {t.prebuilt.title}
                             {res.m.slot ? ` · ${t.mealSlots[res.m.slot]}` : ''}
                           </span>
                         </span>
                       </span>
-                      <span className="text-xs font-extrabold text-[var(--muted)] shrink-0">
+                      <span className="text-xs font-extrabold tabular-nums text-[var(--text)] shrink-0">
                         {Math.round(
                           res.m.ingredients.reduce((s, ing) => {
                             const f = allFoods.find((x) => x.id === ing.foodId);
@@ -527,7 +477,7 @@ export const AddFoodModal: React.FC = () => {
                       key={res.f.id}
                       type="button"
                       onClick={() => handlePickFood(res.f)}
-                      className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--border)] transition-colors"
+                      className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors"
                     >
                       <span className="min-w-0">
                         <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate block">
@@ -538,12 +488,13 @@ export const AddFoodModal: React.FC = () => {
                             </span>
                           )}
                         </span>
-                        <span className="text-[11px] font-medium text-[var(--muted)]">
+                        <span className="text-[11px] font-medium tabular-nums text-[var(--muted)]">
                           {getLastAmount(res.f.id)}
                           {res.f.unit}
+                          {res.f.brand ? ` · ${res.f.brand}` : ''}
                         </span>
                       </span>
-                      <span className="text-xs font-extrabold text-[var(--muted)] shrink-0">
+                      <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
                         {res.f.calories} kcal/100{res.f.unit}
                       </span>
                     </button>
@@ -551,21 +502,167 @@ export const AddFoodModal: React.FC = () => {
                 )
               )}
             </div>
+          ) : (
+            <>
+              {/* 3 Quick food shortcuts (salt / bread / olive oil — configurable in settings) */}
+              {quickFoods.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {quickFoods.map((f) => (
+                    <button
+                      key={f.id}
+                      type="button"
+                      onClick={() => handlePickFood(f)}
+                      className="pressable py-2.5 px-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-center"
+                    >
+                      <span className="block text-xs font-extrabold text-[var(--text)] truncate">
+                        {nameOf(f)}
+                      </span>
+                      <span className="block text-[10px] font-bold tabular-nums text-[var(--muted)] mt-0.5">
+                        {f.calories} kcal/100{f.unit}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {/* Saved meals tagged for this slot */}
+              {slotMeals.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] px-1 block">
+                    {t.foodModal.savedMeals}
+                  </span>
+                  <div className="space-y-1.5">
+                    {slotMeals.map((m) => {
+                      const kcal = Math.round(
+                        m.ingredients.reduce((s, ing) => {
+                          const f = allFoods.find((x) => x.id === ing.foodId);
+                          return s + (f ? (f.calories * ing.amount) / 100 : 0);
+                        }, 0)
+                      );
+                      return (
+                        <button
+                          key={m.id}
+                          type="button"
+                          onClick={() => {
+                            logPreBuiltMealToSlot(m.id, targetMealSlot);
+                            close();
+                          }}
+                          className="pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#FAE0B4] hover:bg-[#F7D69E] text-left"
+                        >
+                          <span className="flex items-center gap-2 min-w-0">
+                            <UtensilsCrossed size={14} className="text-[#7D4E14] shrink-0" />
+                            <span className="text-xs sm:text-sm font-bold text-[#2D1E0B] truncate">{m.name}</span>
+                          </span>
+                          <span className="text-xs font-extrabold tabular-nums text-[#7D4E14] shrink-0">{kcal} kcal</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Recent items in this slot (last 7 days, up to 20) */}
+              {recentItems.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] px-1 block">
+                    {t.foodModal.recentItems}
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {recentItems.map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => handlePickFood(f)}
+                        className="pressable px-3 py-1.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-xs font-bold text-[var(--text)]"
+                      >
+                        {nameOf(f)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Whole-slot quick copy from previous days */}
+              {previousMeals.length > 0 && (
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] px-1 block">
+                    {t.foodModal.previousDays}
+                  </span>
+                  <div className="space-y-1.5">
+                    {previousMeals.slice(0, 3).map((p) => {
+                      const prevKcal = calculateTotalCalories(p.items);
+                      return (
+                        <button
+                          key={p.date}
+                          type="button"
+                          onClick={() => {
+                            logItemsToSlot(targetMealSlot, p.items);
+                            close();
+                          }}
+                          className="pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#CFE7FE] hover:bg-[#BDDDFC] text-left"
+                        >
+                          <span className="flex items-center gap-2.5 min-w-0">
+                            <History size={14} className="text-[#1A4670] shrink-0" />
+                            <span className="min-w-0">
+                              <span className="text-xs sm:text-sm font-bold text-[#183B5E] block">
+                                {formatDateDisplay(p.date, language)}
+                              </span>
+                              <span className="text-[11px] font-medium text-[#396088] truncate block">
+                                {p.items.map((i) => i.name).join(', ')}
+                              </span>
+                            </span>
+                          </span>
+                          <span className="text-xs font-extrabold tabular-nums text-[#183B5E] shrink-0">
+                            {prevKcal} kcal
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </>
           )}
 
-          {/* Queued banner */}
+          {/* Queued summary & one-tap log button */}
           {queuedItems.length > 0 && (
-            <button
-              type="button"
-              onClick={handleLogNow}
-              className="w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
-            >
-              <Check size={17} strokeWidth={2.5} />
-              <span>
-                {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length))} ·{' '}
-                {queuedTotalKcal} kcal
-              </span>
-            </button>
+            <div className="pt-1 space-y-2 border-t border-[var(--border)]">
+              <div className="flex flex-wrap gap-1.5">
+                {queuedItems.map((q) => (
+                  <span
+                    key={q.key}
+                    className="inline-flex items-center gap-1 pl-2.5 pr-1.5 py-1 rounded-full bg-[var(--inset)] border border-[var(--border)] text-xs font-bold text-[var(--text)]"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => handleEditQueued(q)}
+                      className="truncate max-w-[150px] hover:underline"
+                    >
+                      {nameOf(q.food)} · {q.amount}{q.food.unit}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeQueued(q.key)}
+                      className="w-5 h-5 rounded-full text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center"
+                      aria-label={t.common.delete}
+                    >
+                      <X size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+              <button
+                type="button"
+                onClick={handleLogNow}
+                className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums"
+              >
+                <Check size={17} strokeWidth={2.5} />
+                <span>
+                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length))} ·{' '}
+                  {queuedTotalKcal} kcal
+                </span>
+              </button>
+            </div>
           )}
         </div>
       )}

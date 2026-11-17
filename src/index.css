@@ -1,33 +1,87 @@
 @import "tailwindcss";
 
-/* ---- Theme variables: light (warm oat-cream) & dark (charcoal + pastels) ---- */
+@theme {
+  --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+}
+
+/* ---- Three themes: warm oat, soft slate, and deep charcoal ---- */
 :root {
+  color-scheme: light;
   --bg: #EFE9DD;
   --surface: #FBF8F2;
   --inset: #EFE9DD;
   --border: #E2D9C8;
   --text: #24201C;
   --muted: #736B62;
+  --hover: #E6DECf;
+  --text-pos: #8A5617;
+  --text-neg: #1D5C38;
+  --text-warn: #7A2727;
+  --text-sky: #1A4670;
+  --text-heart: #B83B5E;
   /* aliases used by newer components */
   --bg-card: var(--surface);
   --bg-inner: var(--inset);
 }
 
+[data-theme="lite-dark"] {
+  color-scheme: dark;
+  --bg: #272A33;
+  --surface: #323642;
+  --inset: #292D37;
+  --border: #484D5C;
+  --text: #F3F0EA;
+  --muted: #BBC1D0;
+  --hover: #414655;
+  --text-pos: #F5C98B;
+  --text-neg: #9BE3B2;
+  --text-warn: #F2A7A7;
+  --text-sky: #C1DDF9;
+  --text-heart: #F79BB6;
+}
+
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg: #13151A;
   --surface: #1B1E26;
   --inset: #232733;
   --border: #2A2F3D;
   --text: #EDEBE6;
   --muted: #9AA0AE;
+  --hover: #2C3140;
+  --text-pos: #F5C98B;
+  --text-neg: #9BE3B2;
+  --text-warn: #F2A7A7;
+  --text-sky: #C1DDF9;
+  --text-heart: #F79BB6;
 }
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
   /* remove the browser tap/focus "circle" artifact on interactive rows;
      keyboard users still get a clear focus ring */
   button:focus,
   [role="button"]:focus {
     outline: none;
+  }
+  button,
+  [role="button"],
+  a,
+  input,
+  select,
+  textarea,
+  label {
+    touch-action: manipulation;
+  }
+  button:not(:disabled),
+  [role="button"] {
+    cursor: pointer;
+  }
+  button:disabled {
+    cursor: not-allowed;
   }
   button:focus-visible,
   [role="button"]:focus-visible,
@@ -38,10 +92,118 @@
     outline-offset: 1px;
   }
   body {
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-family: var(--font-sans);
     background-color: var(--bg);
     color: var(--text);
     -webkit-tap-highlight-color: transparent;
+    transition: background-color 180ms ease, color 180ms ease;
+  }
+}
+
+/* ---- Fluid UI motion primitives ---- */
+@keyframes kc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes kc-dialog-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.dialog-viewport {
+  --dialog-lower-space: clamp(1rem, calc(var(--dialog-height, 100dvh) * 0.16), 7rem);
+  top: var(--dialog-top, 0px);
+  left: var(--dialog-left, 0px);
+  width: var(--dialog-width, 100%);
+  height: 100vh;
+  height: var(--dialog-height, 100dvh);
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom), var(--dialog-lower-space)) max(0.75rem, env(safe-area-inset-left));
+}
+
+@keyframes kc-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes kc-dock-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.anim-backdrop {
+  animation: kc-fade-in 160ms ease-out both;
+}
+
+.anim-dialog {
+  animation: kc-dialog-in 160ms ease-out;
+}
+
+.anim-page {
+  animation: kc-fade-in 150ms ease-out;
+}
+
+.anim-pop {
+  animation: kc-pop-in 150ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.anim-dock {
+  animation: kc-dock-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Smooth height accordion via CSS Grid */
+.accordion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 220ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.accordion-grid[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.accordion-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.pressable {
+  transition:
+    transform 130ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease,
+    opacity 150ms ease;
+}
+.pressable:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .anim-backdrop,
+  .anim-dialog,
+  .anim-page,
+  .anim-pop,
+  .anim-dock {
+    animation: none !important;
+  }
+  .accordion-grid,
+  .pressable {
+    transition: none !important;
   }
 }
 
@@ -61,7 +223,7 @@
   padding-bottom: env(safe-area-inset-bottom, 16px);
 }
 .pt-safe {
-  padding-top: env(safe-area-inset-top, 16px);
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .no-scrollbar::-webkit-scrollbar {

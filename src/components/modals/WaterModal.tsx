@@ -6,14 +6,25 @@ import { Droplets, Check } from 'lucide-react';
 import { dailyWaterTargetMl } from '../../utils/waterTarget';
 
 export const WaterModal: React.FC = () => {
-  const { isWaterOpen, setIsWaterOpen, logWater, currentDayLog, userProfile, currentExpenditure, t } = useApp();
+  const {
+    isWaterOpen,
+    setIsWaterOpen,
+    logWater,
+    currentDayLog,
+    userProfile,
+    currentExpenditure,
+
+    t,
+  } = useApp();
   const [amount, setAmount] = useState(250);
 
   const total = (currentDayLog.waterEntries || []).reduce((a, w) => a + w.ml, 0);
   const target = dailyWaterTargetMl(userProfile, currentExpenditure.activityExpenditure);
+  const currentPct = Math.min(100, Math.round((total / Math.max(1, target)) * 100));
+  const previewPct = Math.min(100, Math.round(((total + Math.max(0, amount)) / Math.max(1, target)) * 100));
 
   const quick = [
-    { label: t.water.glass, value: 250 },
+    { label: `${t.water.glass} 250`, value: 250 },
     { label: '0.5 L', value: 500 },
     { label: '0.75 L', value: 750 },
     { label: '1 L', value: 1000 },
@@ -33,14 +44,28 @@ export const WaterModal: React.FC = () => {
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
-        <div className="bg-[#CFE7FE] rounded-3xl p-4 flex items-center justify-between">
-          <span className="flex items-center gap-2.5 text-sm font-extrabold text-[#183B5E]">
-            <span className="w-9 h-9 rounded-full bg-[#E8F3FF] flex items-center justify-center">
-              <Droplets size={17} />
+        <div className="bg-[#CFE7FE] rounded-3xl p-4 space-y-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2.5 text-sm font-extrabold text-[#183B5E]">
+              <span className="w-9 h-9 rounded-full bg-[#E8F3FF] flex items-center justify-center shrink-0">
+                <Droplets size={17} />
+              </span>
+              {t.water.totalToday}
             </span>
-            {t.water.totalToday}
-          </span>
-          <span className="text-xl font-extrabold text-[#183B5E]">{total} / {target} ml</span>
+            <span className="text-lg sm:text-xl font-extrabold tabular-nums text-[#183B5E]">
+              {total} / {target} ml
+            </span>
+          </div>
+          <div className="relative w-full h-2.5 rounded-full bg-[#E8F3FF] overflow-hidden">
+            <div
+              className="absolute inset-y-0 left-0 bg-[#8EC2F2] rounded-full transition-[width] duration-200"
+              style={{ width: `${previewPct}%` }}
+            />
+            <div
+              className="absolute inset-y-0 left-0 bg-[#2E7CC4] rounded-full transition-[width] duration-300"
+              style={{ width: `${currentPct}%` }}
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-4 gap-1.5">
@@ -49,10 +74,10 @@ export const WaterModal: React.FC = () => {
               key={q.value}
               type="button"
               onClick={() => setAmount(q.value)}
-              className={`py-2.5 rounded-2xl text-xs font-extrabold transition-colors ${
+              className={`pressable py-2.5 px-1 rounded-2xl text-[11px] sm:text-xs font-extrabold border text-center ${
                 amount === q.value
-                  ? 'bg-[#CFE7FE] text-[#183B5E]'
-                  : 'bg-[var(--inset)] text-[var(--muted)]'
+                  ? 'bg-[#CFE7FE] text-[#183B5E] border-[#8EC2F2]'
+                  : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
               }`}
             >
               {q.label}
@@ -66,7 +91,7 @@ export const WaterModal: React.FC = () => {
           type="button"
           onClick={handleAdd}
           disabled={amount <= 0}
-          className="w-full py-3 bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+          className="pressable w-full py-3 bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>

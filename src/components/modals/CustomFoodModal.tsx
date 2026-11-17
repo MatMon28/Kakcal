@@ -1,63 +1,130 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { Modal } from '../common/Modal';
-import { NumericInput } from '../common/NumericInput';
 import { FoodCategory, FoodItem, Supermarket } from '../../types';
-import { Check } from 'lucide-react';
+import { setLastAmount } from '../../utils/amountMemory';
+import { Check, Plus } from 'lucide-react';
+
+const parseOptionalNum = (raw: string): number | null => {
+  const s = raw.trim().replace(',', '.');
+  if (!s) return null;
+  const n = parseFloat(s);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null;
+};
+
+const cleanDec = (raw: string) => {
+  const s = raw.replace(',', '.');
+  return s === '' || /^\d*\.?\d*$/.test(s) ? s : null;
+};
 
 export const CustomFoodModal: React.FC = () => {
-  const { isCustomFoodOpen, setIsCustomFoodOpen, addCustomFood, t } = useApp();
+  const {
+    isCustomFoodOpen,
+    setIsCustomFoodOpen,
+    addCustomFood,
+    logFoodItem,
+    targetMealSlot,
 
-  const [nameDe, setNameDe] = useState('');
-  const [nameIt, setNameIt] = useState('');
+    t,
+  } = useApp();
+
+  const [name, setName] = useState('');
+  const [brand, setBrand] = useState('');
   const [store, setStore] = useState<Supermarket>('Custom');
   const [category, setCategory] = useState<FoodCategory>('prepared');
   const [unit, setUnit] = useState<'g' | 'ml'>('g');
-  const [kcal, setKcal] = useState<number>(150);
-  const [carbs, setCarbs] = useState<number>(0);
-  const [protein, setProtein] = useState<number>(0);
-  const [fat, setFat] = useState<number>(0);
-  const [fiber, setFiber] = useState<number>(0);
-  const [salt, setSalt] = useState<number>(0);
+  const [kcalStr, setKcalStr] = useState('');
+  const [carbsStr, setCarbsStr] = useState('');
+  const [proteinStr, setProteinStr] = useState('');
+  const [fatStr, setFatStr] = useState('');
+  const [fiberStr, setFiberStr] = useState('');
+  const [saltStr, setSaltStr] = useState('');
+
+  const macroKcalEstimate = useMemo(() => {
+    const c = parseOptionalNum(carbsStr) ?? 0;
+    const p = parseOptionalNum(proteinStr) ?? 0;
+    const f = parseOptionalNum(fatStr) ?? 0;
+    const fib = parseOptionalNum(fiberStr) ?? 0;
+    const total = Math.round(c * 4 + p * 4 + f * 9 + fib * 2);
+    return total > 0 ? total : null;
+  }, [carbsStr, proteinStr, fatStr, fiberStr]);
 
   const reset = () => {
-    setNameDe('');
-    setNameIt('');
-    setKcal(150);
-    setCarbs(0);
-    setProtein(0);
-    setFat(0);
-    setFiber(0);
-    setSalt(0);
+    setName('');
+    setBrand('');
+    setKcalStr('');
+    setCarbsStr('');
+    setProteinStr('');
+    setFatStr('');
+    setFiberStr('');
+    setSaltStr('');
   };
 
-  const handleCreate = () => {
-    if (!nameDe.trim() && !nameIt.trim()) return;
+  const buildFood = (): FoodItem | null => {
+    const trimmed = name.trim();
+    if (!trimmed) return null;
+    const enteredKcal = parseOptionalNum(kcalStr);
+    const finalKcal = Math.max(0, Math.round(enteredKcal ?? macroKcalEstimate ?? 0));
 
-    const newFood: FoodItem = {
+    return {
       id: 'custom-' + Date.now(),
-      name_de: nameDe.trim() || nameIt.trim(),
-      name_it: nameIt.trim() || nameDe.trim(),
-      name_en: nameDe.trim() || nameIt.trim(),
+      name_de: trimmed,
+      name_it: trimmed,
+      name_en: trimmed,
+      brand: brand.trim() || undefined,
       store,
       category,
       unit,
-      calories: Math.max(0, kcal),
-      carbs: carbs > 0 ? carbs : null,
-      protein: protein > 0 ? protein : null,
-      fat: fat > 0 ? fat : null,
-      fiber: fiber > 0 ? fiber : null,
-      salt: salt > 0 ? salt : null,
+      calories: finalKcal,
+      carbs: parseOptionalNum(carbsStr),
+      protein: parseOptionalNum(proteinStr),
+      fat: parseOptionalNum(fatStr),
+      fiber: parseOptionalNum(fiberStr),
+      salt: parseOptionalNum(saltStr),
       isCustom: true,
     };
+  };
 
+  const handleSave = (alsoLog: boolean) => {
+    const newFood = buildFood();
+    if (!newFood) return;
     addCustomFood(newFood);
+    if (alsoLog) {
+      setLastAmount(newFood.id, 100);
+      logFoodItem(targetMealSlot, newFood, 100);
+    }
     setIsCustomFoodOpen(false);
     reset();
   };
 
   const inputCls =
-    'w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3.5 py-2 text-[var(--text)] placeholder-[var(--muted)] text-xs font-bold focus:outline-none';
+    'w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-[var(--text)] placeholder-[var(--muted)]/60 text-sm font-bold focus:outline-none focus:border-[var(--muted)] transition-colors';
+
+  const numField = (
+    val: string,
+    setVal: (s: string) => void,
+    unitTxt: string,
+    placeholder = '—'
+  ) => (
+    <div className="relative flex items-center">
+      <input
+        type="text"
+        inputMode="decimal"
+        enterKeyHint="done"
+        value={val}
+        placeholder={placeholder}
+        onChange={(e) => {
+          const next = cleanDec(e.target.value);
+          if (next !== null) setVal(next);
+        }}
+        className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl pl-3 pr-9 py-2.5 text-[var(--text)] placeholder-[var(--muted)]/55 text-sm font-bold tabular-nums focus:outline-none focus:border-[var(--muted)] transition-colors"
+      />
+      <span className="absolute right-2.5 text-[11px] font-bold text-[var(--muted)] pointer-events-none select-none">
+        {unitTxt}
+      </span>
+    </div>
+  );
 
   return (
     <Modal
@@ -68,135 +135,172 @@ export const CustomFoodModal: React.FC = () => {
     >
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-bold text-[var(--muted)] mb-1">Name (DE / EN)</label>
+          <label className="block text-xs font-bold text-[var(--muted)] mb-1">
+            {t.database.foodName}
+          </label>
           <input
             type="text"
-            value={nameDe}
-            onChange={(e) => setNameDe(e.target.value)}
-            placeholder="e.g. Bio Dinkelbrot"
-            className={inputCls}
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-bold text-[var(--muted)] mb-1">Nome (IT)</label>
-          <input
-            type="text"
-            value={nameIt}
-            onChange={(e) => setNameIt(e.target.value)}
-            placeholder="es. Pane di Farro Bio"
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder={t.database.foodNamePlaceholder}
             className={inputCls}
           />
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs font-bold text-[var(--muted)] mb-1">Store</label>
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1">
+              {t.database.brandLabel}
+            </label>
+            <input
+              type="text"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              placeholder={t.database.brandPlaceholder}
+              className={inputCls}
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1">
+              {t.database.storeLabel}
+            </label>
             <select
               value={store}
               onChange={(e) => setStore(e.target.value as Supermarket)}
               className={inputCls}
             >
+              <option value="Custom">Custom</option>
+              <option value="Generic">Generic</option>
               <option value="Lidl">Lidl</option>
               <option value="Aldi">Aldi</option>
               <option value="Netto">Netto</option>
-              <option value="Generic">Generic</option>
-              <option value="Custom">Custom</option>
             </select>
           </div>
+        </div>
 
+        <div className="grid grid-cols-[1fr_auto] gap-2 items-end">
           <div>
-            <label className="block text-xs font-bold text-[var(--muted)] mb-1">Category</label>
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1">
+              {t.database.categoryLabel}
+            </label>
             <select
               value={category}
               onChange={(e) => setCategory(e.target.value as FoodCategory)}
               className={inputCls}
             >
-              <option value="prepared">Kebab & Prepared</option>
-              <option value="grains_pasta">Cereals & Pasta</option>
-              <option value="dairy">Dairy & Eggs</option>
-              <option value="meat_fish">Meat & Fish</option>
-              <option value="bakery">Bakery</option>
-              <option value="produce_fruit">Fruit</option>
-              <option value="produce_veg">Vegetables</option>
-              <option value="snacks_sweets">Snacks</option>
-              <option value="drinks">Drinks</option>
-              <option value="condiments_oils">Oils & Sauces</option>
+              {FOOD_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>
+                  {t.categories[cat]}
+                </option>
+              ))}
             </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1">
+              {t.database.unitLabel}
+            </label>
+            <div className="grid grid-cols-2 gap-1 w-24">
+              {(['g', 'ml'] as const).map((u) => (
+                <button
+                  key={u}
+                  type="button"
+                  onClick={() => setUnit(u)}
+                  className={`pressable py-2.5 rounded-xl text-xs font-extrabold border ${
+                    unit === u
+                      ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+                      : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                  }`}
+                >
+                  {u}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex items-center justify-between gap-2 mb-1">
+            <label className="text-xs font-bold text-[var(--muted)]">
+              {t.database.caloriesPer100.replace('{unit}', unit)}
+            </label>
+            {macroKcalEstimate !== null && String(macroKcalEstimate) !== kcalStr && (
+              <button
+                type="button"
+                onClick={() => setKcalStr(String(macroKcalEstimate))}
+                className="pressable px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B] text-[10px] font-extrabold tabular-nums"
+              >
+                {t.database.fromMacros.replace('{kcal}', String(macroKcalEstimate))}
+              </button>
+            )}
+          </div>
+          {numField(
+            kcalStr,
+            setKcalStr,
+            'kcal',
+            macroKcalEstimate !== null ? String(macroKcalEstimate) : '150'
+          )}
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <div>
+            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] mb-1">
+              {t.macros.carbs}
+            </label>
+            {numField(carbsStr, setCarbsStr, 'g')}
+          </div>
+          <div>
+            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#F6D0D0] text-[#7A2727] mb-1">
+              {t.macros.protein}
+            </label>
+            {numField(proteinStr, setProteinStr, 'g')}
+          </div>
+          <div>
+            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582] mb-1">
+              {t.macros.fat}
+            </label>
+            {numField(fatStr, setFatStr, 'g')}
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-2">
           <div>
             <label className="block text-xs font-bold text-[var(--muted)] mb-1">
-              Calories / 100{unit}
+              {t.macros.fiber} ({t.activities.optional})
             </label>
-            <NumericInput value={kcal} onChange={setKcal} unit="kcal" placeholder="150" />
+            {numField(fiberStr, setFiberStr, 'g')}
           </div>
           <div>
-            <label className="block text-xs font-bold text-[var(--muted)] mb-1">Unit</label>
-            <div className="grid grid-cols-2 gap-1">
-              <button
-                type="button"
-                onClick={() => setUnit('g')}
-                className={`py-2.5 rounded-xl text-xs font-bold border ${
-                  unit === 'g'
-                    ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
-                }`}
-              >
-                g
-              </button>
-              <button
-                type="button"
-                onClick={() => setUnit('ml')}
-                className={`py-2.5 rounded-xl text-xs font-bold border ${
-                  unit === 'ml'
-                    ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
-                }`}
-              >
-                ml
-              </button>
-            </div>
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1">
+              {t.macros.salt} ({t.activities.optional})
+            </label>
+            {numField(saltStr, setSaltStr, 'g')}
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          <div>
-            <label className="block text-xs font-bold text-[#8A5617] mb-1">Carbs (g)</label>
-            <NumericInput value={carbs} onChange={setCarbs} unit="g" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[#8C3A3A] mb-1">Protein (g)</label>
-            <NumericInput value={protein} onChange={setProtein} unit="g" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[#523A8C] mb-1">Fat (g)</label>
-            <NumericInput value={fat} onChange={setFat} unit="g" />
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1.5">
+          <button
+            type="button"
+            onClick={() => handleSave(false)}
+            disabled={!name.trim()}
+            className="pressable w-full py-3 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
+          >
+            <Check size={16} strokeWidth={2.5} />
+            <span>{t.common.save}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleSave(true)}
+            disabled={!name.trim()}
+            className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
+          >
+            <Plus size={16} strokeWidth={2.5} />
+            <span>
+              {t.barcodeModal.saveToDatabase} (100{unit})
+            </span>
+          </button>
         </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted)] mb-1">Fiber (g)</label>
-            <NumericInput value={fiber} onChange={setFiber} unit="g" />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted)] mb-1">Salt (g)</label>
-            <NumericInput value={salt} onChange={setSalt} unit="g" />
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleCreate}
-          disabled={!nameDe.trim() && !nameIt.trim()}
-          className="w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40 mt-2"
-        >
-          <Check size={18} strokeWidth={2.5} />
-          <span>{t.common.save}</span>
-        </button>
       </div>
     </Modal>
   );

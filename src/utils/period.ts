@@ -161,12 +161,12 @@ export function expectedWithdrawalBleed(settings: PeriodSettings, today: string)
 export type PillMarker = 'taken' | 'missed' | 'break' | 'due' | 'future' | 'none';
 
 export function pillMarkerFor(settings: PeriodSettings, logs: Logs, date: string, today: string): PillMarker {
-  if (!settings.trackPill || !settings.packStart) return 'none';
+  if (!settings.trackPill) return 'none';
+  if (logs[date]?.pillTaken) return 'taken';
+  if (!settings.packStart) return 'none';
   if (date < settings.packStart) return 'none';
   if (settings.pillTrackingSince && date < settings.pillTrackingSince) return 'none';
-  const taken = Boolean(logs[date]?.pillTaken);
-  if (isInactivePackDay(settings, date)) return taken ? 'taken' : 'break';
-  if (taken) return 'taken';
+  if (isInactivePackDay(settings, date)) return 'break';
   if (date > today) return 'future';
   if (date === today) return 'due';
   return 'missed';
@@ -254,39 +254,45 @@ export function cycleDays(c: CycleInfo, predictedLength: number, today: string):
 }
 
 // ---------- tags ----------
-export interface TagDef {
-  id: string;
-  label: string;
-  builtin: boolean;
-  hidden: boolean;
+export type PeriodTagGroup = 'mood' | 'symptom';
+
+export const periodTagListKey = (group: PeriodTagGroup) => group === 'mood' ? 'moodTags' : 'symptomTags';
+export const periodTagSelectionKey = (group: PeriodTagGroup) => group === 'mood' ? 'moods' : 'symptoms';
+
+const defaultTags = {
+  mood: BUILTIN_MOODS.map((label) => ({ id: moodId(label), label })),
+  symptom: BUILTIN_SYMPTOMS.map((label) => ({ id: symId(label), label })),
+};
+
+export function getDefaultPeriodTags(group: PeriodTagGroup) {
+  return defaultTags[group].map((tag) => ({ ...tag }));
 }
 
-export function tagDefs(
-  group: 'mood' | 'symptom',
-  settings: PeriodSettings,
-  builtinLabel: (key: string) => string
-): TagDef[] {
-  const builtins = (group === 'mood' ? BUILTIN_MOODS : BUILTIN_SYMPTOMS).map((k) => {
-    const id = group === 'mood' ? moodId(k) : symId(k);
-    return { id, label: builtinLabel(k), builtin: true, hidden: settings.hiddenBuiltins.includes(id) };
+export function tagDefs(group: PeriodTagGroup, settings: PeriodSettings, builtinLabel: (key: string) => string) {
+  return settings[periodTagListKey(group)].map((tag) => {
+    const builtin = defaultTags[group].find((entry) => entry.id === tag.id);
+    return { ...tag, label: builtin ? builtinLabel(builtin.label) || tag.label : tag.label };
   });
-  const customs = (group === 'mood' ? settings.customMoods : settings.customSymptoms).map((c) => ({
-    id: c.id,
-    label: c.label,
-    builtin: false,
-    hidden: false,
-  }));
-  return [...builtins, ...customs];
 }
 
-/** Label for any stored tag id (deleted custom tags fall back to their stored label if given). */
-export function tagLabel(
-  id: string,
-  settings: PeriodSettings,
-  builtinLabel: (group: 'mood' | 'symptom', key: string) => string
-): string {
-  if (id.startsWith('mood.')) return builtinLabel('mood', id.slice(5));
-  if (id.startsWith('sym.')) return builtinLabel('symptom', id.slice(4));
-  const c = [...settings.customMoods, ...settings.customSymptoms].find((x) => x.id === id);
-  return c ? c.label : id;
+/** Resolve the name of a tag, including built-ins that appeared in older logs. */
+export function tagLabel(id: string, settings: PeriodSettings, builtinLabel: (group: PeriodTagGroup, key: string) => string): string {
+  for (const group of ['mood', 'symptom'] as const) {
+    const builtin = defaultTags[group].find((tag) => tag.id === id);
+    if (builtin) return builtinLabel(group, builtin.label) || builtin.label;
+    const custom = settings[periodTagListKey(group)].find((tag) => tag.id === id);
+    if (custom) return custom.label;
+  }
+  return id;
+}
+
+/** Permanently remove matching tag references without modifying other fields on those days. */
+export function prunePeriodTags(logs: Logs, group: PeriodTagGroup, keep: (id: string) => boolean): Logs {
+  const key = periodTagSelectionKey(group);
+  const next = { ...logs };
+  for (const [date, log] of Object.entries(logs)) {
+    const tags = log[key].filter(keep);
+    if (tags.length !== log[key].length) next[date] = { ...log, [key]: tags };
+  }
+  return next;
 }

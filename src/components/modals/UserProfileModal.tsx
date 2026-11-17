@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { NumericInput } from '../common/NumericInput';
@@ -12,6 +12,7 @@ export const UserProfileModal: React.FC = () => {
     setIsProfileOpen,
     userProfile,
     updateUserProfile,
+
     t,
   } = useApp();
 
@@ -20,22 +21,29 @@ export const UserProfileModal: React.FC = () => {
   const [age, setAge] = useState<number>(userProfile.age);
   const [sex, setSex] = useState<'male' | 'female'>(userProfile.sex);
 
-  const previewBmr = useMemo(() => {
-    return calculateBMR({
-      weightKg,
-      heightCm,
-      age,
-      sex,
-    });
-  }, [weightKg, heightCm, age, sex]);
+  useEffect(() => {
+    if (isProfileOpen) {
+      setWeightKg(userProfile.weightKg);
+      setHeightCm(userProfile.heightCm);
+      setAge(userProfile.age);
+      setSex(userProfile.sex);
+    }
+  }, [isProfileOpen, userProfile]);
 
-  const handleSave = () => {
-    updateUserProfile({
+  const safeProfile = useMemo(
+    () => ({
       weightKg: weightKg > 0 ? weightKg : 70,
       heightCm: heightCm > 0 ? heightCm : 175,
       age: age > 0 ? age : 28,
       sex,
-    });
+    }),
+    [weightKg, heightCm, age, sex]
+  );
+
+  const previewBmr = useMemo(() => calculateBMR(safeProfile), [safeProfile]);
+
+  const handleSave = () => {
+    updateUserProfile({ ...userProfile, ...safeProfile });
     setIsProfileOpen(false);
   };
 
@@ -51,22 +59,24 @@ export const UserProfileModal: React.FC = () => {
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
+            aria-pressed={sex === 'male'}
             onClick={() => setSex('male')}
-            className={`py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center transition-colors ${
+            className={`pressable py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center ${
               sex === 'male'
                 ? 'bg-[#CFE7FE] text-[#183B5E] border-[#9EC8F5]'
-                : 'bg-[var(--inset)] text-[#6E665E] border-[var(--border)]'
+                : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
             }`}
           >
             {t.profile.male}
           </button>
           <button
             type="button"
+            aria-pressed={sex === 'female'}
             onClick={() => setSex('female')}
-            className={`py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center transition-colors ${
+            className={`pressable py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center ${
               sex === 'female'
                 ? 'bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]'
-                : 'bg-[var(--inset)] text-[#6E665E] border-[var(--border)]'
+                : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
             }`}
           >
             {t.profile.female}
@@ -76,7 +86,7 @@ export const UserProfileModal: React.FC = () => {
         {/* Weight, Height, Age */}
         <div className="grid grid-cols-3 gap-2.5">
           <div>
-            <label className="block text-xs font-bold text-[#6E665E] mb-1">
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1 truncate">
               {t.profile.weight}
             </label>
             <NumericInput
@@ -84,12 +94,13 @@ export const UserProfileModal: React.FC = () => {
               onChange={setWeightKg}
               unit="kg"
               min={20}
+              max={300}
               placeholder="70"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#6E665E] mb-1">
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1 truncate">
               {t.profile.height}
             </label>
             <NumericInput
@@ -97,12 +108,13 @@ export const UserProfileModal: React.FC = () => {
               onChange={setHeightCm}
               unit="cm"
               min={100}
+              max={250}
               placeholder="175"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-[#6E665E] mb-1">
+            <label className="block text-xs font-bold text-[var(--muted)] mb-1 truncate">
               {t.profile.age}
             </label>
             <NumericInput
@@ -110,17 +122,15 @@ export const UserProfileModal: React.FC = () => {
               onChange={setAge}
               unit="y"
               min={10}
+              max={120}
               placeholder="28"
             />
           </div>
         </div>
 
-        {/* Calculated BMR */}
-        <div className="bg-[#C9EFD3] rounded-2xl p-4 flex items-center justify-between">
-          <span className="text-xs font-bold text-[#1D5C38]">
-            {t.profile.calculatedBmr}
-          </span>
-          <span className="text-xl font-extrabold text-[#142E1F]">
+        <div className="bg-[#C9EFD3] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-2">
+          <span className="text-xs font-bold text-[#1D5C38]">{t.profile.calculatedBmr}</span>
+          <span className="text-xl font-extrabold tabular-nums text-[#142E1F]">
             {formatKcal(previewBmr)} kcal
           </span>
         </div>
@@ -129,7 +139,7 @@ export const UserProfileModal: React.FC = () => {
         <button
           type="button"
           onClick={handleSave}
-          className="w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+          className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>{t.profile.saveBtn}</span>

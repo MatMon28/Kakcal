@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { PeriodStatus, pillMarkerFor, PillMarker } from '../../utils/period';
 import { addDaysToDateString, formatFullDate, getTodayDateString } from '../../utils/formatters';
-import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Heart } from 'lucide-react';
 
 /** Capsule marker (≥14px) used in calendar cells and the legend. */
 export const PillCapsule: React.FC<{ kind: PillMarker; size?: number }> = ({ kind, size = 14 }) => {
@@ -61,10 +61,11 @@ export const PillCapsule: React.FC<{ kind: PillMarker; size?: number }> = ({ kin
 interface Props {
   selected: string;
   onSelect: (date: string) => void;
+  onInspectDay: (date: string) => void;
   status: PeriodStatus;
 }
 
-export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, status }) => {
+export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectDay, status }) => {
   const { t, language, periodData } = useApp();
   const todayStr = getTodayDateString();
   const settings = periodData.settings;
@@ -73,6 +74,31 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, status }) 
   const [viewYear, setViewYear] = useState(Number(selected.slice(0, 4)));
   const [viewMonth, setViewMonth] = useState(Number(selected.slice(5, 7)) - 1);
   const [legendOpen, setLegendOpen] = useState(false);
+  const lastTouchTapRef = useRef<{ date: string; time: number } | null>(null);
+  const openedInspectAtRef = useRef<number>(0);
+
+  const openDayInfo = (ds: string) => {
+    const now = Date.now();
+    if (now - openedInspectAtRef.current < 260) return;
+    openedInspectAtRef.current = now;
+    onSelect(ds);
+    onInspectDay(ds);
+  };
+
+  useEffect(() => {
+    setViewYear(Number(selected.slice(0, 4)));
+    setViewMonth(Number(selected.slice(5, 7)) - 1);
+  }, [selected]);
+
+  const todayYear = Number(todayStr.slice(0, 4));
+  const todayMonth = Number(todayStr.slice(5, 7)) - 1;
+  const showJumpToday = selected !== todayStr || viewYear !== todayYear || viewMonth !== todayMonth;
+
+  const jumpToday = () => {
+    setViewYear(todayYear);
+    setViewMonth(todayMonth);
+    onSelect(todayStr);
+  };
 
   const mondayFirst = language === 'it';
   const locale = language === 'it' ? 'it-IT' : 'en-US';
@@ -133,20 +159,31 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, status }) 
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <button
           type="button"
           onClick={prevMonth}
-          className="w-10 h-10 rounded-full bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+          className="pressable w-10 h-10 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center shrink-0"
           aria-label="Previous month"
         >
           <ChevronLeft size={16} />
         </button>
-        <span className="text-sm font-extrabold text-[var(--text)] capitalize">{monthLabel}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-extrabold text-[var(--text)] capitalize">{monthLabel}</span>
+          {showJumpToday && (
+            <button
+              type="button"
+              onClick={jumpToday}
+              className="pressable px-2.5 py-1 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[11px] font-extrabold"
+            >
+              {t.header.today}
+            </button>
+          )}
+        </div>
         <button
           type="button"
           onClick={nextMonth}
-          className="w-10 h-10 rounded-full bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+          className="pressable w-10 h-10 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center shrink-0"
           aria-label="Next month"
         >
           <ChevronRight size={16} />
@@ -168,6 +205,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, status }) 
           const logged = Boolean(log?.isPeriod);
           const predicted = predictedSet.has(ds) && !logged;
           const isOvul = !pillMode && status.ovulation === ds;
+          const intercourse = log?.intercourse === true;
           const pill = pillMarkerFor(settings, periodData.logs, ds, todayStr);
 
           const aria: string[] = [formatFullDate(ds, language)];
@@ -175,6 +213,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, status }) 
           if (logged) aria.push(t.period.ariaPeriod);
           if (predicted) aria.push(t.period.ariaPredicted);
           if (isOvul) aria.push(t.period.ariaOvulation);
+          if (intercourse) aria.push(t.period.intercourseLogged);
           if (pill === 'taken') aria.push(t.period.ariaPillTaken);
           if (pill === 'missed') aria.push(t.period.ariaPillMissed);
           if (pill === 'break') aria.push(t.period.ariaBreak);
@@ -191,18 +230,44 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, status }) 
               key={i}
               type="button"
               onClick={() => onSelect(ds)}
+              onDoubleClick={() => openDayInfo(ds)}
+              onPointerUp={(e) => {
+                if (e.pointerType !== 'touch') return;
+                const now = Date.now();
+                const prev = lastTouchTapRef.current;
+                if (prev && prev.date === ds && now - prev.time < 340) {
+                  lastTouchTapRef.current = null;
+                  openDayInfo(ds);
+                } else {
+                  lastTouchTapRef.current = { date: ds, time: now };
+                }
+              }}
               aria-label={aria.join(', ')}
               aria-pressed={isSel}
-              className={`relative min-h-[44px] min-w-[44px] w-full rounded-2xl flex flex-col items-center justify-start pt-1 pb-1 gap-0.5 transition-colors ${cellBg} ${selRing}`}
+              className={`relative min-h-[56px] min-w-0 w-full rounded-2xl flex flex-col items-center justify-start pt-3.5 pb-1 gap-0.5 transition-colors ${cellBg} ${selRing}`}
             >
-              {/* day number: today = filled dark circle; ovulation = green ring */}
+              {/* Intercourse heart sits slightly above the top of the day number without shifting it */}
+              {intercourse && (
+                <span
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-[3px] left-1/2 -translate-x-1/2 leading-none"
+                >
+                  <Heart
+                    size={9}
+                    strokeWidth={2.4}
+                    fill="currentColor"
+                    className={logged || predicted ? 'text-[#9E2344]' : 'text-[var(--text-heart)]'}
+                  />
+                </span>
+              )}
               <span
-                className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                aria-hidden="true"
+                className={`size-6 rounded-full flex items-center justify-center text-xs font-bold tabular-nums ${
                   isToday
                     ? 'bg-[var(--text)] text-[var(--surface)]'
                     : isOvul
-                    ? 'ring-2 ring-[#1E5E3A] text-[var(--text)]'
-                    : logged
+                    ? `ring-2 ring-[#2E8B57] ${logged || predicted ? 'text-[#6E2440]' : 'text-[var(--text)]'}`
+                    : logged || predicted
                     ? 'text-[#6E2440]'
                     : 'text-[var(--text)]'
                 }`}
@@ -218,58 +283,67 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, status }) 
         })}
       </div>
 
-      {/* Legend (collapsible) */}
+      {/* Legend (collapsible) + double-click summary hint */}
       <div>
         <button
           type="button"
           onClick={() => setLegendOpen((v) => !v)}
-          className="w-full flex items-center justify-between text-[11px] font-bold text-[var(--muted)]"
+          className="w-full flex items-center justify-between gap-2 text-[11px] font-bold text-[var(--muted)]"
           aria-expanded={legendOpen}
         >
           <span>{t.period.legend}</span>
-          <ChevronDown size={14} className={`transition-transform ${legendOpen ? 'rotate-180' : ''}`} />
+          <span className="flex items-center gap-2">
+            <span className="text-[10px] font-medium opacity-80">{t.period.daySummaryHint}</span>
+            <ChevronDown size={14} className={`shrink-0 transition-transform ${legendOpen ? 'rotate-180' : ''}`} />
+          </span>
         </button>
-        {legendOpen && (
-          <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 mt-2 text-[11px] font-bold text-[var(--muted)]">
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-4 rounded-md bg-[#F4C6D8]" /> {t.period.legendPeriod}
-            </span>
-            {!pillMode && (
+        <div className="accordion-grid" data-open={legendOpen} inert={!legendOpen}>
+          <div className="accordion-inner">
+            <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-2 text-[11px] font-bold text-[var(--muted)]">
               <span className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-md bg-[#FBE4EE] border border-dashed border-[#E79CBB]" />{' '}
-                {t.period.legendPredicted}
+                <span className="w-4 h-4 rounded-md bg-[#F4C6D8]" /> {t.period.legendPeriod}
               </span>
-            )}
-            {!pillMode && (
+              {!pillMode && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-md bg-[#FBE4EE] border border-dashed border-[#E79CBB]" />{' '}
+                  {t.period.legendPredicted}
+                </span>
+              )}
+              {!pillMode && (
+                <span className="flex items-center gap-1.5">
+                  <span className="w-4 h-4 rounded-full ring-2 ring-[#2E8B57]" /> {t.period.legendOvulation}
+                </span>
+              )}
               <span className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-full ring-2 ring-[#1E5E3A]" /> {t.period.legendOvulation}
+                <span className="w-4 h-4 rounded-full bg-[var(--text)]" /> {t.period.legendToday}
               </span>
-            )}
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-4 rounded-full bg-[var(--text)]" /> {t.period.legendToday}
-            </span>
-            <span className="flex items-center gap-1.5">
-              <span className="w-4 h-4 rounded-md outline outline-2 outline-[var(--text)] outline-offset-[-2px]" />{' '}
-              {t.period.legendSelected}
-            </span>
-            {pillMode && (
-              <>
-                <span className="flex items-center gap-1.5">
-                  <PillCapsule kind="taken" /> {t.period.legendPillTaken}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <PillCapsule kind="missed" /> {t.period.legendPillMissed}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <PillCapsule kind="break" /> {t.period.legendPillBreak}
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <PillCapsule kind="due" /> {t.period.legendPillDue}
-                </span>
-              </>
-            )}
+              <span className="flex items-center gap-1.5">
+                <span className="w-4 h-4 rounded-md outline outline-2 outline-[var(--text)] outline-offset-[-2px]" />{' '}
+                {t.period.legendSelected}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Heart size={13} strokeWidth={2.3} fill="currentColor" className="shrink-0 text-[var(--text-heart)]" />{' '}
+                {t.period.intercourseLogged}
+              </span>
+              {pillMode && (
+                <>
+                  <span className="flex items-center gap-1.5">
+                    <PillCapsule kind="taken" /> {t.period.legendPillTaken}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <PillCapsule kind="missed" /> {t.period.legendPillMissed}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <PillCapsule kind="break" /> {t.period.legendPillBreak}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <PillCapsule kind="due" /> {t.period.legendPillDue}
+                  </span>
+                </>
+              )}
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

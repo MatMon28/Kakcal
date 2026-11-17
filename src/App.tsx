@@ -1,6 +1,7 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef, type TouchEvent } from 'react';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/common/Header';
+import { closeTopModal, getOpenModalCount } from './components/common/Modal';
 import { TodayView } from './components/dashboard/TodayView';
 import { PreBuiltMealsView } from './components/prebuilt/PreBuiltMealsView';
 import { PeriodView } from './components/period/PeriodView';
@@ -19,136 +20,104 @@ import { CustomButtonModal } from './components/modals/CustomButtonModal';
 import { CustomPickerModal } from './components/modals/CustomPickerModal';
 import { PeriodSheet } from './components/modals/PeriodSheet';
 import { QuickAddBar } from './components/dashboard/QuickAddBar';
-import { Toast } from './components/common/Toast';
-import { ActiveTab } from './types';
+import type { ActiveTab } from './types';
 
-const MainContent: React.FC = () => {
-  const ctx = useApp();
+const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'history'];
+
+function MainContent() {
   const {
-    activeTab,
-    setActiveTab,
-    settings,
-    isAddFoodOpen,
-    setIsAddFoodOpen,
-    isLogActivityOpen,
-    setIsLogActivityOpen,
-    isBarcodeOpen,
-    setIsBarcodeOpen,
-    isProfileOpen,
-    setIsProfileOpen,
-    isSettingsOpen,
-    setIsSettingsOpen,
-    isWaterOpen,
-    setIsWaterOpen,
-    isPoopOpen,
-    setIsPoopOpen,
-    isWeightOpen,
-    setIsWeightOpen,
-    isCustomFoodOpen,
-    setIsCustomFoodOpen,
-    customButtonOpenId,
-    setCustomButtonOpenId,
-    isCustomPickerOpen,
-    setIsCustomPickerOpen,
-    isPeriodSheetOpen,
-    setIsPeriodSheetOpen,
-  } = ctx;
+    activeTab, setActiveTab, returnFromDatabase, settings,
+    isAddFoodOpen, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
+    isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId,
+    isCustomPickerOpen, isPeriodSheetOpen,
+  } = useApp();
 
-  const anyModal =
-    isAddFoodOpen || isLogActivityOpen || isBarcodeOpen || isProfileOpen || isSettingsOpen ||
-    isWaterOpen || isPoopOpen || isWeightOpen || isCustomFoodOpen || isCustomPickerOpen ||
-    isPeriodSheetOpen || customButtonOpenId !== null;
+  const anyModal = isAddFoodOpen || isLogActivityOpen || isBarcodeOpen || isProfileOpen ||
+    isSettingsOpen || isWaterOpen || isPoopOpen || isWeightOpen || isCustomFoodOpen ||
+    isCustomPickerOpen || isPeriodSheetOpen || customButtonOpenId !== null;
+  const hasDock = activeTab === 'today' || activeTab === 'prebuilt' || activeTab === 'period';
 
-  // ---------------------------------------------------------------
-  // Android gestures:
-  //  1) horizontal swipe on the page switches tabs
-  //  2) hardware/back gesture closes the top layer first
-  //     (modal → previous tab → app exit)
-  // ---------------------------------------------------------------
-  const visibleTabs: ActiveTab[] = (['today', 'prebuilt', 'period', 'history'] as ActiveTab[]).filter(
-    (tb) => tb !== 'period' || !settings.hidePeriod
-  );
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, [activeTab]);
 
   const touch = useRef<{ x: number; y: number } | null>(null);
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    if (anyModal || e.touches.length !== 1) return;
-    const el = e.target as HTMLElement;
-    // don't hijack horizontally scrollable rows (pills, chips, calendars)
-    if (el.closest('.no-scrollbar, input, textarea, select, [data-no-swipe]')) return;
+  const onTouchStart = (e: TouchEvent) => {
+    touch.current = null;
+    if (anyModal || getOpenModalCount() || e.touches.length !== 1) return;
+    if ((e.target as Element).closest('.no-scrollbar, input, textarea, select, [data-no-swipe]')) return;
     touch.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   };
-
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (!touch.current) return;
-    const dx = e.changedTouches[0].clientX - touch.current.x;
-    const dy = e.changedTouches[0].clientY - touch.current.y;
+  const onTouchEnd = (e: TouchEvent) => {
+    const start = touch.current;
     touch.current = null;
-    if (Math.abs(dx) < 70 || Math.abs(dx) < Math.abs(dy) * 1.4) return;
-    const idx = visibleTabs.indexOf(activeTab);
-    if (idx < 0) return;
-    const next = dx < 0 ? idx + 1 : idx - 1;
-    if (next >= 0 && next < visibleTabs.length) setActiveTab(visibleTabs[next]);
+    const end = e.changedTouches[0];
+    if (!start || !end || anyModal || getOpenModalCount()) return;
+    const dx = end.clientX - start.x;
+    const dy = end.clientY - start.y;
+    if (Math.abs(dx) < 72 || Math.abs(dx) < Math.abs(dy) * 1.45) return;
+    if (activeTab === 'database') {
+      if (dx > 0) returnFromDatabase();
+      return;
+    }
+    const visibleTabs = MAIN_TABS.filter((tab) => tab !== 'period' || !settings.hidePeriod);
+    const index = visibleTabs.indexOf(activeTab);
+    const nextTab = visibleTabs[index + (dx < 0 ? 1 : -1)];
+    if (index >= 0 && nextTab) setActiveTab(nextTab);
   };
 
-  // Android back button / edge-swipe back
-  useEffect(() => {
+  // A single history guard lets browser/Android Back dismiss the actual top dialog,
+  // including dialogs opened locally in Meals or the food catalog.
+  const navigation = useRef({ activeTab, setActiveTab, returnFromDatabase });
+  navigation.current = { activeTab, setActiveTab, returnFromDatabase };
+  const hasGuard = useRef(Boolean(window.history.state?.kcGuard));
+  const armGuard = () => {
+    if (hasGuard.current) return;
     try {
-      window.history.pushState(null, '');
-    } catch {
-      /* ignore */
-    }
+      window.history.pushState({ kcGuard: true }, '');
+      hasGuard.current = true;
+    } catch { /* history may be unavailable in a restricted webview */ }
+  };
+  const needsGuard = anyModal || activeTab !== 'today';
+  useEffect(() => {
+    if (needsGuard) armGuard();
+  }, [needsGuard]);
+  useEffect(() => {
     const onPop = () => {
-      const stateful =
-        isPeriodSheetOpen || isCustomPickerOpen || customButtonOpenId !== null ||
-        isCustomFoodOpen || isSettingsOpen || isProfileOpen || isBarcodeOpen ||
-        isWeightOpen || isPoopOpen || isWaterOpen || isLogActivityOpen || isAddFoodOpen;
-      if (stateful) {
-        // close topmost layer (stop at the first match — mirror modal priority)
-        if (isPeriodSheetOpen) setIsPeriodSheetOpen(false);
-        else if (isCustomPickerOpen) setIsCustomPickerOpen(false);
-        else if (customButtonOpenId) setCustomButtonOpenId(null);
-        else if (isCustomFoodOpen) setIsCustomFoodOpen(false);
-        else if (isSettingsOpen) setIsSettingsOpen(false);
-        else if (isProfileOpen) setIsProfileOpen(false);
-        else if (isBarcodeOpen) setIsBarcodeOpen(false);
-        else if (isWeightOpen) setIsWeightOpen(false);
-        else if (isPoopOpen) setIsPoopOpen(false);
-        else if (isWaterOpen) setIsWaterOpen(false);
-        else if (isLogActivityOpen) setIsLogActivityOpen(false);
-        else if (isAddFoodOpen) setIsAddFoodOpen(false);
-        window.history.pushState(null, '');
-      } else if (activeTab !== 'today') {
-        setActiveTab('today');
-        window.history.pushState(null, '');
+      hasGuard.current = Boolean(window.history.state?.kcGuard);
+      const nav = navigation.current;
+      const openCount = getOpenModalCount();
+      if (openCount && closeTopModal()) {
+        if (openCount > 1 || nav.activeTab !== 'today') armGuard();
+      } else if (nav.activeTab === 'database') {
+        nav.returnFromDatabase();
+        armGuard();
+      } else if (nav.activeTab !== 'today') {
+        nav.setActiveTab('today');
       }
-      // else: nothing to unwind — let the next back press leave the app
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isPeriodSheetOpen, isCustomPickerOpen, customButtonOpenId, isCustomFoodOpen, isSettingsOpen,
-    isProfileOpen, isBarcodeOpen, isWeightOpen, isPoopOpen, isWaterOpen, isLogActivityOpen,
-    isAddFoodOpen, activeTab,
-  ]);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans">
+    <div className="min-h-dvh bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans">
       <Header />
-
       <main
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="flex-1 w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 pb-16 sm:pb-8"
+        onTouchCancel={() => { touch.current = null; }}
+        className={`flex-1 w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}
       >
-        {activeTab === 'today' && <TodayView />}
-        {activeTab === 'prebuilt' && <PreBuiltMealsView />}
-        {activeTab === 'period' && <PeriodView />}
-        {activeTab === 'database' && <FoodDatabaseView />}
-        {activeTab === 'history' && <HistoryView />}
+        <div key={activeTab} className="anim-page">
+          {activeTab === 'today' && <TodayView />}
+          {activeTab === 'prebuilt' && <PreBuiltMealsView hideDock={anyModal} />}
+          {activeTab === 'period' && !settings.hidePeriod && <PeriodView hideDock={anyModal} />}
+          {activeTab === 'database' && <FoodDatabaseView />}
+          {activeTab === 'history' && <HistoryView />}
+        </div>
       </main>
-
+      {activeTab === 'today' && !anyModal && <QuickAddBar />}
       {isAddFoodOpen && <AddFoodModal />}
       {isLogActivityOpen && <LogActivityModal />}
       {isBarcodeOpen && <BarcodeLookupModal />}
@@ -158,14 +127,12 @@ const MainContent: React.FC = () => {
       {isPoopOpen && <PoopModal />}
       {isWeightOpen && <WeightModal />}
       {isCustomFoodOpen && <CustomFoodModal />}
-      {customButtonOpenId && <CustomButtonModal />}
+      {customButtonOpenId && <CustomButtonModal key={customButtonOpenId} />}
       {isCustomPickerOpen && <CustomPickerModal />}
       {isPeriodSheetOpen && <PeriodSheet />}
-      <QuickAddBar />
-      <Toast />
     </div>
   );
-};
+}
 
 export function App() {
   return (

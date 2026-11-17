@@ -98,7 +98,10 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
                     <>
                       <td className="text-right px-1 text-[var(--text)]">{r(b.intake)}</td>
                       <td className="text-right px-1 text-[var(--text)]">{r(b.burned)}</td>
-                      <td className={`text-right px-1 ${r(b.net) > 0 ? 'text-[#7D4E14]' : 'text-[#1D5C38]'}`}>{r(b.net) > 0 ? '+' : ''}{r(b.net)}</td>
+                      <td className={`text-right px-1 tabular-nums ${r(b.net) > 0 ? 'text-[var(--text-pos)]' : 'text-[var(--text-neg)]'}`}>
+                        {r(b.net) > 0 ? '+' : ''}
+                        {r(b.net)}
+                      </td>
                       <td className="text-right px-1 text-[var(--muted)]">{r(b.c)}/{r(b.p)}/{r(b.f)}</td>
                     </>
                   ) : (
@@ -153,6 +156,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
     ...tagDefs('mood', settings, (k) => builtinLabel(k, 'mood')),
     ...tagDefs('symptom', settings, (k) => builtinLabel(k, 'symptom')),
   ];
+  const selectedTag = tagOptions.some((option) => option.id === tag) ? tag : tagOptions[0]?.id ?? '';
   const compare = useMemo(() => {
     let tagged = { sum: 0, n: 0 };
     let other = { sum: 0, n: 0 };
@@ -160,7 +164,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
       const m = dayMetrics(allDayLogs[d]);
       if (!m) continue;
       const l = periodData.logs[d];
-      const has = Boolean(l && (l.moods.includes(tag) || l.symptoms.includes(tag)));
+      const has = Boolean(l && (l.moods.includes(selectedTag) || l.symptoms.includes(selectedTag)));
       if (has) { tagged.sum += m.intake; tagged.n++; } else { other.sum += m.intake; other.n++; }
     }
     return {
@@ -169,7 +173,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
       other: other.n ? Math.round(other.sum / other.n) : null,
       otherN: other.n,
     };
-  }, [allDayLogs, periodData.logs, tag]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [allDayLogs, periodData.logs, selectedTag]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-4">
@@ -238,11 +242,13 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
       <div className="space-y-2">
         <div className="flex items-center justify-between gap-2">
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.period.symptomCompare}</span>
-          <select value={tag} onChange={(e) => setTag(e.target.value)}
+          <select aria-label={t.period.chooseTag} value={selectedTag} disabled={!selectedTag} onChange={(e) => setTag(e.target.value)}
             className="bg-[var(--inset)] border border-[var(--border)] rounded-xl px-2 py-1 text-[11px] font-bold text-[var(--text)] focus:outline-none">
+            {!selectedTag && <option value="">{t.period.noTagOptions}</option>}
             {tagOptions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>
         </div>
+        {selectedTag && (
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-[#F4C6D8] rounded-2xl p-3">
             <span className="block text-[10px] font-bold uppercase text-[#6E2440]">{t.period.taggedDays} · {t.period.days.replace('{n}', String(compare.taggedN))}</span>
@@ -253,6 +259,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
             <span className="block text-lg font-extrabold text-[var(--text)]">{compare.otherN >= 3 && compare.other !== null ? `${compare.other} kcal` : t.period.notEnough}</span>
           </div>
         </div>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useId, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
+import { useApp } from '../../context/AppContext';
 
 interface ModalProps {
   isOpen: boolean;
@@ -10,6 +12,20 @@ interface ModalProps {
   maxWidth?: string;
 }
 
+const openModalStack: Array<() => void> = [];
+let previousBodyOverflow = '';
+
+export const getOpenModalCount = () => openModalStack.length;
+
+export function closeTopModal(): boolean {
+  const dismiss = openModalStack[openModalStack.length - 1];
+  if (!dismiss) return false;
+  dismiss();
+  return true;
+}
+
+const focusSelector = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])';
+
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
@@ -18,55 +34,130 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = 'max-w-lg',
 }) => {
+  const { t } = useApp();
+  const titleId = useId();
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
+
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
+    const panel = panelRef.current;
+    const overlay = viewportRef.current;
+    if (!isOpen || !panel || !overlay) return;
+
+    const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const closeHandler = () => onCloseRef.current();
+    if (!openModalStack.length) previousBodyOverflow = document.body.style.overflow;
+    openModalStack.push(closeHandler);
+    document.body.style.overflow = 'hidden';
+
+    // Refit to the visual viewport and reveal the active field when the keyboard opens.
+    const viewport = window.visualViewport;
+    let revealFrame = 0;
+    const revealField = () => {
+      const field = document.activeElement;
+      if (!isTop() || !(field instanceof HTMLElement) || !panel.contains(field) ||
+          !field.matches('input, textarea, select, [contenteditable]')) return;
+      const scroller = field.closest<HTMLElement>('[data-dialog-scroll]');
+      if (!scroller) return;
+      const bounds = scroller.getBoundingClientRect();
+      const input = field.getBoundingClientRect();
+      if (input.top < bounds.top + 12) scroller.scrollTop += input.top - bounds.top - 12;
+      else if (input.bottom > bounds.bottom - 12) scroller.scrollTop += input.bottom - bounds.bottom + 12;
+    };
+    const syncViewport = () => {
+      if (!viewport) return;
+      overlay.style.setProperty('--dialog-top', `${viewport.offsetTop}px`);
+      overlay.style.setProperty('--dialog-left', `${viewport.offsetLeft}px`);
+      overlay.style.setProperty('--dialog-width', `${viewport.width}px`);
+      overlay.style.setProperty('--dialog-height', `${viewport.height}px`);
+    };
+    const isTop = () => openModalStack[openModalStack.length - 1] === closeHandler;
+    const onViewportResize = () => {
+      syncViewport();
+      window.cancelAnimationFrame(revealFrame);
+      revealFrame = window.requestAnimationFrame(revealField);
+    };
+    syncViewport();
+    viewport?.addEventListener('resize', onViewportResize);
+    viewport?.addEventListener('scroll', syncViewport);
+
+    const focusFrame = window.requestAnimationFrame(() => {
+      if (isTop() && !panel.contains(document.activeElement)) panel.focus({ preventScroll: true });
+    });
+
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (!isTop() || e.defaultPrevented) return;
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        closeHandler();
+      } else if (e.key === 'Tab') {
+        const stops = Array.from(panel.querySelectorAll<HTMLElement>(focusSelector))
+          .filter((el) => el.tabIndex >= 0 && el.getClientRects().length > 0 && !el.closest('[inert]'));
+        if (!stops.length) {
+          e.preventDefault();
+          return;
+        }
+        const focusedIdx = stops.indexOf(document.activeElement as HTMLElement);
+        if (focusedIdx === -1 || (e.shiftKey ? focusedIdx === 0 : focusedIdx === stops.length - 1)) {
+          e.preventDefault();
+          stops[e.shiftKey ? stops.length - 1 : 0].focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+
     return () => {
-      document.body.style.overflow = '';
+      document.removeEventListener('keydown', onKeyDown);
+      viewport?.removeEventListener('resize', onViewportResize);
+      viewport?.removeEventListener('scroll', syncViewport);
+      window.cancelAnimationFrame(focusFrame);
+      window.cancelAnimationFrame(revealFrame);
+      const wasTop = isTop();
+      const idx = openModalStack.lastIndexOf(closeHandler);
+      if (idx >= 0) openModalStack.splice(idx, 1);
+      if (!openModalStack.length) document.body.style.overflow = previousBodyOverflow;
+      if (wasTop && trigger?.isConnected && !panel.contains(trigger)) trigger.focus({ preventScroll: true });
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 animate-in fade-in duration-150">
+  return createPortal(
+    <div ref={viewportRef} className="dialog-viewport fixed z-50 flex items-center justify-center" data-no-swipe>
+      <div className="absolute inset-0 bg-black/45 backdrop-blur-xs anim-backdrop" aria-hidden="true" onClick={onClose} />
       <div
-        className="fixed inset-0 bg-black/45 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-      />
-
-      <div
-        className={`relative w-full ${maxWidth} max-h-[92vh] sm:max-h-[86vh] flex flex-col bg-[var(--surface)] border-t sm:border border-[var(--border)] rounded-t-3xl sm:rounded-3xl z-10 overflow-hidden`}
+        ref={panelRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={subtitle ? `${titleId}-description` : undefined}
+        tabIndex={-1}
+        className={`anim-dialog relative w-full ${maxWidth} max-h-full min-h-0 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-3xl shadow-2xl shadow-black/20 overflow-hidden`}
       >
-        <div className="w-full flex justify-center pt-2.5 pb-1 sm:hidden">
-          <div className="w-10 h-1.5 bg-[var(--border)] rounded-full" />
-        </div>
-
-        <div className="px-5 py-4 border-b border-[var(--border)] flex items-center justify-between shrink-0">
-          <div>
-            <h3 className="text-base sm:text-lg font-extrabold text-[var(--text)] tracking-tight">
+        <div className="px-5 py-3.5 sm:py-4 border-b border-[var(--border)] flex items-center justify-between gap-3 shrink-0">
+          <div className="min-w-0">
+            <h2 id={titleId} className="text-base sm:text-lg font-extrabold text-[var(--text)] tracking-tight break-words">
               {title}
-            </h3>
-            {subtitle && (
-              <p className="text-xs font-medium text-[var(--muted)] mt-0.5">{subtitle}</p>
-            )}
+            </h2>
+            {subtitle && <p id={`${titleId}-description`} className="text-xs font-medium text-[var(--muted)] mt-0.5">{subtitle}</p>}
           </div>
           <button
+            type="button"
             onClick={onClose}
-            aria-label="Close"
-            className="w-8 h-8 rounded-full bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center transition-colors"
+            aria-label={t.common.close}
+            className="pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
           >
             <X size={17} />
           </button>
         </div>
-
-        <div className="p-5 overflow-y-auto overscroll-contain flex-1 text-[var(--text)]">
+        <div data-dialog-scroll className="p-4 sm:p-5 overflow-y-auto overscroll-contain min-h-0 flex-1 text-[var(--text)]">
           {children}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

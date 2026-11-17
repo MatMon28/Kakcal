@@ -53,21 +53,24 @@ export const PoopModal: React.FC = () => {
         {/* Size */}
         <div>
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
-            {t.activities.intensity}
+            {t.settings.size}
           </span>
           <div className="grid grid-cols-5 gap-1.5">
             {options.map((o) => (
               <button
                 key={o.size}
                 type="button"
+                aria-pressed={size === o.size}
                 onClick={() => setSize(o.size)}
-                className={`py-2.5 rounded-2xl flex flex-col items-center justify-center gap-1 transition-colors border ${
+                className={`pressable py-2.5 min-h-[72px] rounded-2xl flex flex-col items-center justify-between gap-1 border ${
                   size === o.size
                     ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                    : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
-                <PoopIcon size={o.iconSize} strokeWidth={2} />
+                <span className="flex-1 flex items-center justify-center">
+                  <PoopIcon size={o.iconSize} />
+                </span>
                 <span className="text-[9px] font-bold leading-tight text-center px-0.5">
                   {o.label}
                 </span>
@@ -89,12 +92,13 @@ export const PoopModal: React.FC = () => {
               <button
                 key={bt}
                 type="button"
+                aria-pressed={bristol === bt}
                 onClick={() => setBristol((prev) => (prev === bt ? null : bt))}
                 title={bristolLabels[bt]}
-                className={`py-2 rounded-xl flex flex-col items-center gap-0.5 border transition-colors ${
+                className={`pressable py-2 rounded-xl flex flex-col items-center gap-0.5 border ${
                   bristol === bt
                     ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                    : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
                 <BristolIcon type={bt} size={22} />
@@ -103,7 +107,9 @@ export const PoopModal: React.FC = () => {
             ))}
           </div>
           {bristol && (
-            <p className="text-[11px] font-medium text-[var(--muted)] mt-1.5">{bristolLabels[bristol]}</p>
+            <p className="text-xs font-bold text-[#7D4E14] bg-[#FAE0B4] rounded-xl px-3 py-1.5 mt-2">
+              {bristolLabels[bristol]}
+            </p>
           )}
         </div>
 
@@ -118,14 +124,14 @@ export const PoopModal: React.FC = () => {
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
             placeholder={t.poop.descriptionPlaceholder}
-            className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none resize-none"
+            className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors resize-none"
           />
         </div>
 
         <button
           type="button"
           onClick={handleSave}
-          className="w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+          className="pressable w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>{t.poop.save}</span>

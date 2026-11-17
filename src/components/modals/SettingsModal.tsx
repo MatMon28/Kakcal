@@ -16,10 +16,11 @@ import {
   Plus,
   Trash2,
   Pencil,
+  Droplet,
+  X,
 } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
 import { TrackerIcon, TRACKER_ICONS } from '../common/TrackerIcon';
-import { Droplet } from 'lucide-react';
 
 export const SettingsModal: React.FC = () => {
   const {
@@ -66,21 +67,27 @@ export const SettingsModal: React.FC = () => {
   }, [allFoods, query]);
 
   const seg = (active: boolean) =>
-    `flex-1 py-2 rounded-xl text-xs font-extrabold text-center transition-colors ${
-      active ? 'bg-[var(--text)] text-[var(--surface)]' : 'bg-[var(--inset)] text-[var(--muted)]'
+    `pressable flex-1 py-2.5 rounded-xl text-xs font-extrabold text-center border ${
+      active
+        ? 'bg-[var(--text)] text-[var(--surface)] border-[var(--text)]'
+        : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
     }`;
 
-  const Toggle: React.FC<{ on: boolean; onClick: () => void }> = ({ on, onClick }) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`w-11 h-6 rounded-full p-0.5 transition-colors shrink-0 ${on ? 'bg-[#C9EFD3]' : 'bg-[var(--inset)]'}`}
-      aria-pressed={on}
+  const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
+    <span
+      aria-hidden="true"
+      className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
+        on
+          ? 'bg-[#C9EFD3] border-[#9ADBB0]'
+          : 'bg-[var(--border)] border-[var(--border)]'
+      }`}
     >
       <span
-        className={`block w-5 h-5 rounded-full bg-white shadow transition-transform ${on ? 'translate-x-5' : 'translate-x-0'}`}
+        className={`block w-5 h-5 rounded-full transition-transform duration-150 shadow-sm ${
+          on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
+        }`}
       />
-    </button>
+    </span>
   );
 
   const quickRows = [
@@ -112,6 +119,16 @@ export const SettingsModal: React.FC = () => {
     setCreatingBtn(true);
   };
 
+  const resetBtnForm = () => {
+    setCreatingBtn(false);
+    setEditingBtnId(null);
+    setNewBtnName('');
+    setNewBtnUnit('');
+    setNewBtnType('quantity');
+    setNewBtnIcon('sparkles');
+    setNewBtnStats(true);
+  };
+
   const finishBtnForm = () => {
     if (!newBtnName.trim()) return;
     const payload = {
@@ -126,13 +143,7 @@ export const SettingsModal: React.FC = () => {
         ? settings.customButtons.map((x) => (x.id === editingBtnId ? { ...x, ...payload } : x))
         : [...settings.customButtons, { id: 'cbtn-' + Date.now(), ...payload }],
     });
-    setCreatingBtn(false);
-    setEditingBtnId(null);
-    setNewBtnName('');
-    setNewBtnUnit('');
-    setNewBtnType('quantity');
-    setNewBtnIcon('sparkles');
-    setNewBtnStats(true);
+    resetBtnForm();
   };
 
   return (
@@ -146,24 +157,38 @@ export const SettingsModal: React.FC = () => {
               setPickerIdx(null);
               setQuery('');
             }}
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+            className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
           >
             <ArrowLeft size={14} />
             <span>{t.common.back}</span>
           </button>
 
           <div className="relative">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)]" />
+            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder={t.foodModal.searchPlaceholder}
+              placeholder={t.foodModal.typeToSearch}
               autoFocus
-              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-9 pr-3 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none"
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
             />
+            {query && (
+              <button
+                type="button"
+                onClick={() => setQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+                aria-label={t.common.clear}
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
-          {query.trim().length >= 2 && (
+          {query.trim().length < 2 ? (
+            <p className="text-[11px] font-medium text-[var(--muted)] px-1">
+              {t.foodModal.minCharsHint}
+            </p>
+          ) : (
             <div className="max-h-72 overflow-y-auto divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
               {pickerResults.length === 0 ? (
                 <div className="p-4 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
@@ -179,12 +204,12 @@ export const SettingsModal: React.FC = () => {
                       setPickerIdx(null);
                       setQuery('');
                     }}
-                    className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--border)] transition-colors"
+                    className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] transition-colors"
                   >
                     <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate">
                       {nameOf(food)}
                     </span>
-                    <span className="text-xs font-extrabold text-[var(--muted)] shrink-0">
+                    <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
                       {food.calories} kcal/100{food.unit}
                     </span>
                   </button>
@@ -203,10 +228,10 @@ export const SettingsModal: React.FC = () => {
             </span>
             <div className="flex gap-1.5">
               <button type="button" onClick={() => setLanguage('en')} className={seg(language === 'en')}>
-                EN
+                English (EN)
               </button>
               <button type="button" onClick={() => setLanguage('it')} className={seg(language === 'it')}>
-                IT
+                Italiano (IT)
               </button>
             </div>
           </div>
@@ -216,21 +241,22 @@ export const SettingsModal: React.FC = () => {
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
               {t.settings.theme}
             </span>
-            <div className="flex gap-1.5">
-              <button
-                type="button"
-                onClick={() => updateSettings({ theme: 'light' })}
-                className={seg(settings.theme === 'light')}
-              >
-                {t.settings.light}
-              </button>
-              <button
-                type="button"
-                onClick={() => updateSettings({ theme: 'dark' })}
-                className={seg(settings.theme === 'dark')}
-              >
-                {t.settings.dark}
-              </button>
+            <div className="flex gap-1.5" role="group" aria-label={t.settings.theme}>
+              {([
+                ['light', t.settings.light],
+                ['lite-dark', t.settings.liteDark],
+                ['dark', t.settings.dark],
+              ] as const).map(([theme, label]) => (
+                <button
+                  key={theme}
+                  type="button"
+                  aria-pressed={settings.theme === theme}
+                  onClick={() => updateSettings({ theme })}
+                  className={seg(settings.theme === theme)}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
 
@@ -242,26 +268,27 @@ export const SettingsModal: React.FC = () => {
             <div className="space-y-1.5">
               {quickRows.map((r) => {
                 const Icon = r.icon;
+                const isOn = settings.quickAdd[r.key];
                 return (
-                  <div
+                  <button
                     key={r.key}
-                    className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-3 py-2.5"
+                    type="button"
+                    aria-pressed={isOn}
+                    onClick={() =>
+                      updateSettings({
+                        quickAdd: { ...settings.quickAdd, [r.key]: !isOn },
+                      })
+                    }
+                    className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
                   >
                     <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
-                      <span className={`w-8 h-8 rounded-full flex items-center justify-center ${r.cls}`}>
+                      <span className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${r.cls}`}>
                         {Icon ? <Icon size={15} /> : <PoopIcon size={15} />}
                       </span>
                       {r.label}
                     </span>
-                    <Toggle
-                      on={settings.quickAdd[r.key]}
-                      onClick={() =>
-                        updateSettings({
-                          quickAdd: { ...settings.quickAdd, [r.key]: !settings.quickAdd[r.key] },
-                        })
-                      }
-                    />
-                  </div>
+                    <SwitchVisual on={isOn} />
+                  </button>
                 );
               })}
             </div>
@@ -281,14 +308,14 @@ export const SettingsModal: React.FC = () => {
                     key={i}
                     type="button"
                     onClick={() => setPickerIdx(i)}
-                    className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--border)] rounded-2xl px-3 py-2.5 transition-colors"
+                    className="pressable w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 text-left"
                   >
                     <span className="text-sm font-bold text-[var(--text)] truncate">
                       {f ? nameOf(f) : id}
                     </span>
                     <span className="flex items-center gap-1.5 shrink-0">
                       {f && (
-                        <span className="text-[11px] font-bold text-[var(--muted)]">
+                        <span className="text-[11px] font-bold tabular-nums text-[var(--muted)]">
                           {f.calories} kcal/100{f.unit}
                         </span>
                       )}
@@ -310,27 +337,30 @@ export const SettingsModal: React.FC = () => {
             </p>
 
             <div className="space-y-1.5">
-              {!creatingBtn &&
-                settings.customButtons.map((b) => (
+              {settings.customButtons.map((b) => (
                   <div
                     key={b.id}
                     className="flex items-center justify-between gap-2 bg-[var(--inset)] rounded-2xl px-3 py-2.5"
                   >
                     <span className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-8 h-8 rounded-full bg-[var(--surface)] text-[var(--text)] flex items-center justify-center shrink-0">
+                      <span className="w-8 h-8 rounded-full bg-[#E2D6FF] text-[#4D3582] flex items-center justify-center shrink-0">
                         <TrackerIcon icon={b.icon} size={15} />
                       </span>
-                      <span className="text-sm font-bold text-[var(--text)] truncate">{b.name}</span>
-                      <span className="text-[11px] font-bold text-[var(--muted)] shrink-0">
-                        {b.type === 'toggle' ? t.settings.typeToggle : `${t.settings.typeQuantity}${b.unit ? ' · ' + b.unit : ''}`}
-                        {b.showStats === false ? '' : ' · ' + t.settings.showStats}
+                      <span className="min-w-0">
+                        <span className="block text-sm font-bold text-[var(--text)] truncate">{b.name}</span>
+                        <span className="block text-[11px] font-bold text-[var(--muted)] truncate">
+                          {b.type === 'toggle'
+                            ? t.settings.typeToggle
+                            : `${t.settings.typeQuantity}${b.unit ? ' · ' + b.unit : ''}`}
+                          {b.showStats === false ? '' : ' · ' + t.settings.showStats}
+                        </span>
                       </span>
                     </span>
                     <span className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => startEditBtn(b.id)}
-                        className="w-7 h-7 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center transition-colors"
+                        className="pressable w-8 h-8 rounded-full text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
                         title={t.settings.editCustomBtn}
                         aria-label={t.settings.editCustomBtn}
                       >
@@ -341,7 +371,7 @@ export const SettingsModal: React.FC = () => {
                         onClick={() =>
                           updateSettings({ customButtons: settings.customButtons.filter((x) => x.id !== b.id) })
                         }
-                        className="w-7 h-7 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0]/60 flex items-center justify-center transition-colors"
+                        className="pressable w-8 h-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
                         title={t.settings.deleteCustomBtn}
                         aria-label={t.settings.deleteCustomBtn}
                       >
@@ -351,16 +381,25 @@ export const SettingsModal: React.FC = () => {
                   </div>
                 ))}
 
-              {creatingBtn ? (
-                <div className="bg-[var(--inset)] rounded-2xl p-3 space-y-2.5">
+              <Modal
+                isOpen={creatingBtn}
+                onClose={resetBtnForm}
+                title={editingBtnId ? t.settings.editCustomBtn : t.settings.newCustomBtn}
+                maxWidth="max-w-md"
+              >
+                <div className="space-y-3">
                   <input
                     type="text"
                     value={newBtnName}
                     onChange={(e) => setNewBtnName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newBtnName.trim()) finishBtnForm();
+                    }}
                     placeholder={t.settings.customNamePlaceholder}
+                    aria-label={t.settings.customName}
                     maxLength={40}
                     autoFocus
-                    className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none"
+                    className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
                   />
 
                   {/* Icon picker */}
@@ -375,9 +414,10 @@ export const SettingsModal: React.FC = () => {
                           type="button"
                           onClick={() => setNewBtnIcon(ic)}
                           aria-label={ic}
-                          className={`h-9 rounded-xl flex items-center justify-center border transition-colors ${
+                          aria-pressed={newBtnIcon === ic}
+                          className={`pressable h-9 rounded-xl flex items-center justify-center border ${
                             newBtnIcon === ic
-                              ? 'bg-[var(--surface)] border-[var(--text)] text-[var(--text)]'
+                              ? 'bg-[#E2D6FF] border-[#C9B8F2] text-[#4D3582]'
                               : 'bg-[var(--surface)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]'
                           }`}
                         >
@@ -391,7 +431,7 @@ export const SettingsModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setNewBtnType('quantity')}
-                      className={`py-2 rounded-xl text-xs font-extrabold border ${
+                      className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
                         newBtnType === 'quantity'
                           ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
                           : 'bg-[var(--surface)] text-[var(--muted)] border-[var(--border)]'
@@ -402,7 +442,7 @@ export const SettingsModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setNewBtnType('toggle')}
-                      className={`py-2 rounded-xl text-xs font-extrabold border ${
+                      className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
                         newBtnType === 'toggle'
                           ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
                           : 'bg-[var(--surface)] text-[var(--muted)] border-[var(--border)]'
@@ -417,31 +457,32 @@ export const SettingsModal: React.FC = () => {
                       type="text"
                       value={newBtnUnit}
                       onChange={(e) => setNewBtnUnit(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && newBtnName.trim()) finishBtnForm();
+                      }}
                       placeholder={t.settings.customUnitPlaceholder}
+                      aria-label={t.settings.customUnit}
                       maxLength={12}
-                      className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none"
+                      className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
                     />
                   )}
 
                   {/* Statistics question */}
-                  <label className="flex items-center justify-between bg-[var(--surface)] rounded-xl px-3 py-2 cursor-pointer">
+                  <button
+                    type="button"
+                    aria-pressed={newBtnStats}
+                    onClick={() => setNewBtnStats((v) => !v)}
+                    className="w-full flex items-center justify-between gap-2 bg-[var(--surface)] rounded-xl px-3 py-2 text-left"
+                  >
                     <span className="text-xs font-bold text-[var(--text)]">{t.settings.showStatsQ}</span>
-                    <input
-                      type="checkbox"
-                      checked={newBtnStats}
-                      onChange={(e) => setNewBtnStats(e.target.checked)}
-                      className="w-4 h-4 accent-[#7C5CBF]"
-                    />
-                  </label>
+                    <SwitchVisual on={newBtnStats} />
+                  </button>
 
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => {
-                        setCreatingBtn(false);
-                        setEditingBtnId(null);
-                      }}
-                      className="flex-1 py-2 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-extrabold text-[var(--muted)]"
+                      onClick={resetBtnForm}
+                      className="pressable flex-1 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-extrabold text-[var(--muted)]"
                     >
                       {t.common.cancel}
                     </button>
@@ -449,52 +490,59 @@ export const SettingsModal: React.FC = () => {
                       type="button"
                       disabled={!newBtnName.trim()}
                       onClick={finishBtnForm}
-                      className="flex-1 py-2 rounded-xl bg-[#C9EFD3] text-[#174A2B] text-xs font-extrabold disabled:opacity-40"
+                      className="pressable flex-1 py-2.5 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold disabled:opacity-40"
                     >
                       {t.common.save}
                     </button>
                   </div>
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setCreatingBtn(true)}
-                  className="w-full py-2.5 rounded-2xl bg-[var(--surface)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <Plus size={14} strokeWidth={2.5} />
-                  <span>{t.settings.newCustomBtn}</span>
-                </button>
-              )}
+              </Modal>
+              <button
+                type="button"
+                onClick={() => setCreatingBtn(true)}
+                className="pressable w-full py-2.5 rounded-2xl bg-[var(--surface)] hover:bg-[var(--inset)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center gap-1.5"
+              >
+                <Plus size={14} strokeWidth={2.5} />
+                <span>{t.settings.newCustomBtn}</span>
+              </button>
             </div>
           </div>
 
-          {/* Hide poop fields */}
-          <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-3 py-2.5">
-            <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
-              <span className="w-8 h-8 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center">
-                <PoopIcon size={15} />
+          {/* Visibility toggles */}
+          <div className="space-y-1.5">
+            <button
+              type="button"
+              aria-pressed={settings.hidePoop}
+              onClick={() => updateSettings({ hidePoop: !settings.hidePoop })}
+              className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
+                <span className="w-8 h-8 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center shrink-0">
+                  <PoopIcon size={15} />
+                </span>
+                {t.settings.hidePoop}
               </span>
-              {t.settings.hidePoop}
-            </span>
-            <Toggle on={settings.hidePoop} onClick={() => updateSettings({ hidePoop: !settings.hidePoop })} />
-          </div>
+              <SwitchVisual on={settings.hidePoop} />
+            </button>
 
-          {/* Hide Period page */}
-          <div className="flex items-center justify-between bg-[var(--inset)] rounded-2xl px-3 py-2.5">
-            <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
-              <span className="w-8 h-8 rounded-full bg-[#F4C6D8] text-[#6E2440] flex items-center justify-center">
-                <Droplet size={15} />
-              </span>
-              {t.settings.hidePeriod}
-            </span>
-            <Toggle
-              on={settings.hidePeriod}
+            <button
+              type="button"
+              aria-pressed={settings.hidePeriod}
               onClick={() => {
                 const next = !settings.hidePeriod;
-                updateSettings({ hidePeriod: next });
+                updateSettings({ hidePeriod: next, hidePeriodCustomized: true });
                 if (next && activeTab === 'period') setActiveTab('today');
               }}
-            />
+              className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
+                <span className="w-8 h-8 rounded-full bg-[#F4C6D8] text-[#6E2440] flex items-center justify-center shrink-0">
+                  <Droplet size={15} />
+                </span>
+                {t.settings.hidePeriod}
+              </span>
+              <SwitchVisual on={settings.hidePeriod} />
+            </button>
           </div>
 
           {/* Foods database */}
@@ -504,18 +552,18 @@ export const SettingsModal: React.FC = () => {
               close();
               setActiveTab('database');
             }}
-            className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--border)] rounded-2xl px-3 py-3 transition-colors"
+            className="pressable w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 text-left"
           >
             <span className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center">
+              <span className="w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
                 <BookOpen size={15} />
               </span>
-              <span className="text-left">
+              <span>
                 <span className="block text-sm font-extrabold text-[var(--text)]">{t.settings.foodsDatabase}</span>
                 <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.foodsDesc}</span>
               </span>
             </span>
-            <ChevronRight size={16} className="text-[var(--muted)]" />
+            <ChevronRight size={16} className="text-[var(--muted)] shrink-0" />
           </button>
         </div>
       )}

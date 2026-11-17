@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import {
   ActiveTab,
   ActivityLog,
@@ -12,12 +12,14 @@ import {
   PeriodData,
   PeriodDayLog,
   PeriodSettings,
+  PeriodTag,
   PoopEntry,
   PoopSize,
   WaterEntry,
   BristolType,
   PreBuiltMeal,
   Settings,
+  Theme,
   UserProfile,
 } from '../types';
 import { VERIFIED_FOODS } from '../data/verifiedFoods';
@@ -31,6 +33,8 @@ import {
 } from '../utils/calculations';
 import { addDaysToDateString, getTodayDateString } from '../utils/formatters';
 import { translations } from '../i18n/translations';
+import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../utils/customTrackers';
+import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
 
 interface AppContextType {
   language: Language;
@@ -42,6 +46,7 @@ interface AppContextType {
   updateUserProfile: (profile: UserProfile) => void;
   allFoods: FoodItem[];
   addCustomFood: (food: FoodItem) => void;
+  deleteCustomFood: (foodId: string) => void;
   currentDayLog: DayLog;
   logFoodItem: (
     mealSlot: MealSlotId,
@@ -93,6 +98,7 @@ interface AppContextType {
   updateSettings: (partial: Partial<Settings>) => void;
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
+  returnFromDatabase: () => void;
   isSettingsOpen: boolean;
   setIsSettingsOpen: (open: boolean) => void;
   isWaterOpen: boolean;
@@ -113,31 +119,23 @@ interface AppContextType {
   clearPeriodDay: (date: string) => void;
   markPeriodStart: (date: string) => void;
   markPeriodEnd: (date: string) => void;
-  togglePill: (date: string) => boolean;
-  addPeriodTag: (group: 'mood' | 'symptom', label: string) => string | null;
-  renamePeriodTag: (group: 'mood' | 'symptom', id: string, label: string) => boolean;
-  deletePeriodTag: (group: 'mood' | 'symptom', id: string) => void;
-  toggleHiddenBuiltin: (id: string) => void;
+  addPeriodTag: (group: PeriodTagGroup, label: string) => string | null;
+  deletePeriodTag: (group: PeriodTagGroup, id: string) => void;
+  resetPeriodTags: (group: PeriodTagGroup) => void;
   periodSelectedDate: string;
   setPeriodSelectedDate: (d: string) => void;
   isPeriodSheetOpen: boolean;
   setIsPeriodSheetOpen: (open: boolean) => void;
-  toast: { message: string; undo?: () => void } | null;
-  showToast: (message: string, undo?: () => void) => void;
-  hideToast: () => void;
   customActivities: string[];
   addCustomActivity: (name: string) => void;
   logWater: (ml: number, date?: string) => void;
   removeWaterEntry: (id: string, date?: string) => void;
   logCustom: (buttonId: string, value: number | boolean, date?: string) => void;
+  removeCustomEntry: (buttonId: string, entryId: string, date?: string) => void;
   waterTotalFor: (date: string) => number;
   logWeight: (kg: number, date?: string) => void;
   logPoop: (size: PoopSize, date?: string, description?: string, bristol?: BristolType) => void;
   removePoop: (poopId: string, date?: string) => void;
-  isPrebuiltModalOpen: boolean;
-  setIsPrebuiltModalOpen: (open: boolean) => void;
-  prebuiltToLog: PreBuiltMeal | null;
-  setPrebuiltToLog: (meal: PreBuiltMeal | null) => void;
   // Data Backup
   exportDataJson: () => string;
   importDataJson: (jsonStr: string) => boolean;
@@ -165,9 +163,8 @@ const DEFAULT_PERIOD_SETTINGS: PeriodSettings = {
   pillTrackingSince: null,
   showNutrition: false,
   showPhaseBandsInStats: false,
-  customMoods: [],
-  customSymptoms: [],
-  hiddenBuiltins: [],
+  moodTags: getDefaultPeriodTags('mood'),
+  symptomTags: getDefaultPeriodTags('symptom'),
 };
 
 const clampInt = (v: unknown, min: number, max: number, dflt: number) => {
@@ -178,19 +175,41 @@ const clampInt = (v: unknown, min: number, max: number, dflt: number) => {
 
 const isDateStr = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
 
+const normalizeTheme = (value: unknown): Theme => value === 'dark' || value === 'lite-dark' ? value : 'light';
+
+function normalizeDayLogs(logs: Record<string, DayLog>): Record<string, DayLog> {
+  return Object.fromEntries(Object.entries(logs).map(([date, raw]) => {
+    const log = migrateCustomEntries(raw.date === date ? raw : { ...raw, date });
+    const legacyWater = log.waterMl;
+    const noon = new Date(`${date}T12:00:00`);
+    if (typeof legacyWater === 'number' && legacyWater > 0 && !log.waterEntries?.length && Number.isFinite(noon.getTime())) {
+      const { waterMl: _legacy, ...day } = log;
+      return [date, { ...day, waterEntries: [{ id: `water-legacy-${date}`, ml: legacyWater, timestamp: noon.toISOString() }] }];
+    }
+    return [date, log];
+  }));
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function normalizePeriodSettings(p: any): PeriodSettings {
   const src = p || {};
   const legacyPack = src.pillPack === 21 || src.pillPack === 28;
   const packLength = legacyPack ? 28 : clampInt(src.packLength, 1, 365, 28);
   const inactiveDays = legacyPack ? 7 : clampInt(src.inactiveDays, 0, Math.max(0, packLength - 1), Math.min(7, packLength - 1));
-  const tags = (arr: unknown) =>
-    Array.isArray(arr)
-      ? arr
-          .filter((t) => t && typeof t.id === 'string' && typeof t.label === 'string')
-          .map((t) => ({ id: t.id as string, label: String(t.label).slice(0, 24) }))
-          .slice(0, 30)
-      : [];
+  const tags = (arr: unknown): PeriodTag[] => Array.isArray(arr)
+    ? arr.filter((tag) => tag && typeof tag.id === 'string' && typeof tag.label === 'string' && tag.label.trim())
+        .map(({ id, label }) => ({ id, label: label.trim().slice(0, 24) }))
+    : [];
+  const catalogue = (group: PeriodTagGroup) => {
+    const defaults = getDefaultPeriodTags(group);
+    const stored = src[periodTagListKey(group)];
+    const hidden = Array.isArray(src.hiddenBuiltins) ? src.hiddenBuiltins : [];
+    const legacy = group === 'mood' ? src.customMoods : src.customSymptoms;
+    const list = Array.isArray(stored)
+      ? tags(stored)
+      : [...defaults.filter((tag) => !hidden.includes(tag.id)), ...tags(legacy)];
+    return [...new Map(list.map((tag) => [tag.id, tag])).values()].slice(0, defaults.length + 30);
+  };
   return {
     cycleLength: clampInt(src.cycleLength, 15, 60, 28),
     periodDuration: clampInt(src.periodDuration, 1, 15, 5),
@@ -201,9 +220,8 @@ function normalizePeriodSettings(p: any): PeriodSettings {
     pillTrackingSince: isDateStr(src.pillTrackingSince) ? src.pillTrackingSince : null,
     showNutrition: Boolean(src.showNutrition),
     showPhaseBandsInStats: Boolean(src.showPhaseBandsInStats),
-    customMoods: tags(src.customMoods),
-    customSymptoms: tags(src.customSymptoms),
-    hiddenBuiltins: Array.isArray(src.hiddenBuiltins) ? src.hiddenBuiltins.filter((x: unknown) => typeof x === 'string') : [],
+    moodTags: catalogue('mood'),
+    symptomTags: catalogue('symptom'),
   };
 }
 
@@ -217,8 +235,11 @@ function normalizePeriodLogs(raw: any): PeriodData['logs'] {
   for (const d of Object.keys(raw)) {
     if (!isDateStr(d)) continue;
     const l = raw[d] || {};
-    const moods = Array.isArray(l.moods) ? l.moods.map((m: string) => (LEGACY_MOODS.includes(m) ? `mood.${m}` : m)) : [];
-    const symptoms = Array.isArray(l.symptoms) ? l.symptoms.map((m: string) => (LEGACY_SYMS.includes(m) ? `sym.${m}` : m)) : [];
+    const tagIds = (arr: unknown, legacy: string[], prefix: string) => Array.isArray(arr)
+      ? arr.filter((id): id is string => typeof id === 'string').map((id) => legacy.includes(id) ? `${prefix}.${id}` : id)
+      : [];
+    const moods = tagIds(l.moods, LEGACY_MOODS, 'mood');
+    const symptoms = tagIds(l.symptoms, LEGACY_SYMS, 'sym');
     const flow = ['none', 'light', 'medium', 'heavy'].includes(l.flow) ? l.flow : 'none';
     out[d] = {
       isPeriod: Boolean(l.isPeriod) || flow !== 'none',
@@ -226,6 +247,7 @@ function normalizePeriodLogs(raw: any): PeriodData['logs'] {
       moods,
       symptoms,
       pillTaken: l.pillTaken === undefined ? undefined : Boolean(l.pillTaken),
+      intercourse: l.intercourse === true ? true : undefined,
       notes: typeof l.notes === 'string' ? l.notes : undefined,
       updatedAt: typeof l.updatedAt === 'string' ? l.updatedAt : new Date().toISOString(),
     };
@@ -282,8 +304,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const updateUserProfile = (profile: UserProfile) => {
+    const sexChanged = profile.sex !== userProfile.sex;
     setUserProfileState(profile);
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
+    if (sexChanged) {
+      setSettingsState((prev) => {
+        if (prev.hidePeriodCustomized) return prev;
+        const hidePeriod = profile.sex === 'male';
+        if (hidePeriod) {
+          setActiveTabState((tab) => (tab === 'period' ? 'today' : tab));
+        }
+        const next = { ...prev, hidePeriod };
+        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
+        return next;
+      });
+    }
   };
 
   // 4. Custom Foods
@@ -307,28 +342,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const allFoods = [...customFoods, ...VERIFIED_FOODS];
+  const deleteCustomFood = (foodId: string) => {
+    setCustomFoods((prev) => {
+      const updated = prev.filter((f) => f.id !== foodId);
+      localStorage.setItem(STORAGE_KEYS.CUSTOM_FOODS, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const allFoods = useMemo(() => [...customFoods, ...VERIFIED_FOODS], [customFoods]);
 
   // 5. Day Logs with realistic initial data for today and yesterday if first launch
   const [dayLogs, setDayLogs] = useState<Record<string, DayLog>>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.DAY_LOGS);
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        // migrate legacy waterMl totals into individual entries
-        for (const d of Object.keys(parsed)) {
-          const log = parsed[d];
-          if (typeof log.waterMl === 'number' && log.waterMl > 0 && !(log.waterEntries || []).length) {
-            log.waterEntries = [
-              {
-                id: 'water-legacy-' + d,
-                ml: log.waterMl,
-                timestamp: new Date(d + 'T12:00:00').toISOString(),
-              },
-            ];
-          }
-        }
-        if (Object.keys(parsed).length > 0) return parsed;
+        return normalizeDayLogs(JSON.parse(saved));
       } catch (e) {
         console.error('Failed to parse day logs', e);
       }
@@ -659,9 +688,34 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return initialSeeds;
   });
 
+  const emptyDayFor = (date: string): DayLog => ({
+    date,
+    meals: {
+      breakfast: [],
+      mid_morning: [],
+      lunch: [],
+      midday_snack: [],
+      dinner: [],
+      extra: [],
+    },
+    activities: [],
+    waterEntries: [],
+    poops: [],
+    custom: {},
+  });
+
   const saveDayLogs = (newLogs: Record<string, DayLog>) => {
     setDayLogs(newLogs);
     localStorage.setItem(STORAGE_KEYS.DAY_LOGS, JSON.stringify(newLogs));
+  };
+
+  const mutateDay = (date: string, fn: (day: DayLog) => DayLog) => {
+    setDayLogs((prev) => {
+      const base = prev[date] || emptyDayFor(date);
+      const next = { ...prev, [date]: fn(base) };
+      localStorage.setItem(STORAGE_KEYS.DAY_LOGS, JSON.stringify(next));
+      return next;
+    });
   };
 
   // 6. Prebuilt Meals
@@ -683,21 +737,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'prebuilt-' + Date.now(),
       createdAt: new Date().toISOString(),
     };
-    const updated = [newMeal, ...preBuiltMeals];
-    setPreBuiltMeals(updated);
-    localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
+    setPreBuiltMeals((prev) => {
+      const updated = [newMeal, ...prev];
+      localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const updatePreBuiltMeal = (updatedMeal: PreBuiltMeal) => {
-    const updated = preBuiltMeals.map((m) => (m.id === updatedMeal.id ? updatedMeal : m));
-    setPreBuiltMeals(updated);
-    localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
+    setPreBuiltMeals((prev) => {
+      const updated = prev.map((m) => (m.id === updatedMeal.id ? updatedMeal : m));
+      localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const deletePreBuiltMeal = (mealId: string) => {
-    const updated = preBuiltMeals.filter((m) => m.id !== mealId);
-    setPreBuiltMeals(updated);
-    localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
+    setPreBuiltMeals((prev) => {
+      const updated = prev.filter((m) => m.id !== mealId);
+      localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   // Modals state
@@ -706,8 +766,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [isLogActivityOpen, setIsLogActivityOpen] = useState(false);
   const [isBarcodeOpen, setIsBarcodeOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isPrebuiltModalOpen, setIsPrebuiltModalOpen] = useState(false);
-  const [prebuiltToLog, setPrebuiltToLog] = useState<PreBuiltMeal | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isWaterOpen, setIsWaterOpen] = useState(false);
   const [isPoopOpen, setIsPoopOpen] = useState(false);
@@ -737,22 +795,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEYS.PERIOD, JSON.stringify(next));
   };
 
-  // Date selected on the Period calendar (shared with the Period dock)
+  // Date selected on the Period calendar (shared with the quick-log dialog)
   const [periodSelectedDate, setPeriodSelectedDate] = useState<string>(getTodayDateString());
   const [isPeriodSheetOpen, setIsPeriodSheetOpen] = useState(false);
-
-  // Toast with optional undo
-  const [toast, setToast] = useState<{ message: string; undo?: () => void } | null>(null);
-  const toastTimer = React.useRef<number | null>(null);
-  const showToast = (message: string, undo?: () => void) => {
-    if (toastTimer.current) window.clearTimeout(toastTimer.current);
-    setToast({ message, undo });
-    toastTimer.current = window.setTimeout(() => setToast(null), 4500);
-  };
-  const hideToast = () => {
-    if (toastTimer.current) window.clearTimeout(toastTimer.current);
-    setToast(null);
-  };
 
   const updatePeriodSettings = (partial: Partial<PeriodSettings>) => {
     const cur = periodRef.current;
@@ -776,7 +821,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // consistency: flow ≠ none ⇒ period day; unmarking ⇒ flow none
     if (partial.flow !== undefined && partial.flow !== 'none') next.isPeriod = true;
     if (partial.isPeriod === false) next = { ...next, flow: 'none' };
-    return { ...logs, [date]: next };
+    const updated = { ...logs };
+    if (!next.isPeriod && !next.moods.length && !next.symptoms.length &&
+        next.pillTaken === undefined && !next.intercourse && !next.notes?.trim()) {
+      delete updated[date];
+    } else {
+      updated[date] = next;
+    }
+    return updated;
   };
 
   const updatePeriodDay = (date: string, partial: Partial<PeriodDayLog>) => {
@@ -828,76 +880,74 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     savePeriodData({ ...cur, logs });
   };
 
-  /** Toggle pill taken for a date; returns the previous value for undo. */
-  const togglePill = (date: string): boolean => {
-    const cur = periodRef.current;
-    const prev = Boolean(cur.logs[date]?.pillTaken);
-    savePeriodData({ ...cur, logs: writeDay(cur.logs, date, { pillTaken: !prev }) });
-    return prev;
-  };
-
-  // ---- custom tags ----
-  const tagGroupKey = (g: 'mood' | 'symptom'): 'customMoods' | 'customSymptoms' =>
-    g === 'mood' ? 'customMoods' : 'customSymptoms';
-  const addPeriodTag = (group: 'mood' | 'symptom', label: string): string | null => {
+  const addPeriodTag = (group: PeriodTagGroup, label: string): string | null => {
     const cur = periodRef.current;
     const name = label.trim();
     if (name.length < 1 || name.length > 24) return null;
-    const key = tagGroupKey(group);
+    const key = periodTagListKey(group);
     const list = cur.settings[key];
-    if (list.length >= 30) return null;
-    const builtins = (group === 'mood'
-      ? ['happy', 'calm', 'tired', 'irritable', 'anxious']
-      : ['cramps', 'bloating', 'headache', 'fatigue', 'cravings']
-    ).flatMap((k) => [
-      translations.en.period[`${group === 'mood' ? 'mood' : 'sym'}_${k}` as keyof typeof translations.en.period] as string,
-      translations.it.period[`${group === 'mood' ? 'mood' : 'sym'}_${k}` as keyof typeof translations.it.period] as string,
-    ]);
+    const defaults = getDefaultPeriodTags(group);
+    if (list.filter((tag) => !defaults.some((entry) => entry.id === tag.id)).length >= 30) return null;
+    const builtins = defaults.flatMap(({ label: slug }) => {
+      const translationKey = `${group === 'mood' ? 'mood' : 'sym'}_${slug}` as keyof typeof translations.en.period;
+      return [translations.en.period[translationKey], translations.it.period[translationKey]];
+    });
     const lower = name.toLowerCase();
-    if (list.some((x) => x.label.toLowerCase() === lower) || builtins.some((b) => b.toLowerCase() === lower)) return null;
-    const id = 'c_' + Math.random().toString(36).slice(2, 6) + Date.now().toString(36).slice(-2);
+    if (list.some((tag) => tag.label.toLowerCase() === lower) || builtins.some((label) => label.toLowerCase() === lower)) return null;
+    const id = 'c_' + Math.random().toString(36).slice(2, 8) + Date.now().toString(36).slice(-4);
     savePeriodData({ ...cur, settings: { ...cur.settings, [key]: [...list, { id, label: name }] } });
     return id;
   };
-  const renamePeriodTag = (group: 'mood' | 'symptom', id: string, label: string): boolean => {
+
+  const deletePeriodTag = (group: PeriodTagGroup, id: string) => {
     const cur = periodRef.current;
-    const name = label.trim();
-    if (name.length < 1 || name.length > 24) return false;
-    const key = tagGroupKey(group);
-    const list = cur.settings[key];
-    if (list.some((x) => x.id !== id && x.label.toLowerCase() === name.toLowerCase())) return false;
+    const key = periodTagListKey(group);
     savePeriodData({
-      ...cur,
-      settings: { ...cur.settings, [key]: list.map((x) => (x.id === id ? { ...x, label: name } : x)) },
+      settings: { ...cur.settings, [key]: cur.settings[key].filter((tag) => tag.id !== id) },
+      logs: prunePeriodTags(cur.logs, group, (tagId) => tagId !== id),
     });
-    return true;
   };
-  const deletePeriodTag = (group: 'mood' | 'symptom', id: string) => {
+
+  const resetPeriodTags = (group: PeriodTagGroup) => {
     const cur = periodRef.current;
-    const key = tagGroupKey(group);
-    // keep past days as-is (history shows the stored label via tagLabel fallback = id); remember label
-    savePeriodData({ ...cur, settings: { ...cur.settings, [key]: cur.settings[key].filter((x) => x.id !== id) } });
-  };
-  const toggleHiddenBuiltin = (id: string) => {
-    const cur = periodRef.current;
-    const h = cur.settings.hiddenBuiltins;
+    const defaults = getDefaultPeriodTags(group);
+    const ids = new Set(defaults.map((tag) => tag.id));
     savePeriodData({
-      ...cur,
-      settings: { ...cur.settings, hiddenBuiltins: h.includes(id) ? h.filter((x) => x !== id) : [...h, id] },
+      settings: { ...cur.settings, [periodTagListKey(group)]: defaults },
+      logs: prunePeriodTags(cur.logs, group, (id) => ids.has(id)),
     });
   };
 
   // Navigation tab (lifted so Settings can jump to the Foods database)
-  const [activeTab, setActiveTab] = useState<ActiveTab>('today');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>('today');
+  const lastMainTabRef = React.useRef<ActiveTab>('today');
+  const setActiveTab = (tab: ActiveTab) => {
+    setActiveTabState((prev) => {
+      if (prev !== 'database') lastMainTabRef.current = prev;
+      return tab;
+    });
+  };
+  const returnFromDatabase = () => {
+    const target = lastMainTabRef.current;
+    setActiveTabState(target === 'period' && settings.hidePeriod ? 'today' : target);
+  };
 
-  // Settings (theme, quick-add buttons, hide poop/period)
+  // Settings (theme, quick-add buttons, hide poop/period — Period hidden by default for male profiles)
   const [settings, setSettingsState] = useState<Settings>(() => {
+    const defaultHidePeriod = userProfile.sex === 'male';
     const saved = localStorage.getItem(STORAGE_KEYS.SETTINGS);
     if (saved) {
       try {
         const p = JSON.parse(saved);
+        const customized = Boolean(p.hidePeriodCustomized);
+        const hasPeriodLogs = Object.keys(periodData.logs).length > 0;
+        const resolvedHidePeriod = customized
+          ? Boolean(p.hidePeriod)
+          : p.hidePeriod === true
+          ? true
+          : defaultHidePeriod && !hasPeriodLogs;
         return {
-          theme: p.theme === 'dark' ? 'dark' : 'light',
+          theme: normalizeTheme(p.theme),
           quickAdd: {
             food: true,
             movement: true,
@@ -908,7 +958,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             ...(p.quickAdd || {}),
           },
           hidePoop: Boolean(p.hidePoop),
-          hidePeriod: Boolean(p.hidePeriod),
+          hidePeriod: resolvedHidePeriod,
+          hidePeriodCustomized: customized,
           quickFoods:
             Array.isArray(p.quickFoods) && p.quickFoods.length === 3
               ? p.quickFoods
@@ -929,7 +980,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       theme: 'light',
       quickAdd: { food: true, movement: true, water: true, poop: true, weight: true, custom: true },
       hidePoop: false,
-      hidePeriod: false,
+      hidePeriod: defaultHidePeriod,
+      hidePeriodCustomized: false,
       quickFoods: DEFAULT_QUICK_FOODS,
       customButtons: [],
     };
@@ -957,7 +1009,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateSettings = (partial: Partial<Settings>) => {
     setSettingsState((prev) => {
-      const next = { ...prev, ...partial };
+      const next = { ...prev, ...partial, theme: normalizeTheme(partial.theme ?? prev.theme) };
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
       return next;
     });
@@ -965,29 +1017,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', settings.theme);
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) {
+      meta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
+    }
   }, [settings.theme]);
 
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
   // Helper to get or create DayLog
-  const getDayLog = (date: string): DayLog => {
-    if (dayLogs[date]) {
-      return dayLogs[date];
-    }
-    return {
-      date,
-      meals: {
-        breakfast: [],
-        mid_morning: [],
-        lunch: [],
-        midday_snack: [],
-        dinner: [],
-        extra: [],
-      },
-      activities: [],
-      waterEntries: [],
-      poops: [],
-      custom: {},
-    };
-  };
+  const getDayLog = (date: string): DayLog => dayLogs[date] || emptyDayFor(date);
 
   const currentDayLog = getDayLog(selectedDate);
 
@@ -1001,11 +1042,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     amount: number,
     date: string = selectedDate
   ) => {
-    const activeDay = getDayLog(date);
-    const itemName = language === 'it' ? food.name_it : (food.name_en || food.name_de);
-
+    const itemName = language === 'it' ? food.name_it : food.name_en || food.name_de;
     const newLoggedItem: LoggedFoodItem = {
-      id: 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
+      id: 'item-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
       foodId: food.id,
       name: itemName,
       store: food.store,
@@ -1020,19 +1059,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       loggedAt: new Date().toISOString(),
     };
 
-    const updatedSlot = [...activeDay.meals[mealSlot], newLoggedItem];
-    const updatedDay: DayLog = {
-      ...activeDay,
+    mutateDay(date, (day) => ({
+      ...day,
       meals: {
-        ...activeDay.meals,
-        [mealSlot]: updatedSlot,
+        ...day.meals,
+        [mealSlot]: [...day.meals[mealSlot], newLoggedItem],
       },
-    };
-
-    saveDayLogs({
-      ...dayLogs,
-      [date]: updatedDay,
-    });
+    }));
   };
 
   // Remove logged food item
@@ -1041,19 +1074,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     loggedItemId: string,
     date: string = selectedDate
   ) => {
-    const activeDay = getDayLog(date);
-    const updatedSlot = activeDay.meals[mealSlot].filter((item) => item.id !== loggedItemId);
-    const updatedDay: DayLog = {
-      ...activeDay,
+    mutateDay(date, (day) => ({
+      ...day,
       meals: {
-        ...activeDay.meals,
-        [mealSlot]: updatedSlot,
+        ...day.meals,
+        [mealSlot]: day.meals[mealSlot].filter((item) => item.id !== loggedItemId),
       },
-    };
-    saveDayLogs({
-      ...dayLogs,
-      [date]: updatedDay,
-    });
+    }));
   };
 
   // Update logged food item amount
@@ -1063,21 +1090,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     newAmount: number,
     date: string = selectedDate
   ) => {
-    const activeDay = getDayLog(date);
-    const updatedSlot = activeDay.meals[mealSlot].map((item) =>
-      item.id === loggedItemId ? { ...item, amount: newAmount } : item
-    );
-    const updatedDay: DayLog = {
-      ...activeDay,
+    mutateDay(date, (day) => ({
+      ...day,
       meals: {
-        ...activeDay.meals,
-        [mealSlot]: updatedSlot,
+        ...day.meals,
+        [mealSlot]: day.meals[mealSlot].map((item) =>
+          item.id === loggedItemId ? { ...item, amount: newAmount } : item
+        ),
       },
-    };
-    saveDayLogs({
-      ...dayLogs,
-      [date]: updatedDay,
-    });
+    }));
   };
 
   // Log activity
@@ -1085,85 +1106,75 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     activityData: Omit<ActivityLog, 'id' | 'timestamp'>,
     date: string = selectedDate
   ) => {
-    const activeDay = getDayLog(date);
     const newActivity: ActivityLog = {
       ...activityData,
-      id: 'act-' + Date.now(),
+      id: 'act-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
       timestamp: new Date().toISOString(),
     };
-
-    const updatedDay: DayLog = {
-      ...activeDay,
-      activities: [...activeDay.activities, newActivity],
-    };
-
-    saveDayLogs({
-      ...dayLogs,
-      [date]: updatedDay,
-    });
+    mutateDay(date, (day) => ({
+      ...day,
+      activities: [...day.activities, newActivity],
+    }));
   };
 
   // Remove activity
   const removeActivity = (activityId: string, date: string = selectedDate) => {
-    const activeDay = getDayLog(date);
-    const updatedDay: DayLog = {
-      ...activeDay,
-      activities: activeDay.activities.filter((act) => act.id !== activityId),
-    };
-    saveDayLogs({
-      ...dayLogs,
-      [date]: updatedDay,
-    });
+    mutateDay(date, (day) => ({
+      ...day,
+      activities: day.activities.filter((act) => act.id !== activityId),
+    }));
   };
 
   // Log a water entry (each addition is its own voice/block)
   const logWater = (ml: number, date: string = selectedDate) => {
-    const activeDay = getDayLog(date);
     const entry: WaterEntry = {
       id: 'water-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
       ml,
       timestamp: new Date().toISOString(),
     };
-    saveDayLogs({
-      ...dayLogs,
-      [date]: {
-        ...activeDay,
-        waterEntries: [...(activeDay.waterEntries || []), entry],
-      },
-    });
+    mutateDay(date, (day) => ({
+      ...day,
+      waterEntries: [...(day.waterEntries || []), entry],
+    }));
   };
 
   // Remove a single water entry
   const removeWaterEntry = (id: string, date: string = selectedDate) => {
-    const activeDay = getDayLog(date);
-    saveDayLogs({
-      ...dayLogs,
-      [date]: {
-        ...activeDay,
-        waterEntries: (activeDay.waterEntries || []).filter((w) => w.id !== id),
-      },
-    });
+    mutateDay(date, (day) => ({
+      ...day,
+      waterEntries: (day.waterEntries || []).filter((w) => w.id !== id),
+    }));
   };
 
-  // Custom button log
+  // Quantities append one entry; done/not-done trackers still store one value per day.
   const logCustom = (buttonId: string, value: number | boolean, date: string = selectedDate) => {
-    const activeDay = getDayLog(date);
-    saveDayLogs({
-      ...dayLogs,
-      [date]: {
-        ...activeDay,
-        custom: { ...(activeDay.custom || {}), [buttonId]: value },
-      },
-    });
+    if (typeof value === 'boolean') {
+      mutateDay(date, (day) => {
+        const migrated = migrateCustomEntries(day);
+        return { ...migrated, custom: { ...migrated.custom, [buttonId]: value } };
+      });
+      return;
+    }
+    if (!Number.isFinite(value) || value <= 0) return;
+    const entry = {
+      id: `qty-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+      amount: value,
+      timestamp: new Date().toISOString(),
+    };
+    mutateDay(date, (day) => withCustomEntries(day, buttonId, [...getCustomEntries(day, buttonId), entry]));
   };
 
-  // Log body weight (kg) for a day
+  const removeCustomEntry = (buttonId: string, entryId: string, date: string = selectedDate) => {
+    mutateDay(date, (day) => withCustomEntries(day, buttonId, getCustomEntries(day, buttonId).filter((entry) => entry.id !== entryId)));
+  };
+
+  // Keep the selected day's measurement and profile weight in sync on save.
   const logWeight = (kg: number, date: string = selectedDate) => {
-    const activeDay = getDayLog(date);
-    saveDayLogs({
-      ...dayLogs,
-      [date]: { ...activeDay, weightKg: Math.round(kg * 10) / 10 },
-    });
+    if (!Number.isFinite(kg) || kg <= 0) return;
+    const weightKg = Math.round(kg * 10) / 10;
+    if (!Number.isFinite(weightKg) || weightKg <= 0) return;
+    mutateDay(date, (day) => ({ ...day, weightKg }));
+    updateUserProfile({ ...userProfile, weightKg });
   };
 
   // Log a poop entry for a day
@@ -1173,7 +1184,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     description?: string,
     bristol?: BristolType
   ) => {
-    const activeDay = getDayLog(date);
     const entry: PoopEntry = {
       id: 'poop-' + Date.now() + '-' + Math.random().toString(36).slice(2, 6),
       size,
@@ -1181,22 +1191,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       bristol,
       timestamp: new Date().toISOString(),
     };
-    saveDayLogs({
-      ...dayLogs,
-      [date]: { ...activeDay, poops: [...(activeDay.poops || []), entry] },
-    });
+    mutateDay(date, (day) => ({
+      ...day,
+      poops: [...(day.poops || []), entry],
+    }));
   };
 
   // Remove a poop entry for a day
   const removePoop = (poopId: string, date: string = selectedDate) => {
-    const activeDay = getDayLog(date);
-    saveDayLogs({
-      ...dayLogs,
-      [date]: {
-        ...activeDay,
-        poops: (activeDay.poops || []).filter((p) => p.id !== poopId),
-      },
-    });
+    mutateDay(date, (day) => ({
+      ...day,
+      poops: (day.poops || []).filter((p) => p.id !== poopId),
+    }));
   };
 
   // Copy yesterday's meals
@@ -1284,22 +1290,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logItemsToSlot = (mealSlot: MealSlotId, items: LoggedFoodItem[], date: string = selectedDate) => {
-    const activeDay = getDayLog(date);
     const cloned = items.map((it) => ({
       ...it,
       id: 'item-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
       loggedAt: new Date().toISOString(),
     }));
-    saveDayLogs({
-      ...dayLogs,
-      [date]: { ...activeDay, meals: { ...activeDay.meals, [mealSlot]: [...activeDay.meals[mealSlot], ...cloned] } },
-    });
+    mutateDay(date, (day) => ({
+      ...day,
+      meals: { ...day.meals, [mealSlot]: [...day.meals[mealSlot], ...cloned] },
+    }));
   };
 
   // Export JSON
   const exportDataJson = (): string => {
     const data = {
-      version: '1.0',
+      version: '1.1',
       exportedAt: new Date().toISOString(),
       userProfile,
       customFoods,
@@ -1322,15 +1327,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCustomFoods(data.customFoods);
         localStorage.setItem(STORAGE_KEYS.CUSTOM_FOODS, JSON.stringify(data.customFoods));
       }
-      if (data.dayLogs && typeof data.dayLogs === 'object') {
-        saveDayLogs(data.dayLogs);
+      if (data.dayLogs && typeof data.dayLogs === 'object' && !Array.isArray(data.dayLogs)) {
+        saveDayLogs(normalizeDayLogs(data.dayLogs));
       }
       if (Array.isArray(data.preBuiltMeals)) {
         setPreBuiltMeals(data.preBuiltMeals);
         localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(data.preBuiltMeals));
       }
-      if (data.settings) {
-        updateSettings(data.settings);
+      if (data.settings && typeof data.settings === 'object') {
+        const s = data.settings;
+        const importedSex = data.userProfile?.sex ?? userProfile.sex;
+        const customized = Boolean(s.hidePeriodCustomized);
+        const importedHasLogs = Boolean(
+          data.periodData?.logs && Object.keys(data.periodData.logs).length > 0
+        );
+        const hidePeriod =
+          typeof s.hidePeriod === 'boolean'
+            ? customized || s.hidePeriod || importedSex !== 'male' || importedHasLogs
+              ? s.hidePeriod
+              : true
+            : importedSex === 'male';
+        updateSettings({ ...s, hidePeriod, hidePeriodCustomized: customized });
+        if (hidePeriod) {
+          setActiveTabState((tab) => (tab === 'period' ? 'today' : tab));
+        }
       }
       if (data.periodData && typeof data.periodData === 'object') {
         try {
@@ -1389,6 +1409,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateUserProfile,
         allFoods,
         addCustomFood,
+        deleteCustomFood,
         currentDayLog,
         logFoodItem,
         removeLoggedFoodItem,
@@ -1416,14 +1437,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsBarcodeOpen,
         isProfileOpen,
         setIsProfileOpen,
-        isPrebuiltModalOpen,
-        setIsPrebuiltModalOpen,
-        prebuiltToLog,
-        setPrebuiltToLog,
         settings,
         updateSettings,
         activeTab,
         setActiveTab,
+        returnFromDatabase,
         isSettingsOpen,
         setIsSettingsOpen,
         isWaterOpen,
@@ -1444,23 +1462,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         clearPeriodDay,
         markPeriodStart,
         markPeriodEnd,
-        togglePill,
         addPeriodTag,
-        renamePeriodTag,
         deletePeriodTag,
-        toggleHiddenBuiltin,
+        resetPeriodTags,
         periodSelectedDate,
         setPeriodSelectedDate,
         isPeriodSheetOpen,
         setIsPeriodSheetOpen,
-        toast,
-        showToast,
-        hideToast,
         customActivities,
         addCustomActivity,
         logWater,
         removeWaterEntry,
         logCustom,
+        removeCustomEntry,
         waterTotalFor,
         logWeight,
         logPoop,

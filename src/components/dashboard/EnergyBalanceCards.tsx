@@ -11,15 +11,15 @@ export const EnergyBalanceCards: React.FC = () => {
   const netPositive = netBalance > 0;
 
   // Surplus (more calories in than out): indicator only on the Intake side, reddish.
-  // Deficit: indicator on the Burned side (mint), unchanged.
+  // Deficit / balanced: indicator on the Burned side (mint).
   const surplusPill = (
-    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#8A2D2D] text-[#FFE9E9]">
-      +{netBalance}
+    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-[#8A2D2D] text-[#FFE9E9]">
+      +{formatKcal(netBalance)}
     </span>
   );
   const deficitPill = (
-    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-[#1E5E3A] text-[#EDFFF2]">
-      {netBalance}
+    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-[#1E5E3A] text-[#EDFFF2]">
+      {netBalance === 0 ? '0' : `-${formatKcal(Math.abs(netBalance))}`}
     </span>
   );
 
@@ -28,14 +28,14 @@ export const EnergyBalanceCards: React.FC = () => {
       {/* Left: INTAKE (Pastel Rose) */}
       <div className="bg-[#F6D0D0] rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between mb-1">
+          <div className="flex items-center justify-between gap-1 mb-1 min-h-[22px]">
             <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#8C3A3A]">
               {t.energy.intake}
             </span>
             {netPositive && surplusPill}
           </div>
           <div className="flex items-baseline gap-1 my-1">
-            <span className="text-2xl sm:text-3xl font-extrabold text-[#2B1818] tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-[#2B1818] tracking-tight">
               {formatKcal(currentIntakeCalories)}
             </span>
             <span className="text-xs font-semibold text-[#8C3A3A]">kcal</span>
@@ -44,8 +44,8 @@ export const EnergyBalanceCards: React.FC = () => {
 
         <div className="w-full bg-[#FAEBEB] h-2.5 rounded-full overflow-hidden mt-3">
           <div
-            className="h-full rounded-full transition-all duration-500 bg-[#8A2D2D]"
-            style={{ width: `${Math.max(4, intakePct)}%` }}
+            className="h-full rounded-full transition-[width] duration-500 ease-out bg-[#8A2D2D]"
+            style={{ width: `${currentIntakeCalories > 0 ? Math.max(5, intakePct) : 0}%` }}
           />
         </div>
       </div>
@@ -53,14 +53,14 @@ export const EnergyBalanceCards: React.FC = () => {
       {/* Right: BURNED (Pastel Mint) */}
       <div className="bg-[#C9EFD3] rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
         <div>
-          <div className="flex items-center justify-between gap-1 mb-1">
+          <div className="flex items-center justify-between gap-1 mb-1 min-h-[22px]">
             <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#25633E]">
               {t.energy.expenditure}
             </span>
             {!netPositive && deficitPill}
           </div>
           <div className="flex items-baseline gap-1 my-1">
-            <span className="text-2xl sm:text-3xl font-extrabold text-[#142E1F] tracking-tight">
+            <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-[#142E1F] tracking-tight">
               {formatKcal(currentExpenditure.totalExpenditure)}
             </span>
             <span className="text-xs font-semibold text-[#25633E]">kcal</span>
@@ -69,8 +69,8 @@ export const EnergyBalanceCards: React.FC = () => {
 
         <div className="w-full bg-[#E6F8EB] h-2.5 rounded-full overflow-hidden mt-3">
           <div
-            className="h-full rounded-full transition-all duration-500 bg-[#1E5E3A]"
-            style={{ width: `${Math.max(4, expPct)}%` }}
+            className="h-full rounded-full transition-[width] duration-500 ease-out bg-[#1E5E3A]"
+            style={{ width: `${Math.max(5, expPct)}%` }}
           />
         </div>
       </div>

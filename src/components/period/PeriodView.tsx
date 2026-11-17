@@ -1,43 +1,36 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { PeriodCalendar } from './PeriodCalendar';
 import { CycleHistory } from './CycleHistory';
 import { CycleNutrition } from './CycleNutrition';
 import { PeriodSettingsAccordion } from './PeriodSettingsAccordion';
+import { PeriodTagEditor } from './PeriodTagEditor';
+import { PeriodDayInfoModal } from './PeriodDayInfoModal';
+import { Modal } from '../common/Modal';
+import { ActionDock, type DockAction } from '../common/ActionDock';
+import { usePeriodDayDraft } from '../../utils/usePeriodDayDraft';
 import {
-  emptyDayLog,
   expectedWithdrawalBleed,
   getPeriodStatus,
   isInactivePackDay,
   packDay,
-  tagDefs,
-  tagLabel,
 } from '../../utils/period';
 import { formatDateDisplay, formatFullDate, getTodayDateString } from '../../utils/formatters';
-import { PeriodDayLog, PeriodFlow } from '../../types';
-import { Droplet, ChevronDown, Plus, Check, Pill, CalendarHeart, Trash2, StickyNote, Info } from 'lucide-react';
+import type { PeriodFlow } from '../../types';
+import { Droplet, ChevronRight, Plus, Check, Pill, CalendarHeart, Trash2, StickyNote, Info, Heart } from 'lucide-react';
 
 const FLOWS: PeriodFlow[] = ['none', 'light', 'medium', 'heavy'];
 
-const sameLog = (a: PeriodDayLog, b: PeriodDayLog) =>
-  a.isPeriod === b.isPeriod &&
-  a.flow === b.flow &&
-  a.pillTaken === b.pillTaken &&
-  (a.notes || '') === (b.notes || '') &&
-  a.moods.join('|') === b.moods.join('|') &&
-  a.symptoms.join('|') === b.symptoms.join('|');
-
-export const PeriodView: React.FC = () => {
+export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
   const {
     t,
     language,
     periodData,
     updatePeriodDay,
     clearPeriodDay,
-    addPeriodTag,
+    setIsPeriodSheetOpen,
     periodSelectedDate: selected,
     setPeriodSelectedDate: setSelected,
-    showToast,
   } = useApp();
 
   const todayStr = getTodayDateString();
@@ -45,82 +38,27 @@ export const PeriodView: React.FC = () => {
   const pillMode = settings.trackPill;
   const status = useMemo(() => getPeriodStatus(periodData, todayStr), [periodData, todayStr]);
 
-  // ---- draft for the daily log (saved by Log Day, auto-saved on date switch) ----
   const stored = periodData.logs[selected];
-  const baseline = useMemo<PeriodDayLog>(() => stored || emptyDayLog(), [stored]);
-  const [draft, setDraft] = useState<PeriodDayLog>(baseline);
-  const [recapOpen, setRecapOpen] = useState(false);
-  const [newTag, setNewTag] = useState<{ group: 'mood' | 'symptom'; text: string; error: boolean } | null>(null);
-  const draftRef = useRef(draft);
-  draftRef.current = draft;
-  const dirty = !sameLog(draft, baseline);
-
-  // refresh draft when the stored day changes externally (dock, undo) or the date changes
-  useEffect(() => {
-    setDraft(baseline);
-    setRecapOpen(Boolean(baseline.notes));
-    setNewTag(null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, stored?.updatedAt]);
-
-  // auto-save unsaved changes when switching date
-  const prevSelected = useRef(selected);
-  useEffect(() => {
-    const prev = prevSelected.current;
-    if (prev !== selected) {
-      prevSelected.current = selected;
-    }
-  }, [selected]);
-  const selectDate = (d: string) => {
-    if (d === selected) return;
-    const cur = draftRef.current;
-    const base = periodData.logs[selected] || emptyDayLog();
-    if (!sameLog(cur, base)) {
-      updatePeriodDay(selected, cur);
-      showToast(t.period.toastSaved);
-    }
-    setSelected(d);
-  };
-
-  const patch = (p: Partial<PeriodDayLog>) =>
-    setDraft((prev) => {
-      let next = { ...prev, ...p };
-      if (p.flow !== undefined && p.flow !== 'none') next.isPeriod = true;
-      if (p.isPeriod === false) next = { ...next, flow: 'none' };
-      if (p.isPeriod === true && next.flow === 'none') next.flow = 'medium';
-      return next;
-    });
-
+  const { draft, dirty, patch, discard } = usePeriodDayDraft(selected, stored);
+  const [recapText, setRecapText] = useState<string | null>(null);
+  const [inspectedDay, setInspectedDay] = useState<string | null>(null);
   const saveDay = () => {
-    updatePeriodDay(selected, draft);
-    showToast(t.period.toastSaved);
+    if (dirty) updatePeriodDay(selected, draft);
+    discard();
   };
-
-  const toggleTag = (group: 'mood' | 'symptom', id: string) =>
-    setDraft((prev) => {
-      const key = group === 'mood' ? 'moods' : 'symptoms';
-      const list = prev[key];
-      return { ...prev, [key]: list.includes(id) ? list.filter((x) => x !== id) : [...list, id] };
-    });
-
-  const confirmNewTag = () => {
-    if (!newTag) return;
-    const id = addPeriodTag(newTag.group, newTag.text);
-    if (!id) {
-      setNewTag({ ...newTag, error: true });
-      return;
-    }
-    toggleTag(newTag.group, id);
-    setNewTag(null);
+  const selectDate = (date: string) => {
+    if (date === selected) return;
+    saveDay();
+    setSelected(date);
   };
-
-  const builtinLabel = (g: 'mood' | 'symptom') => (k: string) =>
-    t.period[`${g === 'mood' ? 'mood' : 'sym'}_${k}` as keyof typeof t.period] as string;
-  const labelOf = (id: string) =>
-    tagLabel(id, settings, (g, k) => builtinLabel(g)(k));
-
-  const moodDefs = tagDefs('mood', settings, builtinLabel('mood'));
-  const symDefs = tagDefs('symptom', settings, builtinLabel('symptom'));
+  const inspectDate = (date: string) => {
+    saveDay();
+    setInspectedDay(date);
+  };
+  const openQuickLog = () => {
+    saveDay();
+    setIsPeriodSheetOpen(true);
+  };
 
   const phaseLabel = status.phase ? (t.period[`phase_${status.phase}` as keyof typeof t.period] as string) : '';
   const phaseNote = status.phase ? (t.period[`note_${status.phase}` as keyof typeof t.period] as string) : '';
@@ -129,66 +67,50 @@ export const PeriodView: React.FC = () => {
   const selInactive = pillMode && isInactivePackDay(settings, selected);
   const loggedCount = Object.keys(periodData.logs).length;
 
+  const cycleActions: DockAction[] = [
+    { id: 'cycle', icon: <Droplet size={21} />, label: t.period.dockCycle, tone: 'bg-[#F4C6D8] text-[#6E2440]', onClick: openQuickLog },
+  ];
+  if (pillMode) cycleActions.push({
+    id: 'pill',
+    icon: (
+      <span className="relative">
+        <Pill size={21} />
+        {stored?.pillTaken && (
+          <span className="absolute -right-1.5 -bottom-1 size-3.5 rounded-full bg-[#1E5E3A] text-white flex items-center justify-center">
+            <Check size={9} strokeWidth={3} />
+          </span>
+        )}
+      </span>
+    ),
+    label: t.period.dockPill,
+    title: selInactive ? t.period.breakDay : undefined,
+    pressed: Boolean(stored?.pillTaken),
+    disabled: selInactive,
+    tone: stored?.pillTaken ? 'bg-[#C9EFD3] text-[#174A2B] ring-1 ring-[#1E5E3A]/45' : 'bg-[#E2D6FF] text-[#4D3582]',
+    onClick: () => {
+      const pillTaken = !stored?.pillTaken;
+      patch({ pillTaken });
+      updatePeriodDay(selected, { pillTaken });
+    },
+  });
+  cycleActions.push({
+    id: 'intercourse',
+    icon: <Heart size={20} fill={stored?.intercourse ? 'currentColor' : 'none'} />,
+    label: t.period.dockIntercourse,
+    pressed: Boolean(stored?.intercourse),
+    tone: stored?.intercourse ? 'bg-[#B83B5E] text-[#FFF0F5]' : 'bg-[#F6D0D0] text-[#7A2727]',
+    onClick: () => updatePeriodDay(selected, { intercourse: stored?.intercourse ? undefined : true }),
+  });
+
   const chip = (active: boolean) =>
-    `px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border transition-colors ${
-      active ? 'bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+    `pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
+      active
+        ? 'bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
+        : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
     }`;
 
-  const TagGroup: React.FC<{ group: 'mood' | 'symptom'; title: string; defs: typeof moodDefs; selectedIds: string[] }> = ({
-    group, title, defs, selectedIds,
-  }) => {
-    const visible = defs.filter((d) => !d.hidden || selectedIds.includes(d.id));
-    // tags stored on this day but no longer defined (deleted customs) still show with their stored label/id
-    const orphan = selectedIds.filter((id) => !defs.some((d) => d.id === id));
-    return (
-      <div>
-        <span className="block text-xs font-bold text-[var(--text)] mb-1.5">{title}</span>
-        <div className="flex flex-wrap gap-1.5">
-          {visible.map((d) => (
-            <button key={d.id} type="button" onClick={() => toggleTag(group, d.id)} className={chip(selectedIds.includes(d.id))} aria-pressed={selectedIds.includes(d.id)}>
-              {d.label}
-            </button>
-          ))}
-          {orphan.map((id) => (
-            <button key={id} type="button" onClick={() => toggleTag(group, id)} className={chip(true)}>
-              {labelOf(id)}
-            </button>
-          ))}
-          {newTag?.group === group ? (
-            <span className="flex items-center gap-1">
-              <input
-                autoFocus
-                value={newTag.text}
-                maxLength={24}
-                placeholder={t.period.tagPlaceholder}
-                onChange={(e) => setNewTag({ ...newTag, text: e.target.value, error: false })}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') confirmNewTag();
-                  if (e.key === 'Escape') setNewTag(null);
-                }}
-                className={`w-32 bg-[var(--inset)] border rounded-full px-3 py-1.5 text-xs font-bold text-[var(--text)] focus:outline-none ${
-                  newTag.error ? 'border-[#B85C7A]' : 'border-[var(--border)]'
-                }`}
-              />
-              <button type="button" onClick={confirmNewTag} className="w-7 h-7 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center">
-                <Check size={13} />
-              </button>
-            </span>
-          ) : (
-            <button type="button" onClick={() => setNewTag({ group, text: '', error: false })} className="px-3 py-1.5 rounded-full text-xs font-bold border border-dashed border-[var(--border)] text-[var(--muted)]">
-              {t.period.addTag}
-            </button>
-          )}
-        </div>
-        {newTag?.group === group && newTag.error && (
-          <p className="text-[11px] font-medium text-[#B85C7A] mt-1">{t.period.tagError}</p>
-        )}
-      </div>
-    );
-  };
-
   return (
-    <div className="space-y-3.5 pb-32">
+    <div className="space-y-3.5">
       {/* Header */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
@@ -261,7 +183,7 @@ export const PeriodView: React.FC = () => {
             </div>
 
             {pillMode && !settings.packStart && (
-              <p className="text-xs font-bold text-[#7D4E14]">{t.period.noPackStart}</p>
+              <p className="text-xs font-bold text-[var(--text-pos)]">{t.period.noPackStart}</p>
             )}
 
             {/* Predictions */}
@@ -320,7 +242,7 @@ export const PeriodView: React.FC = () => {
       </div>
 
       {/* 2. Calendar */}
-      <PeriodCalendar selected={selected} onSelect={selectDate} status={status} />
+      <PeriodCalendar selected={selected} onSelect={selectDate} onInspectDay={inspectDate} status={status} />
 
       {/* 3. Daily log */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-3.5">
@@ -329,8 +251,15 @@ export const PeriodView: React.FC = () => {
             <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] block">{t.period.selectedDay}</span>
             <span className="text-sm font-extrabold text-[var(--text)] capitalize">{formatFullDate(selected, language)}</span>
           </div>
-          {dirty && <span className="text-[10px] font-bold text-[#7D4E14] text-right max-w-[45%]">{t.period.unsaved}</span>}
+          <button
+            type="button"
+            onClick={openQuickLog}
+            className="pressable min-h-9 px-3 rounded-full bg-[#F4C6D8] text-[#6E2440] text-xs font-extrabold shrink-0 flex items-center gap-1.5"
+          >
+            <Plus size={14} /> {t.period.quickLog}
+          </button>
         </div>
+        {dirty && <p className="text-xs font-semibold text-[var(--text-pos)]">{t.period.unsaved}</p>}
 
         <button
           type="button"
@@ -356,8 +285,8 @@ export const PeriodView: React.FC = () => {
           </div>
         </div>
 
-        <TagGroup group="mood" title={t.period.mood} defs={moodDefs} selectedIds={draft.moods} />
-        <TagGroup group="symptom" title={t.period.symptoms} defs={symDefs} selectedIds={draft.symptoms} />
+        <PeriodTagEditor key={`mood-${selected}`} group="mood" selected={draft.moods} onChange={(moods) => patch({ moods })} />
+        <PeriodTagEditor key={`symptom-${selected}`} group="symptom" selected={draft.symptoms} onChange={(symptoms) => patch({ symptoms })} />
 
         {pillMode && (
           <div>
@@ -372,57 +301,63 @@ export const PeriodView: React.FC = () => {
               }`}
             >
               <Pill size={15} />
-              <span>{selInactive ? t.period.breakDay : draft.pillTaken ? `✓ ${t.period.pillTakenToday}` : t.period.pillNotTaken}</span>
+              <span>{selInactive ? t.period.breakDay : draft.pillTaken ? `✓ ${t.period.pillTaken}` : t.period.pillNotTaken}</span>
             </button>
           </div>
         )}
 
-        <div>
-          <button
-            type="button"
-            onClick={() => setRecapOpen((v) => !v)}
-            className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--border)] rounded-2xl px-3.5 py-2.5 transition-colors"
-            aria-expanded={recapOpen}
-          >
-            <span className="flex items-center gap-2 text-sm font-bold text-[var(--text)]">
-              <StickyNote size={15} className="text-[var(--muted)]" />
-              {draft.notes ? t.period.recapEdit : t.period.recapAdd}
-            </span>
-            <ChevronDown size={16} className={`text-[var(--muted)] transition-transform ${recapOpen ? 'rotate-180' : ''}`} />
-          </button>
-          {recapOpen && (
+        <button
+          type="button"
+          onClick={() => setRecapText(draft.notes ?? '')}
+          className="pressable w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 text-left"
+        >
+          <span className="flex items-center gap-2 text-sm font-bold text-[var(--text)]">
+            <StickyNote size={15} className="text-[var(--muted)]" />
+            {draft.notes ? t.period.recapEdit : t.period.recapAdd}
+          </span>
+          <ChevronRight size={16} className="text-[var(--muted)]" />
+        </button>
+        {draft.notes && <p className="text-xs whitespace-pre-wrap break-words px-1 text-[var(--muted)]">{draft.notes}</p>}
+        <Modal isOpen={recapText !== null} onClose={() => setRecapText(null)} title={draft.notes ? t.period.recapEdit : t.period.recapAdd} maxWidth="max-w-md">
+          <form className="space-y-3" onSubmit={(event) => {
+            event.preventDefault();
+            patch({ notes: recapText?.trim() || undefined });
+            setRecapText(null);
+          }}>
             <textarea
-              value={draft.notes || ''}
-              onChange={(e) => patch({ notes: e.target.value })}
+              autoFocus
+              value={recapText ?? ''}
+              onChange={(event) => setRecapText(event.target.value)}
+              aria-label={t.period.recapEdit}
               placeholder={t.period.recapPlaceholder}
               rows={3}
-              className="mt-2 w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none resize-y"
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-base text-[var(--text)] resize-y"
             />
-          )}
-        </div>
+            <button type="submit" className="pressable w-full py-3 rounded-2xl bg-[#C9EFD3] text-[#174A2B] font-extrabold text-sm">{t.common.save}</button>
+          </form>
+        </Modal>
 
         {/* Log Day button at the bottom of the form, add-food style */}
         <button
           type="button"
           onClick={saveDay}
+          disabled={!dirty}
           className={`w-full py-3 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 transition-colors ${
             dirty ? 'bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B]' : 'bg-[var(--inset)] text-[var(--muted)]'
           }`}
         >
           {dirty ? <Plus size={16} strokeWidth={2.5} /> : <Check size={16} strokeWidth={2.5} />}
-          <span>{dirty ? t.period.logButton : t.period.saved}</span>
+          <span>{dirty || !stored ? t.period.logButton : t.period.saved}</span>
         </button>
 
         {stored && (
           <button
             type="button"
             onClick={() => {
-              if (window.confirm(t.period.deleteConfirm)) {
-                clearPeriodDay(selected);
-                setRecapOpen(false);
-              }
+              clearPeriodDay(selected);
+              discard();
             }}
-            className="w-full py-2 rounded-2xl text-xs font-bold text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0]/50 flex items-center justify-center gap-1.5 transition-colors"
+            className="pressable w-full py-2.5 rounded-2xl text-xs font-bold text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center gap-1.5"
           >
             <Trash2 size={13} />
             <span>{t.period.deleteDay}</span>
@@ -438,6 +373,10 @@ export const PeriodView: React.FC = () => {
 
       {/* 6. Settings accordion */}
       <PeriodSettingsAccordion />
+      <PeriodDayInfoModal date={inspectedDay} onClose={() => setInspectedDay(null)} />
+      {!hideDock && recapText === null && inspectedDay === null && (
+        <ActionDock label={t.period.dockLabel} actions={cycleActions} />
+      )}
     </div>
   );
 };

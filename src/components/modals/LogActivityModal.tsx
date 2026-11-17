@@ -14,16 +14,24 @@ export const LogActivityModal: React.FC = () => {
     customActivities,
     addCustomActivity,
     userProfile,
+
     t,
   } = useApp();
 
   const [activityType, setActivityType] = useState<ActivityType>('walking');
   const [method, setMethod] = useState<ActivityLogMethod>('distance'); // distance selected by default
-  const [inputValue, setInputValue] = useState<number>(3.5);
+  const [distanceKm, setDistanceKm] = useState<number>(3.5);
+  const [durationMin, setDurationMin] = useState<number>(30);
   const [intensity, setIntensity] = useState<'light' | 'moderate' | 'vigorous'>('moderate');
   const [customName, setCustomName] = useState('');
   const [customDur, setCustomDur] = useState<number>(0); // minutes, optional
   const [customKcal, setCustomKcal] = useState<number>(0); // kcal, optional (0 = auto-estimate)
+
+  const inputValue = method === 'distance' ? distanceKm : durationMin;
+  const setInputValue = (val: number) => {
+    if (method === 'distance') setDistanceKm(val);
+    else setDurationMin(val);
+  };
 
   // Custom activity estimate: ~5 MET over the duration (30 min default)
   const customEstimate = useMemo(
@@ -72,12 +80,14 @@ export const LogActivityModal: React.FC = () => {
     <button
       type="button"
       onClick={() => setActivityType(type)}
-      className={`p-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-extrabold text-xs sm:text-sm transition-colors ${
-        activityType === type ? activeCls : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+      className={`pressable p-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-extrabold text-xs sm:text-sm ${
+        activityType === type
+          ? activeCls
+          : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
       }`}
     >
       <Icon size={16} />
-      <span>{label}</span>
+      <span className="truncate">{label}</span>
     </button>
   );
 
@@ -106,8 +116,11 @@ export const LogActivityModal: React.FC = () => {
               type="text"
               value={customName}
               onChange={(e) => setCustomName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && customName.trim()) handleSave();
+              }}
               placeholder={t.activities.customNamePlaceholder}
-              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none"
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
             />
 
             {customActivities.length > 0 && (
@@ -120,7 +133,11 @@ export const LogActivityModal: React.FC = () => {
                     key={a}
                     type="button"
                     onClick={() => setCustomName(a)}
-                    className="px-2.5 py-1 rounded-full bg-[var(--inset)] text-[var(--muted)] text-xs font-bold hover:bg-[#FAE0B4] hover:text-[#7D4E14] transition-colors"
+                    className={`pressable px-2.5 py-1 rounded-full text-xs font-bold border ${
+                      customName === a
+                        ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
+                        : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-[#FAE0B4] hover:text-[#7D4E14]'
+                    }`}
                   >
                     {a}
                   </button>
@@ -149,28 +166,26 @@ export const LogActivityModal: React.FC = () => {
           </div>
         ) : (
           /* ---------- WALKING / RUNNING ---------- */
-          <div className="space-y-4">
+          <div className="space-y-3.5">
             <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
-                onClick={() => {
-                  setMethod('distance');
-                  if (inputValue === 0) setInputValue(3.5);
-                }}
-                className={`py-2 px-3 rounded-xl text-xs font-extrabold transition-colors ${
-                  method === 'distance' ? 'bg-[var(--text)] text-[var(--surface)]' : 'bg-[var(--inset)] text-[var(--muted)]'
+                onClick={() => setMethod('distance')}
+                className={`pressable py-2 px-3 rounded-xl text-xs font-extrabold ${
+                  method === 'distance'
+                    ? 'bg-[var(--text)] text-[var(--surface)]'
+                    : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)]'
                 }`}
               >
                 {t.activityModal.distanceLabel}
               </button>
               <button
                 type="button"
-                onClick={() => {
-                  setMethod('duration');
-                  if (inputValue === 0) setInputValue(30);
-                }}
-                className={`py-2 px-3 rounded-xl text-xs font-extrabold transition-colors ${
-                  method === 'duration' ? 'bg-[var(--text)] text-[var(--surface)]' : 'bg-[var(--inset)] text-[var(--muted)]'
+                onClick={() => setMethod('duration')}
+                className={`pressable py-2 px-3 rounded-xl text-xs font-extrabold ${
+                  method === 'duration'
+                    ? 'bg-[var(--text)] text-[var(--surface)]'
+                    : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)]'
                 }`}
               >
                 {t.activityModal.durationLabel}
@@ -181,26 +196,48 @@ export const LogActivityModal: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => setInputValue((v) => Math.max(0, Math.round((v - 0.5) * 10) / 10))}
-                  className="w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center active:scale-95"
+                  disabled={distanceKm <= 0}
+                  onClick={() => setDistanceKm((v) => Math.max(0, Math.round((v - 0.5) * 10) / 10))}
+                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center disabled:opacity-35"
                   aria-label="-0.5 km"
                 >
                   <Minus size={18} />
                 </button>
                 <div className="flex-1">
-                  <NumericInput value={inputValue} onChange={setInputValue} unit="km" min={0} placeholder="3.5" className="text-center" />
+                  <NumericInput value={distanceKm} onChange={setDistanceKm} unit="km" min={0} placeholder="3.5" className="text-center" />
                 </div>
                 <button
                   type="button"
-                  onClick={() => setInputValue((v) => Math.round((v + 0.5) * 10) / 10)}
-                  className="w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center active:scale-95"
+                  onClick={() => setDistanceKm((v) => Math.round((v + 0.5) * 10) / 10)}
+                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center"
                   aria-label="+0.5 km"
                 >
                   <Plus size={18} />
                 </button>
               </div>
             ) : (
-              <NumericInput value={inputValue} onChange={setInputValue} unit="min" min={0} placeholder="30" />
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  disabled={durationMin <= 0}
+                  onClick={() => setDurationMin((v) => Math.max(0, Math.round(v - 5)))}
+                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center disabled:opacity-35"
+                  aria-label="-5 min"
+                >
+                  <Minus size={18} />
+                </button>
+                <div className="flex-1">
+                  <NumericInput value={durationMin} onChange={setDurationMin} unit="min" min={0} placeholder="30" className="text-center" />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDurationMin((v) => Math.round(v + 5))}
+                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center"
+                  aria-label="+5 min"
+                >
+                  <Plus size={18} />
+                </button>
+              </div>
             )}
 
             <div className="flex gap-1.5">
@@ -209,10 +246,10 @@ export const LogActivityModal: React.FC = () => {
                   key={quick}
                   type="button"
                   onClick={() => setInputValue(quick)}
-                  className={`flex-1 py-1.5 text-xs font-bold rounded-xl border ${
+                  className={`pressable flex-1 py-1.5 text-xs font-bold tabular-nums rounded-xl border ${
                     inputValue === quick
                       ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
-                      : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                      : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
                   {quick}
@@ -227,10 +264,10 @@ export const LogActivityModal: React.FC = () => {
                   key={lvl}
                   type="button"
                   onClick={() => setIntensity(lvl)}
-                  className={`py-2 px-1 rounded-xl border font-bold text-center transition-colors ${
+                  className={`pressable py-2 px-1 rounded-xl border font-bold text-center ${
                     intensity === lvl
                       ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
-                      : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                      : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
                   {t.activities[lvl]}
@@ -243,7 +280,7 @@ export const LogActivityModal: React.FC = () => {
         {/* Burn preview */}
         <div className="bg-[#C9EFD3] rounded-2xl p-3.5 flex items-center justify-between">
           <span className="text-xs font-bold text-[#1D5C38]">{t.activityModal.calculatedCalories}</span>
-          <div className="flex items-baseline gap-1">
+          <div className="flex items-baseline gap-1 tabular-nums">
             <span className="text-2xl font-extrabold text-[#142E1F]">-{calculatedCalories}</span>
             <span className="text-xs font-bold text-[#1D5C38]">kcal</span>
           </div>
@@ -253,7 +290,7 @@ export const LogActivityModal: React.FC = () => {
           type="button"
           onClick={handleSave}
           disabled={!canSave}
-          className="w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+          className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>{t.activityModal.saveBtn}</span>

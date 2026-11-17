@@ -6,7 +6,7 @@ interface Props extends React.SVGProps<SVGSVGElement> {
   face?: boolean;
 }
 
-export function PoopIcon({ size = 24, strokeWidth = 3.2, face = false, ...props }: Props) {
+export function PoopIcon({ size = 24, strokeWidth = 5, face = false, ...props }: Props) {
   return (
     <svg
       viewBox="0 0 64 64"
