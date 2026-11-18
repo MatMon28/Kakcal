@@ -9,12 +9,13 @@ interface DayNavigatorProps {
 
 // Day changer for the Today view: prev/next arrows + date pill with calendar popover + back-to-today
 export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
-  const { language, t, selectedDate, setSelectedDate, allDayLogs } = useApp();
+  const { language, t, settings, selectedDate, setSelectedDate, allDayLogs } = useApp();
 
   const todayStr = getTodayDateString();
   const isToday = selectedDate === todayStr;
   const mondayFirst = language === 'it';
   const locale = language === 'it' ? 'it-IT' : 'en-US';
+  const dateLabel = formatDateDisplay(selectedDate, language);
 
   const [calOpen, setCalOpen] = useState(false);
   const [viewYear, setViewYear] = useState(() => Number(selectedDate.slice(0, 4)));
@@ -114,14 +115,32 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
           type="button"
           onClick={openCalendar}
           aria-expanded={calOpen}
-          className="pressable flex items-center gap-2 bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] rounded-full px-4 py-2 text-sm font-bold text-[var(--text)]"
+          title={dateLabel}
+          aria-label={`${t.stats.dateRange}: ${dateLabel}`}
+          className={`pressable flex items-center gap-1.5 bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] rounded-full font-bold text-[var(--text)] ${
+            settings.ultraMinimal
+              ? isToday
+                ? 'w-9 h-9 p-0 justify-center text-sm'
+                : 'px-2.5 h-9 justify-center text-xs tabular-nums'
+              : 'px-4 py-2 text-sm'
+          }`}
         >
-          <Calendar size={15} className="text-[var(--muted)]" />
-          <span>{formatDateDisplay(selectedDate, language)}</span>
-          <ChevronDown
-            size={14}
-            className={`text-[var(--muted)] transition-transform duration-200 ${calOpen ? 'rotate-180' : ''}`}
-          />
+          <Calendar size={15} className="text-[var(--muted)] shrink-0" />
+          {settings.ultraMinimal ? (
+            !isToday ? (
+              <span>{`${selectedDate.slice(8, 10)}/${selectedDate.slice(5, 7)}`}</span>
+            ) : (
+              <span className="sr-only">{dateLabel}</span>
+            )
+          ) : (
+            <span>{dateLabel}</span>
+          )}
+          {!settings.ultraMinimal && (
+            <ChevronDown
+              size={14}
+              className={`text-[var(--muted)] transition-transform duration-200 ${calOpen ? 'rotate-180' : ''}`}
+            />
+          )}
         </button>
 
         {calOpen && (
@@ -199,10 +218,12 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
                     setSelectedDate(todayStr);
                     setCalOpen(false);
                   }}
-                  className="pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 mt-3 w-full py-2"
+                  className={`pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 ${settings.ultraMinimal ? 'mt-3 size-9 p-0' : 'mt-3 w-full py-2'}`}
+                  title={t.header.todayReturn}
+                  aria-label={t.header.todayReturn}
                 >
                   <CornerUpLeft size={13} strokeWidth={2.6} />
-                  {t.header.today}
+                  <span className={settings.ultraMinimal ? 'sr-only' : ''}>{t.header.today}</span>
                 </button>
               )}
             </div>
@@ -225,10 +246,10 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
           onClick={() => setSelectedDate(todayStr)}
           title={t.header.todayReturn}
           aria-label={t.header.todayReturn}
-          className="pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 h-9 px-3.5"
+          className={`pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 h-9 ${settings.ultraMinimal ? 'w-9 px-0' : 'px-3.5'}`}
         >
           <CornerUpLeft size={14} strokeWidth={2.6} />
-          {t.header.today}
+          <span className={settings.ultraMinimal ? 'sr-only' : ''}>{t.header.today}</span>
         </button>
       )}
     </div>

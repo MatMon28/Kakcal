@@ -1,5 +1,5 @@
 import React from 'react';
-import { Footprints, Trash2 } from 'lucide-react';
+import { Footprints, Route, Trash2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { activityLogLabel } from '../../utils/activityLabel';
 import { TrackerCard } from './TrackerCard';
@@ -13,9 +13,10 @@ interface Props {
 const pill = 'inline-flex items-center rounded-lg px-2 py-1 text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap';
 
 export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, onToggle }) => {
-  const { currentDayLog, currentExpenditure, removeActivity, setIsLogActivityOpen, language, t } = useApp();
+  const { currentDayLog, currentExpenditure, settings, removeActivity, setIsLogActivityOpen, language, t } = useApp();
 
   const activities = currentDayLog.activities;
+  const ultraMinimal = settings.ultraMinimal;
   const name = (act: (typeof activities)[number]) => activityLogLabel(act, language, t.activities);
   const latest = activities[activities.length - 1];
 
@@ -26,8 +27,25 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
     </span>
   );
 
-  // Collapsed: one line only — the latest activity (or "no activity") as a lavender pill.
-  const summary = latest ? (
+  const totalKm = activities.reduce((sum, a) => sum + (a.distanceKm || 0), 0);
+  const distanceValue =
+    totalKm > 0
+      ? (Math.round(totalKm * 10) / 10).toString()
+      : latest?.distanceKm !== undefined
+      ? latest.distanceKm.toString()
+      : latest?.durationMin !== undefined
+      ? (Math.round((latest.durationMin / 10) * 10) / 10).toString()
+      : '3.5';
+
+  // Collapsed: one line only — in ultra minimal, route icon + distance number (matching reference).
+  const summary = ultraMinimal ? (
+    activities.length > 0 ? (
+      <span className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 bg-[#F0E9FF] text-[#4D3582] text-[11px] font-extrabold leading-none">
+        <Route size={12} strokeWidth={2.4} className="shrink-0" />
+        <span className="tabular-nums">{distanceValue}</span>
+      </span>
+    ) : null
+  ) : latest ? (
     <span className={`${pill} bg-[#F0E9FF] text-[#4D3582] max-w-full`}>
       <span className="truncate">{name(latest)}</span>
       {activities.length > 1 && <span className="ml-1 shrink-0">+{activities.length - 1}</span>}
@@ -51,12 +69,20 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
     >
       <div className="space-y-2">
         <div className="flex flex-wrap gap-1.5">
-          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`}>{t.energy.bmrShort} {currentExpenditure.bmr}</span>
-          <span className={`${pill} bg-[#F0E9FF] text-[#4D3582]`}>{t.energy.activitiesShort} {currentExpenditure.activityExpenditure}</span>
-          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`}>{t.energy.tefShort} {currentExpenditure.tef}</span>
+          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`} aria-label={`${t.energy.bmrShort}: ${currentExpenditure.bmr}`} title={t.energy.bmrShort}>
+            {ultraMinimal ? currentExpenditure.bmr : `${t.energy.bmrShort} ${currentExpenditure.bmr}`}
+          </span>
+          <span className={`${pill} bg-[#F0E9FF] text-[#4D3582]`} aria-label={`${t.energy.activitiesShort}: ${currentExpenditure.activityExpenditure}`} title={t.energy.activitiesShort}>
+            {ultraMinimal ? <><Footprints size={11} /> {currentExpenditure.activityExpenditure}</> : `${t.energy.activitiesShort} ${currentExpenditure.activityExpenditure}`}
+          </span>
+          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`} aria-label={`${t.energy.tefShort}: ${currentExpenditure.tef}`} title={t.energy.tefShort}>
+            {ultraMinimal ? currentExpenditure.tef : `${t.energy.tefShort} ${currentExpenditure.tef}`}
+          </span>
         </div>
 
-        {activities.length === 0 ? (
+        {activities.length === 0 && ultraMinimal ? (
+          <div className="min-h-7" aria-hidden="true" />
+        ) : activities.length === 0 ? (
           <button
             type="button"
             onClick={() => setIsLogActivityOpen(true)}
@@ -77,8 +103,8 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
               return (
                 <div key={act.id} className="py-2 flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <span className="block text-xs sm:text-sm font-bold text-[var(--text)] truncate">{name(act)}</span>
-                    {(detail || act.notes) && (
+                    <span className={`block text-xs sm:text-sm font-bold text-[var(--text)] truncate ${ultraMinimal ? 'sr-only' : ''}`}>{name(act)}</span>
+                    {!ultraMinimal && (detail || act.notes) && (
                       <span className="block text-[11px] font-medium tabular-nums text-[var(--muted)] truncate">
                         {detail}
                         {detail && act.notes ? ' · ' : ''}

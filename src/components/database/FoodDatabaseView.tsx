@@ -152,13 +152,13 @@ export const FoodDatabaseView: React.FC = () => {
           <button
             type="button"
             onClick={returnFromDatabase}
-            className="pressable w-9 h-9 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center shrink-0"
+            className="pressable w-9 h-9 rounded-full bg-transparent hover:opacity-75 text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center shrink-0"
             title={t.common.back}
             aria-label={t.common.back}
           >
             <ArrowLeft size={16} />
           </button>
-          <div className="w-9 h-9 rounded-full bg-[#C9EFD3] text-[#1A5632] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-transparent text-[#1A5632] flex items-center justify-center shrink-0">
             <BookOpen size={17} />
           </div>
           <div>

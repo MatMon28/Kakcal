@@ -990,6 +990,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : defaultHidePeriod && !hasPeriodLogs;
         return {
           theme: normalizeTheme(p.theme),
+          ultraMinimal: Boolean(p.ultraMinimal),
           quickAdd: {
             food: true,
             movement: true,
@@ -1026,6 +1027,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return {
       theme: 'light',
+      ultraMinimal: false,
       quickAdd: { food: true, movement: true, water: true, poop: true, weight: true, custom: true },
       hidePoop: false,
       hidePeriod: defaultHidePeriod,

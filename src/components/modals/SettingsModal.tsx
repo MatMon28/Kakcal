@@ -17,6 +17,7 @@ import {
   Trash2,
   Pencil,
   Droplet,
+  Minimize2,
   X,
 } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
@@ -260,6 +261,25 @@ export const SettingsModal: React.FC = () => {
               ))}
             </div>
           </div>
+
+          <button
+            type="button"
+            aria-pressed={settings.ultraMinimal}
+            aria-label={t.settings.ultraMinimal}
+            onClick={() => updateSettings({ ultraMinimal: !settings.ultraMinimal })}
+            className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
+          >
+            <span className="flex items-center gap-2.5 min-w-0">
+              <span className="size-8 rounded-full bg-[#E2D6FF] text-[#4D3582] flex items-center justify-center shrink-0">
+                <Minimize2 size={15} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.ultraMinimal}</span>
+                <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.ultraMinimalHint}</span>
+              </span>
+            </span>
+            <SwitchVisual on={settings.ultraMinimal} />
+          </button>
 
           {/* Quick-add buttons */}
           <div>

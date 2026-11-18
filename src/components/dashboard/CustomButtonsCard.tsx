@@ -1,4 +1,4 @@
-import { Sparkles, ChevronRight, Check } from 'lucide-react';
+import { Sparkles, ChevronRight, Check, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { TrackerIcon } from '../common/TrackerIcon';
 import { formatTrackerAmount, getCustomEntries, getTrackerValue } from '../../utils/customTrackers';
@@ -21,15 +21,36 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
 
   const headline = (
     <>
-      {loggedCount}
-      <span className="text-[11px] font-semibold text-[var(--muted)] ml-1">/ {trackers.length}</span>
+      <span className="font-extrabold">{loggedCount}</span>
+      <span className="text-[12px] font-semibold text-[#8A7224]/75 ml-1">/ {trackers.length}</span>
     </>
   );
 
   // Collapsed: one lemon pill per logged tracker (name + value), truncated to the row.
   const logged = trackers.filter(({ value }) => value === true || typeof value === 'number');
-  const summary =
-    logged.length === 0 ? (
+  const summary = settings.ultraMinimal ? (
+    logged.length === 0 ? null : (
+      <div className="flex gap-1.5 min-w-0 overflow-hidden">
+        {logged.map(({ tracker, value }) => (
+          <span
+            key={tracker.id}
+            className="inline-flex items-center justify-center gap-1 rounded-lg px-2 min-h-6 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap shrink-0 max-w-full"
+          >
+            <TrackerIcon icon={tracker.icon} size={11} className="shrink-0" />
+            <button
+              type="button"
+              onClick={(e) => { e.stopPropagation(); setCustomButtonOpenId(tracker.id); }}
+              aria-label={`${tracker.name}: ${typeof value === 'number' ? `${formatTrackerAmount(value, language)}${tracker.unit ? ` ${tracker.unit}` : ''}` : t.settings.done}`}
+              title={tracker.name}
+              className="truncate min-h-6 px-0.5 text-left"
+            >
+              {typeof value === 'number' ? formatTrackerAmount(value, language) : <Check size={12} strokeWidth={3} />}
+            </button>
+          </span>
+        ))}
+      </div>
+    )
+  ) : logged.length === 0 ? (
       <span className="text-xs font-medium text-[var(--muted)] truncate">{t.tracker.empty}</span>
     ) : (
       <div className="flex gap-1.5 min-w-0 overflow-hidden">
@@ -72,19 +93,23 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
               <div key={tracker.id} className="py-2 flex items-center justify-between gap-2">
                 <button type="button" onClick={() => setCustomButtonOpenId(tracker.id)} className="min-w-0 flex-1 text-left flex items-center gap-2">
                   <TrackerIcon icon={tracker.icon} size={14} className="text-[var(--muted)] shrink-0" />
-                  <span className="font-bold text-[var(--text)] truncate text-xs sm:text-sm">{tracker.name}</span>
+                  <span className={`font-bold text-[var(--text)] truncate text-xs sm:text-sm ${settings.ultraMinimal ? 'sr-only' : ''}`}>{tracker.name}</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => logCustom(tracker.id, value !== true)}
                   aria-pressed={value === true}
                   aria-label={`${tracker.name}: ${value === true ? t.settings.done : t.settings.notDone}`}
-                  className={`pressable px-2.5 py-1 rounded-full text-[11px] font-extrabold inline-flex items-center gap-1 shrink-0 ${
+                  className={`pressable ${settings.ultraMinimal ? 'size-7 p-0 justify-center' : 'px-2.5 py-1'} rounded-full text-[11px] font-extrabold inline-flex items-center gap-1 shrink-0 ${
                     value === true ? 'bg-[#C9EFD3] text-[#174A2B]' : 'bg-[var(--inset)] text-[var(--muted)]'
                   }`}
                 >
-                  {value === true && <Check size={11} strokeWidth={2.5} />}
-                  <span>{value === true ? t.settings.done : t.settings.notDone}</span>
+                  {settings.ultraMinimal ? (value === true ? <Check size={13} strokeWidth={2.5} /> : <X size={12} />) : (
+                    <>
+                      {value === true && <Check size={11} strokeWidth={2.5} />}
+                      <span>{value === true ? t.settings.done : t.settings.notDone}</span>
+                    </>
+                  )}
                 </button>
               </div>
             );
@@ -100,15 +125,15 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
             >
               <TrackerIcon icon={tracker.icon} size={14} className="text-[var(--muted)] shrink-0" />
               <span className="min-w-0 flex-1">
-                <span className="block font-bold text-xs sm:text-sm text-[var(--text)] truncate">{tracker.name}</span>
-                {count > 0 && (
+                  <span className={`block font-bold text-xs sm:text-sm text-[var(--text)] truncate ${settings.ultraMinimal ? 'sr-only' : ''}`}>{tracker.name}</span>
+                  {!settings.ultraMinimal && count > 0 && (
                   <span className="block text-[11px] font-medium text-[var(--muted)]">
                     {count === 1 ? t.tracker.countOne : t.tracker.count.replace('{count}', String(count))}
                   </span>
                 )}
               </span>
               <span className="shrink-0 rounded-lg px-2 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none">
-                {typeof value === 'number' ? `${formatTrackerAmount(value, language)}${tracker.unit ? ` ${tracker.unit}` : ''}` : '—'}
+                {typeof value === 'number' ? `${formatTrackerAmount(value, language)}${settings.ultraMinimal ? '' : tracker.unit ? ` ${tracker.unit}` : ''}` : '—'}
               </span>
               <ChevronRight size={14} className="shrink-0 text-[var(--muted)]" />
             </button>

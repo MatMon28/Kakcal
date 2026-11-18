@@ -19,11 +19,13 @@ import {
   ChevronDown,
   BookOpen,
   ScanBarcode,
+  Wheat,
   X,
 } from 'lucide-react';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MacroPills } from '../common/MacroPills';
+import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
 
 const libraryPalettes = {
   meals: { text: '#7D4E14', muted: '#8A5617', border: '#E8C68E' },
@@ -45,7 +47,8 @@ function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, 
   open: boolean;
   onToggle: () => void;
 }) {
-  const { t } = useApp();
+  const { settings, t } = useApp();
+  const ultraMinimal = settings.ultraMinimal;
   const [searchOpen, setSearchOpen] = useState(false);
   const inputId = useId();
   const closeSearch = () => {
@@ -59,7 +62,8 @@ function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, 
     '--text': palette.text, '--muted': palette.muted, '--border': palette.border,
     '--bg': '#FBF8F2', '--inset': '#FBF8F2', '--hover': '#FFFFFF',
   } as React.CSSProperties;
-  const iconBtn = 'pressable size-8 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center';
+  // Circle rule: search and + circles are transparent (they take the section colour, no border or shadow).
+  const iconBtn = 'pressable size-8 rounded-full bg-transparent hover:opacity-75 text-[var(--text)] flex items-center justify-center';
   return (
     <div className="space-y-2" style={headerStyle}>
       <div className="flex items-center justify-between gap-2">
@@ -71,21 +75,21 @@ function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, 
           aria-label={`${title}: ${open ? t.common.collapse : t.common.expand}`}
           className="min-w-0 flex-1 flex items-center gap-2.5 text-left"
         >
-          <span className="size-9 rounded-full bg-[var(--bg)] text-[var(--text)] flex items-center justify-center shrink-0">
+          <span className="size-9 rounded-full bg-transparent text-[var(--text)] flex items-center justify-center shrink-0">
             {icon}
           </span>
           <span className="min-w-0">
             <span className="flex items-center gap-2">
-              <h2 className="text-sm sm:text-base font-extrabold text-[var(--text)] truncate">{title}</h2>
-              {typeof count === 'number' && (
+              <h2 className={`${ultraMinimal ? 'sr-only' : 'text-sm sm:text-base font-extrabold text-[var(--text)] truncate'}`}>{title}</h2>
+              {typeof count === 'number' && !ultraMinimal && (
                 <span className="text-[11px] font-bold tabular-nums text-[var(--muted)]">{count}</span>
               )}
             </span>
-            {summary && <span className="block text-[11px] font-medium text-[var(--muted)] truncate">{summary}</span>}
+            {summary && !ultraMinimal && <span className="block text-[11px] font-medium text-[var(--muted)] truncate">{summary}</span>}
           </span>
         </button>
         <div className="flex items-center gap-1.5 shrink-0">
-          {setQuery && (
+          {setQuery && !ultraMinimal && (
             <button
               id={`${inputId}-toggle`}
               type="button"
@@ -100,9 +104,9 @@ function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, 
               aria-expanded={searchOpen}
               aria-controls={searchOpen ? inputId : undefined}
               title={searchLabel}
-              className={`${iconBtn} ${searchOpen ? 'ring-1 ring-[var(--muted)]' : ''}`}
+              className={iconBtn}
             >
-              <Search size={15} />
+              <Search size={15} strokeWidth={searchOpen ? 3 : 2} />
             </button>
           )}
           <button type="button" onClick={onCreate} aria-label={createLabel} title={createLabel} className={iconBtn}>
@@ -176,9 +180,11 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
     setActiveTab,
+    settings,
 
     t,
   } = useApp();
+  const ultraMinimal = settings.ultraMinimal;
 
   const savedRecipes = useMemo(() => allFoods.filter((f) => f.isRecipe), [allFoods]);
 
@@ -519,9 +525,9 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   );
 
   return (
-    <div className="space-y-4">
-      {/* Section colours are restored; the individual meal cards stay neutral. */}
-      <section data-library-section="meals" className="bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl p-4 sm:p-5 space-y-3">
+    <div className={ultraMinimal ? 'grid grid-cols-3 gap-2 sm:gap-3 items-start' : 'space-y-4'}>
+      {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}
+      <section data-library-section="meals" className={`bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.meals ? 'col-span-3' : 'col-span-1') : ''}`}>
         <LibrarySectionHeader
           title={t.prebuilt.title}
           tone="meals"
@@ -539,10 +545,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         <div className="accordion-grid" data-open={sectionsOpen.meals} inert={!sectionsOpen.meals}>
         <div className="accordion-inner">
         {preBuiltMeals.length === 0 ? (
+          ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="text-xs font-medium text-[#7D4E14] px-1 py-1">
             {t.common.emptyMeals}
           </p>
         ) : visibleMeals.length === 0 ? (
+          ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="text-xs font-medium text-[#7D4E14] px-1 py-2 text-center">
             {t.prebuilt.noMatches}
           </p>
@@ -554,7 +562,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               return (
                 <div
                   key={meal.id}
-                  className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3.5 flex flex-col gap-2.5"
+                  className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}
                 >
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
@@ -573,7 +581,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                           <h3 className="text-sm sm:text-base font-extrabold text-[var(--text)]" title={meal.name}>
                             {meal.name}
                           </h3>
-                          {meal.slot && (
+                          {meal.slot && !ultraMinimal && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)]">
                               {t.mealSlots[meal.slot]}
                             </span>
@@ -611,10 +619,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         onClick={() => handleOpenLogModal(meal)}
                         title={t.prebuilt.logMeal}
                         aria-label={`${t.prebuilt.logMeal}: ${meal.name}`}
-                        className="pressable h-8 px-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
+                        className={`pressable ${ultraMinimal ? 'size-8 px-0' : 'h-8 px-3'} bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1`}
                       >
                         <Plus size={14} strokeWidth={2.5} />
-                        <span className="whitespace-nowrap">{t.common.log}</span>
+                        <span className={ultraMinimal ? 'sr-only' : 'whitespace-nowrap'}>{t.common.log}</span>
                       </button>
                     </div>
                   </div>
@@ -628,7 +636,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                     className="flex w-full min-w-0 items-center gap-3 text-left"
                   >
                     <span data-calories className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-extrabold tabular-nums text-[var(--text)]">
-                      {formatKcal(nut.totalKcal)} <span className="text-[11px] font-semibold text-[var(--muted)]">kcal</span>
+                      {formatKcal(nut.totalKcal)} {!ultraMinimal && <span className="text-[11px] font-semibold text-[var(--muted)]">kcal</span>}
                     </span>
                     <MacroPills carbs={nut.carbs} protein={nut.protein} fat={nut.fat} stretch />
                   </button>
@@ -636,26 +644,26 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
                       <div className="pt-1 space-y-3 border-t border-[var(--border)]">
-                        {meal.description && (
+                        {meal.description && !ultraMinimal && (
                           <p className="text-xs text-[var(--muted)]">{meal.description}</p>
                         )}
                         <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums pt-2">
                           <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${nut.carbs} g`} title={t.macros.carbs}>
-                            <span className="text-xs font-extrabold">{nut.carbs}g</span>
+                            <span className="text-xs font-extrabold">{nut.carbs}{!ultraMinimal && 'g'}</span>
                           </div>
                           <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14] flex items-center justify-center" role="img" aria-label={`${t.macros.protein}: ${nut.protein} g`} title={t.macros.protein}>
-                            <span className="text-xs font-extrabold">{nut.protein}g</span>
+                            <span className="text-xs font-extrabold">{nut.protein}{!ultraMinimal && 'g'}</span>
                           </div>
                           <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582] flex items-center justify-center" role="img" aria-label={`${t.macros.fat}: ${nut.fat} g`} title={t.macros.fat}>
-                            <span className="text-xs font-extrabold">{nut.fat}g</span>
+                            <span className="text-xs font-extrabold">{nut.fat}{!ultraMinimal && 'g'}</span>
                           </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                            <span className="text-[10px] font-bold block">{t.macros.fiber}</span>
-                            <span className="text-xs font-extrabold">{nut.fiber}g</span>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.fiber}: ${nut.fiber} g`} title={t.macros.fiber}>
+                            {ultraMinimal ? <Wheat size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.fiber}</span>}
+                            <span className="text-xs font-extrabold">{nut.fiber}{!ultraMinimal && 'g'}</span>
                           </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                            <span className="text-[10px] font-bold block">{t.macros.salt}</span>
-                            <span className="text-xs font-extrabold">{nut.salt}g</span>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.salt}: ${nut.salt} g`} title={t.macros.salt}>
+                            {ultraMinimal ? <SaltCrystalIcon size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.salt}</span>}
+                            <span className="text-xs font-extrabold">{nut.salt}{!ultraMinimal && 'g'}</span>
                           </div>
                         </div>
 
@@ -672,7 +680,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                                 </span>
                                 <span className="font-bold tabular-nums text-[var(--muted)] shrink-0">
                                   {ing.amount}
-                                  {food?.unit || 'g'}
+                                  {!ultraMinimal && (food?.unit || 'g')}
                                 </span>
                               </div>
                             );
@@ -691,7 +699,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       </section>
 
       {/* ============ RECIPES ============ */}
-      <section data-library-section="recipes" className="bg-[#E2D6FF] border border-[#C9B8F2] rounded-3xl p-4 sm:p-5 space-y-3">
+      <section data-library-section="recipes" className={`bg-[#E2D6FF] border border-[#C9B8F2] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.recipes ? 'col-span-3' : 'col-span-1') : ''}`}>
         <LibrarySectionHeader
           title={t.prebuilt.recipesTitle}
           tone="recipes"
@@ -710,10 +718,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         <div className="accordion-grid" data-open={sectionsOpen.recipes} inert={!sectionsOpen.recipes}>
         <div className="accordion-inner">
         {savedRecipes.length === 0 ? (
+          ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="text-xs font-medium text-[#4D3582] px-1 py-1">
             {t.prebuilt.noRecipes}
           </p>
         ) : visibleRecipes.length === 0 ? (
+          ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="text-xs font-medium text-[#4D3582] px-1 py-2 text-center">
             {t.prebuilt.noMatches}
           </p>
@@ -722,7 +732,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
               return (
-                <div key={recipe.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3.5 flex flex-col gap-2.5">
+                <div key={recipe.id} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
                     <button
@@ -775,10 +785,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         }}
                         title={t.prebuilt.logRecipe}
                         aria-label={`${t.prebuilt.logRecipe}: ${nameOf(recipe)}`}
-                        className="pressable h-8 px-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
+                        className={`pressable ${ultraMinimal ? 'size-8 px-0' : 'h-8 px-3'} bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1`}
                       >
                         <Plus size={14} strokeWidth={2.5} />
-                        <span className="whitespace-nowrap">{t.common.log}</span>
+                        <span className={ultraMinimal ? 'sr-only' : 'whitespace-nowrap'}>{t.common.log}</span>
                       </button>
                     </div>
                   </div>
@@ -792,7 +802,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                     className="flex w-full min-w-0 items-center gap-3 text-left"
                   >
                     <span data-calories className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-extrabold tabular-nums text-[var(--text)]">
-                      {recipe.calories} <span className="text-[11px] font-semibold text-[var(--muted)]">kcal/100{recipe.unit}</span>
+                      {recipe.calories} {!ultraMinimal && <span className="text-[11px] font-semibold text-[var(--muted)]">kcal/100{recipe.unit}</span>}
                     </span>
                     <MacroPills carbs={recipe.carbs} protein={recipe.protein} fat={recipe.fat} stretch />
                   </button>
@@ -802,29 +812,31 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                       <div className="pt-1 space-y-2.5 border-t border-[var(--border)]">
                         <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums pt-2">
                           <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${recipe.carbs ?? '—'} g`} title={t.macros.carbs}>
-                            <span className="text-xs font-extrabold">{recipe.carbs ?? '—'}g</span>
+                            <span className="text-xs font-extrabold">{recipe.carbs ?? '—'}{!ultraMinimal && 'g'}</span>
                           </div>
                           <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14] flex items-center justify-center" role="img" aria-label={`${t.macros.protein}: ${recipe.protein ?? '—'} g`} title={t.macros.protein}>
-                            <span className="text-xs font-extrabold">{recipe.protein ?? '—'}g</span>
+                            <span className="text-xs font-extrabold">{recipe.protein ?? '—'}{!ultraMinimal && 'g'}</span>
                           </div>
                           <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582] flex items-center justify-center" role="img" aria-label={`${t.macros.fat}: ${recipe.fat ?? '—'} g`} title={t.macros.fat}>
-                            <span className="text-xs font-extrabold">{recipe.fat ?? '—'}g</span>
+                            <span className="text-xs font-extrabold">{recipe.fat ?? '—'}{!ultraMinimal && 'g'}</span>
                           </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                            <span className="text-[10px] font-bold block">{t.macros.fiber}</span>
-                            <span className="text-xs font-extrabold">{recipe.fiber ?? '—'}g</span>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.fiber}: ${recipe.fiber ?? '—'} g`} title={t.macros.fiber}>
+                            {ultraMinimal ? <Wheat size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.fiber}</span>}
+                            <span className="text-xs font-extrabold">{recipe.fiber ?? '—'}{!ultraMinimal && 'g'}</span>
                           </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                            <span className="text-[10px] font-bold block">{t.macros.salt}</span>
-                            <span className="text-xs font-extrabold">{recipe.salt ?? '—'}g</span>
+                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.salt}: ${recipe.salt ?? '—'} g`} title={t.macros.salt}>
+                            {ultraMinimal ? <SaltCrystalIcon size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.salt}</span>}
+                            <span className="text-xs font-extrabold">{recipe.salt ?? '—'}{!ultraMinimal && 'g'}</span>
                           </div>
                         </div>
 
                         {/* Ingredients with their original quantities */}
                         <div>
-                          <span className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] mb-1.5">
-                            {t.prebuilt.recipeIngredients.replace('{count}', String(recipe.recipeIngredients?.length ?? 0))}
-                          </span>
+                          {!ultraMinimal && (
+                            <span className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] mb-1.5">
+                              {t.prebuilt.recipeIngredients.replace('{count}', String(recipe.recipeIngredients?.length ?? 0))}
+                            </span>
+                          )}
                           {recipe.recipeIngredients && recipe.recipeIngredients.length > 0 ? (
                             <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                               {recipe.recipeIngredients.map((ing, idx) => {
@@ -836,10 +848,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                                       {food ? nameOf(food) : ing.foodId}
                                     </span>
                                     <span className="flex items-center gap-2 shrink-0 tabular-nums">
-                                      {kcal !== null && <span className="text-[var(--muted)]">{kcal} kcal</span>}
+                                      {kcal !== null && <span className="text-[var(--muted)]">{kcal}{!ultraMinimal && ' kcal'}</span>}
                                       <span className="font-bold text-[var(--muted)]">
                                         {ing.amount}
-                                        {food?.unit || 'g'}
+                                        {!ultraMinimal && (food?.unit || 'g')}
                                       </span>
                                     </span>
                                   </div>
@@ -865,7 +877,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       </section>
 
       {/* ============ FOODS ============ */}
-      <section data-library-section="foods" className="bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl p-4 sm:p-5 space-y-3">
+      <section data-library-section="foods" className={`bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.foods ? 'col-span-3' : 'col-span-1') : ''}`}>
         <LibrarySectionHeader
           title={t.database.title}
           tone="foods"
@@ -883,25 +895,31 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             type="button"
             onClick={() => setIsBarcodeOpen(true)}
             className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            title={t.prebuilt.barcode}
+            aria-label={t.prebuilt.barcode}
           >
             <ScanBarcode size={16} className="shrink-0" />
-            <span className="truncate">{t.prebuilt.barcode}</span>
+            <span className={ultraMinimal ? 'sr-only' : 'truncate'}>{t.prebuilt.barcode}</span>
           </button>
           <button
             type="button"
             onClick={() => setIsCustomFoodOpen(true)}
             className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            title={t.database.customFood}
+            aria-label={t.database.customFood}
           >
             <Plus size={16} strokeWidth={2.5} className="shrink-0" />
-            <span className="truncate">{t.database.customFood}</span>
+            <span className={ultraMinimal ? 'sr-only' : 'truncate'}>{t.database.customFood}</span>
           </button>
           <button
             type="button"
             onClick={() => setActiveTab('database')}
             className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            title={t.database.browseAll}
+            aria-label={t.database.browseAll}
           >
             <BookOpen size={16} className="shrink-0" />
-            <span className="truncate">{t.database.browseAll}</span>
+            <span className={ultraMinimal ? 'sr-only' : 'truncate'}>{t.database.browseAll}</span>
           </button>
         </div>
         </div>

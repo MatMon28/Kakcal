@@ -88,12 +88,14 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
       compact={compact}
     >
       <div className="space-y-2.5">
-        <p className="text-[11px] font-medium text-[var(--muted)]">
+        {!settings.ultraMinimal && <p className="text-[11px] font-medium text-[var(--muted)]">
           {compact && <span className="tabular-nums">{totalMl} / {targetMl} ml · </span>}
           {t.water.targetNote}
-        </p>
+        </p>}
 
-        {entries.length === 0 ? (
+        {entries.length === 0 && settings.ultraMinimal ? (
+          <div className="min-h-7" aria-hidden="true" />
+        ) : entries.length === 0 ? (
           <button
             type="button"
             onClick={() => setIsWaterOpen(true)}
@@ -108,7 +110,7 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
               <div key={w.id} className="py-2 flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2 text-xs sm:text-sm tabular-nums min-w-0">
                   <Droplets size={13} className="text-[#2E7CC4] shrink-0" />
-                  <span className="font-bold text-[var(--text)]">{w.ml} ml</span>
+                  <span className="font-bold text-[var(--text)]">{w.ml}{settings.ultraMinimal ? '' : ' ml'}</span>
                   <span className="text-[var(--muted)] font-medium">
                     {new Date(w.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                   </span>

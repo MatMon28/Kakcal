@@ -48,7 +48,7 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
   const style = Object.fromEntries(Object.entries(palette).map(([name, value]) => [`--${name}`, value])) as React.CSSProperties;
 
   const badge = (
-    <div className={`${compact ? 'size-8 max-[359px]:size-7' : 'size-9'} rounded-full flex items-center justify-center shrink-0 bg-[var(--inset)] text-[var(--text)]`}>
+    <div className={`${compact ? 'size-8 max-[359px]:size-7' : 'size-9'} rounded-full flex items-center justify-center shrink-0 bg-transparent text-[var(--text)]`}>
       {icon}
     </div>
   );
@@ -60,7 +60,7 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
         e.stopPropagation();
         onAdd();
       }}
-      className={`pressable ${compact ? 'size-7 max-[359px]:size-6' : 'size-8'} shrink-0 rounded-full bg-[#FBF8F2] hover:bg-white text-[var(--text)] flex items-center justify-center`}
+      className={`pressable ${compact ? 'size-7 max-[359px]:size-6' : 'size-8'} shrink-0 rounded-full bg-transparent hover:opacity-75 text-[var(--text)] flex items-center justify-center`}
       title={addLabel}
       aria-label={addLabel}
     >

@@ -198,6 +198,7 @@ export type Theme = 'light' | 'lite-dark' | 'dark';
 
 export interface Settings {
   theme: Theme;
+  ultraMinimal: boolean;
   quickAdd: {
     food: boolean;
     movement: boolean;

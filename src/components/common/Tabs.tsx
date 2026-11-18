@@ -100,12 +100,14 @@ export const Tabs: React.FC = () => {
                 aria-current={isActive ? 'page' : undefined}
                 className={`pressable flex items-center justify-center rounded-full text-xs sm:text-sm font-bold whitespace-nowrap ${
                   isActive
-                    ? `gap-1.5 ${item.activeClass} px-4 sm:px-5 py-2`
+                    ? settings.ultraMinimal
+                      ? `w-9 h-9 shrink-0 ${item.activeClass}`
+                      : `gap-1.5 ${item.activeClass} px-4 sm:px-5 py-2`
                     : 'w-9 h-9 text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
                 }`}
               >
                 <Icon size={16} />
-                {isActive && <span>{item.label}</span>}
+                {isActive && !settings.ultraMinimal && <span>{item.label}</span>}
               </button>
             );
           })}

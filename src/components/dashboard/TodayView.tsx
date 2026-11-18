@@ -27,16 +27,18 @@ type TrackerId = 'activity' | 'water' | 'poop' | 'custom';
 const TRACKERS: TrackerId[] = ['activity', 'water', 'poop', 'custom'];
 
 export const TodayView: React.FC = () => {
-  const { t } = useApp();
+  const { settings, t } = useApp();
+  const ultraMinimal = settings.ultraMinimal;
   const [inspectedDay, setInspectedDay] = useState<string | null>(null);
 
   // Meal expansion and the chosen layout are remembered independently.
   const [openSlots, setOpenSlots] = usePersistentState<MealSlotId[]>('kcak_today_meals_open', []);
   const [layout, setLayout] = usePersistentState<MealLayout>('kcak_today_meal_layout', 'normal');
   const [openTrackers, setOpenTrackers] = usePersistentState<TrackerId[]>('kcak_today_trackers_open', []);
+  const displayLayout: MealLayout = ultraMinimal ? 'compact' : layout;
   const toggleTracker = (id: TrackerId) => {
     // In Expanded everything is open; closing one card switches to Normal and keeps the others open.
-    if (layout === 'expanded') {
+    if (displayLayout === 'expanded') {
       setLayout('normal');
       setOpenSlots([...MEAL_SLOTS]);
       setOpenTrackers(TRACKERS.filter((x) => x !== id));
@@ -46,7 +48,7 @@ export const TodayView: React.FC = () => {
   };
 
   const toggleSlot = (slot: MealSlotId) => {
-    if (layout === 'expanded') {
+    if (displayLayout === 'expanded') {
       setLayout('normal');
       setOpenSlots(MEAL_SLOTS.filter((id) => id !== slot));
       setOpenTrackers([...TRACKERS]);
@@ -75,13 +77,13 @@ export const TodayView: React.FC = () => {
 
   return (
     <>
-      <div className="space-y-3.5">
+      <div className={ultraMinimal ? 'space-y-2.5' : 'space-y-3.5'}>
         <DayNavigator onInspectDay={setInspectedDay} />
-        <EnergyBalanceCards compact={layout === 'compact'} />
+        <EnergyBalanceCards compact={displayLayout === 'compact'} />
         <MacroNutrientsOverview />
 
         {/* The three layout options replace the redundant Expand all / Collapse all action. */}
-        <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+        {!ultraMinimal && <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div
             role="group"
             aria-label={t.mealSlots.layout}
@@ -107,25 +109,26 @@ export const TodayView: React.FC = () => {
             ))}
           </div>
 
-        </div>
+        </div>}
 
         <div
           className={`grid items-start ${
-            layout === 'compact'
+            displayLayout === 'compact'
               ? 'grid-cols-2 gap-2.5 md:grid-cols-3'
               : 'grid-cols-1 md:grid-cols-2 gap-3.5'
           }`}
         >
           {MEAL_SLOTS.map((slotId) => {
-            const open = layout === 'expanded' || openSlots.includes(slotId);
+            const open = displayLayout === 'expanded' || openSlots.includes(slotId);
             return (
               <div
                 key={slotId}
-                className={layout === 'compact' && open ? 'col-span-2 md:col-span-1' : undefined}
+                className={displayLayout === 'compact' && open ? 'col-span-2 md:col-span-1' : undefined}
               >
                 <MealSlotCard
                   slotId={slotId}
-                  compact={layout === 'compact'}
+                  compact={displayLayout === 'compact'}
+                  ultraMinimal={ultraMinimal}
                   open={open}
                   onToggle={() => toggleSlot(slotId)}
                 />
@@ -138,16 +141,16 @@ export const TodayView: React.FC = () => {
             Compact puts them in the same two-column grid (an open card spans both columns). */}
         <div
           className={`grid items-start ${
-            layout === 'compact' ? 'grid-cols-2 gap-2.5 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 gap-3.5'
+            displayLayout === 'compact' ? 'grid-cols-2 gap-2.5 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 gap-3.5'
           }`}
         >
           {TRACKERS.map((id) => {
-            const open = layout === 'expanded' || openTrackers.includes(id);
-            const props = { compact: layout === 'compact', open, onToggle: () => toggleTracker(id) };
+            const open = displayLayout === 'expanded' || openTrackers.includes(id);
+            const props = { compact: displayLayout === 'compact', open, onToggle: () => toggleTracker(id) };
             const Card =
               id === 'activity' ? ActivityCardSummary : id === 'water' ? WaterCard : id === 'poop' ? PoopCard : CustomButtonsCard;
             return (
-              <div key={id} className={layout === 'compact' && open ? 'col-span-2 md:col-span-1' : undefined}>
+              <div key={id} className={displayLayout === 'compact' && open ? 'col-span-2 md:col-span-1' : undefined}>
                 <Card {...props} />
               </div>
             );

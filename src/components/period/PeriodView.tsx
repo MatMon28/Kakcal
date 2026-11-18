@@ -114,7 +114,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
       {/* Header */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-[#F4C6D8] text-[#6E2440] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-transparent text-[#6E2440] flex items-center justify-center shrink-0">
             <Droplet size={17} />
           </div>
           <div>

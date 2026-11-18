@@ -26,6 +26,7 @@ interface MealSlotCardProps {
   open: boolean;
   onToggle: () => void;
   compact?: boolean;
+  ultraMinimal?: boolean;
 }
 
 export const MealSlotCard: React.FC<MealSlotCardProps> = ({
@@ -34,6 +35,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   open,
   onToggle,
   compact = false,
+  ultraMinimal = false,
 }) => {
   const {
     currentDayLog,
@@ -70,8 +72,8 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   const slotCalories = calculateTotalCalories(items);
   const slotMacros = calculateMacros(items);
 
-  // The icon sits in a circle of the page background colour (a quiet "hole" in the card), so the
-  // macro pills stay the only coloured elements on a meal card.
+  // Circle rule: the icon circle is transparent (same colour as the card, no border, no shadow),
+  // so the macro pills stay the only coloured elements on a meal card. Size and round shape are kept.
   const getSlotDetails = (id: MealSlotId) => {
     switch (id) {
       case 'breakfast':
@@ -141,7 +143,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   );
 
   const slotBadge = (size: string, iconSize: number) => (
-    <div className={`${size} rounded-full flex items-center justify-center shrink-0 bg-[var(--bg)] text-[var(--text)]`}>
+    <div className={`${size} rounded-full flex items-center justify-center shrink-0 bg-transparent text-[var(--text)]`}>
       <Icon size={iconSize} strokeWidth={2.2} />
     </div>
   );
@@ -153,7 +155,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
         e.stopPropagation();
         handleOpenAddFood();
       }}
-      className={`pressable ${size} shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center`}
+      className={`pressable ${size} shrink-0 rounded-full bg-transparent hover:opacity-75 text-[var(--text)] flex items-center justify-center`}
       title={t.mealSlots.addItem}
       aria-label={`${t.mealSlots.addItem} — ${details.title}`}
     >
@@ -190,7 +192,9 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
           </div>
           {/* Row 2: numeric macro pills, or the empty-state text */}
           {items.length === 0 ? (
-            <p className="w-full text-xs font-medium text-[var(--muted)]">{t.mealSlots.emptySlot}</p>
+            <div className="w-full min-h-6 flex items-center">
+              {!ultraMinimal && <p className="text-xs font-medium text-[var(--muted)]">{t.mealSlots.emptySlot}</p>}
+            </div>
           ) : (
             macroPills
           )}
@@ -226,7 +230,9 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
           <div className={`${compact ? 'px-2.5' : 'px-4'} py-1.5 border-t border-[var(--border)] divide-y divide-[var(--border)]`}>
-            {items.length === 0 ? (
+            {items.length === 0 && ultraMinimal ? (
+              <div className="min-h-7" aria-hidden="true" />
+            ) : items.length === 0 ? (
               <button
                 type="button"
                 onClick={handleOpenAddFood}

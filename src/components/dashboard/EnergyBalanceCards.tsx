@@ -1,9 +1,11 @@
 import React from 'react';
+import { Flame, Utensils } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatKcal } from '../../utils/formatters';
 
 export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
-  const { t, currentIntakeCalories, currentExpenditure, netBalance } = useApp();
+  const { t, settings, currentIntakeCalories, currentExpenditure, netBalance } = useApp();
+  const ultraMinimal = settings.ultraMinimal;
 
   const scale = Math.max(currentIntakeCalories, currentExpenditure.totalExpenditure, 1);
   const intakePct = Math.round((currentIntakeCalories / scale) * 100);
@@ -26,19 +28,20 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
   return (
     <div data-energy-overview className="grid grid-cols-2 gap-3 sm:gap-4">
       {/* Left: INTAKE (Pastel Rose) */}
-      <div className="bg-[#F6D0D0] rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+      <div role="group" aria-label={`${t.energy.intake}: ${formatKcal(currentIntakeCalories)} kcal`} className={`bg-[#F6D0D0] rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
         <div>
-          <div className="flex items-center justify-between gap-1 mb-1 min-h-[22px]">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#8C3A3A]">
-              {t.energy.intake}
+          <div className={`flex items-center justify-between gap-1 ${ultraMinimal ? 'min-h-5' : 'mb-1 min-h-[22px]'}`}>
+            <span className={`${ultraMinimal ? 'inline-flex items-center text-[#8C3A3A]' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#8C3A3A]'}`} title={t.energy.intake}>
+              {ultraMinimal && <Utensils size={15} aria-hidden="true" />}
+              <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.intake}</span>
             </span>
             {netPositive && surplusPill}
           </div>
-          <div className="flex items-baseline gap-1 my-1" aria-label={`${formatKcal(currentIntakeCalories)} kcal`}>
+          <div className={`flex items-baseline gap-1 my-1 ${ultraMinimal ? 'justify-center text-center' : ''}`} aria-label={`${formatKcal(currentIntakeCalories)} kcal`}>
             <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-[#2B1818] tracking-tight">
               {formatKcal(currentIntakeCalories)}
             </span>
-            {!compact && <span className="text-xs font-semibold text-[#8C3A3A]">kcal</span>}
+            {!compact && !ultraMinimal && <span className="text-xs font-semibold text-[#8C3A3A]">kcal</span>}
           </div>
         </div>
 
@@ -51,19 +54,20 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
       </div>
 
       {/* Right: BURNED (Pastel Mint) */}
-      <div className="bg-[#C9EFD3] rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
+      <div role="group" aria-label={`${t.energy.expenditure}: ${formatKcal(currentExpenditure.totalExpenditure)} kcal`} className={`bg-[#C9EFD3] rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
         <div>
-          <div className="flex items-center justify-between gap-1 mb-1 min-h-[22px]">
-            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#25633E]">
-              {t.energy.expenditure}
+          <div className={`flex items-center justify-between gap-1 ${ultraMinimal ? 'min-h-5' : 'mb-1 min-h-[22px]'}`}>
+            <span className={`${ultraMinimal ? 'inline-flex items-center text-[#25633E]' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#25633E]'}`} title={t.energy.expenditure}>
+              {ultraMinimal && <Flame size={15} aria-hidden="true" />}
+              <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.expenditure}</span>
             </span>
             {!netPositive && deficitPill}
           </div>
-          <div className="flex items-baseline gap-1 my-1" aria-label={`${formatKcal(currentExpenditure.totalExpenditure)} kcal`}>
+          <div className={`flex items-baseline gap-1 my-1 ${ultraMinimal ? 'justify-center text-center' : ''}`} aria-label={`${formatKcal(currentExpenditure.totalExpenditure)} kcal`}>
             <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-[#142E1F] tracking-tight">
               {formatKcal(currentExpenditure.totalExpenditure)}
             </span>
-            {!compact && <span className="text-xs font-semibold text-[#25633E]">kcal</span>}
+            {!compact && !ultraMinimal && <span className="text-xs font-semibold text-[#25633E]">kcal</span>}
           </div>
         </div>
 
