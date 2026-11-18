@@ -128,9 +128,9 @@ export const UserProfileModal: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-[#C9EFD3] rounded-2xl px-4 py-3.5 flex items-center justify-between gap-2">
-          <span className="text-xs font-bold text-[#1D5C38]">{t.profile.calculatedBmr}</span>
-          <span className="text-xl font-extrabold tabular-nums text-[#142E1F]">
+        <div className="bg-activity rounded-2xl px-4 py-3.5 flex items-center justify-between gap-2">
+          <span className="text-xs font-bold text-activity-accent">{t.profile.calculatedBmr}</span>
+          <span className="text-xl font-extrabold tabular-nums text-activity-ink">
             {formatKcal(previewBmr)} kcal
           </span>
         </div>

@@ -74,8 +74,8 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
           <thead>
             <tr className="text-[var(--muted)]">
               <th className="text-left py-1 pr-2 font-bold">{t.period.phase}</th>
-              <th className="text-right py-1 px-1">{t.period.intake}</th>
-              <th className="text-right py-1 px-1">{t.period.burned}</th>
+              <th className="text-right py-1 px-1 text-[var(--intake-on-surface)]">{t.period.intake}</th>
+              <th className="text-right py-1 px-1 text-[var(--activity-on-surface)]">{t.period.burned}</th>
               <th className="text-right py-1 px-1">{t.period.net}</th>
               <th className="text-right py-1 px-1">C/P/F</th>
             </tr>
@@ -96,9 +96,9 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
                   </td>
                   {enough ? (
                     <>
-                      <td className="text-right px-1 text-[var(--text)]">{r(b.intake)}</td>
-                      <td className="text-right px-1 text-[var(--text)]">{r(b.burned)}</td>
-                      <td className={`text-right px-1 tabular-nums ${r(b.net) > 0 ? 'text-[var(--text-pos)]' : 'text-[var(--text-neg)]'}`}>
+                      <td className="text-right px-1 text-[var(--intake-on-surface)]">{r(b.intake)}</td>
+                      <td className="text-right px-1 text-[var(--activity-on-surface)]">{r(b.burned)}</td>
+                      <td className={`text-right px-1 tabular-nums ${r(b.net) > 0 ? 'text-[var(--intake-on-surface)]' : 'text-[var(--activity-on-surface)]'}`}>
                         {r(b.net) > 0 ? '+' : ''}
                         {r(b.net)}
                       </td>
@@ -136,7 +136,11 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
   const W = 320, H = 120, PAD = 12;
   const x = (day: number) => PAD + ((day - 1) / Math.max(1, maxDay - 1)) * (W - 2 * PAD);
   const y = (v: number) => H - PAD - ((v - vMin) / vRange) * (H - 2 * PAD);
-  const lineColors = ['#1E5E3A', '#7C5CBF', '#B85C7A'];
+  const cycleLines = [
+    { color: 'var(--weight-on-surface)', dash: undefined },
+    { color: '#8D6ABB', dash: '5 3' },
+    { color: '#AF89CE', dash: '2 3' },
+  ];
   // phase bands for the typical cycle (menstrual / follicular / ovulation / luteal)
   const avgPeriod = Math.max(1, Math.round(cycles.reduce((a, c) => a + c.periodLength, 0) / Math.max(1, cycles.length)) || settings.periodDuration);
   const ovDay = status.predicted.length - 14;
@@ -212,9 +216,9 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
                 return (
                   <g key={w.c.start}>
                     {pts.length > 1 && (
-                      <polyline points={pts.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={lineColors[i % 3]} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+                      <polyline points={pts.map((p) => `${p.x},${p.y}`).join(' ')} fill="none" stroke={cycleLines[i].color} strokeDasharray={cycleLines[i].dash} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
                     )}
-                    {pts.map((p, j) => <circle key={j} cx={p.x} cy={p.y} r={2.5} fill={lineColors[i % 3]} />)}
+                    {pts.map((p, j) => <circle key={j} cx={p.x} cy={p.y} r={2.5} fill={cycleLines[i].color} />)}
                   </g>
                 );
               })}
@@ -225,7 +229,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
                 const last = w.pts[w.pts.length - 1]?.kg;
                 return (
                   <span key={w.c.start} className="flex items-center gap-1.5">
-                    <span className="w-2.5 h-2.5 rounded-full" style={{ background: lineColors[i % 3] }} />
+                    <svg width={16} height={6} aria-hidden="true"><line x1={1} y1={3} x2={15} y2={3} stroke={cycleLines[i].color} strokeDasharray={cycleLines[i].dash} strokeWidth={2} strokeLinecap="round" /></svg>
                     {formatDateDisplay(w.c.start, language)}
                     {first !== undefined && last !== undefined && (
                       <span className="text-[var(--text)]">· {t.period.startVsEnd} {first.toFixed(1)} → {last.toFixed(1)} kg</span>

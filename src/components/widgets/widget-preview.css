@@ -1,0 +1,87 @@
+/* Widget gallery styles. Colours come from the app's theme tokens and pastel accents. */
+
+/* The home-screen wallpaper the translucent trays sit on, drawn from the app's pastels. */
+.widget-wallpaper {
+  background:
+    radial-gradient(60% 55% at 12% 14%, #C9EFD3 0%, transparent 70%),
+    radial-gradient(55% 50% at 92% 8%, #CFE7FE 0%, transparent 72%),
+    radial-gradient(60% 55% at 90% 92%, #FAE0B4 0%, transparent 72%),
+    radial-gradient(60% 55% at 6% 92%, #E2D6FF 0%, transparent 72%),
+    var(--bg);
+}
+
+/* Small and Extra-small: a translucent pill that lets the wallpaper show through. */
+.quick-widget {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 58%, transparent);
+  border: 1px solid color-mix(in srgb, var(--surface) 80%, transparent);
+  box-shadow: 0 6px 16px rgb(36 32 28 / 8%);
+  backdrop-filter: blur(6px);
+}
+
+.widget-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  width: 100%;
+}
+
+.widget-action {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.widget-action:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.widget-action-icon {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--action-fill);
+  color: var(--action-ink);
+  transition: transform 180ms ease;
+}
+
+.widget-action:not(:disabled):hover .widget-action-icon {
+  transform: translateY(-2px);
+}
+
+.widget-action:not(:disabled):active .widget-action-icon {
+  transform: scale(0.94);
+}
+
+.widget-action:focus-visible {
+  outline: 2px solid var(--muted);
+  outline-offset: 3px;
+}
+
+.widget-action-food { --action-fill: var(--color-intake); --action-ink: var(--color-intake-ink); }
+.widget-action-movement { --action-fill: var(--color-activity); --action-ink: var(--color-activity-ink); }
+.widget-action-water { --action-fill: #CFE7FE; --action-ink: #183F66; }
+.widget-action-poop { --action-fill: #FAE0B4; --action-ink: #7D4E14; }
+.widget-action-weight { --action-fill: var(--color-weight); --action-ink: var(--color-weight-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .widget-action-icon { transition: none; }
+}

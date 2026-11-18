@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.DS_Store
+*.jks
+*.keystore
+*.apks
+*.apk
+*.aab
+local.properties
+.idea/

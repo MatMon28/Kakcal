@@ -1,43 +1,66 @@
-# Building the Kakcalculator APK
+# Build the Kakcalculator APK
 
-## One-time setup
+This project contains the offline journal and three native Android home-screen widgets. The launcher uses Android `RemoteViews`, not a web page. No backend, Firebase account, API keys or running development server are required.
 
-Capacitor 8 uses Node.js 22+, Java 21, Android SDK 36, and Android Studio Otter (2025.2.1) or newer. The installer supports Android 7.0 (API 24) and newer; use an up-to-date Android System WebView.
+## Open the prepared download
 
-```bash
-npm install
+1. Select **Android project** in the guided web tour (top right). Extract the entire `Kakcalculator-Android-Studio.zip`; keep its folders together.
+2. Install Android Studio Otter (2025.2.1) or newer with Android Gradle Plugin **8.13.0** support. In SDK Manager install **Android SDK Platform 36**, **Build Tools 35.0.0**, and Platform-Tools. Review and accept the SDK licenses on your own machine.
+3. In Studio, **Open** the extracted **`Kakcalculator/android/`** folder containing `settings.gradle`, not the outer folder or just `app/`. Do not create a new project or run `cap add`.
+4. In **Settings > Build, Execution, Deployment > Build Tools > Gradle**, set the Gradle JDK to **21** and use the included **Gradle 8.14.3 wrapper**. Let Gradle sync finish. The first build needs internet for SDK/Gradle/Maven dependencies; the installed app does not.
+5. Select the **app** configuration and Run on Android 7.0+ (API 24+) with an updated Android System WebView. Open the app once. Long-press the home screen, open the launcher's Widgets picker and look for Kakcalculator.
+
+The download includes clean compiled web assets, Capacitor configuration, the generated Cordova compatibility module, the wrapper JAR, and the two native Gradle modules under `node_modules/@capacitor/`. **You do not need Node/npm to build this prepared archive in Studio.** It does not include a private keystore or the full JavaScript toolchain.
+
+## After editing the web app
+
+From the project root, one level above `android/`, use Node.js **22 or newer**:
+
+```sh
+npm ci
+npx tsc --noEmit
+node scripts/prepare-android.mjs
+npx cap open android
 ```
 
-## Build steps
-```bash
-npm run build        # → dist/ (single inlined index.html)
-npx cap sync android # copies dist/ into android/app/src/main/assets/public
-npx cap open android # opens Android Studio
-```
-In Android Studio:
-**Build → Build App Bundle(s) / APK(s) → Build APK(s)**
-→ `android/app/build/outputs/apk/debug/app-debug.apk`
+Use the same steps for a fresh source checkout. The cross-platform preparation script disables all demo seeds, selects the standalone journal, and builds local JS, CSS, fonts, catalogs and licenses. It runs `cap sync android` and verifies the copied HTML and plugin list. The source download and browser service worker are excluded from the APK. **A plain `npm run build` produces the browser preview**, not the clean Android release bundle. Do not overwrite the prepared assets with that build. Native Java/XML edits need only a Gradle rebuild. The launcher PNGs and the Play Store icon come from `src/assets/brand/kakcalculator-icon.svg`; after changing that artwork, run `node scripts/render-brand.mjs` (this needs `npm ci` and `npx playwright install chromium`).
 
-For a release build: **Build → Generate Signed App Bundle / APK** and follow the keystore wizard.
+If a Capacitor Gradle project is missing, extract the entire ZIP or run the source commands above. If the SDK is missing, select its location in Studio. Do not share machine-specific `local.properties`.
 
-For a debug APK from the command line, run `cd android && ./gradlew assembleDebug` after syncing. The first native build needs internet to download build dependencies; this is independent of app runtime.
+## Build and sign
 
-## Offline check
+**Debug:** choose **Build > Generate App Bundles or APKs > Generate APKs** (the menu name varies by Studio version). Output: `android/app/build/outputs/apk/debug/app-debug.apk`. Alternatively, from `android/`, run `./gradlew assembleDebug` or `gradlew.bat assembleDebug` on Windows. Use `chmod +x gradlew` if extraction dropped its Unix executable bit.
 
-1. Install the synced build and enable airplane mode before opening the app.
-2. Log a local food (search for Ricotta), water, and a cycle marker, then close and reopen the app. Confirm the entries are still visible.
-3. Try a known barcode such as Nutella (`8000500310427`). It should resolve from the bundled catalog. An unknown barcode should explain the connection requirement and offer manual food creation.
-4. Focus an input in a long form. The dialog should move above the keyboard and its content should remain scrollable.
+**Release:** choose **Build > Generate Signed App Bundle / APK**, select APK, the `app` module and the `release` variant. Create or select **your own keystore**. Studio shows the chosen output directory after the build. For Google Play, select Android App Bundle instead. Keep keys and passwords outside source control; a debug signature is not a production signing identity.
 
-Keep `server.url` unset in `capacitor.config.json` for release builds. The app must load its own bundled assets, not a remote live-reload URL.
+**Identity:** `com.kcalsync.app`, `versionCode 3`, `versionName 1.1.0`, `minSdk 24`, `compileSdk/targetSdk 36`. Before publishing, make sure the version code exceeds your last distributed build. Change it in `app/build.gradle` if needed. Updating an install requires the same application ID and signing key. A no-demo build does not erase older test data. Export a backup before clearing app storage or uninstalling.
 
-## Notes
-- `appId`: `com.kcalsync.app` · `appName`: Kakcalculator · `versionName 1.0.0` (versionCode 2) in `app/build.gradle`.
-- **CAMERA permission** is declared for barcode scanning (Open Food Facts); the camera is only
-  opened when the user taps the scanner button in Barcode Lookup.
-- All app data is stored in WebView `localStorage` — clearing app data erases it. Use the
-  in-app **Export JSON** (Statistics page) to back up.
-- Gestures: swipe left/right anywhere on a page to switch tabs; Android back closes the
-  open modal/sheet first, then returns to the Today tab, then exits the app.
-- `webContentsDebuggingEnabled` is `false` (production). For remote debugging during
-  development set it to `true` in `capacitor.config.json` and re-run `npx cap sync`.
+## Widget behavior
+
+| Widget | Contents |
+| --- | --- |
+| Small | Food, Movement, Water, Poop and Weight: five circular icon buttons. |
+| Extra-small | Food, Water and Poop: three circular icon buttons. |
+| Large | Intake and burned cards with their icons, badge and progress bar; carbs, protein and fat with grams and percentages; and five icon buttons. Same arrangement as Ultra minimal Today, with no logo, name or "today" label. |
+
+There are no action captions. Accessibility descriptions and picker labels are available in English and Italian. Size hints are advisory; the launcher controls its grid, long-press, positioning and resizing. A tap opens the existing app dialog on **the current local day**; no entry is committed until you save.
+
+`MainActivity.java` registers the local plugin and retains an allowlisted action across cold launch and activity recreation. A warm launch reuses the activity via `singleTask` and `onNewIntent`. React subscribes before taking the pending action once. The buttons use explicit immutable `PendingIntent`s with distinct request codes.
+
+The journal is the source of truth. The native widget cache contains only language and dated nutrition totals, not names, notes, weight or cycle logs. Yesterday (for timezone shifts), today and already-logged future dates are mirrored. The renderer selects the current local date, with zero for missing days. Edits and imports refresh the cache. The large widget also refreshes on launcher updates, resizing, boot, time/date changes, and an inexact non-waking midnight alarm. Android may defer refresh when asleep or in Doze. No exact-alarm permission or background network service is used.
+
+## Offline operation
+
+Capacitor serves `assets/public/index.html` internally at a local HTTPS origin. Leave `server.url` unset. The app and launcher widgets need no internet for ordinary use, including first launch. Known/saved barcodes resolve locally. Only an explicit unknown-barcode lookup queries Open Food Facts over HTTPS, with a timeout and offline/manual fallback; following an external source link also needs internet.
+
+Camera access is optional and scanner support varies by WebView. `INTERNET` permits remote barcode lookups, and `RECEIVE_BOOT_COMPLETED` restores widget refresh scheduling. There is no account, telemetry or cloud-sync service. Android automatic backup is disabled. **Settings > Data Backup** exports unencrypted private JSON through Android's document picker without broad storage permission. Browser and installed-app data are separate; use export/import to transfer a journal.
+
+## Device checks before distributing
+
+1. On a fresh install, enable airplane mode **before the first launch**. Verify that the journal is empty. Log food, water, activity, poop and weight, close and reopen, and check persistence.
+2. Add the three widgets. Test every shortcut with the app closed, backgrounded, on a previous date, and already in a dialog. Confirm cancel makes no entry and Save logs once, for today.
+3. Edit/remove a food and import a backup. Compare the large widget with Today. Check resizing, midnight, timezone changes, reboot, large font settings and TalkBack on your actual launcher.
+4. Turn on **Settings > Ultra minimal mode** and check the outlined diamond salt symbol. Swipe horizontally on content. Vertical scrolls, editable fields, horizontal lists, pinch gestures and system-edge Back should not change tabs. Check portrait/landscape, the keyboard and gesture/three-button navigation.
+5. Use Back in nested dialogs, the Today calendar, Browse Foods, and a non-Today tab. It should dismiss the top overlay, return from the catalog, then return to Today. Back at the root backgrounds the app.
+6. Export to a local JSON document, cancel and repeat, then import the saved file. Deny camera permission and check manual barcode entry; try known and unknown codes while offline.
+7. With a device attached, run `./gradlew connectedDebugAndroidTest` from `android/` to check provider registration and accepted intent actions. Build and test your own signed release, including an update signed with the same key.

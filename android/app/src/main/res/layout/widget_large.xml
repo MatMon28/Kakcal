@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_surface"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Intake and burned: the two cards of Today in Ultra minimal mode. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_intake_card"
+            style="@style/WidgetCard"
+            android:layout_width="0dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_card_intake">
+
+            <LinearLayout style="@style/WidgetCardHeader">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/widget_intake_icon" />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/widget_intake_net"
+                    style="@style/WidgetPill"
+                    android:background="@drawable/widget_pill_surplus"
+                    android:textColor="#E6F8EB"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/widget_intake_value"
+                style="@style/WidgetValue"
+                android:textColor="#17432A" />
+
+            <ProgressBar
+                android:id="@+id/widget_intake_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="4dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:progressBackgroundTint="#E6F8EB"
+                android:progressTint="#286540" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_burned_card"
+            style="@style/WidgetCard"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_card_burned">
+
+            <LinearLayout style="@style/WidgetCardHeader">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/widget_burned_icon" />
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/widget_burned_net"
+                    style="@style/WidgetPill"
+                    android:background="@drawable/widget_pill_deficit"
+                    android:textColor="#FBE9E9" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/widget_burned_value"
+                style="@style/WidgetValue"
+                android:textColor="#702D32" />
+
+            <ProgressBar
+                android:id="@+id/widget_burned_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="4dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:progressBackgroundTint="#FBE9E9"
+                android:progressTint="#904149" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Carbs, protein and fat: grams with their share of the day's calories. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_weight="0.7"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_carbs_card"
+            style="@style/WidgetMacro"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_card_carbs">
+            <TextView
+                android:id="@+id/widget_carbs_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#0F3355" />
+            <TextView
+                android:id="@+id/widget_carbs_percent"
+                style="@style/WidgetMacroPercent"
+                android:textColor="#1A4670" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_protein_card"
+            style="@style/WidgetMacro"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_card_protein">
+            <TextView
+                android:id="@+id/widget_protein_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#2D1E0B" />
+            <TextView
+                android:id="@+id/widget_protein_percent"
+                style="@style/WidgetMacroPercent"
+                android:textColor="#7D4E14" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_fat_card"
+            style="@style/WidgetMacro"
+            android:background="@drawable/widget_card_fat">
+            <TextView
+                android:id="@+id/widget_fat_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#1F1636" />
+            <TextView
+                android:id="@+id/widget_fat_percent"
+                style="@style/WidgetMacroPercent"
+                android:textColor="#523A8C" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="#E6DECF" />
+
+    <include layout="@layout/widget_actions_five" />
+</LinearLayout>

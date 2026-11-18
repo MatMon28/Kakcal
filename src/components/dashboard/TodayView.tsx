@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { EnergyBalanceCards } from './EnergyBalanceCards';
 import { DayNavigator } from './DayNavigator';
 import { MacroNutrientsOverview } from './MacroNutrientsOverview';
@@ -30,6 +30,16 @@ export const TodayView: React.FC = () => {
   const { settings, t } = useApp();
   const ultraMinimal = settings.ultraMinimal;
   const [inspectedDay, setInspectedDay] = useState<string | null>(null);
+
+  // The guided tour opens the day overview for today through this event.
+  useEffect(() => {
+    const onInspect = (event: Event) => {
+      const date = (event as CustomEvent<unknown>).detail;
+      if (typeof date === 'string') setInspectedDay(date);
+    };
+    window.addEventListener('kc:inspect-day', onInspect);
+    return () => window.removeEventListener('kc:inspect-day', onInspect);
+  }, []);
 
   // Meal expansion and the chosen layout are remembered independently.
   const [openSlots, setOpenSlots] = usePersistentState<MealSlotId[]>('kcak_today_meals_open', []);
@@ -82,6 +92,8 @@ export const TodayView: React.FC = () => {
         <EnergyBalanceCards compact={displayLayout === 'compact'} />
         <MacroNutrientsOverview />
 
+        {/* Anchor for the guided tour's Meals page. */}
+        <div id="today-meals" className="scroll-mt-24" aria-hidden="true" />
         {/* The three layout options replace the redundant Expand all / Collapse all action. */}
         {!ultraMinimal && <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div

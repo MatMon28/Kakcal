@@ -18,6 +18,17 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
   const dateLabel = formatDateDisplay(selectedDate, language);
 
   const [calOpen, setCalOpen] = useState(false);
+  useEffect(() => {
+    if (!calOpen) return;
+    document.dispatchEvent(new Event('kc:overlay-open'));
+    const dismiss = (event: Event) => { event.preventDefault(); setCalOpen(false); };
+    document.addEventListener('kc:back-popover', dismiss);
+    document.addEventListener('kc:dismiss-popover', dismiss);
+    return () => {
+      document.removeEventListener('kc:back-popover', dismiss);
+      document.removeEventListener('kc:dismiss-popover', dismiss);
+    };
+  }, [calOpen]);
   const [viewYear, setViewYear] = useState(() => Number(selectedDate.slice(0, 4)));
   const [viewMonth, setViewMonth] = useState(() => Number(selectedDate.slice(5, 7)) - 1);
 

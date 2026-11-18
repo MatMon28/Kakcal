@@ -2,6 +2,7 @@ import React, { useRef, useState } from 'react';
 import { AlertCircle, CheckCircle, Download, Upload } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
+import { isAndroidApp, JournalDevice } from '../../utils/android';
 
 /** Local JSON backup controls. Kept in Settings so Statistics stays focused on charts. */
 export const DataBackup: React.FC = () => {
@@ -9,7 +10,13 @@ export const DataBackup: React.FC = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
 
-  const handleExport = () => {
+  const handleExport = async () => {
+    if (isAndroidApp()) {
+      setMessage(null);
+      try { await JournalDevice.exportBackup({ json: exportDataJson() }); }
+      catch { setMessage({ text: t.history.exportError, error: true }); }
+      return;
+    }
     const blob = new Blob([exportDataJson()], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');

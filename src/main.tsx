@@ -1,8 +1,28 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource/nunito/latin-800.css";
 import "./index.css";
 import App from "./App";
+import faviconUrl from "./assets/brand/kakcalculator-icon.svg";
+import { isAndroidApp } from "./utils/android";
+
+// Set at runtime so the single-file build embeds the icon instead of writing a separate file.
+const favicon = document.createElement("link");
+favicon.rel = "icon";
+favicon.type = "image/svg+xml";
+favicon.href = faviconUrl;
+document.head.appendChild(favicon);
+
+// Browser builds cache the app shell for offline reloads. The Android build uses its bundled assets instead.
+if (import.meta.env.PROD && import.meta.env.VITE_ANDROID_RELEASE !== "true" &&
+    !isAndroidApp() && "serviceWorker" in navigator && window.isSecureContext) {
+  window.addEventListener("load", () => {
+    void navigator.serviceWorker.register("./offline-worker.js").catch(() => {
+      console.warn("Offline browser caching is unavailable.");
+    });
+  });
+}
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

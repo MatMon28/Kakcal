@@ -135,7 +135,7 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
   const chip = (active: boolean) =>
     `pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border shrink-0 ${
       active
-        ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+        ? 'bg-activity text-activity-ink border-activity-border'
         : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
     }`;
 
@@ -207,7 +207,7 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
               <button
                 type="button"
                 onClick={() => onUseCustom(trimmed)}
-                className="pressable px-3.5 py-2 rounded-full bg-[#FAE0B4] hover:bg-[#F4D49C] text-[#7D4E14] text-xs font-extrabold inline-flex items-center gap-1.5"
+                className="pressable px-3.5 py-2 rounded-full bg-activity hover:bg-activity-hover text-activity-ink text-xs font-extrabold inline-flex items-center gap-1.5"
               >
                 <PlusCircle size={14} />
                 {t.activities.addAsCustom}

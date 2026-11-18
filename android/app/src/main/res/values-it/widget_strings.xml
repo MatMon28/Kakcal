@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_small_name">Kakcalculator: piccolo</string>
+    <string name="widget_essential_name">Kakcalculator: extra-piccolo</string>
+    <string name="widget_large_name">Kakcalculator: grande</string>
+    <string name="widget_small_description">Cinque azioni per il diario.</string>
+    <string name="widget_essential_description">Scorciatoie per cibo, acqua e cacca.</string>
+    <string name="widget_large_description">Assunte, bruciate, macro e cinque azioni.</string>
+    <string name="widget_food">Cibo</string>
+    <string name="widget_movement">Attività</string>
+    <string name="widget_water">Acqua</string>
+    <string name="widget_poop">Cacca</string>
+    <string name="widget_weight">Peso</string>
+    <string name="widget_intake_desc">Assunte: %1$s kcal</string>
+    <string name="widget_burned_desc">Bruciate: %1$s kcal</string>
+    <string name="widget_carbs_desc">Carboidrati: %1$s g, %2$s%%</string>
+    <string name="widget_protein_desc">Proteine: %1$s g, %2$s%%</string>
+    <string name="widget_fat_desc">Grassi: %1$s g, %2$s%%</string>
+</resources>

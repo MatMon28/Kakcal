@@ -117,14 +117,14 @@ export const LogActivityModal: React.FC = () => {
     setPickedActivity(null);
   };
 
-  const typeBtn = (type: ActivityType, label: string, Icon: typeof Footprints, activeCls: string) => (
+  const typeBtn = (type: ActivityType, label: string, Icon: typeof Footprints) => (
     <button
       type="button"
       onClick={() => setActivityType(type)}
       aria-pressed={activityType === type}
       className={`pressable px-1 py-2.5 rounded-2xl border flex flex-col items-center justify-center gap-1 font-extrabold text-[11px] sm:text-xs ${
         activityType === type
-          ? activeCls
+          ? 'bg-activity text-activity-ink border-activity-border'
           : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
       }`}
     >
@@ -154,10 +154,10 @@ export const LogActivityModal: React.FC = () => {
       <div className="space-y-4">
         {/* Walk / Run / Other / Custom */}
         <div className="grid grid-cols-4 gap-2">
-          {typeBtn('walking', t.activities.optWalk, Footprints, 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]')}
-          {typeBtn('running', t.activities.optRun, Flame, 'bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]')}
-          {typeBtn('other', t.activities.other, Search, 'bg-[#CFE7FE] text-[#1A4670] border-[#A9CFF5]')}
-          {typeBtn('custom', t.activities.custom, Dumbbell, 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]')}
+          {typeBtn('walking', t.activities.optWalk, Footprints)}
+          {typeBtn('running', t.activities.optRun, Flame)}
+          {typeBtn('other', t.activities.other, Search)}
+          {typeBtn('custom', t.activities.custom, Dumbbell)}
         </div>
 
         {activityType === 'other' ? (
@@ -226,7 +226,7 @@ export const LogActivityModal: React.FC = () => {
                     onClick={() => setOtherDuration(quick)}
                     className={`pressable flex-1 py-1.5 text-xs font-bold tabular-nums rounded-xl border ${
                       otherDuration === quick
-                        ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                        ? 'bg-activity text-activity-ink border-activity-border'
                         : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                     }`}
                   >
@@ -271,8 +271,8 @@ export const LogActivityModal: React.FC = () => {
                     onClick={() => setCustomName(a)}
                     className={`pressable px-2.5 py-1 rounded-full text-xs font-bold border ${
                       customName === a
-                        ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
-                        : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-[#FAE0B4] hover:text-[#7D4E14]'
+                        ? 'bg-activity text-activity-ink border-activity-border'
+                        : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-activity hover:text-activity-ink'
                     }`}
                   >
                     {a}
@@ -386,7 +386,7 @@ export const LogActivityModal: React.FC = () => {
                   onClick={() => setInputValue(quick)}
                   className={`pressable flex-1 py-1.5 text-xs font-bold tabular-nums rounded-xl border ${
                     inputValue === quick
-                      ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                      ? 'bg-activity text-activity-ink border-activity-border'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -404,7 +404,7 @@ export const LogActivityModal: React.FC = () => {
                   onClick={() => setIntensity(lvl)}
                   className={`pressable py-2 px-1 rounded-xl border font-bold text-center ${
                     intensity === lvl
-                      ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                      ? 'bg-activity text-activity-ink border-activity-border'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -418,16 +418,16 @@ export const LogActivityModal: React.FC = () => {
         {/* Burn preview + save (hidden while browsing the Other search page) */}
         {!showOtherSearch && (
           <>
-            <div className="bg-[#C9EFD3] rounded-2xl p-3.5 space-y-1.5">
+            <div className="bg-activity rounded-2xl p-3.5 space-y-1.5">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-[#1D5C38]">{t.activityModal.calculatedCalories}</span>
+                <span className="text-xs font-bold text-activity-accent">{t.activityModal.calculatedCalories}</span>
                 <div className="flex items-baseline gap-1 tabular-nums">
-                  <span className="text-2xl font-extrabold text-[#142E1F]">{calculatedCalories}</span>
-                  <span className="text-xs font-bold text-[#1D5C38]">kcal</span>
+                  <span className="text-2xl font-extrabold text-activity-ink">{calculatedCalories}</span>
+                  <span className="text-xs font-bold text-activity-accent">kcal</span>
                 </div>
               </div>
               {activityType === 'other' && pickedActivity && (
-                <div className="text-[11px] font-medium text-[#1D5C38] space-y-0.5 tabular-nums">
+                <div className="text-[11px] font-medium text-activity-accent space-y-0.5 tabular-nums">
                   <p>
                     {t.activities.burnFormula
                       .replace('{met}', pickedActivity.met.toFixed(1))
@@ -444,7 +444,7 @@ export const LogActivityModal: React.FC = () => {
               type="button"
               onClick={handleSave}
               disabled={!canSave}
-              className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+              className="pressable w-full py-3 bg-activity hover:bg-activity-hover text-activity-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
             >
               <Check size={18} strokeWidth={2.5} />
               <span>{t.activityModal.saveBtn}</span>

@@ -116,37 +116,37 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
       <div className="space-y-3">
         {/* Intake & Burned */}
         <div className="grid grid-cols-2 gap-2.5">
-          <div className="bg-[#F6D0D0] rounded-2xl p-3.5">
+          <div className="bg-intake rounded-2xl p-3.5">
             <div className="flex items-center justify-between gap-1 min-h-[20px]">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#8C3A3A]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-intake-accent">
                 {t.energy.intake}
               </span>
               {netPos && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-[#8A2D2D] text-[#FFE9E9]">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-intake-accent text-intake-soft">
                   +{formatKcal(net)}
                 </span>
               )}
             </div>
             <div className="flex items-baseline gap-1 mt-1 tabular-nums">
-              <span className="text-xl font-extrabold text-[#2B1818]">{formatKcal(intake)}</span>
-              <span className="text-[11px] font-semibold text-[#8C3A3A]">kcal</span>
+              <span className="text-xl font-extrabold text-intake-ink">{formatKcal(intake)}</span>
+              <span className="text-[11px] font-semibold text-intake-accent">kcal</span>
             </div>
           </div>
 
-          <div className="bg-[#C9EFD3] rounded-2xl p-3.5">
+          <div className="bg-activity rounded-2xl p-3.5">
             <div className="flex items-center justify-between gap-1 min-h-[20px]">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#25633E]">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-activity-accent">
                 {t.energy.expenditure}
               </span>
               {!netPos && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-[#1E5E3A] text-[#EDFFF2]">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-activity-accent text-activity-soft">
                   {net === 0 ? '0' : `-${formatKcal(Math.abs(net))}`}
                 </span>
               )}
             </div>
             <div className="flex items-baseline gap-1 mt-1 tabular-nums">
-              <span className="text-xl font-extrabold text-[#142E1F]">{formatKcal(burned)}</span>
-              <span className="text-[11px] font-semibold text-[#25633E]">kcal</span>
+              <span className="text-xl font-extrabold text-activity-ink">{formatKcal(burned)}</span>
+              <span className="text-[11px] font-semibold text-activity-accent">kcal</span>
             </div>
           </div>
         </div>
@@ -177,91 +177,12 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
           </div>
         )}
 
-        {/* Activity */}
-        <div className="bg-[#E2D6FF] rounded-2xl p-3.5 space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <span className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-[#4D3582]">
-              <span className="size-7 rounded-full bg-[#F0E9FF] flex items-center justify-center shrink-0">
-                <Footprints size={14} />
-              </span>
-              {t.activities.title}
-            </span>
-            <span className="text-[11px] font-bold tabular-nums text-[#6E5BA8]">
-              {t.energy.bmrShort} {bmr} · {t.energy.activitiesShort} {actExp} · {t.energy.tefShort} {tef}
-            </span>
-          </div>
-          {activities.length === 0 ? (
-            <p className="text-xs font-medium text-[#6E5BA8] pl-0.5">{t.activities.noActivities}</p>
-          ) : (
-            <div className="space-y-1.5">
-              {activities.map((act) => {
-                const label = activityLogLabel(act, language, t.activities);
-                const detail =
-                  act.method === 'distance' && act.distanceKm !== undefined
-                    ? `${act.distanceKm} ${t.activities.km}`
-                    : act.durationMin !== undefined
-                    ? `${act.durationMin} ${t.activities.min}`
-                    : '';
-                return (
-                  <div
-                    key={act.id}
-                    className="px-3 py-2 rounded-xl bg-[#F0E9FF] flex items-center justify-between gap-2 text-xs"
-                  >
-                    <span className="min-w-0 truncate">
-                      <span className="font-bold text-[#4D3582]">{label}</span>
-                      {(detail || act.notes) && (
-                        <span className="text-[#6E5BA8] font-medium ml-1.5 tabular-nums">
-                          {detail}
-                          {detail && act.notes ? ' · ' : ''}
-                          {act.notes || ''}
-                        </span>
-                      )}
-                    </span>
-                    <span className="font-extrabold tabular-nums text-[#4D3582] shrink-0">
-                      {act.caloriesBurned} kcal
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* Weight (& Water if active/logged) */}
-        <div className={`grid gap-2.5 ${showWater ? 'grid-cols-2' : 'grid-cols-1'}`}>
-          <div className="bg-[#F6D0D0] rounded-2xl p-3.5 flex items-center gap-2.5">
-            <span className="size-8 rounded-full bg-[#FBE9E9] text-[#7A2727] flex items-center justify-center shrink-0">
-              <Scale size={15} />
-            </span>
-            <div className="min-w-0">
-              <span className="block text-[11px] font-bold text-[#8C3A3A]">{t.quickAdd.weight}</span>
-              <span className="block text-sm font-extrabold tabular-nums text-[#2B1818] truncate">
-                {typeof weightKg === 'number' ? `${weightKg.toFixed(1)} kg` : t.period.notRecorded}
-              </span>
-            </div>
-          </div>
-
-          {showWater && (
-            <div className="bg-[#CFE7FE] rounded-2xl p-3.5 flex items-center gap-2.5">
-              <span className="size-8 rounded-full bg-[#E8F3FF] text-[#183B5E] flex items-center justify-center shrink-0">
-                <Droplets size={15} />
-              </span>
-              <div className="min-w-0">
-                <span className="block text-[11px] font-bold text-[#436B94]">{t.quickAdd.water}</span>
-                <span className="block text-sm font-extrabold tabular-nums text-[#183B5E] truncate">
-                  {waterMl} ml
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-
         {/* Poop */}
         {!settings.hidePoop && (
           <div className="bg-[#FAE0B4] rounded-2xl p-3.5 space-y-2">
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-[#7D4E14]">
-                <span className="size-7 rounded-full bg-[#FDF3E0] text-[#8A5A2B] flex items-center justify-center shrink-0">
+                <span className="size-7 rounded-full bg-transparent text-[#8A5A2B] flex items-center justify-center shrink-0">
                   <PoopIcon size={15} />
                 </span>
                 {t.quickAdd.poop}
@@ -302,6 +223,85 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
             )}
           </div>
         )}
+
+        {/* Activity */}
+        <div className="bg-activity rounded-2xl p-3.5 space-y-2">
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-activity-ink">
+              <span className="size-7 rounded-full bg-transparent flex items-center justify-center shrink-0">
+                <Footprints size={14} />
+              </span>
+              {t.activities.title}
+            </span>
+            <span className="text-[11px] font-bold tabular-nums text-activity-accent">
+              {t.energy.bmrShort} {bmr} · {t.energy.activitiesShort} {actExp} · {t.energy.tefShort} {tef}
+            </span>
+          </div>
+          {activities.length === 0 ? (
+            <p className="text-xs font-medium text-activity-accent pl-0.5">{t.activities.noActivities}</p>
+          ) : (
+            <div className="space-y-1.5">
+              {activities.map((act) => {
+                const label = activityLogLabel(act, language, t.activities);
+                const detail =
+                  act.method === 'distance' && act.distanceKm !== undefined
+                    ? `${act.distanceKm} ${t.activities.km}`
+                    : act.durationMin !== undefined
+                    ? `${act.durationMin} ${t.activities.min}`
+                    : '';
+                return (
+                  <div
+                    key={act.id}
+                    className="px-3 py-2 rounded-xl bg-activity-soft flex items-center justify-between gap-2 text-xs"
+                  >
+                    <span className="min-w-0 truncate">
+                      <span className="font-bold text-activity-ink">{label}</span>
+                      {(detail || act.notes) && (
+                        <span className="text-activity-accent font-medium ml-1.5 tabular-nums">
+                          {detail}
+                          {detail && act.notes ? ' · ' : ''}
+                          {act.notes || ''}
+                        </span>
+                      )}
+                    </span>
+                    <span className="font-extrabold tabular-nums text-activity-ink shrink-0">
+                      {act.caloriesBurned} kcal
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Weight (& Water if active/logged) */}
+        <div className={`grid gap-2.5 ${showWater ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          <div className="bg-weight rounded-2xl p-3.5 flex items-center gap-2.5">
+            <span className="size-8 rounded-full bg-transparent text-weight-ink flex items-center justify-center shrink-0">
+              <Scale size={15} />
+            </span>
+            <div className="min-w-0">
+              <span className="block text-[11px] font-bold text-weight-accent">{t.quickAdd.weight}</span>
+              <span className="block text-sm font-extrabold tabular-nums text-weight-ink truncate">
+                {typeof weightKg === 'number' ? `${weightKg.toFixed(1)} kg` : t.period.notRecorded}
+              </span>
+            </div>
+          </div>
+
+          {showWater && (
+            <div className="bg-[#CFE7FE] rounded-2xl p-3.5 flex items-center gap-2.5">
+              <span className="size-8 rounded-full bg-transparent text-[#183B5E] flex items-center justify-center shrink-0">
+                <Droplets size={15} />
+              </span>
+              <div className="min-w-0">
+                <span className="block text-[11px] font-bold text-[#436B94]">{t.quickAdd.water}</span>
+                <span className="block text-sm font-extrabold tabular-nums text-[#183B5E] truncate">
+                  {waterMl} ml
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Custom trackers logged that day */}
         {loggedTrackers.length > 0 && (

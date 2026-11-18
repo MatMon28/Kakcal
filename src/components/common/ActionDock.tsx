@@ -20,7 +20,7 @@ export function ActionDock({ label, actions }: {
 
   return createPortal(
     <div
-      className="fixed bottom-[max(0.875rem,calc(env(safe-area-inset-bottom)+0.375rem))] sm:bottom-6 left-0 right-0 z-30 pointer-events-none flex justify-center px-3"
+      className="fixed bottom-[max(0.875rem,calc(env(safe-area-inset-bottom)+0.375rem))] sm:bottom-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.375rem))] left-[env(safe-area-inset-left)] right-[env(safe-area-inset-right)] z-30 pointer-events-none flex justify-center px-3"
       data-no-swipe
     >
       <div

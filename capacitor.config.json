@@ -5,6 +5,12 @@
   "server": {
     "androidScheme": "https"
   },
+  "plugins": {
+    "SystemBars": {
+      "insetsHandling": "native",
+      "initialViewportFitValueHint": "cover"
+    }
+  },
   "android": {
     "backgroundColor": "#EFE9DD",
     "allowMixedContent": false,

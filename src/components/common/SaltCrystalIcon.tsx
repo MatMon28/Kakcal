@@ -6,15 +6,13 @@ interface SaltCrystalIconProps {
   strokeWidth?: number;
 }
 
-/**
- * Clean mineral / salt crystal icon with faceted geometry.
- */
 export const SaltCrystalIcon: React.FC<SaltCrystalIconProps> = ({
   size = 16,
   className = '',
   strokeWidth = 2,
 }) => (
   <svg
+    xmlns="http://www.w3.org/2000/svg"
     width={size}
     height={size}
     viewBox="0 0 24 24"
@@ -26,9 +24,8 @@ export const SaltCrystalIcon: React.FC<SaltCrystalIconProps> = ({
     className={className}
     aria-hidden="true"
   >
-    <path d="M12 2.5L3.5 8.5v7L12 21.5l8.5-6v-7L12 2.5z" />
-    <path d="M12 2.5v19" />
-    <path d="M3.5 8.5L12 14.5l8.5-6" />
-    <path d="M3.5 15.5L12 9.5l8.5 6" />
+    <path d="M12 3l9 9-9 9-9-9z" />
+    <path d="M12 8l4 4-4 4-4-4z" />
+    <path d="M12 3v5M21 12h-5M12 21v-5M3 12h5" />
   </svg>
 );

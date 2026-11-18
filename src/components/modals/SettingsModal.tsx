@@ -93,11 +93,11 @@ export const SettingsModal: React.FC = () => {
   );
 
   const quickRows = [
-    { key: 'food' as const, icon: UtensilsCrossed, cls: 'bg-[#C9EFD3] text-[#174A2B]', label: t.quickAdd.food },
-    { key: 'movement' as const, icon: Footprints, cls: 'bg-[#E2D6FF] text-[#4D3582]', label: t.quickAdd.movement },
+    { key: 'food' as const, icon: UtensilsCrossed, cls: 'bg-intake text-intake-ink', label: t.quickAdd.food },
+    { key: 'movement' as const, icon: Footprints, cls: 'bg-activity text-activity-ink', label: t.quickAdd.movement },
     { key: 'water' as const, icon: Droplets, cls: 'bg-[#CFE7FE] text-[#183F66]', label: t.quickAdd.water },
     { key: 'poop' as const, icon: null, cls: 'bg-[#FAE0B4] text-[#7D4E14]', label: t.quickAdd.poop },
-    { key: 'weight' as const, icon: Scale, cls: 'bg-[#F6D0D0] text-[#7A2727]', label: t.quickAdd.weight },
+    { key: 'weight' as const, icon: Scale, cls: 'bg-weight text-weight-ink', label: t.quickAdd.weight },
     { key: 'custom' as const, icon: Sparkles, cls: 'bg-[#F7E9AA] text-[#6E5B14]', label: t.quickAdd.custom },
   ];
 

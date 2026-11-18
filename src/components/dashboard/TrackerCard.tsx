@@ -3,7 +3,7 @@ import { ChevronDown, Plus } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 const palettes = {
-  activity: { surface: '#E2D6FF', text: '#4D3582', muted: '#6E5BA8', inset: '#F0E9FF', border: '#C9B8F2', hover: '#D4C4FF' },
+  activity: { surface: 'var(--color-activity)', text: 'var(--color-activity-ink)', muted: 'var(--color-activity-accent)', inset: 'var(--color-activity-soft)', border: 'var(--color-activity-border)', hover: 'var(--color-activity-hover)' },
   water: { surface: '#CFE7FE', text: '#183B5E', muted: '#436B94', inset: '#E8F3FF', border: '#A9CFF5', hover: '#BDDDFC' },
   poop: { surface: '#FAE0B4', text: '#7D4E14', muted: '#9B6E32', inset: '#FDF3E0', border: '#E8C68E', hover: '#F7D69E' },
   custom: { surface: '#F7E9AA', text: '#6E5B14', muted: '#8A7224', inset: '#FCF4D6', border: '#E7D889', hover: '#F2E29A' },

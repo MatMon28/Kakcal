@@ -52,6 +52,7 @@ export const Modal: React.FC<ModalProps> = ({
     const closeHandler = () => onCloseRef.current();
     if (!openModalStack.length) previousBodyOverflow = document.body.style.overflow;
     openModalStack.push(closeHandler);
+    document.dispatchEvent(new Event('kc:overlay-open'));
     document.body.style.overflow = 'hidden';
 
     // Refit to the visual viewport and reveal the active field when the keyboard opens.

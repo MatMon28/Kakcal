@@ -40,13 +40,13 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
   // Collapsed: one line only — in ultra minimal, route icon + distance number (matching reference).
   const summary = ultraMinimal ? (
     activities.length > 0 ? (
-      <span className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 bg-[#F0E9FF] text-[#4D3582] text-[11px] font-extrabold leading-none">
+      <span className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 bg-[var(--inset)] text-[var(--text)] text-[11px] font-extrabold leading-none">
         <Route size={12} strokeWidth={2.4} className="shrink-0" />
         <span className="tabular-nums">{distanceValue}</span>
       </span>
     ) : null
   ) : latest ? (
-    <span className={`${pill} bg-[#F0E9FF] text-[#4D3582] max-w-full`}>
+    <span className={`${pill} bg-[var(--inset)] text-[var(--text)] max-w-full`}>
       <span className="truncate">{name(latest)}</span>
       {activities.length > 1 && <span className="ml-1 shrink-0">+{activities.length - 1}</span>}
     </span>
@@ -72,7 +72,7 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
           <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`} aria-label={`${t.energy.bmrShort}: ${currentExpenditure.bmr}`} title={t.energy.bmrShort}>
             {ultraMinimal ? currentExpenditure.bmr : `${t.energy.bmrShort} ${currentExpenditure.bmr}`}
           </span>
-          <span className={`${pill} bg-[#F0E9FF] text-[#4D3582]`} aria-label={`${t.energy.activitiesShort}: ${currentExpenditure.activityExpenditure}`} title={t.energy.activitiesShort}>
+          <span className={`${pill} bg-[var(--inset)] text-[var(--text)]`} aria-label={`${t.energy.activitiesShort}: ${currentExpenditure.activityExpenditure}`} title={t.energy.activitiesShort}>
             {ultraMinimal ? <><Footprints size={11} /> {currentExpenditure.activityExpenditure}</> : `${t.energy.activitiesShort} ${currentExpenditure.activityExpenditure}`}
           </span>
           <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`} aria-label={`${t.energy.tefShort}: ${currentExpenditure.tef}`} title={t.energy.tefShort}>

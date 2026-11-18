@@ -2,6 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { User, Settings } from 'lucide-react';
 import { Tabs } from './Tabs';
+import { Wordmark } from './Brand';
 
 export const Header: React.FC = () => {
   const { t, activeTab, setActiveTab, setIsProfileOpen, setIsSettingsOpen } = useApp();
@@ -34,9 +35,11 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={handleTitleClick}
-            className="text-lg sm:text-xl font-extrabold tracking-tight text-[var(--text)] text-center hover:opacity-80 transition-opacity"
+            aria-label={t.appName}
+            title={t.appName}
+            className="flex justify-self-center rounded-xl transition-opacity hover:opacity-80"
           >
-            {t.appName}
+            <Wordmark className="h-10 sm:h-11" />
           </button>
 
           <div className="flex items-center justify-end">

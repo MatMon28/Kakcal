@@ -238,55 +238,55 @@ export const HistoryView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <div role="group" aria-label={t.history.avgIntake} className={`bg-[#F6D0D0] rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
+          <div role="group" aria-label={t.history.avgIntake} className={`bg-intake rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
             <div className="flex items-center justify-between gap-1 min-h-[22px]">
-              <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-[#8C3A3A]' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#8C3A3A]'}`} title={t.history.avgIntake}>
+              <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.history.avgIntake}>
                 {ultraMinimal && (
                   <>
                     <Utensils size={14} aria-hidden="true" />
-                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-[#8C3A3A]/15 text-[#8C3A3A]">avg</span>
+                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-intake-accent/15 text-intake-accent">avg</span>
                   </>
                 )}
                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.history.avgIntake}</span>
               </span>
               {avgNetPos && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-[#8A2D2D] text-[#FFE9E9]">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
                   +{formatKcal(period.avgNet)}
                 </span>
               )}
             </div>
             <div className="flex items-baseline gap-1 my-1 tabular-nums">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#2B1818]">{formatKcal(period.avgIntake)}</span>
-              {!ultraMinimal && <span className="text-xs font-semibold text-[#8C3A3A]">kcal</span>}
+              <span className="text-2xl sm:text-3xl font-extrabold text-intake-ink">{formatKcal(period.avgIntake)}</span>
+              {!ultraMinimal && <span className="text-xs font-semibold text-intake-accent">kcal</span>}
             </div>
-            <div className="w-full bg-[#FAEBEB] h-2.5 rounded-full overflow-hidden mt-3">
-              <div className="h-full rounded-full bg-[#8A2D2D] transition-[width] duration-500" style={{ width: `${period.avgIntake > 0 ? Math.max(5, avgIntakePct) : 0}%` }} />
+            <div className="w-full bg-intake-soft h-2.5 rounded-full overflow-hidden mt-3">
+              <div className="h-full rounded-full bg-intake-accent transition-[width] duration-500" style={{ width: `${period.avgIntake > 0 ? Math.max(5, avgIntakePct) : 0}%` }} />
             </div>
           </div>
 
-          <div role="group" aria-label={t.history.avgExpenditure} className={`bg-[#C9EFD3] rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
+          <div role="group" aria-label={t.history.avgExpenditure} className={`bg-activity rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
             <div className="flex items-center justify-between gap-1 min-h-[22px]">
-              <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-[#25633E]' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-[#25633E]'}`} title={t.history.avgExpenditure}>
+              <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-activity-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-activity-accent'}`} title={t.history.avgExpenditure}>
                 {ultraMinimal && (
                   <>
                     <Flame size={14} aria-hidden="true" />
-                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-[#25633E]/15 text-[#25633E]">avg</span>
+                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-activity-accent/15 text-activity-accent">avg</span>
                   </>
                 )}
                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.history.avgExpenditure}</span>
               </span>
               {!avgNetPos && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-[#1E5E3A] text-[#EDFFF2]">
+                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-activity-accent text-activity-soft">
                   {period.avgNet === 0 ? '0' : `-${formatKcal(Math.abs(period.avgNet))}`}
                 </span>
               )}
             </div>
             <div className="flex items-baseline gap-1 my-1 tabular-nums">
-              <span className="text-2xl sm:text-3xl font-extrabold text-[#142E1F]">{formatKcal(period.avgExpenditure)}</span>
-              {!ultraMinimal && <span className="text-xs font-semibold text-[#25633E]">kcal</span>}
+              <span className="text-2xl sm:text-3xl font-extrabold text-activity-ink">{formatKcal(period.avgExpenditure)}</span>
+              {!ultraMinimal && <span className="text-xs font-semibold text-activity-accent">kcal</span>}
             </div>
-            <div className="w-full bg-[#E6F8EB] h-2.5 rounded-full overflow-hidden mt-3">
-              <div className="h-full rounded-full bg-[#1E5E3A] transition-[width] duration-500" style={{ width: `${Math.max(5, avgExpPct)}%` }} />
+            <div className="w-full bg-activity-soft h-2.5 rounded-full overflow-hidden mt-3">
+              <div className="h-full rounded-full bg-activity-accent transition-[width] duration-500" style={{ width: `${Math.max(5, avgExpPct)}%` }} />
             </div>
           </div>
         </div>
@@ -451,7 +451,7 @@ export const HistoryView: React.FC = () => {
             className="w-full flex items-center justify-between gap-2 text-left"
           >
             <span className="flex items-center gap-2 text-sm font-extrabold text-[var(--text)]">
-              <span className="w-7 h-7 rounded-full bg-transparent text-[#7A2727] flex items-center justify-center shrink-0">
+              <span className="w-7 h-7 rounded-full bg-transparent text-[var(--weight-on-surface)] flex items-center justify-center shrink-0">
                 <Scale size={14} />
               </span>
               <span className={ultraMinimal ? 'sr-only' : ''}>{t.stats.weightTrend}</span>
@@ -461,7 +461,7 @@ export const HistoryView: React.FC = () => {
                 {wMin === wMax ? wMax.toFixed(1) : `${wMin.toFixed(1)} – ${wMax.toFixed(1)}`} kg
               </span>
               {wp.length >= 2 && wDelta !== 0 && (
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${wDelta < 0 ? 'bg-[#C9EFD3] text-[#174A2B]' : 'bg-[#FAE0B4] text-[#7D4E14]'}`}>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
                   {wDelta > 0 ? `+${wDelta.toFixed(1)}` : wDelta.toFixed(1)}
                 </span>
               )}
@@ -476,7 +476,7 @@ export const HistoryView: React.FC = () => {
                   <span className={`text-[var(--muted)] ${ultraMinimal ? 'sr-only' : ''}`}>
                     {activeWeightPt.date ? formatDateDisplay(activeWeightPt.date, language) : t.stats.profileWeight}
                   </span>
-                  <span className="text-[var(--text)] font-extrabold">{activeWeightPt.kg.toFixed(1)} kg</span>
+                  <span className="text-[var(--weight-on-surface)] font-extrabold">{activeWeightPt.kg.toFixed(1)} kg</span>
                 </div>
                 <svg viewBox={`0 0 ${W_SVG} ${H_SVG}`} className="w-full h-32 overflow-visible">
                   {periodData.settings.showPhaseBandsInStats && !periodData.settings.trackPill && (() => {
@@ -498,8 +498,8 @@ export const HistoryView: React.FC = () => {
                   ))}
                   {wp.length > 1 && (
                     <>
-                      <polyline points={wp.map((point, index) => `${wX(index)},${wY(point.kg)}`).join(' ')} fill="none" stroke="#C9EFD3" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" opacity="0.65" />
-                      <polyline points={wp.map((point, index) => `${wX(index)},${wY(point.kg)}`).join(' ')} fill="none" stroke="#2E8B57" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                      <polyline points={wp.map((point, index) => `${wX(index)},${wY(point.kg)}`).join(' ')} fill="none" stroke="var(--color-weight)" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" opacity="0.65" />
+                      <polyline points={wp.map((point, index) => `${wX(index)},${wY(point.kg)}`).join(' ')} fill="none" stroke="var(--weight-on-surface)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </>
                   )}
                   {wp.map((point, index) => {
@@ -523,7 +523,7 @@ export const HistoryView: React.FC = () => {
                         className="cursor-pointer"
                       >
                         <circle cx={wX(index)} cy={wY(point.kg)} r="12" fill="transparent" />
-                        <circle cx={wX(index)} cy={wY(point.kg)} r={selected ? '5.5' : '4'} fill="#F6D0D0" stroke="#7A2727" strokeWidth={selected ? '2.2' : '1.6'} />
+                        <circle cx={wX(index)} cy={wY(point.kg)} r={selected ? '5.5' : '4'} fill="var(--color-weight)" stroke="var(--color-weight-ink)" strokeWidth={selected ? '2.2' : '1.6'} />
                       </g>
                     );
                   })}
@@ -575,7 +575,7 @@ export const HistoryView: React.FC = () => {
                             )}
                           </div>
                           <div className="flex items-center gap-2 tabular-nums">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${day.net > 0 ? 'bg-[#F6D0D0] text-[#7A2727]' : 'bg-[#C9EFD3] text-[#1D5C38]'}`}>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${day.net > 0 ? 'bg-intake text-intake-ink' : 'bg-activity text-activity-ink'}`}>
                               {day.net > 0 ? `+${day.net}` : day.net}{!ultraMinimal && ' kcal'}
                             </span>
                             <ChevronRight size={16} className="text-[var(--muted)] group-hover:translate-x-0.5 transition-transform" />
@@ -584,26 +584,26 @@ export const HistoryView: React.FC = () => {
                         <div className="grid grid-cols-2 gap-3 pt-0.5 tabular-nums">
                           <div>
                             <div className="flex items-center justify-between text-[11px] mb-1">
-                              <span className={`font-bold text-[var(--text-warn)] ${ultraMinimal ? 'inline-flex items-center' : ''}`} title={t.energy.intake}>
+                              <span className={`font-bold text-[var(--intake-on-surface)] ${ultraMinimal ? 'inline-flex items-center' : ''}`} title={t.energy.intake}>
                                 {ultraMinimal && <Utensils size={12} aria-hidden="true" />}
                                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.intake}</span>
                               </span>
                               <span className="font-extrabold text-[var(--text)]">{formatKcal(day.intake)}{!ultraMinimal && ' kcal'}</span>
                             </div>
-                            <div className="w-full bg-[#F6D0D0] h-2 rounded-full overflow-hidden">
-                              <div className="h-full bg-[#8A2D2D] rounded-full" style={{ width: `${day.intake > 0 ? Math.max(4, inWidth) : 0}%` }} />
+                            <div className="w-full bg-intake h-2 rounded-full overflow-hidden">
+                              <div className="h-full bg-intake-accent rounded-full" style={{ width: `${day.intake > 0 ? Math.max(4, inWidth) : 0}%` }} />
                             </div>
                           </div>
                           <div>
                             <div className="flex items-center justify-between text-[11px] mb-1">
-                              <span className={`font-bold text-[var(--text-neg)] ${ultraMinimal ? 'inline-flex items-center' : ''}`} title={t.energy.expenditure}>
+                              <span className={`font-bold text-[var(--activity-on-surface)] ${ultraMinimal ? 'inline-flex items-center' : ''}`} title={t.energy.expenditure}>
                                 {ultraMinimal && <Flame size={12} aria-hidden="true" />}
                                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.expenditure}</span>
                               </span>
                               <span className="font-extrabold text-[var(--text)]">{formatKcal(day.expenditure)}{!ultraMinimal && ' kcal'}</span>
                             </div>
-                            <div className="w-full bg-[#C9EFD3] h-2 rounded-full overflow-hidden">
-                              <div className="h-full bg-[#1E5E3A] rounded-full" style={{ width: `${Math.max(4, outWidth)}%` }} />
+                            <div className="w-full bg-activity h-2 rounded-full overflow-hidden">
+                              <div className="h-full bg-activity-accent rounded-full" style={{ width: `${Math.max(4, outWidth)}%` }} />
                             </div>
                           </div>
                         </div>

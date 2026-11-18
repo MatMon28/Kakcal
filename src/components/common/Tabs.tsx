@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ActiveTab } from '../../types';
+import { isPeriodShown } from '../../utils/tourPreview';
 import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const Tabs: React.FC = () => {
@@ -41,7 +42,7 @@ export const Tabs: React.FC = () => {
       icon: UtensilsCrossed,
       activeClass: 'bg-[#FAE0B4] text-[#6E4412]',
     },
-    ...(!settings.hidePeriod
+    ...(isPeriodShown(settings.hidePeriod)
       ? [
           {
             id: 'period' as ActiveTab,

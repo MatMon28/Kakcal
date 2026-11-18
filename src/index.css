@@ -2,6 +2,34 @@
 
 @theme {
   --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+
+  /* Shared journal accents for cards, charts, logging controls, and widgets. */
+  --color-intake: #C9EFD3;
+  --color-intake-ink: #17432A;
+  --color-intake-accent: #286540;
+  --color-intake-soft: #E6F8EB;
+  --color-activity: #F6D0D0;
+  --color-activity-ink: #702D32;
+  --color-activity-accent: #904149;
+  --color-activity-soft: #FBE9E9;
+  --color-activity-border: #E8AEAE;
+  --color-activity-hover: #F2BFBF;
+  --color-weight: #E2D6FF;
+  --color-weight-ink: #49346F;
+  --color-weight-accent: #6B518F;
+  --color-weight-soft: #F0E9FF;
+}
+
+:root {
+  --intake-on-surface: var(--color-intake-accent);
+  --activity-on-surface: var(--color-activity-accent);
+  --weight-on-surface: var(--color-weight-accent);
+}
+
+[data-theme="lite-dark"], [data-theme="dark"] {
+  --intake-on-surface: var(--color-intake);
+  --activity-on-surface: var(--color-activity);
+  --weight-on-surface: var(--color-weight);
 }
 
 /* ---- Three themes: warm oat, soft slate, and deep charcoal ---- */
