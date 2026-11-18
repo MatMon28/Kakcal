@@ -35,6 +35,14 @@ import { addDaysToDateString, getTodayDateString } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../utils/customTrackers';
 import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
+import { DEMO_MODE } from '../config/demo';
+import {
+  createDemoPeriodData,
+  DEMO_CUSTOM_BUTTONS,
+  DEMO_MEALS,
+  DEMO_RECIPES,
+  enrichDemoDayLogs,
+} from '../data/demoData';
 
 interface AppContextType {
   language: Language;
@@ -47,6 +55,8 @@ interface AppContextType {
   allFoods: FoodItem[];
   addCustomFood: (food: FoodItem) => void;
   deleteCustomFood: (foodId: string) => void;
+  favoriteFoods: string[];
+  toggleFavoriteFood: (foodId: string) => void;
   currentDayLog: DayLog;
   logFoodItem: (
     mealSlot: MealSlotId,
@@ -263,6 +273,9 @@ function normalizePeriodData(p: unknown): PeriodData {
 
 export const DEFAULT_QUICK_FOODS = ['gen-53', 'gen-30', 'gen-16']; // salt, bread, olive oil
 
+// Demo favourites so the starred-first search is visible on a fresh install (see DEMO_MODE).
+const DEMO_FAVORITE_FOODS = ['lidl-01', 'gen-21', 'gen-03', ...DEFAULT_QUICK_FOODS];
+
 const DEFAULT_PROFILE: UserProfile = {
   weightKg: 73,
   heightCm: 178,
@@ -331,7 +344,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Failed to parse custom foods', e);
       }
     }
-    return [];
+    return DEMO_MODE ? DEMO_RECIPES : [];
   });
 
   const addCustomFood = (food: FoodItem) => {
@@ -362,6 +375,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Failed to parse day logs', e);
       }
     }
+
+    if (!DEMO_MODE) return {};
 
     // Generate initial sample days for today & yesterday so the app has live visual data immediately
     const today = getTodayDateString();
@@ -679,13 +694,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       },
     };
 
+    const demoSeeds = enrichDemoDayLogs(initialSeeds);
     try {
-        localStorage.setItem(STORAGE_KEYS.DAY_LOGS, JSON.stringify(initialSeeds));
+        localStorage.setItem(STORAGE_KEYS.DAY_LOGS, JSON.stringify(demoSeeds));
       } catch (err) {
         console.error('Failed to save initial day seeds', err);
       }
 
-      return initialSeeds;
+      return demoSeeds;
   });
 
   const emptyDayFor = (date: string): DayLog => ({
@@ -728,7 +744,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Failed to parse prebuilt meals', e);
       }
     }
-    return INITIAL_PREBUILT_MEALS;
+    return DEMO_MODE ? DEMO_MEALS : INITIAL_PREBUILT_MEALS;
   });
 
   const addPreBuiltMeal = (mealData: Omit<PreBuiltMeal, 'id' | 'createdAt'>) => {
@@ -784,7 +800,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         console.error('Failed to parse period data', e);
       }
     }
-    return { settings: DEFAULT_PERIOD_SETTINGS, logs: {} };
+    return DEMO_MODE
+      ? createDemoPeriodData(DEFAULT_PERIOD_SETTINGS)
+      : { settings: DEFAULT_PERIOD_SETTINGS, logs: {} };
   });
   const periodRef = React.useRef(periodData);
   periodRef.current = periodData;
@@ -964,6 +982,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             Array.isArray(p.quickFoods) && p.quickFoods.length === 3
               ? p.quickFoods
               : DEFAULT_QUICK_FOODS,
+          favoriteFoods: Array.isArray(p.favoriteFoods)
+            ? p.favoriteFoods.filter((id: unknown): id is string => typeof id === 'string')
+            : [],
           customButtons: Array.isArray(p.customButtons)
             ? p.customButtons.map((b: { icon?: string; showStats?: boolean }) => ({
                 ...b,
@@ -983,7 +1004,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
       quickFoods: DEFAULT_QUICK_FOODS,
-      customButtons: [],
+      favoriteFoods: DEMO_MODE ? DEMO_FAVORITE_FOODS : [],
+      customButtons: DEMO_MODE ? DEMO_CUSTOM_BUTTONS : [],
     };
   });
 
@@ -1003,6 +1025,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCustomActivities((prev) => {
       const next = [n, ...prev.filter((x) => x.toLowerCase() !== n.toLowerCase())].slice(0, 12);
       localStorage.setItem(STORAGE_KEYS.CUSTOM_ACTIVITIES, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleFavoriteFood = (foodId: string) => {
+    setSettingsState((prev) => {
+      const current = prev.favoriteFoods ?? [];
+      const next: Settings = {
+        ...prev,
+        favoriteFoods: current.includes(foodId)
+          ? current.filter((id) => id !== foodId)
+          : [foodId, ...current.filter((id) => id !== foodId)],
+      };
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
       return next;
     });
   };
@@ -1410,6 +1446,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         allFoods,
         addCustomFood,
         deleteCustomFood,
+        favoriteFoods: settings.favoriteFoods ?? [],
+        toggleFavoriteFood,
         currentDayLog,
         logFoodItem,
         removeLoggedFoodItem,

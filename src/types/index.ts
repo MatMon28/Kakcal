@@ -42,6 +42,7 @@ export interface FoodItem {
   barcode?: string;
   isCustom?: boolean;
   isRecipe?: boolean; // created from the recipe builder (multi-ingredient)
+  recipeIngredients?: PreBuiltMealIngredient[]; // original quantities, shown when a recipe is expanded
 }
 
 export type MealSlotId =
@@ -198,6 +199,7 @@ export interface Settings {
   hidePeriod: boolean;
   hidePeriodCustomized?: boolean;
   quickFoods: string[]; // food ids for the 3 quick-add shortcut buttons
+  favoriteFoods: string[]; // starred foods: listed first on every food search
   customButtons: CustomButtonDef[]; // user-defined quick-add trackers (one button, picker if several)
 }
 

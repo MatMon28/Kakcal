@@ -1,10 +1,14 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatDateDisplay, addDaysToDateString, getTodayDateString } from '../../utils/formatters';
-import { ChevronLeft, ChevronRight, ChevronDown, Calendar } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Calendar, CornerUpLeft } from 'lucide-react';
+
+interface DayNavigatorProps {
+  onInspectDay?: (date: string) => void;
+}
 
 // Day changer for the Today view: prev/next arrows + date pill with calendar popover + back-to-today
-export const DayNavigator: React.FC = () => {
+export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
   const { language, t, selectedDate, setSelectedDate, allDayLogs } = useApp();
 
   const todayStr = getTodayDateString();
@@ -75,10 +79,10 @@ export const DayNavigator: React.FC = () => {
   };
 
   const pickDay = (day: number) => {
-    setSelectedDate(
-      `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
-    );
+    const ds = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    setSelectedDate(ds);
     setCalOpen(false);
+    onInspectDay?.(ds);
   };
 
   const rawFirst = new Date(viewYear, viewMonth, 1).getDay();
@@ -195,8 +199,9 @@ export const DayNavigator: React.FC = () => {
                     setSelectedDate(todayStr);
                     setCalOpen(false);
                   }}
-                  className="pressable mt-3 w-full py-2 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#1D5C38] text-xs font-extrabold"
+                  className="pressable mt-3 w-full py-2 rounded-full bg-[#2E7CC4] hover:bg-[#2563EB] text-white text-xs font-extrabold inline-flex items-center justify-center gap-1.5"
                 >
+                  <CornerUpLeft size={13} strokeWidth={2.6} />
                   {t.header.today}
                 </button>
               )}
@@ -218,8 +223,11 @@ export const DayNavigator: React.FC = () => {
         <button
           type="button"
           onClick={() => setSelectedDate(todayStr)}
-          className="pressable px-3.5 py-2 text-xs font-extrabold rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#1D5C38]"
+          title={t.header.todayReturn}
+          aria-label={t.header.todayReturn}
+          className="pressable px-3 py-2 text-xs font-extrabold rounded-full bg-[#2E7CC4] hover:bg-[#2563EB] text-white inline-flex items-center gap-1.5"
         >
+          <CornerUpLeft size={14} strokeWidth={2.6} />
           {t.header.today}
         </button>
       )}

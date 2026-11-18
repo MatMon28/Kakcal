@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
 import { TrackerIcon, TRACKER_ICONS } from '../common/TrackerIcon';
+import { DataBackup } from '../common/DataBackup';
 
 export const SettingsModal: React.FC = () => {
   const {
@@ -96,7 +97,7 @@ export const SettingsModal: React.FC = () => {
     { key: 'water' as const, icon: Droplets, cls: 'bg-[#CFE7FE] text-[#183F66]', label: t.quickAdd.water },
     { key: 'poop' as const, icon: null, cls: 'bg-[#FAE0B4] text-[#7D4E14]', label: t.quickAdd.poop },
     { key: 'weight' as const, icon: Scale, cls: 'bg-[#F6D0D0] text-[#7A2727]', label: t.quickAdd.weight },
-    { key: 'custom' as const, icon: Sparkles, cls: 'bg-[#E2D6FF] text-[#4D3582]', label: t.quickAdd.custom },
+    { key: 'custom' as const, icon: Sparkles, cls: 'bg-[#F7E9AA] text-[#6E5B14]', label: t.quickAdd.custom },
   ];
 
   const close = () => {
@@ -265,7 +266,7 @@ export const SettingsModal: React.FC = () => {
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
               {t.settings.quickAdd}
             </span>
-            <div className="space-y-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
               {quickRows.map((r) => {
                 const Icon = r.icon;
                 const isOn = settings.quickAdd[r.key];
@@ -279,19 +280,62 @@ export const SettingsModal: React.FC = () => {
                         quickAdd: { ...settings.quickAdd, [r.key]: !isOn },
                       })
                     }
-                    className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
+                    className="min-h-[54px] flex items-center justify-between gap-1.5 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-2.5 py-2 transition-colors text-left"
                   >
-                    <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
-                      <span className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${r.cls}`}>
-                        {Icon ? <Icon size={15} /> : <PoopIcon size={15} />}
+                    <span className="flex items-center gap-1.5 min-w-0 text-xs font-bold text-[var(--text)]">
+                      <span className={`size-7 rounded-full flex items-center justify-center shrink-0 ${r.cls}`}>
+                        {Icon ? <Icon size={13} /> : <PoopIcon size={13} />}
                       </span>
-                      {r.label}
+                      <span className="truncate">{r.label}</span>
                     </span>
-                    <SwitchVisual on={isOn} />
+                    <span className="scale-[0.82] origin-right shrink-0">
+                      <SwitchVisual on={isOn} />
+                    </span>
                   </button>
                 );
               })}
             </div>
+          </div>
+
+          {/* Visibility toggles (kept above food shortcuts) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            <button
+              type="button"
+              aria-pressed={settings.hidePoop}
+              onClick={() => updateSettings({ hidePoop: !settings.hidePoop })}
+              className="min-h-[54px] flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-3 py-2 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2 text-xs font-bold text-[var(--text)]">
+                <span className="size-7 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center shrink-0">
+                  <PoopIcon size={13} />
+                </span>
+                {t.settings.hidePoop}
+              </span>
+              <span className="scale-[0.82] origin-right shrink-0">
+                <SwitchVisual on={settings.hidePoop} />
+              </span>
+            </button>
+
+            <button
+              type="button"
+              aria-pressed={settings.hidePeriod}
+              onClick={() => {
+                const next = !settings.hidePeriod;
+                updateSettings({ hidePeriod: next, hidePeriodCustomized: true });
+                if (next && activeTab === 'period') setActiveTab('today');
+              }}
+              className="min-h-[54px] flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-3 py-2 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2 text-xs font-bold text-[var(--text)]">
+                <span className="size-7 rounded-full bg-[#F4C6D8] text-[#6E2440] flex items-center justify-center shrink-0">
+                  <Droplet size={13} />
+                </span>
+                {t.settings.hidePeriod}
+              </span>
+              <span className="scale-[0.82] origin-right shrink-0">
+                <SwitchVisual on={settings.hidePeriod} />
+              </span>
+            </button>
           </div>
 
           {/* Quick food shortcuts */}
@@ -343,7 +387,7 @@ export const SettingsModal: React.FC = () => {
                     className="flex items-center justify-between gap-2 bg-[var(--inset)] rounded-2xl px-3 py-2.5"
                   >
                     <span className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-8 h-8 rounded-full bg-[#E2D6FF] text-[#4D3582] flex items-center justify-center shrink-0">
+                      <span className="w-8 h-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
                         <TrackerIcon icon={b.icon} size={15} />
                       </span>
                       <span className="min-w-0">
@@ -508,43 +552,6 @@ export const SettingsModal: React.FC = () => {
             </div>
           </div>
 
-          {/* Visibility toggles */}
-          <div className="space-y-1.5">
-            <button
-              type="button"
-              aria-pressed={settings.hidePoop}
-              onClick={() => updateSettings({ hidePoop: !settings.hidePoop })}
-              className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
-            >
-              <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
-                <span className="w-8 h-8 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center shrink-0">
-                  <PoopIcon size={15} />
-                </span>
-                {t.settings.hidePoop}
-              </span>
-              <SwitchVisual on={settings.hidePoop} />
-            </button>
-
-            <button
-              type="button"
-              aria-pressed={settings.hidePeriod}
-              onClick={() => {
-                const next = !settings.hidePeriod;
-                updateSettings({ hidePeriod: next, hidePeriodCustomized: true });
-                if (next && activeTab === 'period') setActiveTab('today');
-              }}
-              className="w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
-            >
-              <span className="flex items-center gap-2.5 text-sm font-bold text-[var(--text)]">
-                <span className="w-8 h-8 rounded-full bg-[#F4C6D8] text-[#6E2440] flex items-center justify-center shrink-0">
-                  <Droplet size={15} />
-                </span>
-                {t.settings.hidePeriod}
-              </span>
-              <SwitchVisual on={settings.hidePeriod} />
-            </button>
-          </div>
-
           {/* Foods database */}
           <button
             type="button"
@@ -565,6 +572,9 @@ export const SettingsModal: React.FC = () => {
             </span>
             <ChevronRight size={16} className="text-[var(--muted)] shrink-0" />
           </button>
+
+          {/* JSON backup now lives in Settings, not Statistics */}
+          <DataBackup />
         </div>
       )}
     </Modal>

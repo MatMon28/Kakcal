@@ -7,6 +7,8 @@ import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
 import { calculateTotalCalories } from '../../utils/calculations';
 import { addDaysToDateString, formatDateDisplay } from '../../utils/formatters';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { matchesFirstChar, sortFavoritesFirst } from '../../utils/favorites';
+import { FavoriteButton } from '../common/FavoriteButton';
 import {
   Search,
   ScanBarcode,
@@ -50,8 +52,8 @@ export const AddFoodModal: React.FC = () => {
     allDayLogs,
     selectedDate,
     settings,
+    favoriteFoods,
     setIsCustomFoodOpen,
-
     t,
   } = useApp();
 
@@ -59,8 +61,11 @@ export const AddFoodModal: React.FC = () => {
   const [activeFood, setActiveFood] = useState<FoodItem | null>(null);
   const [currentAmount, setCurrentAmount] = useState<number>(100);
   const [queuedItems, setQueuedItems] = useState<QueuedEntry[]>([]);
+  const [searchFocused, setSearchFocused] = useState(false);
   const activeSlotRef = useRef<HTMLButtonElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const resultsRef = useRef<HTMLDivElement | null>(null);
+  const blurTimer = useRef<number | null>(null);
 
   useEffect(() => {
     if (isAddFoodOpen && !activeFood) {
@@ -85,6 +90,41 @@ export const AddFoodModal: React.FC = () => {
   const trimmedQuery = searchTerm.trim();
   const isSearching = trimmedQuery.length >= 2;
 
+  // Favourite foods: shown as the whole list while the field is focused and empty,
+  // matching the first character as soon as typing starts, and pinned to the top later.
+  const favoriteIds = favoriteFoods ?? [];
+  const favoriteItems = useMemo(
+    () =>
+      favoriteIds
+        .map((id) => allFoods.find((f) => f.id === id))
+        .filter((f): f is FoodItem => Boolean(f)),
+    [favoriteIds, allFoods]
+  );
+  const oneCharMatches = useMemo(
+    () => (trimmedQuery.length === 1 ? favoriteItems.filter((f) => matchesFirstChar(f, trimmedQuery)) : []),
+    [favoriteItems, trimmedQuery]
+  );
+  const showFavoritesPanel = searchFocused && trimmedQuery.length === 0;
+
+  const onSearchFocus = () => {
+    if (blurTimer.current) {
+      window.clearTimeout(blurTimer.current);
+      blurTimer.current = null;
+    }
+    setSearchFocused(true);
+  };
+  const onSearchBlur = () => {
+    // Short delay so a tap on a favourite star inside the panel still registers.
+    if (blurTimer.current) window.clearTimeout(blurTimer.current);
+    blurTimer.current = window.setTimeout(() => setSearchFocused(false), 140);
+  };
+  useEffect(() => () => {
+    if (blurTimer.current) window.clearTimeout(blurTimer.current);
+  }, []);
+  // A new query should start at the top of the results list.
+  useEffect(() => {
+    resultsRef.current?.scrollTo({ top: 0 });
+  }, [trimmedQuery]);
   // Search results: only shown while typing (>=2 chars), fuzzy matched.
   // Includes individual foods, recipes (tagged), AND saved meals (one-tap log).
   const searchResults = useMemo(() => {
@@ -105,8 +145,9 @@ export const AddFoodModal: React.FC = () => {
     const meals = preBuiltMeals
       .map((m) => ({ kind: 'meal' as const, m, score: fuzzyScore(q, m.name) }))
       .filter((x) => fuzzyMatch(q, [x.m.name]));
-    return [...meals, ...foods].sort((a, b) => a.score - b.score).slice(0, 30);
-  }, [allFoods, preBuiltMeals, trimmedQuery, isSearching]);
+    const ranked = [...meals, ...foods].sort((a, b) => a.score - b.score);
+    return sortFavoritesFirst(ranked, favoriteIds, (r) => (r.kind === 'food' ? r.f.id : '')).slice(0, 30);
+  }, [allFoods, preBuiltMeals, trimmedQuery, isSearching, favoriteIds]);
 
   // Saved meals tagged for this slot
   const slotMeals = useMemo(
@@ -145,6 +186,8 @@ export const AddFoodModal: React.FC = () => {
     setActiveFood(null);
     setQueuedItems([]);
     setSearchTerm('');
+    setSearchFocused(false);
+    if (blurTimer.current) window.clearTimeout(blurTimer.current);
   };
 
   const handlePickFood = (food: FoodItem) => {
@@ -220,6 +263,52 @@ export const AddFoodModal: React.FC = () => {
 
   const queuedTotalKcal = queuedItems.reduce((s, e) => s + kcalOf(e.food, e.amount), 0);
 
+  // Shared result row: whole row picks the food, the star toggles favourites.
+  const FoodRow: React.FC<{ food: FoodItem; onClick: () => void }> = ({ food, onClick }) => (
+    <div className="flex items-center gap-2 p-3 hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors">
+      <button type="button" onClick={onClick} className="min-w-0 flex-1 text-left">
+        <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate block">
+          {nameOf(food)}
+          {food.isRecipe && (
+            <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582] align-middle">
+              {t.prebuilt.savedAsRecipe}
+            </span>
+          )}
+        </span>
+        <span className="text-[11px] font-medium tabular-nums text-[var(--muted)]">
+          {getLastAmount(food.id)}
+          {food.unit}
+          {food.brand ? ` · ${food.brand}` : ''}
+        </span>
+      </button>
+      <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
+        {food.calories} kcal/100{food.unit}
+      </span>
+      <FavoriteButton foodId={food.id} />
+    </div>
+  );
+
+  // Panel shown while the search field is empty/focused or only one char is typed.
+  const favoritesPanel = (items: FoodItem[]) => (
+    <div className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] overflow-hidden">
+      <div className="px-3 py-2 flex items-center justify-between gap-2 border-b border-[var(--border)]">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
+          {t.favorites.title}
+        </span>
+        <span className="text-[10px] font-medium text-[var(--muted)]">{t.favorites.hint}</span>
+      </div>
+      {items.length === 0 ? (
+        <p className="p-4 text-center text-xs font-medium text-[var(--muted)]">{t.favorites.empty}</p>
+      ) : (
+        <div ref={resultsRef} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)]">
+          {items.map((f) => (
+            <FoodRow key={f.id} food={f} onClick={() => handlePickFood(f)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   const pill = (active: boolean) =>
     `pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
       active
@@ -238,14 +327,17 @@ export const AddFoodModal: React.FC = () => {
       {activeFood && preview ? (
         /* ---------- QUANTITY SELECTION ---------- */
         <div className="space-y-4">
-          <button
-            type="button"
-            onClick={() => setActiveFood(null)}
-            className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
-          >
-            <ArrowLeft size={14} />
-            <span>{t.common.back}</span>
-          </button>
+          <div className="flex items-center justify-between gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveFood(null)}
+              className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+            >
+              <ArrowLeft size={14} />
+              <span>{t.common.back}</span>
+            </button>
+            <FavoriteButton foodId={activeFood.id} />
+          </div>
 
           <div className="flex items-center justify-between bg-[#C9EFD3] rounded-2xl px-4 py-3">
             <span className="text-xs font-bold tabular-nums text-[#1D5C38]">
@@ -367,8 +459,16 @@ export const AddFoodModal: React.FC = () => {
                   type="text"
                   enterKeyHint="search"
                   value={searchTerm}
+                  onFocus={onSearchFocus}
+                  onBlur={onSearchBlur}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder={t.foodModal.typeToSearch}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') {
+                      setSearchFocused(false);
+                      if (blurTimer.current) window.clearTimeout(blurTimer.current);
+                    }
+                  }}
                   className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
                 />
                 {searchTerm && (
@@ -376,6 +476,8 @@ export const AddFoodModal: React.FC = () => {
                     type="button"
                     onClick={() => {
                       setSearchTerm('');
+                      setSearchFocused(false);
+                      if (blurTimer.current) window.clearTimeout(blurTimer.current);
                       searchInputRef.current?.focus();
                     }}
                     className="pressable absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
@@ -405,9 +507,9 @@ export const AddFoodModal: React.FC = () => {
             )}
           </div>
 
-          {/* Search results (type-to-search, min 2 chars, fuzzy) */}
+          {/* Search results: favourites pinned first (min 2 chars, fuzzy) */}
           {isSearching ? (
-            <div className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
+            <div ref={resultsRef} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
               {searchResults.length === 0 ? (
                 <div className="p-5 space-y-3 text-center">
                   <p className="text-xs font-medium text-[var(--muted)]">{t.foodModal.noResults}</p>
@@ -473,37 +575,28 @@ export const AddFoodModal: React.FC = () => {
                       </span>
                     </button>
                   ) : (
-                    <button
+                    <FoodRow
                       key={res.f.id}
-                      type="button"
+                      food={res.f}
                       onClick={() => handlePickFood(res.f)}
-                      className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors"
-                    >
-                      <span className="min-w-0">
-                        <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate block">
-                          {nameOf(res.f)}
-                          {res.f.isRecipe && (
-                            <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582] align-middle">
-                              {t.prebuilt.savedAsRecipe}
-                            </span>
-                          )}
-                        </span>
-                        <span className="text-[11px] font-medium tabular-nums text-[var(--muted)]">
-                          {getLastAmount(res.f.id)}
-                          {res.f.unit}
-                          {res.f.brand ? ` · ${res.f.brand}` : ''}
-                        </span>
-                      </span>
-                      <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
-                        {res.f.calories} kcal/100{res.f.unit}
-                      </span>
-                    </button>
+                    />
                   )
                 )
               )}
             </div>
+          ) : trimmedQuery.length === 1 && oneCharMatches.length > 0 ? (
+            favoritesPanel(oneCharMatches)
           ) : (
             <>
+              {/* Favourites: shown while the field is focused, with a hint when still empty */}
+              {showFavoritesPanel && (
+                favoriteItems.length > 0 ? (
+                  favoritesPanel(favoriteItems)
+                ) : (
+                  <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.favorites.empty}</p>
+                )
+              )}
+
               {/* 3 Quick food shortcuts (salt / bread / olive oil — configurable in settings) */}
               {quickFoods.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">

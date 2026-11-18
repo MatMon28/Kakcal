@@ -23,6 +23,7 @@ interface MealSlotCardProps {
   dateOverride?: string;
   open: boolean;
   onToggle: () => void;
+  compact?: boolean;
 }
 
 export const MealSlotCard: React.FC<MealSlotCardProps> = ({
@@ -30,6 +31,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   dateOverride,
   open,
   onToggle,
+  compact = false,
 }) => {
   const {
     currentDayLog,
@@ -110,72 +112,137 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
     setEditingItemId(null);
   };
 
-  return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl overflow-hidden transition-colors">
-      {/* Slot Header — clicking toggles collapse */}
-      <div
-        role="button"
-        tabIndex={0}
-        aria-expanded={open}
-        onClick={onToggle}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onToggle();
-          }
-        }}
-        className="px-4 py-3.5 flex items-center justify-between gap-3 cursor-pointer select-none hover:bg-[var(--inset)]/40 transition-colors"
-      >
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${details.badge}`}>
-            <Icon size={16} />
-          </div>
-          <div className="min-w-0">
-            <h4 className="text-sm font-extrabold text-[var(--text)] truncate">
-              {details.title}
-            </h4>
-            {items.length > 0 && (
-              <span className="text-[11px] font-medium tabular-nums text-[var(--muted)] block truncate">
-                {items.length} · C {slotMacros.carbsGrams}g · P {slotMacros.proteinGrams}g · F {slotMacros.fatGrams}g
-              </span>
-            )}
-          </div>
-        </div>
+  // Compact cards drop the meal name and show rounded C/P/F in a bar that wraps
+  // onto a second line (and therefore grows taller) when the card is too narrow.
+  const compactMacroBar = (
+    <div className="w-full mt-1.5 rounded-xl bg-[var(--inset)] px-2 py-1.5 min-h-[32px] flex flex-wrap items-baseline gap-x-2 gap-y-0.5 text-[10.5px] font-bold tabular-nums leading-tight">
+      {items.length === 0 ? (
+        <span className="text-[var(--muted)] opacity-80">{t.mealSlots.emptySlot}</span>
+      ) : (
+        <>
+          <span>
+            <span className="text-[#8A5617]">C</span>{' '}
+            <span className="text-[var(--text)]">{Math.round(slotMacros.carbsGrams)}g</span>
+          </span>
+          <span className="text-[var(--muted)]">·</span>
+          <span>
+            <span className="text-[#8C3A3A]">P</span>{' '}
+            <span className="text-[var(--text)]">{Math.round(slotMacros.proteinGrams)}g</span>
+          </span>
+          <span className="text-[var(--muted)]">·</span>
+          <span>
+            <span className="text-[#523A8C]">F</span>{' '}
+            <span className="text-[var(--text)]">{Math.round(slotMacros.fatGrams)}g</span>
+          </span>
+          <span className="text-[var(--muted)] font-medium">· {items.length}</span>
+        </>
+      )}
+    </div>
+  );
 
-        <div className="flex items-center gap-2 shrink-0">
-          {slotCalories > 0 && (
-            <div className="text-right tabular-nums">
-              <span className="text-sm sm:text-base font-extrabold text-[var(--text)]">
-                {formatKcal(slotCalories)}
-              </span>
-              <span className="text-[11px] font-semibold text-[var(--muted)] ml-0.5">kcal</span>
+  const toggleHeader = (
+    <div
+      role="button"
+      tabIndex={0}
+      aria-label={details.title}
+      aria-expanded={open}
+      onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+      className={`${compact ? 'px-2.5 pt-2.5 pb-2.5 flex-col gap-1' : 'px-4 py-3.5 gap-3'} flex items-center justify-between cursor-pointer select-none hover:bg-[var(--inset)]/40 transition-colors`}
+    >
+      {compact ? (
+        <>
+          <div className="flex items-center justify-between gap-1.5 w-full">
+            <div className={`size-8 rounded-full flex items-center justify-center shrink-0 ${details.badge}`}>
+              <Icon size={14} />
             </div>
-          )}
+            <div className="flex items-center gap-1 shrink-0">
+              {slotCalories > 0 && (
+                <span className="text-xs font-extrabold tabular-nums text-[var(--text)]">
+                  {formatKcal(slotCalories)}
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenAddFood();
+                }}
+                className="pressable size-7 rounded-full bg-[var(--surface)] hover:bg-[#C9EFD3] text-[var(--text)] hover:text-[#1A5632] flex items-center justify-center border border-[var(--border)]"
+                title={t.mealSlots.addItem}
+                aria-label={`${t.mealSlots.addItem} — ${details.title}`}
+              >
+                <Plus size={13} strokeWidth={2.5} />
+              </button>
+              <ChevronDown
+                size={13}
+                className={`text-[var(--muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+              />
+            </div>
+          </div>
+          {compactMacroBar}
+        </>
+      ) : (
+        <>
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`size-9 rounded-full flex items-center justify-center shrink-0 ${details.badge}`}>
+              <Icon size={16} />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-sm font-extrabold text-[var(--text)] truncate">{details.title}</h4>
+              {items.length > 0 && (
+                <span className="text-[11px] font-medium tabular-nums text-[var(--muted)] block truncate">
+                  {items.length} · C {slotMacros.carbsGrams}g · P {slotMacros.proteinGrams}g · F {slotMacros.fatGrams}g
+                </span>
+              )}
+            </div>
+          </div>
 
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleOpenAddFood();
-            }}
-            className="pressable w-8 h-8 rounded-full bg-[var(--inset)] hover:bg-[#C9EFD3] text-[var(--text)] hover:text-[#1A5632] flex items-center justify-center"
-            title={t.mealSlots.addItem}
-            aria-label={`${t.mealSlots.addItem} — ${details.title}`}
-          >
-            <Plus size={16} strokeWidth={2.5} />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {slotCalories > 0 && (
+              <div className="text-right tabular-nums">
+                <span className="text-sm sm:text-base font-extrabold text-[var(--text)]">{formatKcal(slotCalories)}</span>
+                <span className="text-[11px] font-semibold text-[var(--muted)] ml-0.5">kcal</span>
+              </div>
+            )}
 
-          <ChevronDown
-            size={16}
-            className={`text-[var(--muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-          />
-        </div>
-      </div>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleOpenAddFood();
+              }}
+              className="pressable size-8 rounded-full bg-[var(--inset)] hover:bg-[#C9EFD3] text-[var(--text)] hover:text-[#1A5632] flex items-center justify-center"
+              title={t.mealSlots.addItem}
+              aria-label={`${t.mealSlots.addItem} — ${details.title}`}
+            >
+              <Plus size={16} strokeWidth={2.5} />
+            </button>
+
+            <ChevronDown
+              size={16}
+              className={`text-[var(--muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            />
+          </div>
+        </>
+      )}
+    </div>
+  );
+
+  return (
+    <div className={`bg-[var(--surface)] border border-[var(--border)] overflow-hidden transition-colors ${compact ? 'rounded-2xl' : 'rounded-3xl'}`}>
+      {/* Slot header: meal name in normal mode, rounded macro bar in compact mode */}
+      {toggleHeader}
 
       {/* Smooth collapsible food items list */}
-      <div className="accordion-grid" data-open={open}>
+      <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
-          <div className="px-4 py-1.5 border-t border-[var(--border)] divide-y divide-[var(--border)]">
+          <div className={`${compact ? 'px-2.5' : 'px-4'} py-1.5 border-t border-[var(--border)] divide-y divide-[var(--border)]`}>
             {items.length === 0 ? (
               <button
                 type="button"

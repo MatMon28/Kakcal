@@ -42,9 +42,9 @@ export function CustomButtonModal() {
           close();
         }}
       >
-        <div className="bg-[#E2D6FF] rounded-2xl p-3.5 flex items-center justify-between gap-2 text-[#4D3582]">
+        <div className="bg-[#F7E9AA] rounded-2xl p-3.5 flex items-center justify-between gap-2 text-[#6E5B14]">
           <span className="flex items-center gap-2.5 text-sm font-extrabold">
-            <span className="size-9 rounded-full bg-[#F0E9FF] flex items-center justify-center shrink-0">
+            <span className="size-9 rounded-full bg-[#FCF4D6] flex items-center justify-center shrink-0">
               <TrackerIcon icon={def.icon} size={17} />
             </span>
             {isQuantity ? t.tracker.total : formatDateDisplay(selectedDate, language)}
@@ -67,7 +67,7 @@ export function CustomButtonModal() {
                   onClick={() => setQty(amount)}
                   className={`pressable min-h-9 px-1 py-1 rounded-xl text-xs font-extrabold tabular-nums border break-words ${
                     qty === amount
-                      ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                      ? 'bg-[#F7E9AA] text-[#6E5B14] border-[#E4D27E]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >

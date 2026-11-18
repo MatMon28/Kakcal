@@ -13,7 +13,7 @@ import {
   calculateTotalCalories,
 } from '../../utils/calculations';
 import { formatFullDate, formatKcal } from '../../utils/formatters';
-import { formatTrackerAmount, getTrackerValue } from '../../utils/customTrackers';
+import { formatTrackerAmount, getCustomEntries, getTrackerValue } from '../../utils/customTrackers';
 import type { PoopSize } from '../../types';
 
 interface PeriodDayInfoModalProps {
@@ -62,9 +62,18 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
   const weightKg = log?.weightKg;
   const poops = log?.poops ?? [];
 
+  // Include every tracker that has a value on this day, including an explicit
+  // "not done" state. Quantity trackers aggregate all entries for the day.
   const loggedTrackers = settings.customButtons
-    .map((tracker) => ({ tracker, value: getTrackerValue(log, tracker) }))
-    .filter(({ value }) => value === true || (typeof value === 'number' && value > 0));
+    .map((tracker) => ({
+      tracker,
+      value: getTrackerValue(log, tracker),
+      present:
+        tracker.type === 'toggle'
+          ? typeof log?.custom?.[tracker.id] === 'boolean'
+          : getCustomEntries(log, tracker.id).length > 0,
+    }))
+    .filter(({ present }) => present);
 
   const sizeLabel = (size: PoopSize) => {
     switch (size) {
@@ -88,6 +97,20 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
       title={t.period.daySummaryTitle}
       subtitle={formatFullDate(date, language)}
       maxWidth="max-w-md"
+      footer={
+        <button
+          type="button"
+          onClick={() => {
+            setSelectedDate(date);
+            onClose();
+            setActiveTab('today');
+          }}
+          className="pressable w-full py-3 px-4 rounded-2xl bg-[var(--text)] text-[var(--surface)] text-sm font-extrabold flex items-center justify-center gap-1.5"
+        >
+          <span>{t.period.openInToday}</span>
+          <ArrowUpRight size={15} />
+        </button>
+      }
     >
       <div className="space-y-3">
         {/* Intake & Burned */}
@@ -286,15 +309,15 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
 
         {/* Custom trackers logged that day */}
         {loggedTrackers.length > 0 && (
-          <div className="bg-[#E2D6FF] rounded-2xl p-3.5 space-y-1.5">
-            <span className="flex items-center gap-1.5 text-xs font-extrabold text-[#4D3582]">
+          <div className="bg-[#F7E9AA] rounded-2xl p-3.5 space-y-1.5">
+            <span className="flex items-center gap-1.5 text-xs font-extrabold text-[#6E5B14]">
               <Sparkles size={13} />
               {t.quickAdd.custom}
             </span>
             {loggedTrackers.map(({ tracker, value }) => (
               <div
                 key={tracker.id}
-                className="px-3 py-1.5 rounded-xl bg-[#F0E9FF] flex items-center justify-between gap-2 text-xs text-[#4D3582]"
+                className="px-3 py-1.5 rounded-xl bg-[#FCF4D6] flex items-center justify-between gap-2 text-xs text-[#6E5B14]"
               >
                 <span className="flex items-center gap-2 font-bold truncate">
                   <TrackerIcon icon={tracker.icon} size={13} className="shrink-0" />
@@ -303,26 +326,14 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
                 <span className="font-extrabold tabular-nums shrink-0">
                   {typeof value === 'number'
                     ? `${formatTrackerAmount(value, language)}${tracker.unit ? ` ${tracker.unit}` : ''}`
-                    : `✓ ${t.settings.done}`}
+                    : value
+                    ? `✓ ${t.settings.done}`
+                    : t.settings.notDone}
                 </span>
               </div>
             ))}
           </div>
         )}
-
-        {/* Jump to full day log */}
-        <button
-          type="button"
-          onClick={() => {
-            setSelectedDate(date);
-            onClose();
-            setActiveTab('today');
-          }}
-          className="pressable w-full py-2.5 px-4 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-xs font-extrabold text-[var(--text)] flex items-center justify-center gap-1.5"
-        >
-          <span>{t.period.openInToday}</span>
-          <ArrowUpRight size={14} />
-        </button>
       </div>
     </Modal>
   );

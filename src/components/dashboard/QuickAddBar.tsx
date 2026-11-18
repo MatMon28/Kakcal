@@ -21,7 +21,7 @@ export function QuickAddBar() {
   if (quick.custom && settings.customButtons.length) {
     const single = settings.customButtons.length === 1 ? settings.customButtons[0] : undefined;
     actions.push({
-      id: 'custom', icon: <Sparkles size={20} />, tone: 'bg-[#E2D6FF] text-[#4D3582]',
+      id: 'custom', icon: <Sparkles size={20} />, tone: 'bg-[#F7E9AA] text-[#6E5B14]',
       onClick: () => single ? setCustomButtonOpenId(single.id) : setIsCustomPickerOpen(true),
       label: single?.name ?? t.quickAdd.custom,
     });

@@ -10,6 +10,7 @@ interface ModalProps {
   subtitle?: string;
   children: React.ReactNode;
   maxWidth?: string;
+  footer?: React.ReactNode;
 }
 
 const openModalStack: Array<() => void> = [];
@@ -33,6 +34,7 @@ export const Modal: React.FC<ModalProps> = ({
   subtitle,
   children,
   maxWidth = 'max-w-lg',
+  footer,
 }) => {
   const { t } = useApp();
   const titleId = useId();
@@ -156,6 +158,11 @@ export const Modal: React.FC<ModalProps> = ({
         <div data-dialog-scroll className="p-4 sm:p-5 overflow-y-auto overscroll-contain min-h-0 flex-1 text-[var(--text)]">
           {children}
         </div>
+        {footer && (
+          <div className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)] px-4 sm:px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+            {footer}
+          </div>
+        )}
       </div>
     </div>,
     document.body

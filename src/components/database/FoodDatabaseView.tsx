@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { FoodCategory, FoodItem, MealSlotId } from '../../types';
@@ -6,6 +6,8 @@ import { Modal } from '../common/Modal';
 import { AmountSelector } from '../common/AmountSelector';
 import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { sortFavoritesFirst } from '../../utils/favorites';
+import { FavoriteButton } from '../common/FavoriteButton';
 import {
   BookOpen,
   Search,
@@ -26,6 +28,7 @@ import {
   Trash2,
   Sparkles,
   X,
+  Star,
   Bean,
   Nut,
   Soup,
@@ -50,14 +53,16 @@ export const FoodDatabaseView: React.FC = () => {
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
     returnFromDatabase,
-
+    favoriteFoods,
     language,
     t,
   } = useApp();
 
   const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<FoodCategory | 'all' | 'custom'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<FoodCategory | 'all' | 'custom' | 'favorites'>('all');
   const [visibleLimit, setVisibleLimit] = useState<number>(PAGE_STEP);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const blurTimer = useRef<number | null>(null);
 
   // Quick log modal
   const [foodToLog, setFoodToLog] = useState<FoodItem | null>(null);
@@ -67,6 +72,13 @@ export const FoodDatabaseView: React.FC = () => {
   useEffect(() => {
     setVisibleLimit(PAGE_STEP);
   }, [search, selectedCategory]);
+
+  useEffect(() => () => {
+    if (blurTimer.current) window.clearTimeout(blurTimer.current);
+  }, []);
+
+  const favoriteIds = favoriteFoods ?? [];
+  const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
 
   const hasCustomFoods = useMemo(() => allFoods.some((f) => f.isCustom), [allFoods]);
 
@@ -78,26 +90,38 @@ export const FoodDatabaseView: React.FC = () => {
           ? true
           : selectedCategory === 'custom'
           ? Boolean(f.isCustom)
+          : selectedCategory === 'favorites'
+          ? favoriteSet.has(f.id)
           : f.category === selectedCategory;
       if (!matchCategory) return false;
       if (!q) return true;
       return fuzzyMatch(q, [f.name_de, f.name_it, f.name_en, f.brand || '']);
     });
 
-    if (!q) return matched;
-    return matched
-      .map((f) => ({
-        f,
-        score: Math.min(
-          fuzzyScore(q, f.name_en),
-          fuzzyScore(q, f.name_it),
-          fuzzyScore(q, f.name_de),
-          ...(f.brand ? [fuzzyScore(q, f.brand)] : [])
-        ),
-      }))
-      .sort((a, b) => a.score - b.score)
-      .map((x) => x.f);
-  }, [allFoods, search, selectedCategory]);
+    // Focusing the field with no query narrows the catalog to favourites only.
+    if (!q) {
+      return searchFocused && selectedCategory === 'all'
+        ? matched.filter((f) => favoriteSet.has(f.id))
+        : matched;
+    }
+
+    return sortFavoritesFirst(
+      matched
+        .map((f) => ({
+          f,
+          score: Math.min(
+            fuzzyScore(q, f.name_en),
+            fuzzyScore(q, f.name_it),
+            fuzzyScore(q, f.name_de),
+            ...(f.brand ? [fuzzyScore(q, f.brand)] : [])
+          ),
+        }))
+        .sort((a, b) => a.score - b.score)
+        .map((x) => x.f),
+      favoriteIds,
+      (f) => f.id
+    );
+  }, [allFoods, search, selectedCategory, searchFocused, favoriteIds, favoriteSet]);
 
   const handleConfirmQuickLog = () => {
     if (!foodToLog) return;
@@ -179,6 +203,14 @@ export const FoodDatabaseView: React.FC = () => {
             enterKeyHint="search"
             aria-label={t.database.searchPlaceholder}
             value={search}
+            onFocus={() => {
+              if (blurTimer.current) window.clearTimeout(blurTimer.current);
+              setSearchFocused(true);
+            }}
+            onBlur={() => {
+              if (blurTimer.current) window.clearTimeout(blurTimer.current);
+              blurTimer.current = window.setTimeout(() => setSearchFocused(false), 140);
+            }}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t.database.searchPlaceholder}
             className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-10 pr-9 py-2.5 text-[var(--text)] placeholder-[var(--muted)] text-sm font-medium focus:outline-none focus:border-[var(--muted)] transition-colors"
@@ -186,7 +218,11 @@ export const FoodDatabaseView: React.FC = () => {
           {search && (
             <button
               type="button"
-              onClick={() => setSearch('')}
+              onClick={() => {
+                setSearch('');
+                setSearchFocused(false);
+                if (blurTimer.current) window.clearTimeout(blurTimer.current);
+              }}
               className="pressable absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
               aria-label={t.common.clear}
             >
@@ -208,6 +244,20 @@ export const FoodDatabaseView: React.FC = () => {
             }`}
           >
             {t.database.allCategories}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setSelectedCategory(selectedCategory === 'favorites' ? 'all' : 'favorites')}
+            aria-pressed={selectedCategory === 'favorites'}
+            className={`pressable flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold whitespace-nowrap ${
+              selectedCategory === 'favorites'
+                ? 'bg-[#FAE0B4] text-[#B45309]'
+                : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)]'
+            }`}
+          >
+            <Star size={13} fill={selectedCategory === 'favorites' ? 'currentColor' : 'none'} />
+            <span>{t.database.favoriteFilter}</span>
           </button>
 
           {hasCustomFoods && (
@@ -251,7 +301,11 @@ export const FoodDatabaseView: React.FC = () => {
       {/* Foods Grid */}
       {filteredFoods.length === 0 ? (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-8 text-center space-y-3">
-          <p className="text-sm font-bold text-[var(--muted)]">{t.foodModal.noResults}</p>
+          <p className="text-sm font-bold text-[var(--muted)]">
+            {selectedCategory === 'favorites' || (searchFocused && !search.trim())
+              ? t.favorites.empty
+              : t.foodModal.noResults}
+          </p>
           <button
             type="button"
             onClick={() => setIsCustomFoodOpen(true)}
@@ -354,6 +408,7 @@ export const FoodDatabaseView: React.FC = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
+                    <FavoriteButton foodId={food.id} variant="card" />
                     {food.isCustom && (
                       <button
                         type="button"

@@ -157,6 +157,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
   // Recipe builder (saves a multi-ingredient dish to the food database, per 100g)
   const [isRecipeOpen, setIsRecipeOpen] = useState(false);
+  const [editingRecipeId, setEditingRecipeId] = useState<string | null>(null);
   const [recipeName, setRecipeName] = useState('');
   const [recipeIngs, setRecipeIngs] = useState<PreBuiltMealIngredient[]>([]);
   const [recipePendingFood, setRecipePendingFood] = useState<FoodItem | null>(null);
@@ -344,6 +345,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   }, [recipeIngs, allFoods]);
 
   const openRecipeModal = () => {
+    setEditingRecipeId(null);
     setRecipeName('');
     setRecipeIngs([]);
     setRecipePendingFood(null);
@@ -351,11 +353,31 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     setIsRecipeOpen(true);
   };
 
+  const closeRecipeModal = () => {
+    setIsRecipeOpen(false);
+    setRecipePendingFood(null);
+    setEditingRecipeId(null);
+  };
+
+  const openEditRecipeModal = (recipe: FoodItem) => {
+    setEditingRecipeId(recipe.id);
+    setRecipeName(nameOf(recipe));
+    setRecipeIngs(recipe.recipeIngredients ? [...recipe.recipeIngredients] : []);
+    setRecipePendingFood(null);
+    setRecipeSearch('');
+    setIsRecipeOpen(true);
+  };
+
   const saveRecipe = () => {
-    if (!recipeName.trim() || recipeIngs.length === 0) return;
+    const validIngs = recipeIngs.filter((i) => i.amount > 0);
+    if (!recipeName.trim() || validIngs.length === 0) return;
     const rt = recipeTotals;
-    addCustomFood({
-      id: 'recipe-' + Date.now(),
+    const existing = editingRecipeId
+      ? allFoods.find((f) => f.id === editingRecipeId && f.isRecipe)
+      : undefined;
+    const payload: FoodItem = {
+      ...(existing ?? { id: 'recipe-' + Date.now(), store: 'Custom', unit: 'g', category: 'prepared' as const }),
+      id: existing?.id ?? 'recipe-' + Date.now(),
       name_de: recipeName.trim(),
       name_it: recipeName.trim(),
       name_en: recipeName.trim(),
@@ -370,8 +392,11 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       salt: rt.salt100,
       isCustom: true,
       isRecipe: true,
-    });
-    setIsRecipeOpen(false);
+      recipeIngredients: validIngs,
+      source: existing?.source,
+    };
+    addCustomFood(payload); // upsert by id: keeps an edited recipe's identity
+    closeRecipeModal();
   };
 
   const pendingKcal = pendingFood ? Math.round((pendingFood.calories * pendingAmount) / 100) : 0;
@@ -466,46 +491,82 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               return (
                 <div
                   key={meal.id}
-                  className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col justify-between gap-3"
+                  className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col gap-2.5"
                 >
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setOpenMeals((prev) =>
-                        prev.includes(meal.id) ? prev.filter((x) => x !== meal.id) : [...prev, meal.id]
-                      )
-                    }
-                    className="w-full flex items-center justify-between gap-2 text-left"
-                    aria-expanded={isOpen}
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm sm:text-base font-extrabold text-[var(--text)]">{meal.name}</h3>
-                        {meal.slot && (
-                          <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
-                            {t.mealSlots[meal.slot]}
-                          </span>
-                        )}
+                  {/* Name + macros with Log / Edit / Delete beside them */}
+                  <div className="flex items-start justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenMeals((prev) =>
+                          prev.includes(meal.id) ? prev.filter((x) => x !== meal.id) : [...prev, meal.id]
+                        )
+                      }
+                      className="min-w-0 flex-1 flex items-start justify-between gap-1.5 text-left"
+                      aria-expanded={isOpen}
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="text-sm sm:text-base font-extrabold text-[var(--text)]" title={meal.name}>
+                            {meal.name}
+                          </h3>
+                          {meal.slot && (
+                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
+                              {t.mealSlots[meal.slot]}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold tabular-nums text-[var(--muted)] flex-wrap">
+                          <span className="text-[var(--text)]">{formatKcal(nut.totalKcal)} kcal</span>
+                          <span>·</span>
+                          <span>C {nut.carbs}g</span>
+                          <span>·</span>
+                          <span>P {nut.protein}g</span>
+                          <span>·</span>
+                          <span>F {nut.fat}g</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold tabular-nums text-[var(--muted)] flex-wrap">
-                        <span className="text-[var(--text)]">{formatKcal(nut.totalKcal)} kcal</span>
-                        <span>·</span>
-                        <span>C {nut.carbs}g</span>
-                        <span>·</span>
-                        <span>P {nut.protein}g</span>
-                        <span>·</span>
-                        <span>F {nut.fat}g</span>
-                      </div>
+                      <ChevronDown
+                        size={15}
+                        className={`shrink-0 mt-1 text-[var(--muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenLogModal(meal)}
+                        title={t.prebuilt.logMeal}
+                        aria-label={`${t.prebuilt.logMeal}: ${meal.name}`}
+                        className="pressable min-h-8 px-2 sm:px-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
+                      >
+                        <Plus size={14} strokeWidth={2.5} />
+                        <span className="hidden sm:inline whitespace-nowrap">{t.prebuilt.logMeal}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openEditMealModal(meal)}
+                        title={t.common.edit}
+                        aria-label={`${t.common.edit}: ${meal.name}`}
+                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deletePreBuiltMeal(meal.id)}
+                        title={t.common.delete}
+                        aria-label={`${t.common.delete}: ${meal.name}`}
+                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     </div>
-                    <ChevronDown
-                      size={15}
-                      className={`shrink-0 text-[var(--muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                    />
-                  </button>
+                  </div>
 
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
-                      <div className="pt-1 space-y-3">
+                      <div className="pt-1 space-y-3 border-t border-[var(--border)]">
                         {meal.description && (
                           <p className="text-xs text-[var(--muted)]">{meal.description}</p>
                         )}
@@ -554,35 +615,6 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                       </div>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-2 pt-2 border-t border-[var(--border)]">
-                    <button
-                      type="button"
-                      onClick={() => handleOpenLogModal(meal)}
-                      className="pressable flex-1 py-2.5 px-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5"
-                    >
-                      <Plus size={15} strokeWidth={2.5} />
-                      <span>{t.prebuilt.logMeal}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => openEditMealModal(meal)}
-                      className="pressable w-9 h-9 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
-                      title={t.common.edit}
-                      aria-label={t.common.edit}
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => deletePreBuiltMeal(meal.id)}
-                      className="pressable w-9 h-9 rounded-2xl bg-[var(--inset)] hover:bg-[#F6D0D0] text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center"
-                      title={t.common.delete}
-                      aria-label={t.common.delete}
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  </div>
                 </div>
               );
             })}
@@ -615,36 +647,73 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
-              const kcal = (amt: number) => Math.round((recipe.calories * amt) / 100);
               return (
-                <div key={recipe.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4">
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setOpenRecipes((prev) =>
-                        prev.includes(recipe.id) ? prev.filter((x) => x !== recipe.id) : [...prev, recipe.id]
-                      )
-                    }
-                    className="w-full flex items-center justify-between gap-2 text-left"
-                    aria-expanded={isOpen}
-                  >
-                    <span className="min-w-0 flex-1">
-                      <span className="block text-sm sm:text-base font-extrabold text-[var(--text)] truncate">
-                        {nameOf(recipe)}
+                <div key={recipe.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col gap-2.5">
+                  {/* Name + macros with Log / Edit / Delete beside them */}
+                  <div className="flex items-start justify-between gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpenRecipes((prev) =>
+                          prev.includes(recipe.id) ? prev.filter((x) => x !== recipe.id) : [...prev, recipe.id]
+                        )
+                      }
+                      className="min-w-0 flex-1 flex items-start justify-between gap-1.5 text-left"
+                      aria-expanded={isOpen}
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-sm sm:text-base font-extrabold text-[var(--text)]" title={nameOf(recipe)}>
+                          {nameOf(recipe)}
+                        </span>
+                        <span className="block text-[11px] font-bold tabular-nums text-[var(--muted)] mt-0.5">
+                          {recipe.calories} kcal/100{recipe.unit} · C {recipe.carbs ?? '—'}g · P {recipe.protein ?? '—'}g · F {recipe.fat ?? '—'}g
+                        </span>
                       </span>
-                      <span className="block text-[11px] font-bold tabular-nums text-[var(--muted)] mt-0.5">
-                        {recipe.calories} kcal/100{recipe.unit} · C {recipe.carbs ?? '—'}g · P {recipe.protein ?? '—'}g · F {recipe.fat ?? '—'}g
-                      </span>
-                    </span>
-                    <ChevronDown
-                      size={15}
-                      className={`shrink-0 text-[var(--muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
-                    />
-                  </button>
+                      <ChevronDown
+                        size={15}
+                        className={`shrink-0 mt-1 text-[var(--muted)] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+                      />
+                    </button>
+
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveRecipeToLog(recipe);
+                          setRecipeLogSlot('lunch');
+                          setRecipeLogAmount(getLastAmount(recipe.id));
+                        }}
+                        title={t.prebuilt.logRecipe}
+                        aria-label={`${t.prebuilt.logRecipe}: ${nameOf(recipe)}`}
+                        className="pressable min-h-8 px-2 sm:px-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
+                      >
+                        <Plus size={14} strokeWidth={2.5} />
+                        <span className="hidden sm:inline whitespace-nowrap">{t.prebuilt.logRecipe}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openEditRecipeModal(recipe)}
+                        title={t.common.edit}
+                        aria-label={`${t.common.edit}: ${nameOf(recipe)}`}
+                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteCustomFood(recipe.id)}
+                        title={t.common.delete}
+                        aria-label={`${t.common.delete}: ${nameOf(recipe)}`}
+                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
 
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
-                      <div className="pt-3 space-y-2.5">
+                      <div className="pt-1 space-y-2.5 border-t border-[var(--border)]">
                         <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
                           <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
                             <span className="text-[10px] font-bold block">C</span>
@@ -667,30 +736,38 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                             <span className="text-xs font-extrabold">{recipe.salt ?? '—'}g</span>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setActiveRecipeToLog(recipe);
-                              setRecipeLogSlot('lunch');
-                              setRecipeLogAmount(getLastAmount(recipe.id));
-                            }}
-                            className="pressable flex-1 py-2.5 px-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl text-xs flex items-center justify-center gap-1.5 tabular-nums"
-                          >
-                            <Plus size={15} strokeWidth={2.5} />
-                            <span>
-                              {t.prebuilt.logRecipe} · {kcal(100)} kcal/100g
-                            </span>
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteCustomFood(recipe.id)}
-                            className="pressable w-9 h-9 rounded-2xl bg-[var(--inset)] hover:bg-[#F6D0D0] text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center shrink-0"
-                            title={t.common.delete}
-                            aria-label={t.common.delete}
-                          >
-                            <Trash2 size={14} />
-                          </button>
+
+                        {/* Ingredients with their original quantities */}
+                        <div>
+                          <span className="block text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] mb-1.5">
+                            {t.prebuilt.recipeIngredients.replace('{count}', String(recipe.recipeIngredients?.length ?? 0))}
+                          </span>
+                          {recipe.recipeIngredients && recipe.recipeIngredients.length > 0 ? (
+                            <div className="bg-[var(--inset)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                              {recipe.recipeIngredients.map((ing, idx) => {
+                                const food = allFoods.find((f) => f.id === ing.foodId);
+                                const kcal = food ? Math.round((food.calories * ing.amount) / 100) : null;
+                                return (
+                                  <div key={idx} className="py-1.5 flex items-center justify-between gap-2 text-xs">
+                                    <span className="font-medium truncate text-[var(--text)]">
+                                      {food ? nameOf(food) : ing.foodId}
+                                    </span>
+                                    <span className="flex items-center gap-2 shrink-0 tabular-nums">
+                                      {kcal !== null && <span className="text-[var(--muted)]">{kcal} kcal</span>}
+                                      <span className="font-bold text-[var(--muted)]">
+                                        {ing.amount}
+                                        {food?.unit || 'g'}
+                                      </span>
+                                    </span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <p className="text-[11px] font-medium text-[var(--muted)]">
+                              {t.prebuilt.recipeNoIngredients}
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -1027,14 +1104,17 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         )}
       </Modal>
 
-      {/* ============ Create recipe modal ============ */}
+      {/* ============ Create / Edit recipe modal ============ */}
       <Modal
         isOpen={isRecipeOpen}
-        onClose={() => {
-          setIsRecipeOpen(false);
-          setRecipePendingFood(null);
-        }}
-        title={recipePendingFood ? nameOf(recipePendingFood) : t.prebuilt.recipeTitle}
+        onClose={closeRecipeModal}
+        title={
+          recipePendingFood
+            ? nameOf(recipePendingFood)
+            : editingRecipeId
+            ? t.prebuilt.edit
+            : t.prebuilt.recipeTitle
+        }
         maxWidth="max-w-xl"
       >
         {recipePendingFood ? (
@@ -1181,7 +1261,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               <button
                 type="button"
                 onClick={saveRecipe}
-                disabled={!recipeName.trim()}
+                disabled={!recipeName.trim() || recipeIngs.every((i) => i.amount <= 0)}
                 className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
               >
                 <Check size={18} strokeWidth={2.5} />
