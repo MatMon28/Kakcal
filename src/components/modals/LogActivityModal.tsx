@@ -2,9 +2,15 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { NumericInput } from '../common/NumericInput';
+import { FavoriteButton } from '../common/FavoriteButton';
+import { ActivitySearch } from './ActivitySearch';
 import { ActivityType, ActivityLogMethod } from '../../types';
-import { calculateActivityCalories } from '../../utils/calculations';
-import { Footprints, Flame, Dumbbell, Check, Minus, Plus } from 'lucide-react';
+import { ActivityInfo, activityName, categoryLabel } from '../../data/activities';
+import { calculateActivityCalories, calculateMetCalories, restingKcalPerHour } from '../../utils/calculations';
+import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
+import { Footprints, Flame, Dumbbell, Search, Check, Minus, Plus, ArrowLeft } from 'lucide-react';
+
+const lastDurationKey = (activityId: string) => `activity:${activityId}`;
 
 export const LogActivityModal: React.FC = () => {
   const {
@@ -14,7 +20,7 @@ export const LogActivityModal: React.FC = () => {
     customActivities,
     addCustomActivity,
     userProfile,
-
+    language,
     t,
   } = useApp();
 
@@ -26,6 +32,10 @@ export const LogActivityModal: React.FC = () => {
   const [customName, setCustomName] = useState('');
   const [customDur, setCustomDur] = useState<number>(0); // minutes, optional
   const [customKcal, setCustomKcal] = useState<number>(0); // kcal, optional (0 = auto-estimate)
+
+  // "Other": search page first, then the chosen activity's duration step.
+  const [pickedActivity, setPickedActivity] = useState<ActivityInfo | null>(null);
+  const [otherDuration, setOtherDuration] = useState<number>(30);
 
   const inputValue = method === 'distance' ? distanceKm : durationMin;
   const setInputValue = (val: number) => {
@@ -39,17 +49,47 @@ export const LogActivityModal: React.FC = () => {
     [customDur, userProfile.weightKg]
   );
 
+  // Database activities: MET × the user's resting rate (weight, height, age, sex) × time
+  const restingRate = useMemo(() => restingKcalPerHour(userProfile), [userProfile]);
+  const otherCalories = useMemo(
+    () => (pickedActivity ? calculateMetCalories(pickedActivity.met, otherDuration, userProfile) : 0),
+    [pickedActivity, otherDuration, userProfile]
+  );
+  const profileIncomplete = !userProfile.weightKg || !userProfile.heightCm || !userProfile.age;
+
   const calculatedCalories = useMemo(() => {
+    if (activityType === 'other') return otherCalories;
     if (activityType === 'custom') {
       return customKcal > 0 ? customKcal : customEstimate;
     }
     return calculateActivityCalories(activityType, method, inputValue, userProfile.weightKg, intensity);
-  }, [activityType, method, inputValue, userProfile.weightKg, intensity, customKcal, customEstimate]);
+  }, [activityType, method, inputValue, userProfile.weightKg, intensity, customKcal, customEstimate, otherCalories]);
+
+  const pickActivity = (activity: ActivityInfo) => {
+    setPickedActivity(activity);
+    setOtherDuration(getLastAmount(lastDurationKey(activity.id), 30));
+  };
 
   const handleSave = () => {
-    if (activityType === 'custom') {
+    if (activityType === 'other') {
+      if (!pickedActivity || otherDuration <= 0) return;
+      setLastAmount(lastDurationKey(pickedActivity.id), otherDuration);
+      logActivity({
+        type: 'other',
+        method: 'duration',
+        durationMin: otherDuration,
+        caloriesBurned: otherCalories,
+        activityId: pickedActivity.id,
+        met: pickedActivity.met,
+        customName: pickedActivity.name_en,
+      });
+    } else if (activityType === 'custom') {
       if (!customName.trim()) return;
-      addCustomActivity(customName);
+      // Remember the activity with a MET so it can be picked again under Other:
+      // derived from the calories and minutes entered (30 min assumed if only kcal), else 5 MET.
+      const minutes = customDur > 0 ? customDur : 30;
+      const met = customKcal > 0 ? customKcal / (restingRate * (minutes / 60)) : 5;
+      addCustomActivity(customName, met);
       logActivity({
         type: 'custom',
         method: 'duration',
@@ -74,25 +114,35 @@ export const LogActivityModal: React.FC = () => {
     setCustomName('');
     setCustomDur(0);
     setCustomKcal(0);
+    setPickedActivity(null);
   };
 
   const typeBtn = (type: ActivityType, label: string, Icon: typeof Footprints, activeCls: string) => (
     <button
       type="button"
       onClick={() => setActivityType(type)}
-      className={`pressable p-2.5 rounded-2xl border flex items-center justify-center gap-1.5 font-extrabold text-xs sm:text-sm ${
+      aria-pressed={activityType === type}
+      className={`pressable px-1 py-2.5 rounded-2xl border flex flex-col items-center justify-center gap-1 font-extrabold text-[11px] sm:text-xs ${
         activityType === type
           ? activeCls
           : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
       }`}
     >
-      <Icon size={16} />
-      <span className="truncate">{label}</span>
+      <Icon size={17} />
+      <span className="truncate max-w-full">{label}</span>
     </button>
   );
 
+  const stepperBtn =
+    'pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center disabled:opacity-35';
+
+  const showOtherSearch = activityType === 'other' && !pickedActivity;
   const canSave =
-    activityType === 'custom' ? customName.trim().length > 0 : inputValue > 0;
+    activityType === 'other'
+      ? Boolean(pickedActivity) && otherDuration > 0
+      : activityType === 'custom'
+      ? customName.trim().length > 0
+      : inputValue > 0;
 
   return (
     <Modal
@@ -102,14 +152,100 @@ export const LogActivityModal: React.FC = () => {
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
-        {/* Walking / Running / Custom */}
-        <div className="grid grid-cols-3 gap-2">
-          {typeBtn('walking', t.activities.walking, Footprints, 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]')}
-          {typeBtn('running', t.activities.running, Flame, 'bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]')}
+        {/* Walk / Run / Other / Custom */}
+        <div className="grid grid-cols-4 gap-2">
+          {typeBtn('walking', t.activities.optWalk, Footprints, 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]')}
+          {typeBtn('running', t.activities.optRun, Flame, 'bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]')}
+          {typeBtn('other', t.activities.other, Search, 'bg-[#CFE7FE] text-[#1A4670] border-[#A9CFF5]')}
           {typeBtn('custom', t.activities.custom, Dumbbell, 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]')}
         </div>
 
-        {activityType === 'custom' ? (
+        {activityType === 'other' ? (
+          pickedActivity ? (
+            /* ---------- OTHER: duration for the chosen activity ---------- */
+            <div className="space-y-3.5">
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  onClick={() => setPickedActivity(null)}
+                  className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+                >
+                  <ArrowLeft size={14} />
+                  <span>{t.common.back}</span>
+                </button>
+                <FavoriteButton foodId={pickedActivity.id} kind="activity" />
+              </div>
+
+              <div className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-4 py-3 space-y-1">
+                <p className="text-sm font-extrabold text-[var(--text)] leading-snug">
+                  {activityName(pickedActivity, language)}
+                </p>
+                <p className="text-[11px] font-semibold text-[var(--muted)] tabular-nums">
+                  {categoryLabel(pickedActivity.category, language)} · {pickedActivity.met.toFixed(1)} {t.activities.met}
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[var(--muted)] mb-1.5">{t.activities.durationLabel}</label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={otherDuration <= 0}
+                    onClick={() => setOtherDuration((v) => Math.max(0, Math.round(v - 5)))}
+                    className={stepperBtn}
+                    aria-label="-5 min"
+                  >
+                    <Minus size={18} />
+                  </button>
+                  <div className="flex-1">
+                    <NumericInput
+                      value={otherDuration}
+                      onChange={setOtherDuration}
+                      unit="min"
+                      min={0}
+                      placeholder="30"
+                      className="text-center"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOtherDuration((v) => Math.round(v + 5))}
+                    className={stepperBtn}
+                    aria-label="+5 min"
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex gap-1.5">
+                {[15, 30, 45, 60, 90, 120].map((quick) => (
+                  <button
+                    key={quick}
+                    type="button"
+                    onClick={() => setOtherDuration(quick)}
+                    className={`pressable flex-1 py-1.5 text-xs font-bold tabular-nums rounded-xl border ${
+                      otherDuration === quick
+                        ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                        : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
+                    }`}
+                  >
+                    {quick}m
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
+            /* ---------- OTHER: search page (like the food search) ---------- */
+            <ActivitySearch
+              onPick={pickActivity}
+              onUseCustom={(name) => {
+                setCustomName(name);
+                setActivityType('custom');
+              }}
+            />
+          )
+        ) : activityType === 'custom' ? (
           /* ---------- CUSTOM ACTIVITY: name + optional duration + optional calories ---------- */
           <div className="space-y-3">
             <input
@@ -128,7 +264,7 @@ export const LogActivityModal: React.FC = () => {
                 <span className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--muted)] self-center mr-1">
                   {t.activities.customSuggested}:
                 </span>
-                {customActivities.map((a) => (
+                {customActivities.slice(0, 12).map(({ name: a }) => (
                   <button
                     key={a}
                     type="button"
@@ -162,7 +298,9 @@ export const LogActivityModal: React.FC = () => {
               </div>
             </div>
 
-            <p className="text-[11px] font-medium text-[var(--muted)]">{t.activities.autoIfEmpty}</p>
+            <p className="text-[11px] font-medium text-[var(--muted)]">
+              {t.activities.autoIfEmpty} · {t.activities.customSavedHint}
+            </p>
           </div>
         ) : (
           /* ---------- WALKING / RUNNING ---------- */
@@ -198,7 +336,7 @@ export const LogActivityModal: React.FC = () => {
                   type="button"
                   disabled={distanceKm <= 0}
                   onClick={() => setDistanceKm((v) => Math.max(0, Math.round((v - 0.5) * 10) / 10))}
-                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center disabled:opacity-35"
+                  className={stepperBtn}
                   aria-label="-0.5 km"
                 >
                   <Minus size={18} />
@@ -209,7 +347,7 @@ export const LogActivityModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDistanceKm((v) => Math.round((v + 0.5) * 10) / 10)}
-                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center"
+                  className={stepperBtn}
                   aria-label="+0.5 km"
                 >
                   <Plus size={18} />
@@ -221,7 +359,7 @@ export const LogActivityModal: React.FC = () => {
                   type="button"
                   disabled={durationMin <= 0}
                   onClick={() => setDurationMin((v) => Math.max(0, Math.round(v - 5)))}
-                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center disabled:opacity-35"
+                  className={stepperBtn}
                   aria-label="-5 min"
                 >
                   <Minus size={18} />
@@ -232,7 +370,7 @@ export const LogActivityModal: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setDurationMin((v) => Math.round(v + 5))}
-                  className="pressable w-11 h-11 shrink-0 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center"
+                  className={stepperBtn}
                   aria-label="+5 min"
                 >
                   <Plus size={18} />
@@ -277,24 +415,42 @@ export const LogActivityModal: React.FC = () => {
           </div>
         )}
 
-        {/* Burn preview */}
-        <div className="bg-[#C9EFD3] rounded-2xl p-3.5 flex items-center justify-between">
-          <span className="text-xs font-bold text-[#1D5C38]">{t.activityModal.calculatedCalories}</span>
-          <div className="flex items-baseline gap-1 tabular-nums">
-            <span className="text-2xl font-extrabold text-[#142E1F]">-{calculatedCalories}</span>
-            <span className="text-xs font-bold text-[#1D5C38]">kcal</span>
-          </div>
-        </div>
+        {/* Burn preview + save (hidden while browsing the Other search page) */}
+        {!showOtherSearch && (
+          <>
+            <div className="bg-[#C9EFD3] rounded-2xl p-3.5 space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-[#1D5C38]">{t.activityModal.calculatedCalories}</span>
+                <div className="flex items-baseline gap-1 tabular-nums">
+                  <span className="text-2xl font-extrabold text-[#142E1F]">{calculatedCalories}</span>
+                  <span className="text-xs font-bold text-[#1D5C38]">kcal</span>
+                </div>
+              </div>
+              {activityType === 'other' && pickedActivity && (
+                <div className="text-[11px] font-medium text-[#1D5C38] space-y-0.5 tabular-nums">
+                  <p>
+                    {t.activities.burnFormula
+                      .replace('{met}', pickedActivity.met.toFixed(1))
+                      .replace('{rate}', String(Math.round(restingRate * 10) / 10))
+                      .replace('{min}', String(otherDuration))}
+                  </p>
+                  <p>{profileIncomplete ? t.activities.profileHint : t.activities.personalised}</p>
+                  {pickedActivity.category !== 'custom' && <p className="opacity-80">{t.activities.sourceNote}</p>}
+                </div>
+              )}
+            </div>
 
-        <button
-          type="button"
-          onClick={handleSave}
-          disabled={!canSave}
-          className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
-        >
-          <Check size={18} strokeWidth={2.5} />
-          <span>{t.activityModal.saveBtn}</span>
-        </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={!canSave}
+              className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+            >
+              <Check size={18} strokeWidth={2.5} />
+              <span>{t.activityModal.saveBtn}</span>
+            </button>
+          </>
+        )}
       </div>
     </Modal>
   );

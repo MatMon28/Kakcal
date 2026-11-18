@@ -15,6 +15,7 @@ import {
 import { formatFullDate, formatKcal } from '../../utils/formatters';
 import { formatTrackerAmount, getCustomEntries, getTrackerValue } from '../../utils/customTrackers';
 import type { PoopSize } from '../../types';
+import { activityLogLabel } from '../../utils/activityLabel';
 
 interface PeriodDayInfoModalProps {
   date: string | null;
@@ -153,11 +154,11 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
         {/* Macros summary when food was logged */}
         {allItems.length > 0 && (
           <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
-            <div className="bg-[#FAE0B4] rounded-xl p-1.5 text-[#7D4E14]">
+            <div className="bg-[#CFE7FE] rounded-xl p-1.5 text-[#1A4670]">
               <span className="text-[10px] font-bold block">C</span>
               <span className="text-xs font-extrabold">{macros.carbsGrams}g</span>
             </div>
-            <div className="bg-[#F6D0D0] rounded-xl p-1.5 text-[#7A2727]">
+            <div className="bg-[#FAE0B4] rounded-xl p-1.5 text-[#7D4E14]">
               <span className="text-[10px] font-bold block">P</span>
               <span className="text-xs font-extrabold">{macros.proteinGrams}g</span>
             </div>
@@ -176,7 +177,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
           </div>
         )}
 
-        {/* Movement */}
+        {/* Activity */}
         <div className="bg-[#E2D6FF] rounded-2xl p-3.5 space-y-2">
           <div className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-[#4D3582]">
@@ -194,12 +195,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
           ) : (
             <div className="space-y-1.5">
               {activities.map((act) => {
-                const label =
-                  act.type === 'custom'
-                    ? act.customName || t.activities.custom
-                    : act.type === 'walking'
-                    ? t.activities.walking
-                    : t.activities.running;
+                const label = activityLogLabel(act, language, t.activities);
                 const detail =
                   act.method === 'distance' && act.distanceKm !== undefined
                     ? `${act.distanceKm} ${t.activities.km}`
@@ -222,7 +218,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
                       )}
                     </span>
                     <span className="font-extrabold tabular-nums text-[#4D3582] shrink-0">
-                      -{act.caloriesBurned} kcal
+                      {act.caloriesBurned} kcal
                     </span>
                   </div>
                 );

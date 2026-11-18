@@ -1,143 +1,113 @@
 import React from 'react';
+import { Footprints, Trash2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { Plus, Trash2 } from 'lucide-react';
+import { activityLogLabel } from '../../utils/activityLabel';
+import { TrackerCard } from './TrackerCard';
 
 interface Props {
-  /** Half-width variant used by the compact Today arrangement. */
   compact?: boolean;
+  open: boolean;
+  onToggle: () => void;
 }
 
-export const ActivityCardSummary: React.FC<Props> = ({ compact = false }) => {
-  const {
-    currentDayLog,
-    currentExpenditure,
-    removeActivity,
-    setIsLogActivityOpen,
-    t,
-  } = useApp();
+const pill = 'inline-flex items-center rounded-lg px-2 py-1 text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap';
+
+export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, onToggle }) => {
+  const { currentDayLog, currentExpenditure, removeActivity, setIsLogActivityOpen, language, t } = useApp();
 
   const activities = currentDayLog.activities;
-  const firstActivity = activities[0];
-  const activityName = (act: (typeof activities)[number]) =>
-    act.type === 'custom'
-      ? act.customName || t.activities.custom
-      : act.type === 'walking'
-      ? t.activities.walking
-      : t.activities.running;
+  const name = (act: (typeof activities)[number]) => activityLogLabel(act, language, t.activities);
+  const latest = activities[activities.length - 1];
 
-  if (compact) {
-    return (
-      <div className="bg-[#E2D6FF] rounded-2xl p-3 space-y-1.5">
-        <div className="flex items-center justify-between gap-2">
-          <h4 className="text-[13px] font-extrabold text-[#4D3582] truncate">{t.activities.title}</h4>
+  const headline = (
+    <span aria-label={`${currentExpenditure.activityExpenditure} kcal`} title={`${currentExpenditure.activityExpenditure} kcal`}>
+      {currentExpenditure.activityExpenditure}
+      {!compact && <span className="text-[11px] font-semibold text-[var(--muted)] ml-1">kcal</span>}
+    </span>
+  );
+
+  // Collapsed: one line only — the latest activity (or "no activity") as a lavender pill.
+  const summary = latest ? (
+    <span className={`${pill} bg-[#F0E9FF] text-[#4D3582] max-w-full`}>
+      <span className="truncate">{name(latest)}</span>
+      {activities.length > 1 && <span className="ml-1 shrink-0">+{activities.length - 1}</span>}
+    </span>
+  ) : (
+    <span className="text-xs font-medium text-[var(--muted)] truncate">{t.activities.noActivities}</span>
+  );
+
+  return (
+    <TrackerCard
+      title={t.activities.title}
+      tone="activity"
+      icon={<Footprints size={compact ? 15 : 16} strokeWidth={2.2} />}
+      headline={headline}
+      summary={summary}
+      onAdd={() => setIsLogActivityOpen(true)}
+      addLabel={t.activities.logActivity}
+      open={open}
+      onToggle={onToggle}
+      compact={compact}
+    >
+      <div className="space-y-2">
+        <div className="flex flex-wrap gap-1.5">
+          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`}>{t.energy.bmrShort} {currentExpenditure.bmr}</span>
+          <span className={`${pill} bg-[#F0E9FF] text-[#4D3582]`}>{t.energy.activitiesShort} {currentExpenditure.activityExpenditure}</span>
+          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`}>{t.energy.tefShort} {currentExpenditure.tef}</span>
+        </div>
+
+        {activities.length === 0 ? (
           <button
             type="button"
             onClick={() => setIsLogActivityOpen(true)}
-            className="pressable size-7 shrink-0 rounded-full bg-[#FBF8F2] hover:bg-white text-[#4D3582] flex items-center justify-center"
-            title={t.activities.logActivity}
-            aria-label={t.activities.logActivity}
+            className="w-full py-1.5 flex items-center justify-between text-xs font-medium text-[var(--muted)] hover:text-[var(--text)] transition-colors text-left"
           >
-            <Plus size={14} strokeWidth={2.5} />
+            <span>{t.activities.noActivities}</span>
+            <span className="font-bold">{t.activities.logActivity}</span>
           </button>
-        </div>
-
-        <p className="text-lg sm:text-xl font-extrabold leading-none tabular-nums text-[#4D3582]">
-          -{currentExpenditure.activityExpenditure}
-          <span className="text-[11px] font-bold ml-1">kcal</span>
-        </p>
-        <p className="text-[11px] font-medium tabular-nums text-[#6E5BA8] truncate">
-          {t.energy.bmrShort} {currentExpenditure.bmr} · {activities.length}×
-        </p>
-
-        {firstActivity && (
-          <div className="flex items-center gap-1.5 rounded-xl bg-[#F0E9FF] px-2 py-1.5">
-            <span className="min-w-0 flex-1 text-[11px] font-bold text-[#4D3582] truncate">
-              {activityName(firstActivity)}
-              {activities.length > 1 && ` +${activities.length - 1}`}
-            </span>
-            <button
-              type="button"
-              onClick={() => removeActivity(firstActivity.id)}
-              className="pressable size-6 shrink-0 rounded-full text-[#6E5BA8] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
-              title={t.common.delete}
-              aria-label={`${t.common.delete}: ${activityName(firstActivity)}`}
-            >
-              <Trash2 size={12} />
-            </button>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-[#E2D6FF] rounded-3xl p-4 sm:p-5 space-y-3">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h4 className="text-sm sm:text-base font-extrabold text-[#4D3582]">
-            {t.activities.title}
-          </h4>
-          <p className="text-xs font-medium tabular-nums text-[#6E5BA8] mt-0.5">
-            {t.energy.bmrShort} {currentExpenditure.bmr} · {t.energy.activitiesShort} {currentExpenditure.activityExpenditure} · {t.energy.tefShort} {currentExpenditure.tef}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => setIsLogActivityOpen(true)}
-          className="pressable w-9 h-9 shrink-0 rounded-full bg-[#FBF8F2] hover:bg-white text-[#4D3582] flex items-center justify-center"
-          title={t.activities.logActivity}
-          aria-label={t.activities.logActivity}
-        >
-          <Plus size={17} strokeWidth={2.5} />
-        </button>
-      </div>
-
-      {activities.length > 0 && (
-        <div className="space-y-2">
-          {activities.map((act) => {
-            const detail =
-              act.method === 'distance' && act.distanceKm !== undefined
-                ? `${act.distanceKm} ${t.activities.km}`
-                : act.durationMin !== undefined
-                ? `${act.durationMin} ${t.activities.min}`
-                : '';
-
-            return (
-              <div
-                key={act.id}
-                className="px-3.5 py-2.5 rounded-2xl bg-[#F0E9FF] flex items-center justify-between gap-3"
-              >
-                <div className="text-xs sm:text-sm min-w-0">
-                  <span className="font-bold text-[#4D3582]">{activityName(act)}</span>
-                  {(detail || act.notes) && (
-                    <span className="text-[#6E5BA8] ml-2 font-medium tabular-nums">
-                      {detail}
-                      {detail && act.notes ? ' · ' : ''}
-                      {act.notes || ''}
-                    </span>
-                  )}
-                </div>
-
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <span className="text-xs sm:text-sm font-extrabold tabular-nums text-[#4D3582]">
-                    -{act.caloriesBurned} kcal
+        ) : (
+          <div className="divide-y divide-[var(--border)]">
+            {activities.map((act) => {
+              const detail =
+                act.method === 'distance' && act.distanceKm !== undefined
+                  ? `${act.distanceKm} ${t.activities.km}`
+                  : act.durationMin !== undefined
+                  ? `${act.durationMin} ${t.activities.min}`
+                  : '';
+              return (
+                <div key={act.id} className="py-2 flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-xs sm:text-sm font-bold text-[var(--text)] truncate">{name(act)}</span>
+                    {(detail || act.notes) && (
+                      <span className="block text-[11px] font-medium tabular-nums text-[var(--muted)] truncate">
+                        {detail}
+                        {detail && act.notes ? ' · ' : ''}
+                        {act.notes || ''}
+                      </span>
+                    )}
+                  </div>
+                  <span
+                    className="text-xs sm:text-sm font-extrabold tabular-nums text-[var(--text)] shrink-0"
+                    aria-label={`${act.caloriesBurned} kcal`}
+                    title={`${act.caloriesBurned} kcal`}
+                  >
+                    {act.caloriesBurned}{!compact && ' kcal'}
                   </span>
                   <button
                     type="button"
                     onClick={() => removeActivity(act.id)}
-                    className="pressable w-8 h-8 rounded-full text-[#6E5BA8] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                    className="pressable size-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
                     title={t.common.delete}
-                    aria-label={t.common.delete}
+                    aria-label={`${t.common.delete}: ${name(act)}`}
                   >
                     <Trash2 size={13} />
                   </button>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </TrackerCard>
   );
 };

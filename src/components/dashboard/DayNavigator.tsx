@@ -199,7 +199,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
                     setSelectedDate(todayStr);
                     setCalOpen(false);
                   }}
-                  className="pressable mt-3 w-full py-2 rounded-full bg-[#2E7CC4] hover:bg-[#2563EB] text-white text-xs font-extrabold inline-flex items-center justify-center gap-1.5"
+                  className="pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 mt-3 w-full py-2"
                 >
                   <CornerUpLeft size={13} strokeWidth={2.6} />
                   {t.header.today}
@@ -225,7 +225,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
           onClick={() => setSelectedDate(todayStr)}
           title={t.header.todayReturn}
           aria-label={t.header.todayReturn}
-          className="pressable px-3 py-2 text-xs font-extrabold rounded-full bg-[#2E7CC4] hover:bg-[#2563EB] text-white inline-flex items-center gap-1.5"
+          className="pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 h-9 px-3.5"
         >
           <CornerUpLeft size={14} strokeWidth={2.6} />
           {t.header.today}

@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatKcal } from '../../utils/formatters';
 
-export const EnergyBalanceCards: React.FC = () => {
+export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const { t, currentIntakeCalories, currentExpenditure, netBalance } = useApp();
 
   const scale = Math.max(currentIntakeCalories, currentExpenditure.totalExpenditure, 1);
@@ -24,7 +24,7 @@ export const EnergyBalanceCards: React.FC = () => {
   );
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4">
+    <div data-energy-overview className="grid grid-cols-2 gap-3 sm:gap-4">
       {/* Left: INTAKE (Pastel Rose) */}
       <div className="bg-[#F6D0D0] rounded-3xl p-4 sm:p-5 flex flex-col justify-between">
         <div>
@@ -34,11 +34,11 @@ export const EnergyBalanceCards: React.FC = () => {
             </span>
             {netPositive && surplusPill}
           </div>
-          <div className="flex items-baseline gap-1 my-1">
+          <div className="flex items-baseline gap-1 my-1" aria-label={`${formatKcal(currentIntakeCalories)} kcal`}>
             <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-[#2B1818] tracking-tight">
               {formatKcal(currentIntakeCalories)}
             </span>
-            <span className="text-xs font-semibold text-[#8C3A3A]">kcal</span>
+            {!compact && <span className="text-xs font-semibold text-[#8C3A3A]">kcal</span>}
           </div>
         </div>
 
@@ -59,11 +59,11 @@ export const EnergyBalanceCards: React.FC = () => {
             </span>
             {!netPositive && deficitPill}
           </div>
-          <div className="flex items-baseline gap-1 my-1">
+          <div className="flex items-baseline gap-1 my-1" aria-label={`${formatKcal(currentExpenditure.totalExpenditure)} kcal`}>
             <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-[#142E1F] tracking-tight">
               {formatKcal(currentExpenditure.totalExpenditure)}
             </span>
-            <span className="text-xs font-semibold text-[#25633E]">kcal</span>
+            {!compact && <span className="text-xs font-semibold text-[#25633E]">kcal</span>}
           </div>
         </div>
 

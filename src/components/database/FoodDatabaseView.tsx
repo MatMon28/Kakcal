@@ -8,6 +8,7 @@ import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
 import { sortFavoritesFirst } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
   BookOpen,
   Search,
@@ -66,6 +67,7 @@ export const FoodDatabaseView: React.FC = () => {
 
   // Quick log modal
   const [foodToLog, setFoodToLog] = useState<FoodItem | null>(null);
+  const [foodToDelete, setFoodToDelete] = useState<FoodItem | null>(null);
   const [logSlot, setLogSlot] = useState<MealSlotId>(targetMealSlot);
   const [logAmount, setLogAmount] = useState<number>(100);
 
@@ -364,13 +366,13 @@ export const FoodDatabaseView: React.FC = () => {
 
                   {/* Macros per 100g */}
                   <div className="grid grid-cols-5 gap-1.5 pt-3 text-center tabular-nums">
-                    <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
+                    <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670]">
                       <span className="text-[10px] font-bold block">C</span>
                       <span className="text-xs font-extrabold">
                         {food.carbs !== null ? `${food.carbs}g` : '—'}
                       </span>
                     </div>
-                    <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
+                    <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
                       <span className="text-[10px] font-bold block">P</span>
                       <span className="text-xs font-extrabold">
                         {food.protein !== null ? `${food.protein}g` : '—'}
@@ -412,7 +414,7 @@ export const FoodDatabaseView: React.FC = () => {
                     {food.isCustom && (
                       <button
                         type="button"
-                        onClick={() => deleteCustomFood(food.id)}
+                        onClick={() => setFoodToDelete(food)}
                         className="pressable w-7 h-7 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
                         title={t.common.delete}
                         aria-label={t.common.delete}
@@ -511,6 +513,20 @@ export const FoodDatabaseView: React.FC = () => {
           </button>
         </div>
       </Modal>
+
+      <ConfirmDialog
+        open={foodToDelete !== null}
+        message={
+          foodToDelete
+            ? t.common.confirmDeleteFood.replace('{name}', language === 'it' ? foodToDelete.name_it : foodToDelete.name_en || foodToDelete.name_de)
+            : ''
+        }
+        onCancel={() => setFoodToDelete(null)}
+        onConfirm={() => {
+          if (foodToDelete) deleteCustomFood(foodToDelete.id);
+          setFoodToDelete(null);
+        }}
+      />
     </div>
   );
 };

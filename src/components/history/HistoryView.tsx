@@ -273,8 +273,8 @@ export const HistoryView: React.FC = () => {
 
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 tabular-nums">
           {([
-            [t.history.avgCarbs, period.avgCarbs, 'bg-[#FAE0B4] text-[#8A5617]', 'text-[#2D1E0B]'],
-            [t.history.avgProtein, period.avgProtein, 'bg-[#F6D0D0] text-[#8C3A3A]', 'text-[#2B1818]'],
+            [t.history.avgCarbs, period.avgCarbs, 'bg-[#CFE7FE] text-[#1A4670]', 'text-[#0F3355]'],
+            [t.history.avgProtein, period.avgProtein, 'bg-[#FAE0B4] text-[#7D4E14]', 'text-[#2D1E0B]'],
             [t.history.avgFat, period.avgFat, 'bg-[#E2D6FF] text-[#523A8C]', 'text-[#1F1636]'],
           ] as const).map(([label, value, card, number]) => (
             <div key={label} className={`${card} rounded-3xl p-3.5 text-center`}>
@@ -336,7 +336,86 @@ export const HistoryView: React.FC = () => {
           </div>
         )}
 
-        <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">
+                {settings.customButtons.some((button) => button.showStats !== false) && (
+          <div className="space-y-2.5">
+            {settings.customButtons.filter((button) => button.showStats !== false).map((button) => {
+              const values = period.days.map((day) => ({
+                date: day.date,
+                value: getTrackerValue(allDayLogs[day.date], button),
+              }));
+              if (button.type === 'toggle') {
+                const doneDays = values.filter((entry) => entry.value === true).length;
+                return (
+                  <div key={button.id} className="bg-[#F7E9AA] rounded-3xl p-4 sm:p-5">
+                    <div className="flex items-center justify-between text-[#6E5B14]">
+                      <span className="flex items-center gap-2 text-sm font-extrabold">
+                        <TrackerIcon icon={button.icon} size={15} /> {button.name}
+                      </span>
+                      <span className="text-sm font-extrabold tabular-nums">{doneDays}/{period.total}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5 mt-3">
+                      {[...values].reverse().map((entry) => (
+                        <button
+                          key={entry.date}
+                          type="button"
+                          onClick={() => setInspectedDate(entry.date)}
+                          title={`${formatDateDisplay(entry.date, language)} — ${entry.value === true ? t.settings.done : t.settings.notDone}`}
+                          aria-label={`${formatDateDisplay(entry.date, language)} — ${entry.value === true ? t.settings.done : t.settings.notDone}`}
+                          className={`pressable w-9 h-9 rounded-full flex items-center justify-center text-xs font-extrabold hover:scale-105 ${
+                            entry.value === true ? 'bg-[#C9EFD3] text-[#174A2B]' : 'bg-[#FCF4D6]/70 text-[#8A7224]/60'
+                          }`}
+                        >
+                          {entry.value === true ? '✓' : <X size={13} />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              }
+
+              const numbers = values.map((entry) => entry.value).filter((value): value is number => typeof value === 'number' && value > 0);
+              const average = numbers.length ? Math.round((numbers.reduce((sum, value) => sum + value, 0) / numbers.length) * 10) / 10 : 0;
+              const total = Math.round(numbers.reduce((sum, value) => sum + value, 0) * 10) / 10;
+              const max = Math.max(1, ...numbers);
+              return (
+                <div key={button.id} className="bg-[#F7E9AA] rounded-3xl p-4 sm:p-5">
+                  <div className="flex items-center justify-between gap-2 text-[#6E5B14]">
+                    <span className="flex items-center gap-2 text-sm font-extrabold">
+                      <TrackerIcon icon={button.icon} size={15} /> {button.name}
+                    </span>
+                    <span className="text-right tabular-nums">
+                      <span className="block text-sm font-extrabold">
+                        {average}{button.unit ? ` ${button.unit}` : ''} {t.stats.perDay}
+                      </span>
+                      <span className="block text-[11px] font-bold text-[#8A7224]">
+                        {total}{button.unit ? ` ${button.unit}` : ''} · {numbers.length}/{period.total}
+                      </span>
+                    </span>
+                  </div>
+                  <div className="flex items-end gap-1 h-12 mt-3">
+                    {[...values].reverse().map((entry) => {
+                      const value = typeof entry.value === 'number' ? entry.value : 0;
+                      const height = value > 0 ? Math.max(14, Math.round((value / max) * 100)) : 10;
+                      return (
+                        <button
+                          key={entry.date}
+                          type="button"
+                          onClick={() => setInspectedDate(entry.date)}
+                          title={`${formatDateDisplay(entry.date, language)} — ${value > 0 ? `${value}${button.unit ? ` ${button.unit}` : ''}` : '—'}`}
+                          aria-label={`${formatDateDisplay(entry.date, language)} — ${value > 0 ? `${value}${button.unit ? ` ${button.unit}` : ''}` : '—'}`}
+                          className={`flex-1 rounded-md transition-opacity hover:opacity-80 ${value > 0 ? 'bg-[#6E5B14]' : 'bg-[#FCF4D6]/70'}`}
+                          style={{ height: `${height}%` }}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+<div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">
           <button
             type="button"
             onClick={() => setWeightOpen(!weightOpen)}
@@ -425,85 +504,6 @@ export const HistoryView: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {settings.customButtons.some((button) => button.showStats !== false) && (
-          <div className="space-y-2.5">
-            {settings.customButtons.filter((button) => button.showStats !== false).map((button) => {
-              const values = period.days.map((day) => ({
-                date: day.date,
-                value: getTrackerValue(allDayLogs[day.date], button),
-              }));
-              if (button.type === 'toggle') {
-                const doneDays = values.filter((entry) => entry.value === true).length;
-                return (
-                  <div key={button.id} className="bg-[#F7E9AA] rounded-3xl p-4 sm:p-5">
-                    <div className="flex items-center justify-between text-[#6E5B14]">
-                      <span className="flex items-center gap-2 text-sm font-extrabold">
-                        <TrackerIcon icon={button.icon} size={15} /> {button.name}
-                      </span>
-                      <span className="text-sm font-extrabold tabular-nums">{doneDays}/{period.total}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1.5 mt-3">
-                      {[...values].reverse().map((entry) => (
-                        <button
-                          key={entry.date}
-                          type="button"
-                          onClick={() => setInspectedDate(entry.date)}
-                          title={`${formatDateDisplay(entry.date, language)} — ${entry.value === true ? t.settings.done : t.settings.notDone}`}
-                          aria-label={`${formatDateDisplay(entry.date, language)} — ${entry.value === true ? t.settings.done : t.settings.notDone}`}
-                          className={`pressable w-9 h-9 rounded-full flex items-center justify-center text-xs font-extrabold hover:scale-105 ${
-                            entry.value === true ? 'bg-[#C9EFD3] text-[#174A2B]' : 'bg-[#FCF4D6]/70 text-[#8A7224]/60'
-                          }`}
-                        >
-                          {entry.value === true ? '✓' : <X size={13} />}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                );
-              }
-
-              const numbers = values.map((entry) => entry.value).filter((value): value is number => typeof value === 'number' && value > 0);
-              const average = numbers.length ? Math.round((numbers.reduce((sum, value) => sum + value, 0) / numbers.length) * 10) / 10 : 0;
-              const total = Math.round(numbers.reduce((sum, value) => sum + value, 0) * 10) / 10;
-              const max = Math.max(1, ...numbers);
-              return (
-                <div key={button.id} className="bg-[#F7E9AA] rounded-3xl p-4 sm:p-5">
-                  <div className="flex items-center justify-between gap-2 text-[#6E5B14]">
-                    <span className="flex items-center gap-2 text-sm font-extrabold">
-                      <TrackerIcon icon={button.icon} size={15} /> {button.name}
-                    </span>
-                    <span className="text-right tabular-nums">
-                      <span className="block text-sm font-extrabold">
-                        {average}{button.unit ? ` ${button.unit}` : ''} {t.stats.perDay}
-                      </span>
-                      <span className="block text-[11px] font-bold text-[#8A7224]">
-                        {total}{button.unit ? ` ${button.unit}` : ''} · {numbers.length}/{period.total}
-                      </span>
-                    </span>
-                  </div>
-                  <div className="flex items-end gap-1 h-12 mt-3">
-                    {[...values].reverse().map((entry) => {
-                      const value = typeof entry.value === 'number' ? entry.value : 0;
-                      const height = value > 0 ? Math.max(14, Math.round((value / max) * 100)) : 10;
-                      return (
-                        <button
-                          key={entry.date}
-                          type="button"
-                          onClick={() => setInspectedDate(entry.date)}
-                          title={`${formatDateDisplay(entry.date, language)} — ${value > 0 ? `${value}${button.unit ? ` ${button.unit}` : ''}` : '—'}`}
-                          aria-label={`${formatDateDisplay(entry.date, language)} — ${value > 0 ? `${value}${button.unit ? ` ${button.unit}` : ''}` : '—'}`}
-                          className={`flex-1 rounded-md transition-opacity hover:opacity-80 ${value > 0 ? 'bg-[#6E5B14]' : 'bg-[#FCF4D6]/70'}`}
-                          style={{ height: `${height}%` }}
-                        />
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
 
         {range === '7' && (
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">

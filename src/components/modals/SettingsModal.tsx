@@ -280,15 +280,15 @@ export const SettingsModal: React.FC = () => {
                         quickAdd: { ...settings.quickAdd, [r.key]: !isOn },
                       })
                     }
-                    className="min-h-[54px] flex items-center justify-between gap-1.5 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-2.5 py-2 transition-colors text-left"
+                    className="min-h-[54px] flex flex-wrap min-[360px]:flex-nowrap items-center justify-between gap-x-1.5 gap-y-1 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-2.5 py-2 transition-colors text-left"
                   >
                     <span className="flex items-center gap-1.5 min-w-0 text-xs font-bold text-[var(--text)]">
                       <span className={`size-7 rounded-full flex items-center justify-center shrink-0 ${r.cls}`}>
                         {Icon ? <Icon size={13} /> : <PoopIcon size={13} />}
                       </span>
-                      <span className="truncate">{r.label}</span>
+                      <span className="min-w-0 break-words leading-tight">{r.label}</span>
                     </span>
-                    <span className="scale-[0.82] origin-right shrink-0">
+                    <span className="scale-[0.82] origin-right shrink-0 ml-auto">
                       <SwitchVisual on={isOn} />
                     </span>
                   </button>

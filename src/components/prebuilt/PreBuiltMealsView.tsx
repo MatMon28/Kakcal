@@ -22,55 +22,103 @@ import {
   X,
 } from 'lucide-react';
 import { usePersistentState } from '../../utils/usePersistentState';
+import { ConfirmDialog } from '../common/ConfirmDialog';
+import { MacroPills } from '../common/MacroPills';
 
-function LibrarySectionHeader({ title, summary, tone, createLabel, onCreate, searchLabel, query, setQuery }: {
+const libraryPalettes = {
+  meals: { text: '#7D4E14', muted: '#8A5617', border: '#E8C68E' },
+  recipes: { text: '#4D3582', muted: '#6E5BA8', border: '#C9B8F2' },
+  foods: { text: '#174A2B', muted: '#1D5C38', border: '#9ADBB0' },
+};
+
+function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, onCreate, searchLabel, query, setQuery, open, onToggle }: {
   title: string;
+  tone: keyof typeof libraryPalettes;
   summary?: string;
-  tone: string;
+  icon: React.ReactNode;
+  count?: number;
   createLabel: string;
   onCreate: () => void;
-  searchLabel: string;
-  query: string;
-  setQuery: (value: string) => void;
+  searchLabel?: string;
+  query?: string;
+  setQuery?: (value: string) => void;
+  open: boolean;
+  onToggle: () => void;
 }) {
   const { t } = useApp();
   const [searchOpen, setSearchOpen] = useState(false);
   const inputId = useId();
   const closeSearch = () => {
-    setQuery('');
+    setQuery?.('');
     setSearchOpen(false);
     document.getElementById(`${inputId}-toggle`)?.focus();
   };
+  const palette = libraryPalettes[tone];
+  // Only the coloured section header gets this palette; item cards retain the user's theme.
+  const headerStyle = {
+    '--text': palette.text, '--muted': palette.muted, '--border': palette.border,
+    '--bg': '#FBF8F2', '--inset': '#FBF8F2', '--hover': '#FFFFFF',
+  } as React.CSSProperties;
+  const iconBtn = 'pressable size-8 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center';
   return (
-    <div className={`space-y-2 ${tone}`}>
+    <div className="space-y-2" style={headerStyle}>
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-base sm:text-lg font-extrabold">{title}</h2>
+        {/* Title row toggles the whole section, like a meal card header on Today */}
+        <button
+          type="button"
+          onClick={onToggle}
+          aria-expanded={open}
+          aria-label={`${title}: ${open ? t.common.collapse : t.common.expand}`}
+          className="min-w-0 flex-1 flex items-center gap-2.5 text-left"
+        >
+          <span className="size-9 rounded-full bg-[var(--bg)] text-[var(--text)] flex items-center justify-center shrink-0">
+            {icon}
+          </span>
+          <span className="min-w-0">
+            <span className="flex items-center gap-2">
+              <h2 className="text-sm sm:text-base font-extrabold text-[var(--text)] truncate">{title}</h2>
+              {typeof count === 'number' && (
+                <span className="text-[11px] font-bold tabular-nums text-[var(--muted)]">{count}</span>
+              )}
+            </span>
+            {summary && <span className="block text-[11px] font-medium text-[var(--muted)] truncate">{summary}</span>}
+          </span>
+        </button>
         <div className="flex items-center gap-1.5 shrink-0">
-          <button
-            id={`${inputId}-toggle`}
-            type="button"
-            onClick={() => searchOpen ? closeSearch() : setSearchOpen(true)}
-            aria-label={searchLabel}
-            aria-expanded={searchOpen}
-            aria-controls={searchOpen ? inputId : undefined}
-            title={searchLabel}
-            className={`pressable size-9 rounded-full flex items-center justify-center ${searchOpen ? 'bg-white ring-1 ring-current' : 'bg-[#FBF8F2] hover:bg-white'}`}
-          >
-            <Search size={15} />
+          {setQuery && (
+            <button
+              id={`${inputId}-toggle`}
+              type="button"
+              onClick={() => {
+                if (searchOpen) closeSearch();
+                else {
+                  setSearchOpen(true);
+                  if (!open) onToggle();
+                }
+              }}
+              aria-label={searchLabel}
+              aria-expanded={searchOpen}
+              aria-controls={searchOpen ? inputId : undefined}
+              title={searchLabel}
+              className={`${iconBtn} ${searchOpen ? 'ring-1 ring-[var(--muted)]' : ''}`}
+            >
+              <Search size={15} />
+            </button>
+          )}
+          <button type="button" onClick={onCreate} aria-label={createLabel} title={createLabel} className={iconBtn}>
+            <Plus size={16} strokeWidth={2.5} />
           </button>
           <button
             type="button"
-            onClick={onCreate}
-            aria-label={createLabel}
-            title={createLabel}
-            className="pressable size-9 rounded-full bg-[#FBF8F2] hover:bg-white flex items-center justify-center"
+            onClick={onToggle}
+            aria-label={open ? t.common.collapse : t.common.expand}
+            className="pressable size-8 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
           >
-            <Plus size={18} strokeWidth={2.4} />
+            <ChevronDown size={16} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
           </button>
         </div>
       </div>
-      {summary && <p className="text-xs font-medium opacity-85">{summary}</p>}
-      {searchOpen && (
+      {searchOpen && setQuery && (
         <form
           id={inputId}
           role="search"
@@ -96,7 +144,7 @@ function LibrarySectionHeader({ title, summary, tone, createLabel, onCreate, sea
             }}
             aria-label={searchLabel}
             placeholder={`${searchLabel}…`}
-            className="w-full bg-[var(--surface)] rounded-2xl border border-[var(--border)] pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
+            className="w-full bg-[var(--inset)] rounded-2xl border border-[var(--border)] pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
           />
           <button
             type="button"
@@ -172,6 +220,15 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   // Collapsible lists (persisted)
   const [openRecipes, setOpenRecipes] = usePersistentState<string[]>('kcak_my_recipes_open', []);
   const [openMeals, setOpenMeals] = usePersistentState<string[]>('kcak_my_meals_open', []);
+  // Whole-section collapse (Meals / Recipes / Foods), remembered like the Today layout.
+  const [sectionsOpen, setSectionsOpen] = usePersistentState<Record<'meals' | 'recipes' | 'foods', boolean>>(
+    'kcak_custom_sections_open',
+    { meals: true, recipes: true, foods: true }
+  );
+  const toggleSection = (key: 'meals' | 'recipes' | 'foods') =>
+    setSectionsOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+  // Delete confirmation for meals and recipes.
+  const [pendingDelete, setPendingDelete] = useState<{ kind: 'meal' | 'recipe'; id: string; name: string } | null>(null);
 
   const nameOf = (f: FoodItem) => (language === 'it' ? f.name_it : f.name_en || f.name_de);
 
@@ -463,24 +520,30 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
   return (
     <div className="space-y-4">
-      {/* ============ MEALS (peach section, cream buttons) ============ */}
-      <section className="bg-[#FAE0B4] rounded-3xl p-4 sm:p-5 space-y-3">
+      {/* Section colours are restored; the individual meal cards stay neutral. */}
+      <section data-library-section="meals" className="bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl p-4 sm:p-5 space-y-3">
         <LibrarySectionHeader
           title={t.prebuilt.title}
-          tone="text-[#7D4E14]"
+          tone="meals"
+          icon={<UtensilsCrossed size={16} strokeWidth={2.2} />}
+          count={preBuiltMeals.length}
           createLabel={t.prebuilt.createNew}
           onCreate={openNewMealModal}
           searchLabel={t.prebuilt.searchMeals}
           query={mealQuery}
           setQuery={setMealQuery}
+          open={sectionsOpen.meals}
+          onToggle={() => toggleSection('meals')}
         />
 
+        <div className="accordion-grid" data-open={sectionsOpen.meals} inert={!sectionsOpen.meals}>
+        <div className="accordion-inner">
         {preBuiltMeals.length === 0 ? (
-          <p className="text-xs font-medium text-[#7D4E14]/80 px-1 py-1">
+          <p className="text-xs font-medium text-[#7D4E14] px-1 py-1">
             {t.common.emptyMeals}
           </p>
         ) : visibleMeals.length === 0 ? (
-          <p className="text-xs font-medium text-[#7D4E14]/80 px-1 py-2 text-center">
+          <p className="text-xs font-medium text-[#7D4E14] px-1 py-2 text-center">
             {t.prebuilt.noMatches}
           </p>
         ) : (
@@ -491,9 +554,9 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               return (
                 <div
                   key={meal.id}
-                  className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col gap-2.5"
+                  className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3.5 flex flex-col gap-2.5"
                 >
-                  {/* Name + macros with Log / Edit / Delete beside them */}
+                  {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
                     <button
                       type="button"
@@ -511,20 +574,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                             {meal.name}
                           </h3>
                           {meal.slot && (
-                            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)]">
                               {t.mealSlots[meal.slot]}
                             </span>
                           )}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-1 text-[11px] font-bold tabular-nums text-[var(--muted)] flex-wrap">
-                          <span className="text-[var(--text)]">{formatKcal(nut.totalKcal)} kcal</span>
-                          <span>·</span>
-                          <span>C {nut.carbs}g</span>
-                          <span>·</span>
-                          <span>P {nut.protein}g</span>
-                          <span>·</span>
-                          <span>F {nut.fat}g</span>
-                        </div>
+
                       </div>
                       <ChevronDown
                         size={15}
@@ -535,34 +590,48 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
-                        onClick={() => handleOpenLogModal(meal)}
-                        title={t.prebuilt.logMeal}
-                        aria-label={`${t.prebuilt.logMeal}: ${meal.name}`}
-                        className="pressable min-h-8 px-2 sm:px-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
-                      >
-                        <Plus size={14} strokeWidth={2.5} />
-                        <span className="hidden sm:inline whitespace-nowrap">{t.prebuilt.logMeal}</span>
-                      </button>
-                      <button
-                        type="button"
                         onClick={() => openEditMealModal(meal)}
                         title={t.common.edit}
                         aria-label={`${t.common.edit}: ${meal.name}`}
-                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
+                        className="pressable size-8 rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
                       >
                         <Edit2 size={14} />
                       </button>
                       <button
                         type="button"
-                        onClick={() => deletePreBuiltMeal(meal.id)}
+                        onClick={() => setPendingDelete({ kind: 'meal', id: meal.id, name: meal.name })}
                         title={t.common.delete}
                         aria-label={`${t.common.delete}: ${meal.name}`}
-                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                        className="pressable size-8 rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
                       >
                         <Trash2 size={14} />
                       </button>
+                      <button
+                        type="button"
+                        onClick={() => handleOpenLogModal(meal)}
+                        title={t.prebuilt.logMeal}
+                        aria-label={`${t.prebuilt.logMeal}: ${meal.name}`}
+                        className="pressable h-8 px-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
+                      >
+                        <Plus size={14} strokeWidth={2.5} />
+                        <span className="whitespace-nowrap">{t.common.log}</span>
+                      </button>
                     </div>
                   </div>
+
+                  <button
+                    type="button"
+                    data-nutrition-row
+                    onClick={() => setOpenMeals((prev) => prev.includes(meal.id) ? prev.filter((id) => id !== meal.id) : [...prev, meal.id])}
+                    aria-expanded={isOpen}
+                    aria-label={`${meal.name}: ${isOpen ? t.common.collapse : t.common.expand}`}
+                    className="flex w-full min-w-0 items-center gap-3 text-left"
+                  >
+                    <span data-calories className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-extrabold tabular-nums text-[var(--text)]">
+                      {formatKcal(nut.totalKcal)} <span className="text-[11px] font-semibold text-[var(--muted)]">kcal</span>
+                    </span>
+                    <MacroPills carbs={nut.carbs} protein={nut.protein} fat={nut.fat} stretch />
+                  </button>
 
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
@@ -570,17 +639,14 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         {meal.description && (
                           <p className="text-xs text-[var(--muted)]">{meal.description}</p>
                         )}
-                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
-                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
-                            <span className="text-[10px] font-bold block">C</span>
+                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums pt-2">
+                          <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${nut.carbs} g`} title={t.macros.carbs}>
                             <span className="text-xs font-extrabold">{nut.carbs}g</span>
                           </div>
-                          <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
-                            <span className="text-[10px] font-bold block">P</span>
+                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14] flex items-center justify-center" role="img" aria-label={`${t.macros.protein}: ${nut.protein} g`} title={t.macros.protein}>
                             <span className="text-xs font-extrabold">{nut.protein}g</span>
                           </div>
-                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
-                            <span className="text-[10px] font-bold block">F</span>
+                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582] flex items-center justify-center" role="img" aria-label={`${t.macros.fat}: ${nut.fat} g`} title={t.macros.fat}>
                             <span className="text-xs font-extrabold">{nut.fat}g</span>
                           </div>
                           <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
@@ -593,7 +659,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                           </div>
                         </div>
 
-                        <div className="bg-[var(--inset)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                        <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                           {meal.ingredients.map((ing, idx) => {
                             const food = allFoods.find((f) => f.id === ing.foodId);
                             return (
@@ -620,27 +686,35 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             })}
           </div>
         )}
+        </div>
+        </div>
       </section>
 
-      {/* ============ RECIPES (lavender section, cream buttons) ============ */}
-      <section className="bg-[#E2D6FF] rounded-3xl p-4 sm:p-5 space-y-3">
+      {/* ============ RECIPES ============ */}
+      <section data-library-section="recipes" className="bg-[#E2D6FF] border border-[#C9B8F2] rounded-3xl p-4 sm:p-5 space-y-3">
         <LibrarySectionHeader
           title={t.prebuilt.recipesTitle}
+          tone="recipes"
           summary={t.prebuilt.recipesDesc}
-          tone="text-[#4D3582]"
+          icon={<ChefHatIcon size={16} />}
+          count={savedRecipes.length}
           createLabel={t.prebuilt.createRecipe}
           onCreate={openRecipeModal}
           searchLabel={t.prebuilt.searchRecipes}
           query={recipeQuery}
           setQuery={setRecipeQuery}
+          open={sectionsOpen.recipes}
+          onToggle={() => toggleSection('recipes')}
         />
 
+        <div className="accordion-grid" data-open={sectionsOpen.recipes} inert={!sectionsOpen.recipes}>
+        <div className="accordion-inner">
         {savedRecipes.length === 0 ? (
-          <p className="text-xs font-medium text-[#4D3582]/80 px-1 py-1">
+          <p className="text-xs font-medium text-[#4D3582] px-1 py-1">
             {t.prebuilt.noRecipes}
           </p>
         ) : visibleRecipes.length === 0 ? (
-          <p className="text-xs font-medium text-[#4D3582]/80 px-1 py-2 text-center">
+          <p className="text-xs font-medium text-[#4D3582] px-1 py-2 text-center">
             {t.prebuilt.noMatches}
           </p>
         ) : (
@@ -648,8 +722,8 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
               return (
-                <div key={recipe.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col gap-2.5">
-                  {/* Name + macros with Log / Edit / Delete beside them */}
+                <div key={recipe.id} className="bg-[var(--surface)] border border-[var(--border)] rounded-2xl p-3.5 flex flex-col gap-2.5">
+                  {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
                     <button
                       type="button"
@@ -665,9 +739,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         <span className="block text-sm sm:text-base font-extrabold text-[var(--text)]" title={nameOf(recipe)}>
                           {nameOf(recipe)}
                         </span>
-                        <span className="block text-[11px] font-bold tabular-nums text-[var(--muted)] mt-0.5">
-                          {recipe.calories} kcal/100{recipe.unit} · C {recipe.carbs ?? '—'}g · P {recipe.protein ?? '—'}g · F {recipe.fat ?? '—'}g
-                        </span>
+
                       </span>
                       <ChevronDown
                         size={15}
@@ -678,6 +750,24 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
+                        onClick={() => openEditRecipeModal(recipe)}
+                        title={t.common.edit}
+                        aria-label={`${t.common.edit}: ${nameOf(recipe)}`}
+                        className="pressable size-8 rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPendingDelete({ kind: 'recipe', id: recipe.id, name: nameOf(recipe) })}
+                        title={t.common.delete}
+                        aria-label={`${t.common.delete}: ${nameOf(recipe)}`}
+                        className="pressable size-8 rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                      <button
+                        type="button"
                         onClick={() => {
                           setActiveRecipeToLog(recipe);
                           setRecipeLogSlot('lunch');
@@ -685,46 +775,39 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         }}
                         title={t.prebuilt.logRecipe}
                         aria-label={`${t.prebuilt.logRecipe}: ${nameOf(recipe)}`}
-                        className="pressable min-h-8 px-2 sm:px-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
+                        className="pressable h-8 px-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1"
                       >
                         <Plus size={14} strokeWidth={2.5} />
-                        <span className="hidden sm:inline whitespace-nowrap">{t.prebuilt.logRecipe}</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => openEditRecipeModal(recipe)}
-                        title={t.common.edit}
-                        aria-label={`${t.common.edit}: ${nameOf(recipe)}`}
-                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
-                      >
-                        <Edit2 size={14} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => deleteCustomFood(recipe.id)}
-                        title={t.common.delete}
-                        aria-label={`${t.common.delete}: ${nameOf(recipe)}`}
-                        className="pressable size-8 rounded-xl bg-[var(--inset)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
-                      >
-                        <Trash2 size={14} />
+                        <span className="whitespace-nowrap">{t.common.log}</span>
                       </button>
                     </div>
                   </div>
 
+                  <button
+                    type="button"
+                    data-nutrition-row
+                    onClick={() => setOpenRecipes((prev) => prev.includes(recipe.id) ? prev.filter((id) => id !== recipe.id) : [...prev, recipe.id])}
+                    aria-expanded={isOpen}
+                    aria-label={`${nameOf(recipe)}: ${isOpen ? t.common.collapse : t.common.expand}`}
+                    className="flex w-full min-w-0 items-center gap-3 text-left"
+                  >
+                    <span data-calories className="shrink-0 whitespace-nowrap text-xs sm:text-sm font-extrabold tabular-nums text-[var(--text)]">
+                      {recipe.calories} <span className="text-[11px] font-semibold text-[var(--muted)]">kcal/100{recipe.unit}</span>
+                    </span>
+                    <MacroPills carbs={recipe.carbs} protein={recipe.protein} fat={recipe.fat} stretch />
+                  </button>
+
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
                       <div className="pt-1 space-y-2.5 border-t border-[var(--border)]">
-                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
-                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
-                            <span className="text-[10px] font-bold block">C</span>
+                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums pt-2">
+                          <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${recipe.carbs ?? '—'} g`} title={t.macros.carbs}>
                             <span className="text-xs font-extrabold">{recipe.carbs ?? '—'}g</span>
                           </div>
-                          <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
-                            <span className="text-[10px] font-bold block">P</span>
+                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14] flex items-center justify-center" role="img" aria-label={`${t.macros.protein}: ${recipe.protein ?? '—'} g`} title={t.macros.protein}>
                             <span className="text-xs font-extrabold">{recipe.protein ?? '—'}g</span>
                           </div>
-                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
-                            <span className="text-[10px] font-bold block">F</span>
+                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582] flex items-center justify-center" role="img" aria-label={`${t.macros.fat}: ${recipe.fat ?? '—'} g`} title={t.macros.fat}>
                             <span className="text-xs font-extrabold">{recipe.fat ?? '—'}g</span>
                           </div>
                           <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
@@ -743,7 +826,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                             {t.prebuilt.recipeIngredients.replace('{count}', String(recipe.recipeIngredients?.length ?? 0))}
                           </span>
                           {recipe.recipeIngredients && recipe.recipeIngredients.length > 0 ? (
-                            <div className="bg-[var(--inset)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                            <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                               {recipe.recipeIngredients.map((ing, idx) => {
                                 const food = allFoods.find((f) => f.id === ing.foodId);
                                 const kcal = food ? Math.round((food.calories * ing.amount) / 100) : null;
@@ -777,14 +860,24 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             })}
           </div>
         )}
+        </div>
+        </div>
       </section>
 
-      {/* ============ FOODS (mint section, cream buttons) ============ */}
-      <section className="bg-[#C9EFD3] rounded-3xl p-4 sm:p-5 space-y-3">
-        <div>
-          <h2 className="text-base sm:text-lg font-extrabold text-[#174A2B]">{t.database.title}</h2>
-          <p className="text-xs font-medium text-[#174A2B]/80">{t.settings.foodsDesc}</p>
-        </div>
+      {/* ============ FOODS ============ */}
+      <section data-library-section="foods" className="bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl p-4 sm:p-5 space-y-3">
+        <LibrarySectionHeader
+          title={t.database.title}
+          tone="foods"
+          summary={t.settings.foodsDesc}
+          icon={<BookOpen size={16} />}
+          createLabel={t.database.createCustom}
+          onCreate={() => setIsCustomFoodOpen(true)}
+          open={sectionsOpen.foods}
+          onToggle={() => toggleSection('foods')}
+        />
+        <div className="accordion-grid" data-open={sectionsOpen.foods} inert={!sectionsOpen.foods}>
+        <div className="accordion-inner">
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -811,7 +904,24 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             <span className="truncate">{t.database.browseAll}</span>
           </button>
         </div>
+        </div>
+        </div>
       </section>
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        message={
+          pendingDelete
+            ? (pendingDelete.kind === 'meal' ? t.common.confirmDeleteMeal : t.common.confirmDeleteRecipe).replace('{name}', pendingDelete.name)
+            : ''
+        }
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (pendingDelete?.kind === 'meal') deletePreBuiltMeal(pendingDelete.id);
+          else if (pendingDelete) deleteCustomFood(pendingDelete.id);
+          setPendingDelete(null);
+        }}
+      />
 
       {!hideDock && !isCreateOpen && !isRecipeOpen && !activeMealToLog && !activeRecipeToLog && (
         <ActionDock
@@ -841,7 +951,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 onClick={() => setSelectedSlot(slot.id)}
                 className={`pressable p-3 rounded-2xl border text-xs font-bold text-center ${
                   selectedSlot === slot.id
-                    ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+                    ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
@@ -852,7 +962,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             onClick={confirmLogToSlot}
-            className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+            className="pressable w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
@@ -879,7 +989,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 onClick={() => setRecipeLogSlot(slot.id)}
                 className={`pressable p-3 rounded-2xl border text-xs font-bold text-center ${
                   recipeLogSlot === slot.id
-                    ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+                    ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
@@ -900,7 +1010,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               }
             }}
             disabled={recipeLogAmount <= 0}
-            className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
+            className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
@@ -1172,16 +1282,16 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <span className="text-xs font-extrabold tabular-nums text-[var(--text)]">
                     {t.prebuilt.ingredientsCount.replace('{count}', String(recipeIngs.length))} · {recipeTotals.grams}g
                   </span>
-                  <span className="text-xs font-extrabold tabular-nums px-2 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582]">
-                    {recipeTotals.kcal100} kcal/100g
-                  </span>
                 </div>
-                <div className="grid grid-cols-5 gap-1 text-center text-[10px] font-bold tabular-nums">
-                  <span className="bg-[#FAE0B4] text-[#7D4E14] rounded-lg py-1">C {recipeTotals.c100}</span>
-                  <span className="bg-[#F6D0D0] text-[#7A2727] rounded-lg py-1">P {recipeTotals.p100}</span>
-                  <span className="bg-[#E2D6FF] text-[#4D3582] rounded-lg py-1">F {recipeTotals.f100}</span>
-                  <span className="bg-[#CFE7FE] text-[#183B5E] rounded-lg py-1">Fib {recipeTotals.fib100}</span>
-                  <span className="bg-[var(--surface)] text-[var(--muted)] rounded-lg py-1">Salt {recipeTotals.salt100}</span>
+                <div data-nutrition-row className="flex min-w-0 items-center gap-3">
+                  <span data-calories className="shrink-0 whitespace-nowrap text-xs font-extrabold tabular-nums text-[var(--text)]">
+                    {recipeTotals.kcal100} <span className="text-[11px] font-semibold text-[var(--muted)]">kcal/100g</span>
+                  </span>
+                  <MacroPills carbs={recipeTotals.c100} protein={recipeTotals.p100} fat={recipeTotals.f100} stretch />
+                </div>
+                <div className="grid grid-cols-2 gap-1 text-center text-[10px] font-bold tabular-nums">
+                  <span className="bg-[#CFE7FE] text-[#183B5E] rounded-lg py-1">{t.macros.fiber} {recipeTotals.fib100}</span>
+                  <span className="bg-[var(--surface)] text-[var(--muted)] rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}</span>
                 </div>
                 <div className="space-y-1.5 max-h-32 overflow-y-auto">
                   {recipeIngs.map((ing, idx) => {

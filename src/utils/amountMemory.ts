@@ -8,9 +8,10 @@ function read(): Record<string, number> {
   }
 }
 
-export function getLastAmount(foodId: string): number {
+/** Last portion used for a key (food id, or `activity:<id>` for activity minutes). */
+export function getLastAmount(foodId: string, fallback = 100): number {
   const v = read()[foodId];
-  return typeof v === 'number' && v > 0 ? v : 100;
+  return typeof v === 'number' && v > 0 ? v : fallback;
 }
 
 export function setLastAmount(foodId: string, amount: number) {

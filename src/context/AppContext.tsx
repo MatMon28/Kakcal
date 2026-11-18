@@ -21,6 +21,7 @@ import {
   Settings,
   Theme,
   UserProfile,
+  CustomActivityDef,
 } from '../types';
 import { VERIFIED_FOODS } from '../data/verifiedFoods';
 import { INITIAL_PREBUILT_MEALS } from '../data/samplePreBuiltMeals';
@@ -57,6 +58,8 @@ interface AppContextType {
   deleteCustomFood: (foodId: string) => void;
   favoriteFoods: string[];
   toggleFavoriteFood: (foodId: string) => void;
+  favoriteActivities: string[];
+  toggleFavoriteActivity: (activityId: string) => void;
   currentDayLog: DayLog;
   logFoodItem: (
     mealSlot: MealSlotId,
@@ -136,8 +139,9 @@ interface AppContextType {
   setPeriodSelectedDate: (d: string) => void;
   isPeriodSheetOpen: boolean;
   setIsPeriodSheetOpen: (open: boolean) => void;
-  customActivities: string[];
-  addCustomActivity: (name: string) => void;
+  customActivities: CustomActivityDef[];
+  addCustomActivity: (name: string, met?: number) => CustomActivityDef;
+  removeCustomActivity: (id: string) => void;
   logWater: (ml: number, date?: string) => void;
   removeWaterEntry: (id: string, date?: string) => void;
   logCustom: (buttonId: string, value: number | boolean, date?: string) => void;
@@ -150,6 +154,26 @@ interface AppContextType {
   exportDataJson: () => string;
   importDataJson: (jsonStr: string) => boolean;
   allDayLogs: Record<string, DayLog>;
+}
+
+/** Accepts the legacy `string[]` format as well as `CustomActivityDef[]`. */
+function normalizeCustomActivities(raw: unknown): CustomActivityDef[] {
+  if (!Array.isArray(raw)) return [];
+  const out: CustomActivityDef[] = [];
+  raw.forEach((item, index) => {
+    if (typeof item === 'string' && item.trim()) {
+      out.push({ id: `ca-legacy-${index}-${item.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-')}`, name: item.trim(), met: 5, createdAt: '' });
+    } else if (item && typeof item === 'object' && typeof (item as CustomActivityDef).name === 'string') {
+      const d = item as Partial<CustomActivityDef>;
+      out.push({
+        id: typeof d.id === 'string' && d.id ? d.id : `ca-legacy-${index}`,
+        name: d.name!.trim(),
+        met: typeof d.met === 'number' && d.met > 0 ? d.met : 5,
+        createdAt: typeof d.createdAt === 'string' ? d.createdAt : '',
+      });
+    }
+  });
+  return out;
 }
 
 const STORAGE_KEYS = {
@@ -985,6 +1009,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           favoriteFoods: Array.isArray(p.favoriteFoods)
             ? p.favoriteFoods.filter((id: unknown): id is string => typeof id === 'string')
             : [],
+          favoriteActivities: Array.isArray(p.favoriteActivities)
+            ? p.favoriteActivities.filter((id: unknown): id is string => typeof id === 'string')
+            : [],
           customButtons: Array.isArray(p.customButtons)
             ? p.customButtons.map((b: { icon?: string; showStats?: boolean }) => ({
                 ...b,
@@ -1005,28 +1032,41 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       hidePeriodCustomized: false,
       quickFoods: DEFAULT_QUICK_FOODS,
       favoriteFoods: DEMO_MODE ? DEMO_FAVORITE_FOODS : [],
+      favoriteActivities: [],
       customButtons: DEMO_MODE ? DEMO_CUSTOM_BUTTONS : [],
     };
   });
 
   // Custom activity names (suggested next time)
-  const [customActivities, setCustomActivities] = useState<string[]>(() => {
+  // Saved custom activities (name + MET). Older installs stored plain names: migrate them to 5 MET.
+  const [customActivities, setCustomActivities] = useState<CustomActivityDef[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.CUSTOM_ACTIVITIES);
-      return saved ? JSON.parse(saved) : [];
+      return saved ? normalizeCustomActivities(JSON.parse(saved)) : [];
     } catch {
       return [];
     }
   });
 
-  const addCustomActivity = (name: string) => {
+  const persistCustomActivities = (next: CustomActivityDef[]) => {
+    localStorage.setItem(STORAGE_KEYS.CUSTOM_ACTIVITIES, JSON.stringify(next));
+    return next;
+  };
+
+  /** Saves (or updates) a custom activity so it can be searched under Activity → Other. */
+  const addCustomActivity = (name: string, met = 5): CustomActivityDef => {
     const n = name.trim();
-    if (!n) return;
-    setCustomActivities((prev) => {
-      const next = [n, ...prev.filter((x) => x.toLowerCase() !== n.toLowerCase())].slice(0, 12);
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_ACTIVITIES, JSON.stringify(next));
-      return next;
-    });
+    const safeMet = Number.isFinite(met) && met > 0 ? Math.round(met * 10) / 10 : 5;
+    const existing = customActivities.find((x) => x.name.toLowerCase() === n.toLowerCase());
+    const def: CustomActivityDef = existing
+      ? { ...existing, met: safeMet }
+      : { id: `ca-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, name: n, met: safeMet, createdAt: new Date().toISOString() };
+    setCustomActivities((prev) => persistCustomActivities([def, ...prev.filter((x) => x.id !== def.id)]));
+    return def;
+  };
+
+  const removeCustomActivity = (id: string) => {
+    setCustomActivities((prev) => persistCustomActivities(prev.filter((x) => x.id !== id)));
   };
 
   const toggleFavoriteFood = (foodId: string) => {
@@ -1037,6 +1077,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         favoriteFoods: current.includes(foodId)
           ? current.filter((id) => id !== foodId)
           : [foodId, ...current.filter((id) => id !== foodId)],
+      };
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const toggleFavoriteActivity = (activityId: string) => {
+    setSettingsState((prev) => {
+      const current = prev.favoriteActivities ?? [];
+      const next: Settings = {
+        ...prev,
+        favoriteActivities: current.includes(activityId)
+          ? current.filter((id) => id !== activityId)
+          : [activityId, ...current.filter((id) => id !== activityId)],
       };
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
       return next;
@@ -1348,6 +1402,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       preBuiltMeals,
       settings,
       periodData,
+      customActivities,
     };
     return JSON.stringify(data, null, 2);
   };
@@ -1387,6 +1442,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (hidePeriod) {
           setActiveTabState((tab) => (tab === 'period' ? 'today' : tab));
         }
+      }
+      if (Array.isArray(data.customActivities)) {
+        setCustomActivities(persistCustomActivities(normalizeCustomActivities(data.customActivities)));
       }
       if (data.periodData && typeof data.periodData === 'object') {
         try {
@@ -1448,6 +1506,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCustomFood,
         favoriteFoods: settings.favoriteFoods ?? [],
         toggleFavoriteFood,
+        favoriteActivities: settings.favoriteActivities ?? [],
+        toggleFavoriteActivity,
         currentDayLog,
         logFoodItem,
         removeLoggedFoodItem,
@@ -1509,6 +1569,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setIsPeriodSheetOpen,
         customActivities,
         addCustomActivity,
+        removeCustomActivity,
         logWater,
         removeWaterEntry,
         logCustom,

@@ -409,13 +409,13 @@ export const BarcodeLookupModal: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
-              <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
+              <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670]">
                 <span className="text-[10px] font-bold block">C</span>
                 <span className="text-xs font-extrabold">
                   {fetchedProduct.carbs !== null ? `${fetchedProduct.carbs}g` : '—'}
                 </span>
               </div>
-              <div className="bg-[#F6D0D0] p-1.5 rounded-2xl text-[#7A2727]">
+              <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
                 <span className="text-[10px] font-bold block">P</span>
                 <span className="text-xs font-extrabold">
                   {fetchedProduct.protein !== null ? `${fetchedProduct.protein}g` : '—'}

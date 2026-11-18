@@ -354,8 +354,8 @@ export const AddFoodModal: React.FC = () => {
           <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
             {(
               [
-                ['C', preview.carbs, 'bg-[#FAE0B4] text-[#7D4E14]'],
-                ['P', preview.protein, 'bg-[#F6D0D0] text-[#7A2727]'],
+                ['C', preview.carbs, 'bg-[#CFE7FE] text-[#1A4670]'],
+                ['P', preview.protein, 'bg-[#FAE0B4] text-[#7D4E14]'],
                 ['F', preview.fat, 'bg-[#E2D6FF] text-[#4D3582]'],
                 [t.macros.fiber, preview.fiber, 'bg-[var(--inset)] text-[var(--muted)]'],
                 [t.macros.salt, preview.salt, 'bg-[var(--inset)] text-[var(--muted)]'],

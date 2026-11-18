@@ -245,13 +245,13 @@ export const CustomFoodModal: React.FC = () => {
 
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] mb-1">
+            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#CFE7FE] text-[#1A4670] mb-1">
               {t.macros.carbs}
             </label>
             {numField(carbsStr, setCarbsStr, 'g')}
           </div>
           <div>
-            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#F6D0D0] text-[#7A2727] mb-1">
+            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] mb-1">
               {t.macros.protein}
             </label>
             {numField(proteinStr, setProteinStr, 'g')}

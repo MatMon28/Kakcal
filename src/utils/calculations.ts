@@ -54,6 +54,29 @@ export function calculateActivityCalories(
 }
 
 /**
+ * Resting energy per hour for this person (kcal/h). Derived from the Mifflin–St Jeor resting rate,
+ * so it reflects the profile's weight, height, age and sex.
+ */
+export function restingKcalPerHour(profile: UserProfile): number {
+  return calculateBMR(profile) / 24;
+}
+
+/**
+ * Energy burned by a database activity (MET values from the 2024 Adult Compendium).
+ *
+ *   kcal = MET × resting kcal per hour × hours
+ *
+ * The Compendium defines 1 MET as resting energy use. Instead of the one-size-fits-all
+ * "1 MET = 1 kcal per kg per hour", the personal resting rate is used so the result also
+ * depends on height, age and sex (e.g. a smaller, older or female profile burns less than the
+ * flat per-kg estimate). Like Walking/Running, the value is gross and the Today page adds BMR.
+ */
+export function calculateMetCalories(met: number, durationMin: number, profile: UserProfile): number {
+  if (met <= 0 || durationMin <= 0) return 0;
+  return Math.round(met * restingKcalPerHour(profile) * (durationMin / 60));
+}
+
+/**
  * Calculate Food Thermogenesis (TEF):
  * Macro-weighted:
  * 25% of protein kcal + 7% of carb kcal + 2% of fat kcal

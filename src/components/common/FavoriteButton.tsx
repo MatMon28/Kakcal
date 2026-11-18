@@ -3,15 +3,19 @@ import { Star } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 interface FavoriteButtonProps {
+  /** Food id, or activity id when `kind="activity"`. */
   foodId: string;
   /** `row` sits in a list row, `card` in a catalog card corner. */
   variant?: 'row' | 'card';
+  /** Which favourite list the star toggles. Defaults to foods. */
+  kind?: 'food' | 'activity';
 }
 
-/** Star toggle for the favourite-food list. Results reorder so these appear first. */
-export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant = 'row' }) => {
-  const { favoriteFoods, toggleFavoriteFood, t } = useApp();
-  const active = favoriteFoods.includes(foodId);
+/** Star toggle for the favourite-food / favourite-activity lists. Results reorder so these appear first. */
+export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant = 'row', kind = 'food' }) => {
+  const { favoriteFoods, toggleFavoriteFood, favoriteActivities, toggleFavoriteActivity, t } = useApp();
+  const active = (kind === 'activity' ? favoriteActivities : favoriteFoods).includes(foodId);
+  const toggle = kind === 'activity' ? toggleFavoriteActivity : toggleFavoriteFood;
   const size = variant === 'card' ? 'size-7' : 'size-8';
 
   return (
@@ -19,7 +23,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant 
       type="button"
       onClick={(event) => {
         event.stopPropagation();
-        toggleFavoriteFood(foodId);
+        toggle(foodId);
       }}
       aria-pressed={active}
       aria-label={active ? t.favorites.remove : t.favorites.add}

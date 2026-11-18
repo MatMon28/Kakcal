@@ -83,7 +83,8 @@ export interface PreBuiltMeal {
   createdAt: string;
 }
 
-export type ActivityType = 'walking' | 'running' | 'custom';
+// 'other' = an entry picked from the activities database (src/data/activities.ts) via Activity → Other.
+export type ActivityType = 'walking' | 'running' | 'other' | 'custom';
 
 export type ActivityLogMethod = 'distance' | 'duration';
 
@@ -97,7 +98,17 @@ export interface ActivityLog {
   caloriesBurned: number;
   timestamp: string;
   notes?: string;
-  customName?: string;
+  customName?: string; // custom activities; for 'other' it is an English-name fallback
+  activityId?: string; // 'other': id in the activities database
+  met?: number; // 'other': MET value used for the calculation (kept so old logs never change)
+}
+
+/** User-created activity. Saved from Activity → Custom and offered again under Activity → Other. */
+export interface CustomActivityDef {
+  id: string;
+  name: string;
+  met: number; // derived from the calories/duration entered when it was created (5 MET if none)
+  createdAt: string;
 }
 
 export type PoopSize = 'very_little' | 'little' | 'normal' | 'a_lot' | 'huge';
@@ -200,6 +211,7 @@ export interface Settings {
   hidePeriodCustomized?: boolean;
   quickFoods: string[]; // food ids for the 3 quick-add shortcut buttons
   favoriteFoods: string[]; // starred foods: listed first on every food search
+  favoriteActivities: string[]; // starred activities (database ids): listed first in the activity search
   customButtons: CustomButtonDef[]; // user-defined quick-add trackers (one button, picker if several)
 }
 

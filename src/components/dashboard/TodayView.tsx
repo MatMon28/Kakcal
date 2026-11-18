@@ -11,7 +11,7 @@ import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { useApp } from '../../context/AppContext';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { MealSlotId } from '../../types';
-import { ChevronsDownUp, ChevronsUpDown, Columns2, LayoutList, ListTree } from 'lucide-react';
+import { Columns2, LayoutList, ListTree } from 'lucide-react';
 
 const MEAL_SLOTS: MealSlotId[] = [
   'breakfast',
@@ -23,6 +23,8 @@ const MEAL_SLOTS: MealSlotId[] = [
 ];
 
 type MealLayout = 'compact' | 'normal' | 'expanded';
+type TrackerId = 'activity' | 'water' | 'poop' | 'custom';
+const TRACKERS: TrackerId[] = ['activity', 'water', 'poop', 'custom'];
 
 export const TodayView: React.FC = () => {
   const { t } = useApp();
@@ -31,12 +33,23 @@ export const TodayView: React.FC = () => {
   // Meal expansion and the chosen layout are remembered independently.
   const [openSlots, setOpenSlots] = usePersistentState<MealSlotId[]>('kcak_today_meals_open', []);
   const [layout, setLayout] = usePersistentState<MealLayout>('kcak_today_meal_layout', 'normal');
-  const allOpen = layout === 'expanded' || openSlots.length === MEAL_SLOTS.length;
+  const [openTrackers, setOpenTrackers] = usePersistentState<TrackerId[]>('kcak_today_trackers_open', []);
+  const toggleTracker = (id: TrackerId) => {
+    // In Expanded everything is open; closing one card switches to Normal and keeps the others open.
+    if (layout === 'expanded') {
+      setLayout('normal');
+      setOpenSlots([...MEAL_SLOTS]);
+      setOpenTrackers(TRACKERS.filter((x) => x !== id));
+      return;
+    }
+    setOpenTrackers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
 
   const toggleSlot = (slot: MealSlotId) => {
     if (layout === 'expanded') {
       setLayout('normal');
       setOpenSlots(MEAL_SLOTS.filter((id) => id !== slot));
+      setOpenTrackers([...TRACKERS]);
       return;
     }
     setOpenSlots((prev) =>
@@ -44,20 +57,13 @@ export const TodayView: React.FC = () => {
     );
   };
 
-  const toggleAll = () => {
-    if (allOpen) {
-      setLayout('normal');
-      setOpenSlots([]);
-    } else {
-      setLayout('normal');
-      setOpenSlots([...MEAL_SLOTS]);
-    }
-  };
-
   const chooseLayout = (next: MealLayout) => {
     // Compact starts as a genuinely compact two-per-row overview. Individual
     // cards can still be opened afterwards for amount editing.
-    if (next === 'compact') setOpenSlots([]);
+    if (next === 'compact') {
+      setOpenSlots([]);
+      setOpenTrackers([]);
+    }
     setLayout(next);
   };
 
@@ -71,10 +77,10 @@ export const TodayView: React.FC = () => {
     <>
       <div className="space-y-3.5">
         <DayNavigator onInspectDay={setInspectedDay} />
-        <EnergyBalanceCards />
+        <EnergyBalanceCards compact={layout === 'compact'} />
         <MacroNutrientsOverview />
 
-        {/* Persistent three-way meal layout + existing collapse control */}
+        {/* The three layout options replace the redundant Expand all / Collapse all action. */}
         <div className="flex flex-wrap items-center justify-between gap-2 px-1">
           <div
             role="group"
@@ -101,16 +107,6 @@ export const TodayView: React.FC = () => {
             ))}
           </div>
 
-          {layout !== 'expanded' && (
-            <button
-              type="button"
-              onClick={toggleAll}
-              className="pressable inline-flex min-h-8 items-center gap-1.5 px-2.5 rounded-full text-[11px] font-extrabold text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--surface)]"
-            >
-              {allOpen ? <ChevronsDownUp size={13} /> : <ChevronsUpDown size={13} />}
-              <span>{allOpen ? t.mealSlots.collapseAll : t.mealSlots.expandAll}</span>
-            </button>
-          )}
         </div>
 
         <div
@@ -138,22 +134,25 @@ export const TodayView: React.FC = () => {
           })}
         </div>
 
-        {/* Compact layout also compacts the tracker cards into a two-column grid */}
-        {layout === 'compact' ? (
-          <div className="grid grid-cols-2 gap-2.5 items-start">
-            <ActivityCardSummary compact />
-            <WaterCard compact />
-            <PoopCard compact />
-            <CustomButtonsCard compact />
-          </div>
-        ) : (
-          <>
-            <ActivityCardSummary />
-            <WaterCard />
-            <PoopCard />
-            <CustomButtonsCard />
-          </>
-        )}
+        {/* Tracker cards share the meal-card expand/collapse behaviour: collapsed = one summary line, expanded = full list.
+            Compact puts them in the same two-column grid (an open card spans both columns). */}
+        <div
+          className={`grid items-start ${
+            layout === 'compact' ? 'grid-cols-2 gap-2.5 md:grid-cols-3' : 'grid-cols-1 md:grid-cols-2 gap-3.5'
+          }`}
+        >
+          {TRACKERS.map((id) => {
+            const open = layout === 'expanded' || openTrackers.includes(id);
+            const props = { compact: layout === 'compact', open, onToggle: () => toggleTracker(id) };
+            const Card =
+              id === 'activity' ? ActivityCardSummary : id === 'water' ? WaterCard : id === 'poop' ? PoopCard : CustomButtonsCard;
+            return (
+              <div key={id} className={layout === 'compact' && open ? 'col-span-2 md:col-span-1' : undefined}>
+                <Card {...props} />
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <PeriodDayInfoModal date={inspectedDay} onClose={() => setInspectedDay(null)} />
