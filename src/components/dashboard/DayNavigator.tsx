@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { formatDateDisplay, addDaysToDateString, getTodayDateString } from '../../utils/formatters';
+import { formatDateDisplay, addDaysToDateString, getTodayDateString, dateFormatter } from '../../utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar, CornerUpLeft } from 'lucide-react';
 
 interface DayNavigatorProps {
@@ -41,15 +41,18 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
     return () => window.removeEventListener('keydown', onKey);
   }, [calOpen]);
 
+  // Only needed by the calendar popover: skip the Intl work on the Today page's first paint.
   const weekdayLabels = useMemo(() => {
+    if (!calOpen) return [];
+    const narrow = dateFormatter(locale, { weekday: 'narrow' });
     const base = new Date(2024, 0, 7); // Sunday
     const labels = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(base);
       d.setDate(base.getDate() + i);
-      return d.toLocaleDateString(locale, { weekday: 'narrow' }).toUpperCase();
+      return narrow.format(d).toUpperCase();
     });
     return mondayFirst ? [...labels.slice(1), labels[0]] : labels;
-  }, [locale, mondayFirst]);
+  }, [locale, mondayFirst, calOpen]);
 
   const dayHasData = (ds: string) => {
     const log = allDayLogs[ds];
@@ -100,10 +103,9 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
   const rawFirst = new Date(viewYear, viewMonth, 1).getDay();
   const firstDay = mondayFirst ? (rawFirst + 6) % 7 : rawFirst;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString(locale, {
-    month: 'long',
-    year: 'numeric',
-  });
+  const monthLabel = calOpen
+    ? dateFormatter(locale, { month: 'long', year: 'numeric' }).format(new Date(viewYear, viewMonth, 1))
+    : '';
 
   const cells: (number | null)[] = [
     ...Array.from({ length: firstDay }, () => null),

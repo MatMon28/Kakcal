@@ -79,13 +79,13 @@ export const Tabs: React.FC = () => {
   };
 
   return (
-    <div className="flex items-center justify-center pt-2.5 pb-2">
+    <div className="flex items-center justify-center pt-1.5 pb-1.5">
       <div className="relative max-w-full">
         <nav
           ref={scrollRef}
           onScroll={checkScroll}
           aria-label="Primary"
-          className="inline-flex items-center gap-1 p-1.5 bg-[var(--surface)] border border-[var(--border)] rounded-full max-w-full overflow-x-auto no-scrollbar"
+          className="inline-flex items-center gap-1 p-1 bg-[var(--surface)] border border-[var(--border)] rounded-full max-w-full overflow-x-auto no-scrollbar"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -102,9 +102,9 @@ export const Tabs: React.FC = () => {
                 className={`pressable flex items-center justify-center rounded-full text-xs sm:text-sm font-bold whitespace-nowrap ${
                   isActive
                     ? settings.ultraMinimal
-                      ? `w-9 h-9 shrink-0 ${item.activeClass}`
-                      : `gap-1.5 ${item.activeClass} px-4 sm:px-5 py-2`
-                    : 'w-9 h-9 text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
+                      ? `w-8 h-8 shrink-0 ${item.activeClass}`
+                      : `h-8 gap-1.5 ${item.activeClass} px-3.5 sm:px-4`
+                    : 'w-8 h-8 text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
                 }`}
               >
                 <Icon size={16} />

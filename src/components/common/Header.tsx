@@ -16,7 +16,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[var(--bg)]/95 backdrop-blur-md border-b border-[var(--border)] px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1">
+    <header className="sticky top-0 z-40 bg-[var(--bg)]/95 sm:backdrop-blur-md border-b border-[var(--border)] px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1">
       <div className="max-w-4xl mx-auto">
         {/* Profile (left) · app name (top center) · settings (right) */}
         <div className="grid grid-cols-[1fr_auto_1fr] items-center">
@@ -24,11 +24,11 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsProfileOpen(true)}
-              className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+              className="pressable w-11 h-11 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
               title={t.profile.title}
               aria-label={t.profile.title}
             >
-              <User size={16} />
+              <User size={21} />
             </button>
           </div>
 
@@ -46,11 +46,11 @@ export const Header: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+              className="pressable w-11 h-11 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
               title={t.settings.title}
               aria-label={t.settings.title}
             >
-              <Settings size={17} />
+              <Settings size={22} />
             </button>
           </div>
         </div>

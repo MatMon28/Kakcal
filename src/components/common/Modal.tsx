@@ -128,9 +128,11 @@ export const Modal: React.FC<ModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Phones: a sheet anchored to the bottom of the visual viewport (so it stays above the
+  // keyboard). Wider screens: centred. The backdrop blur is desktop-only; it is costly on mobile GPUs.
   return createPortal(
-    <div ref={viewportRef} className="dialog-viewport fixed z-50 flex items-center justify-center" data-no-swipe>
-      <div className="absolute inset-0 bg-black/45 backdrop-blur-xs anim-backdrop" aria-hidden="true" onClick={onClose} />
+    <div ref={viewportRef} className="dialog-viewport fixed z-50 flex items-end sm:items-center justify-center" data-no-swipe>
+      <div className="absolute inset-0 bg-black/45 sm:backdrop-blur-xs anim-backdrop" aria-hidden="true" onClick={onClose} />
       <div
         ref={panelRef}
         role="dialog"

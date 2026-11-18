@@ -6,6 +6,23 @@
     <meta name="theme-color" content="#EFE9DD" />
     <meta name="description" content="Kakcalculator — Daily Energy Intake & Expenditure Tracker" />
         <title>Kakcalculator — Daily Nutrition &amp; Wellness</title>
+    <script>
+      // Apply the saved theme before the first paint. React sets data-theme after it mounts,
+      // which left a light flash on every launch for Lite Dark / Dark users and made the
+      // start look slower. The colours mirror --bg in src/index.css.
+      (function () {
+        try {
+          var theme = JSON.parse(localStorage.getItem('kcalsync_settings') || '{}').theme;
+          if (theme !== 'dark' && theme !== 'lite-dark') return;
+          var root = document.documentElement;
+          root.setAttribute('data-theme', theme);
+          var bg = theme === 'dark' ? '#13151A' : '#272A33';
+          root.style.backgroundColor = bg;
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute('content', bg);
+        } catch (e) { /* storage may be unavailable; the app applies the theme after mount */ }
+      })();
+    </script>
   </head>
   <body class="antialiased selection:bg-[#C9EFD3] selection:text-[#164226] overflow-x-hidden">
     <div id="root"></div>

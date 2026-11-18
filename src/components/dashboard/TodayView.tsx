@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { EnergyBalanceCards } from './EnergyBalanceCards';
 import { DayNavigator } from './DayNavigator';
 import { MacroNutrientsOverview } from './MacroNutrientsOverview';
@@ -10,6 +10,7 @@ import { CustomButtonsCard } from './CustomButtonsCard';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { useApp } from '../../context/AppContext';
 import { usePersistentState } from '../../utils/usePersistentState';
+import { slideIn } from '../../utils/motion';
 import { MealSlotId } from '../../types';
 import { Columns2, LayoutList, ListTree } from 'lucide-react';
 
@@ -27,7 +28,17 @@ type TrackerId = 'activity' | 'water' | 'poop' | 'custom';
 const TRACKERS: TrackerId[] = ['activity', 'water', 'poop', 'custom'];
 
 export const TodayView: React.FC = () => {
-  const { settings, t } = useApp();
+  const { settings, t, selectedDate } = useApp();
+
+  // Changing the day slides the day's content sideways (forward in time = from the right).
+  const dayPanel = useRef<HTMLDivElement>(null);
+  const shownDate = useRef(selectedDate);
+  useLayoutEffect(() => {
+    if (shownDate.current === selectedDate) return;
+    const forward = selectedDate > shownDate.current;
+    shownDate.current = selectedDate;
+    slideIn(dayPanel.current, forward ? 1 : -1);
+  }, [selectedDate]);
   const ultraMinimal = settings.ultraMinimal;
   const [inspectedDay, setInspectedDay] = useState<string | null>(null);
 
@@ -89,6 +100,7 @@ export const TodayView: React.FC = () => {
     <>
       <div className={ultraMinimal ? 'space-y-2.5' : 'space-y-3.5'}>
         <DayNavigator onInspectDay={setInspectedDay} />
+        <div ref={dayPanel} className={ultraMinimal ? 'space-y-2.5' : 'space-y-3.5'}>
         <EnergyBalanceCards compact={displayLayout === 'compact'} />
         <MacroNutrientsOverview />
 
@@ -167,6 +179,7 @@ export const TodayView: React.FC = () => {
               </div>
             );
           })}
+        </div>
         </div>
       </div>
 

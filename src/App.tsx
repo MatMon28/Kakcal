@@ -237,6 +237,17 @@ function MainContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
+  // The page slides in from the side it is coming from: forward towards Statistics (or into the
+  // catalog), back towards Today. Stored per tab so re-renders never restart the animation.
+  const pageMotion = useRef({ tab: activeTab, className: 'anim-page-forward' });
+  if (pageMotion.current.tab !== activeTab) {
+    const order = (tab: ActiveTab) => (tab === 'database' ? MAIN_TABS.length : MAIN_TABS.indexOf(tab));
+    pageMotion.current = {
+      tab: activeTab,
+      className: order(activeTab) >= order(pageMotion.current.tab) ? 'anim-page-forward' : 'anim-page-back',
+    };
+  }
+
   const touch = useRef<{ x: number; y: number; id: number } | null>(null);
   const onTouchStart = (e: TouchEvent) => {
     touch.current = null;
@@ -334,7 +345,7 @@ function MainContent() {
         onTouchCancel={() => { touch.current = null; }}
         className={`flex-1 w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}
       >
-        <div key={activeTab} className="anim-page">
+        <div key={activeTab} className={pageMotion.current.className}>
           {activeTab === 'today' && <TodayView />}
           {activeTab === 'prebuilt' && <PreBuiltMealsView hideDock={anyModal} />}
           {activeTab === 'period' && periodShown && <PeriodView hideDock={anyModal} />}

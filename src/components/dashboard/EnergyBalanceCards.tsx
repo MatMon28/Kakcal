@@ -37,7 +37,8 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
             {netPositive && surplusPill}
           </div>
           <div className={`flex items-baseline gap-1 my-1 ${ultraMinimal ? 'justify-center text-center' : ''}`} aria-label={`${formatKcal(currentIntakeCalories)} kcal`}>
-            <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-intake-ink tracking-tight">
+            {/* key = value: a changed number re-mounts the span and plays the short settle-in. */}
+            <span key={currentIntakeCalories} className="anim-value text-2xl sm:text-3xl font-extrabold tabular-nums text-intake-ink tracking-tight">
               {formatKcal(currentIntakeCalories)}
             </span>
             {!compact && !ultraMinimal && <span className="text-xs font-semibold text-intake-accent">kcal</span>}
@@ -63,7 +64,7 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
             {!netPositive && deficitPill}
           </div>
           <div className={`flex items-baseline gap-1 my-1 ${ultraMinimal ? 'justify-center text-center' : ''}`} aria-label={`${formatKcal(currentExpenditure.totalExpenditure)} kcal`}>
-            <span className="text-2xl sm:text-3xl font-extrabold tabular-nums text-activity-ink tracking-tight">
+            <span key={currentExpenditure.totalExpenditure} className="anim-value text-2xl sm:text-3xl font-extrabold tabular-nums text-activity-ink tracking-tight">
               {formatKcal(currentExpenditure.totalExpenditure)}
             </span>
             {!compact && !ultraMinimal && <span className="text-xs font-semibold text-activity-accent">kcal</span>}

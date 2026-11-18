@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { PeriodStatus, pillMarkerFor, PillMarker } from '../../utils/period';
-import { addDaysToDateString, formatFullDate, getTodayDateString } from '../../utils/formatters';
+import { addDaysToDateString, formatFullDate, getTodayDateString, dateFormatter } from '../../utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, Heart } from 'lucide-react';
 
 /** Capsule marker (≥14px) used in calendar cells and the legend. */
@@ -106,10 +106,11 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
   const weekdayLabels = useMemo(() => {
     // 2024-01-07 is a Sunday
     const base = new Date(2024, 0, 7);
+    const short = dateFormatter(locale, { weekday: 'short' });
     const labels = Array.from({ length: 7 }, (_, i) => {
       const d = new Date(base);
       d.setDate(base.getDate() + i);
-      return d.toLocaleDateString(locale, { weekday: 'short' }).replace('.', '').slice(0, 3);
+      return short.format(d).replace('.', '').slice(0, 3);
     });
     return mondayFirst ? [...labels.slice(1), labels[0]] : labels;
   }, [locale, mondayFirst]);
@@ -117,7 +118,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
   const rawFirst = new Date(viewYear, viewMonth, 1).getDay();
   const firstOffset = mondayFirst ? (rawFirst + 6) % 7 : rawFirst;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const monthLabel = new Date(viewYear, viewMonth, 1).toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+  const monthLabel = dateFormatter(locale, { month: 'long', year: 'numeric' }).format(new Date(viewYear, viewMonth, 1));
   const cells: (number | null)[] = [
     ...Array.from({ length: firstOffset }, () => null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),

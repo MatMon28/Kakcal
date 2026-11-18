@@ -773,7 +773,7 @@ export const translations = {
       bristol1: 'Tipo 1 - Pecorelle dure',
       bristol2: 'Tipo 2 - Salsiccia e grumi',
       bristol3: 'Tipo 3 - Salsiccia con crepe',
-      bristol4: 'Tipo 4 - Lisa e morbida',
+      bristol4: 'Tipo 4 - Liscia e morbida',
       bristol5: 'Tipo 5 - Pezzi morbidi',
       bristol6: 'Tipo 6 - Poltiglia',
       bristol7: 'Tipo 7 - Liquida',

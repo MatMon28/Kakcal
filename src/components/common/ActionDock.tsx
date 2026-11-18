@@ -37,7 +37,7 @@ export function ActionDock({ label, actions }: {
             aria-label={action.label}
             aria-pressed={action.pressed}
             disabled={action.disabled}
-            className={`pressable size-11 min-[370px]:size-12 shrink-0 rounded-full flex items-center justify-center enabled:hover:brightness-95 disabled:opacity-50 ${action.tone}`}
+            className={`pressable size-12 min-[390px]:size-[3.25rem] shrink-0 rounded-full flex items-center justify-center [&_svg]:size-[22px] enabled:hover:brightness-95 disabled:opacity-50 ${action.tone}`}
           >
             {action.icon}
           </button>

@@ -1,4 +1,5 @@
 import type { CustomButtonDef, CustomQuantityEntry, DayLog, Language } from '../types';
+import { numberFormatter } from './formatters';
 
 function legacyEntry(date: string, trackerId: string, amount: number): CustomQuantityEntry {
   return { id: `legacy-${date}-${trackerId}`, amount };
@@ -24,7 +25,7 @@ export function getTrackerValue(day: DayLog | undefined, tracker: CustomButtonDe
 }
 
 export function formatTrackerAmount(value: number, language: Language): string {
-  return new Intl.NumberFormat(language === 'it' ? 'it-IT' : 'en-US', { maximumFractionDigits: 8 }).format(value);
+  return numberFormatter(language === 'it' ? 'it-IT' : 'en-US', { maximumFractionDigits: 8 }).format(value);
 }
 
 /** Migrate a legacy numeric total once; boolean trackers stay in the daily toggle map. */

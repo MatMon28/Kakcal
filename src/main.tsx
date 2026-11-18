@@ -1,7 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "@fontsource-variable/plus-jakarta-sans";
-import "@fontsource/nunito/latin-800.css";
+// Fonts: latin-only @font-face rules live in index.css (see the note there).
 import "./index.css";
 import App from "./App";
 import faviconUrl from "./assets/brand/kakcalculator-icon.svg";
