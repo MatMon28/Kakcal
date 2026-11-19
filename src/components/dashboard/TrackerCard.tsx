@@ -42,13 +42,16 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
   compact = false,
   children,
 }) => {
-  const { t } = useApp();
+  const { t, settings } = useApp();
   const palette = palettes[tone];
-  // Scope the palette to this card, so its text stays readable on pastels in all three themes.
-  const style = Object.fromEntries(Object.entries(palette).map(([name, value]) => [`--${name}`, value])) as React.CSSProperties;
+  // In Classic theme, scope the pastel palette to this card; in the 6 new themes, inherit the coherent theme tokens.
+  const style =
+    settings.themeStyle === 'classic'
+      ? (Object.fromEntries(Object.entries(palette).map(([name, value]) => [`--${name}`, value])) as React.CSSProperties)
+      : undefined;
 
   const badge = (
-    <div className={`${compact ? 'size-8 max-[359px]:size-7' : 'size-9'} rounded-full flex items-center justify-center shrink-0 bg-transparent text-[var(--text)]`}>
+    <div className={`kc-tracker-icon ${compact ? 'size-8 max-[359px]:size-7' : 'size-9'} rounded-full flex items-center justify-center shrink-0 bg-transparent text-[var(--text)]`}>
       {icon}
     </div>
   );

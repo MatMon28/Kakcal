@@ -241,7 +241,7 @@ export const HistoryView: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 gap-3 sm:gap-4">
-          <div role="group" aria-label={t.history.avgIntake} className={`bg-intake rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
+          <div role="group" aria-label={t.history.avgIntake} className={`kc-hero-intake bg-intake rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
             <div className="flex items-center justify-between gap-1 min-h-[22px]">
               <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.history.avgIntake}>
                 {ultraMinimal && (
@@ -253,7 +253,7 @@ export const HistoryView: React.FC = () => {
                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.history.avgIntake}</span>
               </span>
               {avgNetPos && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
+                <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
                   +{formatKcal(period.avgNet)}
                 </span>
               )}
@@ -262,12 +262,12 @@ export const HistoryView: React.FC = () => {
               <span className="text-2xl sm:text-3xl font-extrabold text-intake-ink">{formatKcal(period.avgIntake)}</span>
               {!ultraMinimal && <span className="text-xs font-semibold text-intake-accent">kcal</span>}
             </div>
-            <div className="w-full bg-intake-soft h-2.5 rounded-full overflow-hidden mt-3">
-              <div className="h-full rounded-full bg-intake-accent transition-[width] duration-500" style={{ width: `${period.avgIntake > 0 ? Math.max(5, avgIntakePct) : 0}%` }} />
+            <div className="kc-hero-track w-full bg-intake-soft h-2.5 rounded-full overflow-hidden mt-3">
+              <div className="kc-hero-fill h-full rounded-full bg-intake-accent transition-[width] duration-500" style={{ width: `${period.avgIntake > 0 ? Math.max(5, avgIntakePct) : 0}%` }} />
             </div>
           </div>
 
-          <div role="group" aria-label={t.history.avgExpenditure} className={`bg-activity rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
+          <div role="group" aria-label={t.history.avgExpenditure} className={`kc-hero-burned bg-activity rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
             <div className="flex items-center justify-between gap-1 min-h-[22px]">
               <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-activity-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-activity-accent'}`} title={t.history.avgExpenditure}>
                 {ultraMinimal && (
@@ -279,7 +279,7 @@ export const HistoryView: React.FC = () => {
                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.history.avgExpenditure}</span>
               </span>
               {!avgNetPos && (
-                <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-activity-accent text-activity-soft">
+                <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-activity-accent text-activity-soft">
                   {period.avgNet === 0 ? '0' : `-${formatKcal(Math.abs(period.avgNet))}`}
                 </span>
               )}
@@ -288,17 +288,17 @@ export const HistoryView: React.FC = () => {
               <span className="text-2xl sm:text-3xl font-extrabold text-activity-ink">{formatKcal(period.avgExpenditure)}</span>
               {!ultraMinimal && <span className="text-xs font-semibold text-activity-accent">kcal</span>}
             </div>
-            <div className="w-full bg-activity-soft h-2.5 rounded-full overflow-hidden mt-3">
-              <div className="h-full rounded-full bg-activity-accent transition-[width] duration-500" style={{ width: `${Math.max(5, avgExpPct)}%` }} />
+            <div className="kc-hero-track w-full bg-activity-soft h-2.5 rounded-full overflow-hidden mt-3">
+              <div className="kc-hero-fill h-full rounded-full bg-activity-accent transition-[width] duration-500" style={{ width: `${Math.max(5, avgExpPct)}%` }} />
             </div>
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 tabular-nums">
           {([
-            [t.history.avgCarbs, period.avgCarbs, 'bg-[#CFE7FE] text-[#1A4670]', 'text-[#0F3355]'],
-            [t.history.avgProtein, period.avgProtein, 'bg-[#FAE0B4] text-[#7D4E14]', 'text-[#2D1E0B]'],
-            [t.history.avgFat, period.avgFat, 'bg-[#E2D6FF] text-[#523A8C]', 'text-[#1F1636]'],
+            [t.history.avgCarbs, period.avgCarbs, 'kc-macro-carbs bg-[#CFE7FE] text-[#1A4670]', 'text-[#0F3355]'],
+            [t.history.avgProtein, period.avgProtein, 'kc-macro-protein bg-[#FAE0B4] text-[#7D4E14]', 'text-[#2D1E0B]'],
+            [t.history.avgFat, period.avgFat, 'kc-macro-fat bg-[#E2D6FF] text-[#523A8C]', 'text-[#1F1636]'],
           ] as const).map(([label, value, card, number]) => (
             <div key={label} role="group" aria-label={`${label}: ${value} g`} className={`${card} rounded-3xl ${ultraMinimal ? 'p-2.5' : 'p-3.5'} text-center`}>
               <span className={`${ultraMinimal ? 'sr-only' : 'text-[10px] font-bold uppercase block truncate'}`}>{label}</span>
@@ -315,7 +315,7 @@ export const HistoryView: React.FC = () => {
         <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />
 
         {!settings.hidePoop && (
-          <div className={`bg-[#FAE0B4] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
+          <div className={`kc-themed-card bg-[#FAE0B4] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
             <div className="flex items-center justify-between">
               {ultraMinimal ? <span className="inline-flex items-center text-[#7D4E14]" title={t.poop.poopsInPeriod}><PoopIcon size={15} /><span className="sr-only">{t.poop.poopsInPeriod}</span></span> : <span className="text-sm font-extrabold text-[#7D4E14]">{t.poop.poopsInPeriod}</span>}
               <span className="text-sm font-extrabold tabular-nums text-[#7D4E14]">

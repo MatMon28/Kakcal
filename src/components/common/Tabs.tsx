@@ -92,7 +92,7 @@ export const Tabs: React.FC = () => {
           ref={scrollRef}
           onScroll={checkScroll}
           aria-label="Primary"
-          className="inline-flex items-center gap-1 p-1 bg-[var(--surface)] border border-[var(--border)] rounded-full max-w-full overflow-x-auto no-scrollbar"
+          className="kc-nav-pill inline-flex items-center gap-1 p-1 bg-[var(--surface)] border border-[var(--border)] rounded-full max-w-full overflow-x-auto no-scrollbar"
         >
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -106,11 +106,11 @@ export const Tabs: React.FC = () => {
                 title={item.label}
                 aria-label={item.label}
                 aria-current={isActive ? 'page' : undefined}
-                className={`pressable flex items-center justify-center rounded-full text-xs sm:text-sm font-bold whitespace-nowrap ${
+                className={`kc-nav-tab pressable flex items-center justify-center rounded-full text-xs sm:text-sm font-bold whitespace-nowrap ${
                   isActive
                     ? settings.ultraMinimal
-                      ? `w-8 h-8 shrink-0 ${item.activeClass}`
-                      : `h-8 gap-1.5 ${item.activeClass} px-3.5 sm:px-4`
+                      ? `kc-nav-tab-active w-8 h-8 shrink-0 ${item.activeClass}`
+                      : `kc-nav-tab-active h-8 gap-1.5 ${item.activeClass} px-3.5 sm:px-4`
                     : 'w-8 h-8 text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
                 }`}
               >

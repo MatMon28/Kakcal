@@ -14,12 +14,12 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
 
   // The badge follows the dominant side; its sign and value are unchanged.
   const surplusPill = (
-    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
+    <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
       +{formatKcal(netBalance)}
     </span>
   );
   const deficitPill = (
-    <span className="px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-activity-accent text-activity-soft">
+    <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-activity-accent text-activity-soft">
       {netBalance === 0 ? '0' : `-${formatKcal(Math.abs(netBalance))}`}
     </span>
   );
@@ -27,7 +27,7 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
   return (
     <div data-energy-overview className="grid grid-cols-2 gap-3 sm:gap-4">
       {/* Intake */}
-      <div role="group" aria-label={`${t.energy.intake}: ${formatKcal(currentIntakeCalories)} kcal`} className={`bg-intake rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
+      <div role="group" aria-label={`${t.energy.intake}: ${formatKcal(currentIntakeCalories)} kcal`} className={`kc-hero-intake bg-intake rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
         <div>
           <div className={`flex items-center justify-between gap-1 ${ultraMinimal ? 'min-h-5' : 'mb-1 min-h-[22px]'}`}>
             <span className={`${ultraMinimal ? 'inline-flex items-center text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.energy.intake}>
@@ -45,16 +45,16 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
           </div>
         </div>
 
-        <div className="w-full bg-intake-soft h-2.5 rounded-full overflow-hidden mt-3">
+        <div className="kc-hero-track w-full bg-intake-soft h-2.5 rounded-full overflow-hidden mt-3">
           <div
-            className="h-full rounded-full transition-[width] duration-500 ease-out bg-intake-accent"
+            className="kc-hero-fill h-full rounded-full transition-[width] duration-500 ease-out bg-intake-accent"
             style={{ width: `${currentIntakeCalories > 0 ? Math.max(5, intakePct) : 0}%` }}
           />
         </div>
       </div>
 
       {/* Burned */}
-      <div role="group" aria-label={`${t.energy.expenditure}: ${formatKcal(currentExpenditure.totalExpenditure)} kcal`} className={`bg-activity rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
+      <div role="group" aria-label={`${t.energy.expenditure}: ${formatKcal(currentExpenditure.totalExpenditure)} kcal`} className={`kc-hero-burned bg-activity rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
         <div>
           <div className={`flex items-center justify-between gap-1 ${ultraMinimal ? 'min-h-5' : 'mb-1 min-h-[22px]'}`}>
             <span className={`${ultraMinimal ? 'inline-flex items-center text-activity-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-activity-accent'}`} title={t.energy.expenditure}>
@@ -71,9 +71,9 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
           </div>
         </div>
 
-        <div className="w-full bg-activity-soft h-2.5 rounded-full overflow-hidden mt-3">
+        <div className="kc-hero-track w-full bg-activity-soft h-2.5 rounded-full overflow-hidden mt-3">
           <div
-            className="h-full rounded-full transition-[width] duration-500 ease-out bg-activity-accent"
+            className="kc-hero-fill h-full rounded-full transition-[width] duration-500 ease-out bg-activity-accent"
             style={{ width: `${Math.max(5, expPct)}%` }}
           />
         </div>

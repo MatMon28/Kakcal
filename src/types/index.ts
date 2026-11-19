@@ -203,8 +203,12 @@ export type ActiveTab = 'today' | 'prebuilt' | 'period' | 'database' | 'history'
 
 export type Theme = 'light' | 'lite-dark' | 'dark';
 
+export type ThemeStyle = 'classic' | 'angular' | 'aurora' | 'pop' | 'playful' | 'minimal' | 'mono';
+
 export interface Settings {
   theme: Theme;
+  themeStyle: ThemeStyle;
+  monoHue: string;
   ultraMinimal: boolean;
   quickAdd: {
     food: boolean;

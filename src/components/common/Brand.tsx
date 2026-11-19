@@ -28,7 +28,7 @@ export function Wordmark({ className = '' }: BrandProps) {
     <span
       role="img"
       aria-label="Kakcalculator"
-      className={`inline-flex items-center text-[var(--text)] [&>svg]:block [&>svg]:h-full [&>svg]:w-auto ${className}`}
+      className={`kc-wordmark inline-flex items-center text-[var(--text)] [&>svg]:block [&>svg]:h-full [&>svg]:w-auto ${className}`}
       dangerouslySetInnerHTML={{ __html: WORDMARK_MARKUP }}
     />
   );

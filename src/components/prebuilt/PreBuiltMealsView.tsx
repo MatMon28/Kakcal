@@ -59,11 +59,14 @@ function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, 
     document.getElementById(`${inputId}-toggle`)?.focus();
   };
   const palette = libraryPalettes[tone];
-  // Only the coloured section header gets this palette; item cards retain the user's theme.
-  const headerStyle = {
-    '--text': palette.text, '--muted': palette.muted, '--border': palette.border,
-    '--bg': '#FBF8F2', '--inset': '#FBF8F2', '--hover': '#FFFFFF',
-  } as React.CSSProperties;
+  // In Classic theme, only the coloured section header gets this palette; in the 6 new themes, inherit the theme tokens.
+  const headerStyle =
+    settings.themeStyle === 'classic'
+      ? ({
+          '--text': palette.text, '--muted': palette.muted, '--border': palette.border,
+          '--bg': '#FBF8F2', '--inset': '#FBF8F2', '--hover': '#FFFFFF',
+        } as React.CSSProperties)
+      : undefined;
   // Circle rule: search and + circles are transparent (they take the section colour, no border or shadow).
   const iconBtn = 'pressable size-8 rounded-full bg-transparent hover:opacity-75 text-[var(--text)] flex items-center justify-center';
   return (

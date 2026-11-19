@@ -36,6 +36,7 @@ import { addDaysToDateString, getTodayDateString } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../utils/customTrackers';
 import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
+import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
 import {
   createDemoPeriodData,
@@ -1016,6 +1017,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : defaultHidePeriod && !hasPeriodLogs;
         return {
           theme: normalizeTheme(p.theme),
+          themeStyle: normalizeThemeStyle(p.themeStyle),
+          monoHue: normalizeMonoHue(p.monoHue),
           ultraMinimal: Boolean(p.ultraMinimal),
           quickAdd: {
             food: true,
@@ -1056,6 +1059,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return {
       theme: 'light',
+      themeStyle: 'classic',
+      monoHue: DEFAULT_MONO_HUE,
       ultraMinimal: false,
       quickAdd: { food: true, movement: true, water: true, poop: true, weight: true, custom: true },
       hidePoop: false,
@@ -1135,7 +1140,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setSettingsState((prev) => {
       // Switching the app to Dark also sets the home-screen widgets to Dark; both stay independent after that.
       const followDark = partial.theme === 'dark' && partial.widgetStyle === undefined ? { widgetStyle: 'dark' as const } : {};
-      const next = { ...prev, ...partial, ...followDark, theme: normalizeTheme(partial.theme ?? prev.theme) };
+      const next: Settings = {
+        ...prev,
+        ...partial,
+        ...followDark,
+        theme: normalizeTheme(partial.theme ?? prev.theme),
+        themeStyle: normalizeThemeStyle(partial.themeStyle ?? prev.themeStyle),
+        monoHue: normalizeMonoHue(partial.monoHue ?? prev.monoHue),
+      };
       // No trackers means no button to show: keep the widget setting consistent with the data.
       if (next.customButtons.length === 0) next.widgetCustomButton = false;
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
@@ -1144,12 +1156,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', settings.theme);
-    const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) {
-      meta.setAttribute('content', getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
-    }
-  }, [settings.theme]);
+    applyThemeAttributes(settings.theme, settings.themeStyle, settings.monoHue);
+  }, [settings.theme, settings.themeStyle, settings.monoHue]);
 
   useEffect(() => {
     document.documentElement.lang = language;

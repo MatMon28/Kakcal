@@ -26,7 +26,7 @@ export function ActionDock({ label, actions }: {
       <div
         role="group"
         aria-label={label}
-        className="anim-dock pointer-events-auto bg-[var(--surface)] border border-[var(--border)] shadow-lg shadow-black/10 rounded-full p-1.5 flex items-center gap-1 sm:gap-1.5 max-w-full overflow-x-auto no-scrollbar"
+        className="kc-dock anim-dock pointer-events-auto bg-[var(--surface)] border border-[var(--border)] shadow-lg shadow-black/10 rounded-full p-1.5 flex items-center gap-1 sm:gap-1.5 max-w-full overflow-x-auto no-scrollbar"
       >
         {actions.map((action) => (
           <button
@@ -37,7 +37,7 @@ export function ActionDock({ label, actions }: {
             aria-label={action.label}
             aria-pressed={action.pressed}
             disabled={action.disabled}
-            className={`pressable size-12 min-[390px]:size-[3.25rem] shrink-0 rounded-full flex items-center justify-center [&_svg]:size-[22px] enabled:hover:brightness-95 disabled:opacity-50 ${action.tone}`}
+            className={`kc-dock-btn pressable size-12 min-[390px]:size-[3.25rem] shrink-0 rounded-full flex items-center justify-center [&_svg]:size-[22px] enabled:hover:brightness-95 disabled:opacity-50 ${action.tone}`}
           >
             {action.icon}
           </button>

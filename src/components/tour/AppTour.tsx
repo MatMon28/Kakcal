@@ -10,21 +10,27 @@ import {
   type WidgetSnapshot,
 } from '../widgets/widgetContract';
 import { TOUR_STEPS, TOUR_UI, type TourLang } from './tourContent';
+import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../../utils/themes';
+import type { Theme, ThemeStyle } from '../../types';
 
 const LANG_KEY = 'kcalsync_lang';
 const SETTINGS_KEY = 'kcalsync_settings';
-type Theme = 'light' | 'lite-dark' | 'dark';
 
 function readLang(): TourLang {
   return localStorage.getItem(LANG_KEY) === 'it' ? 'it' : 'en';
 }
 
-function readTheme(): Theme {
+function readThemeConfig(): { theme: Theme; themeStyle: ThemeStyle; monoHue: string } {
   try {
-    const theme = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}').theme;
-    return theme === 'dark' || theme === 'lite-dark' ? theme : 'light';
+    const parsed = JSON.parse(localStorage.getItem(SETTINGS_KEY) ?? '{}');
+    const theme: Theme = parsed.theme === 'dark' || parsed.theme === 'lite-dark' ? parsed.theme : 'light';
+    return {
+      theme,
+      themeStyle: normalizeThemeStyle(parsed.themeStyle),
+      monoHue: normalizeMonoHue(parsed.monoHue),
+    };
   } catch {
-    return 'light';
+    return { theme: 'light', themeStyle: 'classic', monoHue: DEFAULT_MONO_HUE };
   }
 }
 
@@ -44,7 +50,7 @@ const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: r
 export function AppTour() {
   const [index, setIndex] = useState(stepFromHash);
   const [lang, setLang] = useState<TourLang>(readLang);
-  const [theme, setTheme] = useState<Theme>(readTheme);
+  const [themeCfg, setThemeCfg] = useState(readThemeConfig);
   const [snapshot, setSnapshot] = useState<WidgetSnapshot | null>(null);
   // Increases each time the embedded journal starts, so its first command is never lost.
   const [bootCount, setBootCount] = useState(0);
@@ -61,8 +67,8 @@ export function AppTour() {
   const go = (delta: number) => setIndex((current) => Math.min(last, Math.max(0, current + delta)));
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-  }, [theme]);
+    applyThemeAttributes(themeCfg.theme, themeCfg.themeStyle, themeCfg.monoHue);
+  }, [themeCfg]);
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -71,7 +77,7 @@ export function AppTour() {
   // The theme and language follow the journal's own settings, including changes made inside it.
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
-      if (event.key === SETTINGS_KEY) setTheme(readTheme());
+      if (event.key === SETTINGS_KEY) setThemeCfg(readThemeConfig());
       if (event.key === LANG_KEY) setLang(readLang());
     };
     window.addEventListener('storage', onStorage);

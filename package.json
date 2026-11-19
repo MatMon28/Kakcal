@@ -6,38 +6,31 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview",
-    "android:prepare": "npm install && node scripts/check-widget-layouts.mjs && node scripts/prepare-android.mjs",
-    "android:sync": "npx cap sync android",
-    "android:build": "npm run android:prepare && cd android && ./gradlew assembleDebug",
-    "android:build:win": "npm run android:prepare && cd android && gradlew.bat assembleDebug",
-    "android:open": "npx cap open android",
-    "android:check-widgets": "node scripts/check-widget-layouts.mjs",
-    "build:catalog": "node scripts/build-off-catalog.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor/android": "8.6.2",
-    "@capacitor/app": "8.1.2",
-    "@capacitor/core": "8.6.2",
+    "@capacitor/android": "^8.6.2",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.6.2",
     "@fontsource-variable/plus-jakarta-sans": "^5.3.0",
+    "@fontsource-variable/space-grotesk": "^5.3.0",
+    "@fontsource/chakra-petch": "^5.3.0",
     "@fontsource/nunito": "^5.3.0",
     "clsx": "2.1.1",
-    "lucide-react": "^1.75.0",
+    "lucide-react": "^1.76.0",
     "react": "19.2.6",
     "react-dom": "19.2.6",
     "tailwind-merge": "3.4.0"
   },
   "devDependencies": {
-    "@capacitor/cli": "8.6.2",
     "@tailwindcss/vite": "4.1.17",
     "@types/node": "22.19.17",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@vitejs/plugin-react": "5.1.1",
-    "playwright": "1.65.1",
     "tailwindcss": "4.1.17",
     "typescript": "5.9.3",
     "vite": "7.3.7",
-    "vite-plugin-singlefile": "2.3.4"
+    "vite-plugin-singlefile": "2.3.0"
   }
 }

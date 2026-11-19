@@ -12,14 +12,18 @@
       // start look slower. The colours mirror --bg in src/index.css.
       (function () {
         try {
-          var theme = JSON.parse(localStorage.getItem('kcalsync_settings') || '{}').theme;
-          if (theme !== 'dark' && theme !== 'lite-dark') return;
+          var parsed = JSON.parse(localStorage.getItem('kcalsync_settings') || '{}');
+          var theme = parsed.theme === 'dark' || parsed.theme === 'lite-dark' ? parsed.theme : 'light';
+          var style = parsed.themeStyle || 'classic';
           var root = document.documentElement;
           root.setAttribute('data-theme', theme);
-          var bg = theme === 'dark' ? '#13151A' : '#272A33';
-          root.style.backgroundColor = bg;
-          var meta = document.querySelector('meta[name="theme-color"]');
-          if (meta) meta.setAttribute('content', bg);
+          root.setAttribute('data-style', style);
+          if (theme !== 'light' && style === 'classic') {
+            var bg = theme === 'dark' ? '#13151A' : '#272A33';
+            root.style.backgroundColor = bg;
+            var meta = document.querySelector('meta[name="theme-color"]');
+            if (meta) meta.setAttribute('content', bg);
+          }
         } catch (e) { /* storage may be unavailable; the app applies the theme after mount */ }
       })();
     </script>

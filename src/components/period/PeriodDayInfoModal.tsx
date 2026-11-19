@@ -117,13 +117,13 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
       <div className="space-y-3">
         {/* Intake & Burned */}
         <div className="grid grid-cols-2 gap-2.5">
-          <div className="bg-intake rounded-2xl p-3.5">
+          <div className="kc-hero-intake bg-intake rounded-2xl p-3.5">
             <div className="flex items-center justify-between gap-1 min-h-[20px]">
               <span className="text-[10px] font-bold uppercase tracking-wider text-intake-accent">
                 {t.energy.intake}
               </span>
               {netPos && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-intake-accent text-intake-soft">
+                <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-intake-accent text-intake-soft">
                   +{formatKcal(net)}
                 </span>
               )}
@@ -134,13 +134,13 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
             </div>
           </div>
 
-          <div className="bg-activity rounded-2xl p-3.5">
+          <div className="kc-hero-burned bg-activity rounded-2xl p-3.5">
             <div className="flex items-center justify-between gap-1 min-h-[20px]">
               <span className="text-[10px] font-bold uppercase tracking-wider text-activity-accent">
                 {t.energy.expenditure}
               </span>
               {!netPos && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-activity-accent text-activity-soft">
+                <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-activity-accent text-activity-soft">
                   {net === 0 ? '0' : `-${formatKcal(Math.abs(net))}`}
                 </span>
               )}

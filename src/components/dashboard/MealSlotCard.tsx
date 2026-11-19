@@ -143,7 +143,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   );
 
   const slotBadge = (size: string, iconSize: number) => (
-    <div className={`${size} rounded-full flex items-center justify-center shrink-0 bg-transparent text-[var(--text)]`}>
+    <div className={`kc-meal-icon ${size} rounded-full flex items-center justify-center shrink-0 bg-transparent text-[var(--text)]`}>
       <Icon size={iconSize} strokeWidth={2.2} />
     </div>
   );

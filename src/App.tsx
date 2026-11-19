@@ -317,7 +317,7 @@ function MainContent() {
   }, []);
 
   return (
-    <div className="min-h-dvh bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div data-journal-root className="min-h-dvh bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <WidgetAppBridge />
       <Header />
       <main data-journal-surface className="flex-1 min-w-0">
