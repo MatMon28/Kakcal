@@ -2,6 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 // Fonts: latin-only @font-face rules live in index.css (see the note there).
 import "./index.css";
+// Must stay before "./App": paints the launch animation before the app modules are evaluated (see launch-intro.md).
+import "./components/intro/earlyStart";
+import { afterFirstPaint } from "./components/intro/launchIntro";
 import App from "./App";
 import faviconUrl from "./assets/brand/kakcalculator-icon.svg";
 import { isAndroidApp } from "./utils/android";
@@ -30,8 +33,12 @@ initPwaInstall();
 
 applyMotionTokens();
 
-createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <App />
-  </StrictMode>
-);
+// The animation is already on screen. Render the app right after its first frame has been painted, so the
+// heavy first render can never delay the start of the animation.
+void afterFirstPaint().then(() => {
+  createRoot(document.getElementById("root")!).render(
+    <StrictMode>
+      <App />
+    </StrictMode>
+  );
+});

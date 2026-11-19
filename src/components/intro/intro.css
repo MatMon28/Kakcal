@@ -1,5 +1,6 @@
 /*
- * Launch intro overlay. It sits on top of the already-mounting journal (never waits for it),
+ * Launch intro overlay (created by launchIntro.ts before the app is evaluated). It sits on top of the
+ * mounting journal (never waits for it),
  * holds the final frame (the exact brand icon) briefly, then fades out.
  * Palette tokens follow src/assets/kakcalculator_intro/intro_animation.md §5.
  */
@@ -19,7 +20,7 @@
   --kc-ink: #232325;
   --kc-edge: #D5C8B3;
   opacity: 1;
-  transition: opacity 240ms ease-out;
+  transition: opacity 200ms ease-out; /* FADE_MS in launchIntro.ts */
   touch-action: manipulation;
 }
 
@@ -30,8 +31,8 @@
   --kc-edge: #0b0b0e;
 }
 
-/* Loading finished before the animation did: fade out quickly (matches INTERRUPT_FADE_MS). */
-.kc-intro[data-fast='true'] { transition-duration: 140ms; }
+/* Tapped to skip: fade out quickly (matches SKIP_FADE_MS in launchIntro.ts). */
+.kc-intro[data-fast='true'] { transition-duration: 120ms; }
 
 .kc-intro[data-leaving='true'] {
   opacity: 0;

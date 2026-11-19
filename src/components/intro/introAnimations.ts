@@ -7,19 +7,34 @@ import modularStack from '../../assets/kakcalculator_intro/animations/06-modular
 
 export interface IntroAnimation {
   id: string;
-  /** Phase-1 length in ms (see intro_animation.md §3). Phase 2 (wordmark) is deliberately not used. */
+  /** Phase-1 length in ms *after* the speed-up (the SVG file itself says `durationMs`, see below). */
   duration: number;
   svg: string;
 }
 
+/**
+ * The supplied SVGs run 1.06-1.28 s. The launch plays them this many times faster: every `NNNms` value in
+ * their embedded CSS is divided by it (they only contain animation durations, no delays), so the keyframe
+ * percentages and the final frame (the brand icon) are unchanged. 1.35 gives about 0.8-0.95 s.
+ */
+export const INTRO_SPEED = 1.35;
+
+function speedUp(svg: string): string {
+  return svg.replace(/(\d+(?:\.\d+)?)ms\b/g, (_, ms: string) => `${Math.round(Number(ms) / INTRO_SPEED)}ms`);
+}
+
+function entry(id: string, durationMs: number, svg: string): IntroAnimation {
+  return { id, duration: Math.round(durationMs / INTRO_SPEED), svg: speedUp(svg) };
+}
+
 /** The six one-phase launch animations, in the order of intro_animation.md. */
 export const INTRO_ANIMATIONS: IntroAnimation[] = [
-  { id: 'sketch-and-plop', duration: 1150, svg: sketchAndPlop },
-  { id: 'tactile-keypress', duration: 1120, svg: tactileKeypress },
-  { id: 'swirl-and-unfold', duration: 1280, svg: swirlAndUnfold },
-  { id: 'polarity-iris-flip', duration: 1060, svg: polarityIrisFlip },
-  { id: 'flush-vortex-spin', duration: 1220, svg: flushVortexSpin },
-  { id: 'modular-stack', duration: 1240, svg: modularStack },
+  entry('sketch-and-plop', 1150, sketchAndPlop),
+  entry('tactile-keypress', 1120, tactileKeypress),
+  entry('swirl-and-unfold', 1280, swirlAndUnfold),
+  entry('polarity-iris-flip', 1060, polarityIrisFlip),
+  entry('flush-vortex-spin', 1220, flushVortexSpin),
+  entry('modular-stack', 1240, modularStack),
 ];
 
 const LAST_KEY = 'kcalsync_intro_last';

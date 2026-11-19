@@ -1,6 +1,6 @@
 # Startup performance
 
-> **Scope:** What keeps the Android app fast to open: the launch animation that ends when loading ends, deferred start-up work, R8 + resource shrinking, the baseline profile, pre-paint theme script, latin-only fonts, cached Intl formatters, lazy catalogue, tree-shaking.
+> **Scope:** What keeps the Android app fast to open: the launch animation that starts before the app is evaluated and always plays to its end, deferred start-up work, R8 + resource shrinking, the baseline profile, pre-paint theme script, latin-only fonts, cached Intl formatters, lazy catalogue, tree-shaking.
 >
 > **Read when:** you change fonts, `index.html`, `formatters.ts` or what is bundled into the Android build.
 >
@@ -10,7 +10,7 @@ What the Android app does to open quickly: the HTML carries a tiny pre-paint scr
 
 ## Second round: launch animation, deferred work, R8, baseline profile
 
-**1. The launch animation is a loading indicator, not a fixed delay (biggest win).** Before, the intro overlay always ran its whole timeline (1.06-1.28 s) + a 220 ms hold + a 240 ms fade, about **1.5-1.8 s of overlay on every start**, however fast the app was. Now `useAppReady()` (`src/components/intro/useAppReady.ts`) turns true when the first screen is committed, `document.fonts.ready` has resolved and two frames have painted; `IntroSplash` then interrupts the animation wherever it is and fades out in 140 ms. The animation's own length is only the upper limit, and a tap still skips it. Measured in headless Chromium (desktop CPU, `?view=app`): overlay on screen **about 200 ms instead of about 1.6 s** (3 runs: 205 / 203 / 200 ms). On a slow phone the animation plays for as long as the app really needs to load. Details: [launch-intro.md](launch-intro.md).
+**1. The launch animation starts first and runs to the end (revised).** The earlier version interrupted the animation as soon as `useAppReady()` turned true, which cut it off after about 200 ms. Now `main.tsx` imports `intro/earlyStart.ts` before `./App`, so the animation is painted before the app modules are evaluated, the first React render waits for the animation's first painted frame (`afterFirstPaint()`), and the animation (sped up 1.35×, about 0.8-0.95 s) is played completely; the overlay leaves when it has finished **and** the app is ready (`useAppReady()` is still the readiness signal). Measured in headless Chromium (desktop CPU, `?view=app`, intros 1-6): overlay in the DOM at about 100 ms (the plain colour screen), fade starts at 1.02-1.18 s, overlay gone at 1.22-1.38 s. Details: [launch-intro.md](launch-intro.md).
 
 **2. Start-up work moved out of the first frames** (`whenIdle()` in `src/utils/idle.ts`, a `requestIdleCallback` wrapper with a deadline). Deferred: `JournalDevice.publishNutrition` (serialises the recent day logs for the widgets), `syncLaunchBackground` (only matters for the *next* cold start), and the notification reschedule (still debounced 400 ms, then idle, deadline 4 s). Natively, `LaunchBackground.applySplashThemeWhenIdle()` replaces the `getIdentifier` lookup + `setSplashScreenTheme` that ran inside `MainActivity.onCreate()` (also next-start only) with a one-shot `MessageQueue.IdleHandler`. The theme attributes, window/WebView background and the pre-paint script stay synchronous (they prevent flashes).
 
