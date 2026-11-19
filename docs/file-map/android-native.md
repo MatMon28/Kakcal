@@ -8,6 +8,7 @@
 
 | File or directory | Role |
 | --- | --- |
+| `android/app/src/main/res/drawable/splash_blank.xml`, `res/values/styles.xml` (`AppTheme.NoActionBarLaunch`) | Transparent system launch-screen icon, so the logo-only Android splash is invisible and only the animated web intro shows. See [Launch intro](../launch-intro.md). |
 | `android/app/src/main/res/drawable/ic_stat_kak.xml` | Monochrome status-bar icon for reminders (also set in `capacitor.config.json` > `plugins.LocalNotifications`). |
 | `android/app/src/main/java/com/kcalsync/app/` | MainActivity, JournalDevicePlugin, and four JournalWidgetProvider variants: cold/warm launches, private nutrition cache, themed widget button rendering, and native launcher updates. |
 | `android/app/src/main/res/layout/widget_*.xml`, `res/xml/widget_*_info.xml`, `res/drawable/widget_*.xml`, `res/values*/widget_*.xml` | RemoteViews layouts (`widget_small`, `widget_essential`, `widget_medium`, `widget_large`) and their `*_dark` variants (only `@RemoteView` classes; spacers are `FrameLayout`s), launcher metadata, offline icon vectors, and English/Italian labels. |
