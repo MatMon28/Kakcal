@@ -18,8 +18,12 @@
 
     <style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#EFE9DD</item>
-        <!-- Blank icon: the animated intro in the web layer is the only visible launch animation. -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_blank</item>
+        <!--
+          Android 12+ always shows a system launch screen, so it cannot be removed. It shows the
+          full-name wordmark (res/drawable/splash_wordmark.xml) instead of a blank page; the web
+          layer's boot screen (index.html #kc-boot) shows the same logo, then the animated intro.
+        -->
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_wordmark</item>
         <item name="windowSplashScreenIconBackgroundColor">@android:color/transparent</item>
         <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>
     </style>

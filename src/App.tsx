@@ -25,6 +25,7 @@ import { AppTour } from './components/tour/AppTour';
 import { PageSwiper } from './components/common/PageSwiper';
 import { IntroSplash } from './components/intro/IntroSplash';
 import { shouldShowIntro } from './components/intro/introAnimations';
+import { dismissBootSplash } from './components/intro/bootSplash';
 import {
   isWidgetAction,
   isWidgetRequest,
@@ -378,6 +379,8 @@ export function App() {
   const [introVisible, setIntroVisible] = useState(introPending);
   const endIntro = useCallback(() => setIntroVisible(false), []);
   const intro = introVisible && <IntroSplash onDone={endIntro} />;
+  // The logo painted by index.html fades away once the app (and the intro over it) is mounted.
+  useEffect(() => { dismissBootSplash(); }, []);
 
   if (!showJournal) return <><AppTour />{intro}</>;
 

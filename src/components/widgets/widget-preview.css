@@ -18,12 +18,26 @@
   gap: 6px;
   width: 100%;
   padding: 8px 10px;
-  border-radius: var(--dock-radius, 999px);
-  clip-path: var(--clip-dock, none);
+  border-radius: var(--widget-pill-radius, 999px);
+  clip-path: var(--widget-pill-clip, none);
   background: color-mix(in srgb, var(--surface) 58%, transparent);
   border: 1px solid color-mix(in srgb, var(--surface) 80%, transparent);
   box-shadow: 0 6px 16px rgb(36 32 28 / 8%);
   backdrop-filter: blur(6px);
+}
+
+/*
+ * The pill follows the shape of its buttons (same rule as the native tray): concentric, i.e. the
+ * button radius / chamfer plus the 8 px vertical padding. Round styles keep the full pill.
+ */
+html[data-style='minimal'] .quick-widget { --widget-pill-radius: 19px; } /* 11px buttons + 8px */
+html[data-style='mono'] .quick-widget { --widget-pill-radius: 20px; } /* 12px buttons + 8px */
+html[data-style='angular'] .quick-widget {
+  --widget-pill-radius: 0;
+  /* 9px button chamfer + 8px * (2 - sqrt 2) = 14px. The border and shadow would be cut by the clip. */
+  --widget-pill-clip: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  border-color: transparent;
+  box-shadow: none;
 }
 
 .widget-actions {

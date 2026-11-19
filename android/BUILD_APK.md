@@ -60,6 +60,8 @@ If those directories are missing, Gradle would normally create empty placeholder
 | Medium | Intake and burned cards (no progress bars), carbs, protein and fat in grams only, and the five icon buttons. |
 | Large | Intake and burned cards with their icons, badge and progress bar; carbs, protein and fat with grams and percentages; and five icon buttons. Same arrangement as Ultra minimal Today, with no logo, name or "today" label. |
 
+The translucent tray behind the Small and Extra-small buttons follows the buttons' shape in every theme style (pill, rounded rectangle or chamfered).
+
 An optional sixth **Custom** button can be added to Small, Medium and Large (Settings > Custom buttons). Details: [../docs/widgets.md](../docs/widgets.md).
 
 There are no action captions. Accessibility descriptions and picker labels are available in English and Italian. Size hints are advisory; the launcher controls its grid, long-press, positioning and resizing. A tap opens the existing app dialog on **the current local day**; no entry is committed until you save.

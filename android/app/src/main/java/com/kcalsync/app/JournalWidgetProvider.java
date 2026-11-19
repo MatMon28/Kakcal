@@ -171,8 +171,27 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             }
         }
         if (!essential) view.setViewVisibility(R.id.widget_custom, customButton ? View.VISIBLE : View.GONE);
+        if (!large) applyTrayShape(context, view, themeStyle, dark);
         if (large) bindLarge(view, strings, prefs, locale, medium);
         return view;
+    }
+
+    /**
+     * Small and Extra-small: the translucent tray (pill) behind the buttons follows the buttons' shape.
+     * Round buttons (classic, aurora, pop, playful) keep the 32 dp pill from the layout; the minimal and
+     * mono rounded squares get a concentric rounded rectangle, and angular's chamfered buttons a chamfered
+     * tray (9-patch, see scripts/render-widget-tray.mjs). Setting a background replaces the view's padding
+     * with the drawable's, so the 4 dp padding is restored right after.
+     */
+    private static void applyTrayShape(Context context, RemoteViews view, String themeStyle, boolean dark) {
+        int tray;
+        if ("angular".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_angular_dark : R.drawable.widget_tray_angular;
+        else if ("minimal".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_minimal_dark : R.drawable.widget_tray_minimal;
+        else if ("mono".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_mono_dark : R.drawable.widget_tray_mono;
+        else return;
+        int pad = Math.round(4 * context.getResources().getDisplayMetrics().density);
+        view.setInt(R.id.widget_tray, "setBackgroundResource", tray);
+        view.setViewPadding(R.id.widget_tray, pad, pad, pad, pad);
     }
 
     /**

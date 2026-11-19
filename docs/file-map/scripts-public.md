@@ -15,6 +15,8 @@
 | `public/licenses/OpenFoodFacts.txt` | ODbL notice for the catalogue data. |
 | `public/licenses/` | Bundled notices for Plus Jakarta Sans, Nunito, Lucide, React, Capacitor and runtime utilities; copied into the APK. |
 | `scripts/render-brand.mjs` | Renders the launcher, round, adaptive-foreground and Play Store PNGs from the icon SVG with Chromium, then checks their sizes and the safe zone. |
+| `scripts/outline-wordmark.mjs` | Generates the font-independent wordmark: `kakcalculator-wordmark-outline.svg`, Android `splash_wordmark.xml` and the boot-screen SVG in `index.html` (needs `npm i --no-save opentype.js`). |
+| `scripts/render-widget-tray.mjs` | Dependency-free generator of the chamfered widget tray 9-patch PNGs (angular style), light and dark, for five densities. |
 | `scripts/smoke.mjs` | Browser checks for the actual production web assets and offline shell. |
 | `scripts/check-journal.mjs` | Touch regression tests for single and interrupted swipes (including actual visibility and DOM identity), sheet dismissal without reload, and full-catalogue browse/search/retry/logging. Run `npm run build`, `npx playwright install chromium`, then `node scripts/check-journal.mjs`. |
 | `public/offline-worker.js` | Caches only the production browser app shell and the static food catalogue `data/off-foods.bin` (bump `DATA_CACHE` when it is rebuilt), never a journal, backup, barcode response or source archive. |

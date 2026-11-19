@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`f037263` ("Better documentations")**, the tip of `main` when this round was done. Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`d63060e` ("Fixed intro animation")**, the tip of `main` when this round was done. Apply it to a checkout of that commit (or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run

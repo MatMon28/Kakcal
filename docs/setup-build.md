@@ -28,6 +28,8 @@
 | `npx cap sync android` | Only re-syncs plugins/assets (use after native plugin changes when `dist/` is already a clean Android build). |
 | `npx cap open android` | Opens `android/` in Android Studio. |
 | `node scripts/build-off-catalog.mjs` | Rebuilds `public/data/off-foods.bin` ([details](data-off-catalogue.md)). |
+| `node scripts/outline-wordmark.mjs` | Regenerates the outlined wordmark (SVG asset, Android `splash_wordmark.xml`, boot screen in `index.html`). Needs `npm i --no-save opentype.js` ([launch intro](launch-intro.md)). |
+| `node scripts/render-widget-tray.mjs` | Regenerates the chamfered widget tray 9-patches (no dependencies; [widgets](widgets.md)). |
 | `node scripts/render-brand.mjs` | Regenerates launcher PNGs from the icon SVG ([brand](brand.md)). |
 | `python3 scripts/generate-usda-foods.py <zip>` | Regenerates the USDA rows ([data-nutrition](data-nutrition.md)). |
 | `python3 scripts/package-android.py` | Optional handoff ZIP in `public/downloads/` (untracked). |
