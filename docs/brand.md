@@ -1,0 +1,11 @@
+# Brand marks and launcher artwork
+
+> **Scope:** App icon, wordmark, how launcher PNGs are generated.
+>
+> **Read when:** you touch `src/assets/brand/`, `Brand.tsx` or `scripts/render-brand.mjs`.
+>
+> **Related:** calculations-colors.md
+
+- **App icon** (`src/assets/brand/kakcalculator-icon.svg`): the supplied cream tile (`#FBF3E3`) with the `#232325` K and poop. It is the browser favicon (embedded in the single-file build) and the source of the Android launcher artwork.
+- **Wordmark** (`src/assets/brand/kakcalculator-wordmark.svg`): the full name at the top of every app page (`src/components/common/Brand.tsx`). Tapping it returns to Today. Its text is set in Nunito 800, bundled with `@fontsource/nunito` (OFL licence in `public/licenses/`), so it looks the same offline. The cream plate is removed when the wordmark is rendered, so its ink follows the theme's text colour and the page behind it: dark on light, light on dark.
+- **Launcher artwork** comes from `node scripts/render-brand.mjs`: legacy, round and adaptive PNGs in `android/app/src/main/res/mipmap-*` and the 512 px Play Store icon in `android/store/`. The adaptive background is `#FBF3E3`; the foreground is scaled so the visible artwork stays inside the 66 dp safe circle. The launcher label stays as the text name, because launchers cannot show the wordmark.
