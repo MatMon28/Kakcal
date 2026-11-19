@@ -79,7 +79,8 @@ function EnergyCard({ tone, label, value, pill, bar }: {
   label: string;
   value: string;
   pill: string | null;
-  bar: number;
+  /** Progress bar in percent; null hides the bar (the Medium widget). */
+  bar: number | null;
 }) {
   const style = TONE[tone];
   const Icon = style.Icon;
@@ -94,24 +95,38 @@ function EnergyCard({ tone, label, value, pill, bar }: {
         )}
       </div>
       <div className={`text-center text-[22px] font-extrabold tabular-nums tracking-tight ${style.ink}`}>{value}</div>
-      <div className={`h-1.5 w-full overflow-hidden rounded-full ${style.track}`}>
-        <div className={`h-full rounded-full transition-[width] duration-500 ${style.fill}`} style={{ width: `${bar}%` }} />
-      </div>
+      {bar !== null && (
+        <div className={`h-1.5 w-full overflow-hidden rounded-full ${style.track}`}>
+          <div className={`h-full rounded-full transition-[width] duration-500 ${style.fill}`} style={{ width: `${bar}%` }} />
+        </div>
+      )}
     </div>
   );
 }
 
-function MacroCard({ tone, label, grams, percent }: {
+function MacroCard({ tone, label, grams, percent, letter }: {
   tone: keyof typeof MACRO;
   label: string;
   grams: string;
-  percent: string;
+  /** Share of calories; null hides it (the Medium widget). */
+  percent: string | null;
+  /** Macro letter in the top-left corner (the Large widget). */
+  letter?: string;
 }) {
   const style = MACRO[tone];
   return (
-    <div role="img" aria-label={`${label}: ${grams} g, ${percent}%`} className={`${style.card} rounded-2xl px-1.5 py-2 text-center`}>
+    <div
+      role="img"
+      aria-label={percent === null ? `${label}: ${grams} g` : `${label}: ${grams} g, ${percent}%`}
+      className={`${style.card} relative rounded-2xl px-1.5 py-2 text-center`}
+    >
+      {letter && (
+        <span aria-hidden="true" className={`absolute left-2 top-1.5 text-[10px] font-extrabold leading-none ${style.percent}`}>
+          {letter}
+        </span>
+      )}
       <div className={`text-base font-extrabold tabular-nums tracking-tight ${style.value}`}>{grams}</div>
-      <div className={`text-[11px] font-bold tabular-nums ${style.percent}`}>{percent}%</div>
+      {percent !== null && <div className={`text-[11px] font-bold tabular-nums ${style.percent}`}>{percent}%</div>}
     </div>
   );
 }
@@ -133,8 +148,9 @@ function QuickWidget({ label, actions, ui, snapshot, onAction, dark = false }: {
 }
 
 /** Large: intake and burned, then macros, then the five actions. Same layout as Ultra minimal Today. */
-function LargeWidget({ ui, lang, snapshot, onAction }: GalleryProps) {
+function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryProps & { compact?: boolean }) {
   const look = readWidgetAppearance();
+  const letters = lang === 'it' ? ['C', 'P', 'G'] : ['C', 'P', 'F'];
   const locale = lang === 'it' ? 'it-IT' : 'en-US';
   const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const tenth = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
@@ -151,27 +167,27 @@ function LargeWidget({ ui, lang, snapshot, onAction }: GalleryProps) {
   const percent = (value: number) => (snapshot ? `${Math.round(value)}` : '--');
 
   return (
-    <div role="group" aria-label={ui.widgetLabels.large} className={`rounded-[26px] border p-2.5 ${look.style === 'dark' ? 'widget-large-dark border-white/20 text-white' : 'border-[var(--border)] bg-[var(--surface)]'}`}>
+    <div role="group" aria-label={compact ? ui.widgetLabels.medium : ui.widgetLabels.large} className={`rounded-[26px] border p-2.5 ${look.style === 'dark' ? 'widget-large-dark border-white/20 text-white' : 'border-[var(--border)] bg-[var(--surface)]'}`}>
       <div className="grid grid-cols-2 gap-2">
         <EnergyCard
           tone="intake"
           label={`${ui.intake}: ${kcal(intake)} kcal`}
           value={kcal(intake)}
           pill={snapshot && net > 0 ? `+${whole.format(net)}` : null}
-          bar={intakeBar}
+          bar={compact ? null : intakeBar}
         />
         <EnergyCard
           tone="burned"
           label={`${ui.burned}: ${kcal(burned)} kcal`}
           value={kcal(burned)}
           pill={snapshot && net <= 0 ? (net === 0 ? '0' : `-${whole.format(-net)}`) : null}
-          bar={burnedBar}
+          bar={compact ? null : burnedBar}
         />
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2">
-        <MacroCard tone="carbs" label={ui.carbs} grams={grams(snapshot?.carbsGrams ?? 0)} percent={percent(snapshot?.carbsPercent ?? 0)} />
-        <MacroCard tone="protein" label={ui.protein} grams={grams(snapshot?.proteinGrams ?? 0)} percent={percent(snapshot?.proteinPercent ?? 0)} />
-        <MacroCard tone="fat" label={ui.fat} grams={grams(snapshot?.fatGrams ?? 0)} percent={percent(snapshot?.fatPercent ?? 0)} />
+        <MacroCard tone="carbs" label={ui.carbs} grams={grams(snapshot?.carbsGrams ?? 0)} letter={compact ? undefined : letters[0]} percent={compact ? null : percent(snapshot?.carbsPercent ?? 0)} />
+        <MacroCard tone="protein" label={ui.protein} grams={grams(snapshot?.proteinGrams ?? 0)} letter={compact ? undefined : letters[1]} percent={compact ? null : percent(snapshot?.proteinPercent ?? 0)} />
+        <MacroCard tone="fat" label={ui.fat} grams={grams(snapshot?.fatGrams ?? 0)} letter={compact ? undefined : letters[2]} percent={compact ? null : percent(snapshot?.fatPercent ?? 0)} />
       </div>
       <div className={`mt-2.5 border-t pt-2.5 ${look.style === 'dark' ? 'border-white/20' : 'border-[var(--border)]'}`}>
         <ActionRow
@@ -226,6 +242,13 @@ export function WidgetGallery(props: GalleryProps) {
           </figcaption>
           <LargeWidget {...props} />
         </figure>
+          <figure className="min-w-0 space-y-2">
+            <figcaption className="flex items-center justify-between gap-2 text-[11px] font-bold text-[var(--text)]">
+              <span>{ui.mediumTitle}</span>
+              <span className="text-[var(--muted)]">{ui.mediumMeta}</span>
+            </figcaption>
+            <LargeWidget {...props} compact />
+          </figure>
       </div>
 
       <p className="text-xs font-semibold text-[var(--muted)]">{ui.widgetsHint}</p>

@@ -23,6 +23,7 @@ import {
 import { PoopIcon } from '../common/PoopIcon';
 import { TrackerIcon, TRACKER_ICONS } from '../common/TrackerIcon';
 import { DataBackup } from '../common/DataBackup';
+import { Collapsible } from '../common/Collapsible';
 
 export const SettingsModal: React.FC = () => {
   const {
@@ -85,7 +86,7 @@ export const SettingsModal: React.FC = () => {
       }`}
     >
       <span
-        className={`block w-5 h-5 rounded-full transition-transform duration-150 shadow-sm ${
+        className={`block w-5 h-5 rounded-full transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] shadow-sm ${
           on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
         }`}
       />
@@ -238,6 +239,7 @@ export const SettingsModal: React.FC = () => {
             </div>
           </div>
 
+          <Collapsible title={t.settings.appearance}>
           {/* Theme */}
           <div>
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
@@ -281,7 +283,7 @@ export const SettingsModal: React.FC = () => {
             <SwitchVisual on={settings.ultraMinimal} />
           </button>
 
-          {/* Home-screen widgets: look and the optional custom button */}
+          {/* Home-screen widgets: look (the custom button lives in Custom buttons) */}
           <div>
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
               {t.settings.widgets}
@@ -306,27 +308,13 @@ export const SettingsModal: React.FC = () => {
                 </div>
                 <p className="mt-1.5 px-1 text-[11px] font-medium text-[var(--muted)]">{t.settings.widgetStyleHint}</p>
               </div>
-              <button
-                type="button"
-                aria-pressed={settings.widgetCustomButton}
-                aria-label={t.settings.widgetCustomButton}
-                onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
-                className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
-              >
-                <span className="flex items-center gap-2.5 min-w-0">
-                  <span className="size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
-                    <Sparkles size={15} />
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.widgetCustomButton}</span>
-                    <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.widgetCustomButtonHint}</span>
-                  </span>
-                </span>
-                <SwitchVisual on={settings.widgetCustomButton} />
-              </button>
+
             </div>
           </div>
 
+          </Collapsible>
+
+          <Collapsible title={t.settings.todayAndPages}>
           {/* Quick-add buttons */}
           <div>
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
@@ -435,6 +423,30 @@ export const SettingsModal: React.FC = () => {
                 );
               })}
             </div>
+          </div>
+
+          </Collapsible>
+
+          <Collapsible title={t.settings.customButtons}>
+          <div className="space-y-2">
+                <button
+                  type="button"
+                  aria-pressed={settings.widgetCustomButton}
+                  aria-label={t.settings.widgetCustomButton}
+                  onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
+                  className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
+                >
+                  <span className="flex items-center gap-2.5 min-w-0">
+                    <span className="size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                      <Sparkles size={15} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.widgetCustomButton}</span>
+                      <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.widgetCustomButtonHint}</span>
+                    </span>
+                  </span>
+                  <SwitchVisual on={settings.widgetCustomButton} />
+                </button>
           </div>
 
           {/* Custom buttons */}
@@ -617,6 +629,8 @@ export const SettingsModal: React.FC = () => {
               </button>
             </div>
           </div>
+
+          </Collapsible>
 
           {/* Foods database */}
           <button

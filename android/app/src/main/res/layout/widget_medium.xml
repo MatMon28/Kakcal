@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_surface"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Medium: the same figures as the Large widget, shorter. No progress bars and no percentages;
+         the macro cards show grams only. Same RemoteViews-compatible classes as the Large layout. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_intake_card"
+            style="@style/WidgetCard"
+            android:layout_width="0dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_card_intake">
+
+            <LinearLayout style="@style/WidgetCardHeader">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/widget_intake_icon" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/widget_intake_net"
+                    style="@style/WidgetPill"
+                    android:background="@drawable/widget_pill_surplus"
+                    android:textColor="#E6F8EB"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/widget_intake_value"
+                style="@style/WidgetValue"
+                android:textColor="#17432A" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_burned_card"
+            style="@style/WidgetCard"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_card_burned">
+
+            <LinearLayout style="@style/WidgetCardHeader">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/widget_burned_icon" />
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/widget_burned_net"
+                    style="@style/WidgetPill"
+                    android:background="@drawable/widget_pill_deficit"
+                    android:textColor="#FBE9E9" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/widget_burned_value"
+                style="@style/WidgetValue"
+                android:textColor="#702D32" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_weight="0.6"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_carbs_card"
+            style="@style/WidgetMacro"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_card_carbs">
+            <TextView
+                android:id="@+id/widget_carbs_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#0F3355" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_protein_card"
+            style="@style/WidgetMacro"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_card_protein">
+            <TextView
+                android:id="@+id/widget_protein_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#2D1E0B" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_fat_card"
+            style="@style/WidgetMacro"
+            android:background="@drawable/widget_card_fat">
+            <TextView
+                android:id="@+id/widget_fat_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#1F1636" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="6dp"
+        android:background="#E6DECF" />
+
+    <include layout="@layout/widget_actions_five" />
+</LinearLayout>

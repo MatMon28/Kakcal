@@ -35,12 +35,14 @@ export interface TourUi {
   connecting: string;
   widgetsHeading: string;
   widgetsHint: string;
-  widgetLabels: { small: string; extra: string; large: string };
+  widgetLabels: { small: string; extra: string; large: string; medium: string };
   actionsLabel: string;
   smallTitle: string;
   extraTitle: string;
   largeTitle: string;
   smallMeta: string;
+  mediumTitle: string;
+  mediumMeta: string;
   extraMeta: string;
   largeMeta: string;
   primary: string;
@@ -435,12 +437,14 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     connecting: 'Connecting to your journal',
     widgetsHeading: 'Widget collection',
     widgetsHint: 'Tap an icon to open that action in the app.',
-    widgetLabels: { small: 'Small widget', extra: 'Extra-small widget', large: 'Large widget' },
+    widgetLabels: { small: 'Small widget', extra: 'Extra-small widget', large: 'Large widget', medium: 'Medium widget' },
     actionsLabel: 'actions',
     smallTitle: 'Small',
     extraTitle: 'Extra-small',
     largeTitle: 'Large',
     smallMeta: '5 actions',
+    mediumTitle: 'Medium widget',
+    mediumMeta: 'Compact',
     extraMeta: '3 actions',
     largeMeta: 'Intake, burned, macros and 5 actions',
     primary: 'Primary',
@@ -469,12 +473,14 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     connecting: 'Collegamento al diario',
     widgetsHeading: 'Raccolta widget',
     widgetsHint: 'Tocca un’icona per aprire quell’azione nell’app.',
-    widgetLabels: { small: 'Widget piccolo', extra: 'Widget extra-piccolo', large: 'Widget grande' },
+    widgetLabels: { small: 'Widget piccolo', extra: 'Widget extra-piccolo', large: 'Widget grande', medium: 'Widget medio' },
     actionsLabel: 'azioni',
     smallTitle: 'Piccolo',
     extraTitle: 'Extra-piccolo',
     largeTitle: 'Grande',
     smallMeta: '5 azioni',
+    mediumTitle: 'Widget medio',
+    mediumMeta: 'Compatto',
     extraMeta: '3 azioni',
     largeMeta: 'Assunte, bruciate, macro e 5 azioni',
     primary: 'Principale',

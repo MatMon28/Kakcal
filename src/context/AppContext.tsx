@@ -1131,7 +1131,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateSettings = (partial: Partial<Settings>) => {
     setSettingsState((prev) => {
-      const next = { ...prev, ...partial, theme: normalizeTheme(partial.theme ?? prev.theme) };
+      // Switching the app to Dark also sets the home-screen widgets to Dark; both stay independent after that.
+      const followDark = partial.theme === 'dark' && partial.widgetStyle === undefined ? { widgetStyle: 'dark' as const } : {};
+      const next = { ...prev, ...partial, ...followDark, theme: normalizeTheme(partial.theme ?? prev.theme) };
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
       return next;
     });

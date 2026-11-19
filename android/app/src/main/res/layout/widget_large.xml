@@ -104,7 +104,8 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- Carbs, protein and fat: grams with their share of the day's calories. -->
+    <!-- Carbs, protein and fat: a macro letter in the top-left corner, grams and the share of calories.
+         Each card is a FrameLayout so the letter can sit over the centred content. -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -112,49 +113,70 @@
         android:layout_weight="0.7"
         android:orientation="horizontal">
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/widget_carbs_card"
-            style="@style/WidgetMacro"
+            style="@style/WidgetMacroCard"
             android:layout_marginEnd="6dp"
             android:background="@drawable/widget_card_carbs">
             <TextView
-                android:id="@+id/widget_carbs_value"
-                style="@style/WidgetMacroValue"
-                android:textColor="#0F3355" />
-            <TextView
-                android:id="@+id/widget_carbs_percent"
-                style="@style/WidgetMacroPercent"
+                android:id="@+id/widget_carbs_letter"
+                style="@style/WidgetMacroLetter"
+                android:layout_gravity="top|start"
                 android:textColor="#1A4670" />
-        </LinearLayout>
+            <LinearLayout style="@style/WidgetMacroBody">
+                <TextView
+                    android:id="@+id/widget_carbs_value"
+                    style="@style/WidgetMacroValue"
+                    android:textColor="#0F3355" />
+                <TextView
+                    android:id="@+id/widget_carbs_percent"
+                    style="@style/WidgetMacroPercent"
+                    android:textColor="#1A4670" />
+            </LinearLayout>
+        </FrameLayout>
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/widget_protein_card"
-            style="@style/WidgetMacro"
+            style="@style/WidgetMacroCard"
             android:layout_marginEnd="6dp"
             android:background="@drawable/widget_card_protein">
             <TextView
-                android:id="@+id/widget_protein_value"
-                style="@style/WidgetMacroValue"
-                android:textColor="#2D1E0B" />
-            <TextView
-                android:id="@+id/widget_protein_percent"
-                style="@style/WidgetMacroPercent"
+                android:id="@+id/widget_protein_letter"
+                style="@style/WidgetMacroLetter"
+                android:layout_gravity="top|start"
                 android:textColor="#7D4E14" />
-        </LinearLayout>
+            <LinearLayout style="@style/WidgetMacroBody">
+                <TextView
+                    android:id="@+id/widget_protein_value"
+                    style="@style/WidgetMacroValue"
+                    android:textColor="#2D1E0B" />
+                <TextView
+                    android:id="@+id/widget_protein_percent"
+                    style="@style/WidgetMacroPercent"
+                    android:textColor="#7D4E14" />
+            </LinearLayout>
+        </FrameLayout>
 
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/widget_fat_card"
-            style="@style/WidgetMacro"
+            style="@style/WidgetMacroCard"
             android:background="@drawable/widget_card_fat">
             <TextView
-                android:id="@+id/widget_fat_value"
-                style="@style/WidgetMacroValue"
-                android:textColor="#1F1636" />
-            <TextView
-                android:id="@+id/widget_fat_percent"
-                style="@style/WidgetMacroPercent"
+                android:id="@+id/widget_fat_letter"
+                style="@style/WidgetMacroLetter"
+                android:layout_gravity="top|start"
                 android:textColor="#523A8C" />
-        </LinearLayout>
+            <LinearLayout style="@style/WidgetMacroBody">
+                <TextView
+                    android:id="@+id/widget_fat_value"
+                    style="@style/WidgetMacroValue"
+                    android:textColor="#1F1636" />
+                <TextView
+                    android:id="@+id/widget_fat_percent"
+                    style="@style/WidgetMacroPercent"
+                    android:textColor="#523A8C" />
+            </LinearLayout>
+        </FrameLayout>
     </LinearLayout>
 
     <LinearLayout

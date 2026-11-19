@@ -12,6 +12,11 @@
     <string name="widget_poop">Poop</string>
     <string name="widget_weight">Weight</string>
     <string name="widget_custom">Custom</string>
+    <string name="widget_medium_name">Kakcalculator: Medium</string>
+    <string name="widget_medium_description">Intake, burned energy, macros and shortcuts, in a compact layout.</string>
+    <string name="widget_letter_carbs">C</string>
+    <string name="widget_letter_protein">P</string>
+    <string name="widget_letter_fat">F</string>
     <string name="widget_intake_desc">Intake: %1$s kcal</string>
     <string name="widget_burned_desc">Burned: %1$s kcal</string>
     <string name="widget_carbs_desc">Carbs: %1$s g, %2$s%%</string>

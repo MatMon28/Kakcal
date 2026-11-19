@@ -26,6 +26,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     public static final class Small extends JournalWidgetProvider {}
     public static final class Essential extends JournalWidgetProvider {}
     public static final class Large extends JournalWidgetProvider {}
+    public static final class Medium extends JournalWidgetProvider {}
 
     static final String OPEN_ACTION = "com.kcalsync.app.OPEN_WIDGET_ACTION";
     static final String EXTRA_ACTION = "widgetAction";
@@ -60,6 +61,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             refreshType(context, manager, Essential.class);
         }
         refreshType(context, manager, Large.class);
+        refreshType(context, manager, Medium.class);
     }
 
     private static void refreshType(Context context, AppWidgetManager manager, Class<?> type) {
@@ -70,7 +72,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     @Override
     public void onUpdate(Context context, AppWidgetManager manager, int[] ids) {
         if (ids.length != 0) manager.updateAppWidget(ids, views(context, getClass()));
-        if (this instanceof Large) scheduleNextDay(context);
+        if (hasDayData()) scheduleNextDay(context);
     }
 
     @Override
@@ -82,12 +84,21 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
         String action = intent.getAction();
-        if (this instanceof Large && (MIDNIGHT.equals(action) || Intent.ACTION_DATE_CHANGED.equals(action) ||
+        if (hasDayData() && (MIDNIGHT.equals(action) || Intent.ACTION_DATE_CHANGED.equals(action) ||
             Intent.ACTION_TIME_CHANGED.equals(action) || Intent.ACTION_TIMEZONE_CHANGED.equals(action) ||
             Intent.ACTION_BOOT_COMPLETED.equals(action) || Intent.ACTION_MY_PACKAGE_REPLACED.equals(action))) {
             refresh(context, true);
             scheduleNextDay(context);
         }
+    }
+
+    /** Large and Medium both show the day's totals, so both keep the midnight refresh. */
+    private boolean hasDayData() { return this instanceof Large || this instanceof Medium; }
+
+    static int dayWidgetCount(Context context) {
+        AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        return manager.getAppWidgetIds(new ComponentName(context, Large.class)).length
+            + manager.getAppWidgetIds(new ComponentName(context, Medium.class)).length;
     }
 
     private static PendingIntent dayAlarm(Context context) {
@@ -96,8 +107,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     }
 
     private static void scheduleNextDay(Context context) {
-        int[] ids = AppWidgetManager.getInstance(context).getAppWidgetIds(new ComponentName(context, Large.class));
-        if (ids.length == 0) return;
+        if (dayWidgetCount(context) == 0) return;
         Calendar next = Calendar.getInstance();
         next.add(Calendar.DATE, 1);
         next.set(Calendar.HOUR_OF_DAY, 0); next.set(Calendar.MINUTE, 0);
@@ -108,17 +118,20 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
 
     @Override
     public void onDisabled(Context context) {
-        if (this instanceof Large) context.getSystemService(AlarmManager.class).cancel(dayAlarm(context));
+        if (dayWidgetCount(context) == 0) context.getSystemService(AlarmManager.class).cancel(dayAlarm(context));
     }
 
     private static RemoteViews views(Context context, Class<?> type) {
-        boolean large = type == Large.class;
+        // "large" here means a day-total widget: Large or Medium.
+        boolean large = type == Large.class || type == Medium.class;
+        boolean medium = type == Medium.class;
         boolean essential = type == Essential.class;
         SharedPreferences prefs = store(context);
         // Settings > Widgets: a darker translucent look, and the optional custom-tracker button.
         boolean dark = "dark".equals(prefs.getString("widgetStyle", "light"));
         boolean customButton = !essential && prefs.getBoolean("widgetCustomButton", false);
-        int layout = large ? (dark ? R.layout.widget_large_dark : R.layout.widget_large)
+        int layout = large ? (medium ? (dark ? R.layout.widget_medium_dark : R.layout.widget_medium)
+            : (dark ? R.layout.widget_large_dark : R.layout.widget_large))
             : essential ? (dark ? R.layout.widget_essential_dark : R.layout.widget_essential)
             : (dark ? R.layout.widget_small_dark : R.layout.widget_small);
         RemoteViews view = new RemoteViews(context.getPackageName(), layout);
@@ -137,7 +150,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             view.setContentDescription(BUTTONS[i], strings.getString(LABELS[i]));
         }
         if (!essential) view.setViewVisibility(R.id.widget_custom, customButton ? View.VISIBLE : View.GONE);
-        if (large) bindLarge(view, strings, prefs, locale);
+        if (large) bindLarge(view, strings, prefs, locale, medium);
         return view;
     }
 
@@ -145,7 +158,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
      * The same arrangement as Today in Ultra minimal mode: intake and burned cards,
      * then carbs, protein and fat. Missing days show zero intake and the BMR as burned.
      */
-    private static void bindLarge(RemoteViews view, Resources strings, SharedPreferences prefs, Locale locale) {
+    private static void bindLarge(RemoteViews view, Resources strings, SharedPreferences prefs, Locale locale, boolean compact) {
         JSONObject day = null;
         try {
             day = new JSONObject(prefs.getString("days", "{}")).optJSONObject(localDate());
@@ -178,28 +191,34 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             view.setTextViewText(R.id.widget_burned_net, Math.round(net) == 0 ? "0" : "-" + whole.format(Math.round(-net)));
         }
 
-        view.setProgressBar(R.id.widget_intake_bar, 100,
+        if (!compact) view.setProgressBar(R.id.widget_intake_bar, 100,
             intake > 0 ? (int) Math.max(5, Math.round(intake / scale * 100)) : 0, false);
-        view.setProgressBar(R.id.widget_burned_bar, 100,
+        if (!compact) view.setProgressBar(R.id.widget_burned_bar, 100,
             (int) Math.max(5, Math.round(burned / scale * 100)), false);
 
+        // Macro letters (Large only). The Medium layout has no letter views.
+        if (!compact) {
+            view.setTextViewText(R.id.widget_carbs_letter, strings.getString(R.string.widget_letter_carbs));
+            view.setTextViewText(R.id.widget_protein_letter, strings.getString(R.string.widget_letter_protein));
+            view.setTextViewText(R.id.widget_fat_letter, strings.getString(R.string.widget_letter_fat));
+        }
         bindMacro(view, strings, day, "carbs", tenth, whole,
-            R.id.widget_carbs_card, R.id.widget_carbs_value, R.id.widget_carbs_percent, R.string.widget_carbs_desc);
+            R.id.widget_carbs_card, R.id.widget_carbs_value, R.id.widget_carbs_percent, R.string.widget_carbs_desc, compact);
         bindMacro(view, strings, day, "protein", tenth, whole,
-            R.id.widget_protein_card, R.id.widget_protein_value, R.id.widget_protein_percent, R.string.widget_protein_desc);
+            R.id.widget_protein_card, R.id.widget_protein_value, R.id.widget_protein_percent, R.string.widget_protein_desc, compact);
         bindMacro(view, strings, day, "fat", tenth, whole,
-            R.id.widget_fat_card, R.id.widget_fat_value, R.id.widget_fat_percent, R.string.widget_fat_desc);
+            R.id.widget_fat_card, R.id.widget_fat_value, R.id.widget_fat_percent, R.string.widget_fat_desc, compact);
     }
 
     private static void bindMacro(RemoteViews view, Resources strings, JSONObject day, String key,
                                   NumberFormat tenth, NumberFormat whole,
-                                  int card, int value, int percent, int description) {
+                                  int card, int value, int percent, int description, boolean compact) {
         double grams = day != null ? day.optDouble(key + "Grams", 0) : 0;
         double share = day != null ? day.optDouble(key + "Percent", 0) : 0;
         String gramText = tenth.format(grams);
         String shareText = whole.format(Math.round(share));
         view.setTextViewText(value, gramText);
-        view.setTextViewText(percent, shareText + "%");
+        if (!compact) view.setTextViewText(percent, shareText + "%");
         view.setContentDescription(card, strings.getString(description, gramText, shareText));
     }
 }

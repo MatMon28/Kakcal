@@ -471,7 +471,7 @@ export const HistoryView: React.FC = () => {
 
           <div className="accordion-grid" data-open={weightOpen} inert={!weightOpen}>
             <div className="accordion-inner">
-              <div className="pt-3 space-y-2" data-no-swipe>
+              <div className="pt-3 space-y-2">
                 <div className="flex items-center justify-between gap-2 text-xs font-bold tabular-nums px-1" aria-live="polite">
                   <span className={`text-[var(--muted)] ${ultraMinimal ? 'sr-only' : ''}`}>
                     {activeWeightPt.date ? formatDateDisplay(activeWeightPt.date, language) : t.stats.profileWeight}

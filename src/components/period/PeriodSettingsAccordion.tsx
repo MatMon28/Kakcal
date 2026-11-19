@@ -51,7 +51,7 @@ const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
     }`}
   >
     <span
-      className={`block w-5 h-5 rounded-full shadow-sm transition-transform duration-150 ${
+      className={`block w-5 h-5 rounded-full shadow-sm transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] ${
         on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
       }`}
     />

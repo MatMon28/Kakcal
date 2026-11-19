@@ -69,4 +69,28 @@
         <item name="android:textSize">11sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+    <!-- Large widget macro cards: a frame so the letter can sit in the top-left corner. -->
+    <style name="WidgetMacroCard">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:padding">0dp</item>
+    </style>
+
+    <style name="WidgetMacroBody">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">6dp</item>
+    </style>
+
+    <style name="WidgetMacroLetter">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">7dp</item>
+        <item name="android:alpha">0.8</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>

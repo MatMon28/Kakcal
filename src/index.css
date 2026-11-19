@@ -151,39 +151,46 @@
   }
 }
 
-/* ---- Fluid UI motion primitives ---- */
+/* ---- Motion ----
+   --ease-soft: a gently damped spring (pages, sheets, docks, values). --ease-bounce: a spring with a
+   visible overshoot (pressed controls, docks). src/utils/spring.ts replaces both with the exact spring
+   curves (linear()) at startup; the cubic-beziers below are the fallback for older WebViews. Durations
+   are deliberately longer than a flick so every change reads as a movement, not a blink. */
+:root {
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-soft: 380ms;
+  --ease-bounce: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-bounce: 460ms;
+}
+
 @keyframes kc-fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
 
-/* Dialogs rise from the bottom edge like a sheet: transform + opacity only, so the
-   WebView composites the animation without re-layout. */
 @keyframes kc-dialog-in {
-  from { opacity: 0; transform: translateY(22px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translate3d(0, 28px, 0) scale(0.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
-/* Page changes slide a few pixels in the direction of travel (forward = towards the next tab,
-   back = towards Today), which matches the horizontal swipe gesture. */
-@keyframes kc-page-forward {
-  from { opacity: 0; transform: translateX(18px); }
-  to { opacity: 1; transform: translateX(0); }
+@keyframes kc-pop-in {
+  from { opacity: 0; transform: translate3d(0, -8px, 0) scale(0.94); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
-@keyframes kc-page-back {
-  from { opacity: 0; transform: translateX(-18px); }
-  to { opacity: 1; transform: translateX(0); }
+
+@keyframes kc-dock-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.9); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
 /* A changed number (intake, burned, balance) settles in from slightly below. */
 @keyframes kc-value-in {
-  from { opacity: 0.25; transform: translateY(5px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0.2; transform: translate3d(0, 7px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
 }
 
 /* The dialog viewport follows window.visualViewport (see Modal.tsx), so the sheet sits just
-   above the keyboard when a field is focused and as low as the screen allows otherwise. The
-   bottom padding is only the gesture/safe area, no extra reserved space. */
+   above the keyboard when a field is focused and as low as the screen allows otherwise. */
 .dialog-viewport {
   top: var(--dialog-top, 0px);
   left: var(--dialog-left, 0px);
@@ -194,63 +201,36 @@
     max(0.5rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
 }
 
-@keyframes kc-pop-in {
-  from {
-    opacity: 0;
-    transform: translateY(-6px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes kc-dock-in {
-  from {
-    opacity: 0;
-    transform: translateY(10px) scale(0.96);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
 .anim-backdrop {
-  animation: kc-fade-in 160ms ease-out both;
+  animation: kc-fade-in 300ms ease-out both;
 }
 
 .anim-dialog {
-  animation: kc-dialog-in 200ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: kc-dialog-in var(--dur-soft) var(--ease-soft) backwards;
 }
 
 .anim-page {
-  animation: kc-fade-in 150ms ease-out;
-}
-.anim-page-forward {
-  animation: kc-page-forward 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-.anim-page-back {
-  animation: kc-page-back 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
-}
-.anim-value {
-  display: inline-block;
-  animation: kc-value-in 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: kc-fade-in 300ms ease-out;
 }
 
 .anim-pop {
-  animation: kc-pop-in 150ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: kc-pop-in var(--dur-soft) var(--ease-soft) backwards;
 }
 
 .anim-dock {
-  animation: kc-dock-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: kc-dock-in var(--dur-bounce) var(--ease-bounce) backwards;
 }
 
-/* Smooth height accordion via CSS Grid */
+.anim-value {
+  display: inline-block;
+  animation: kc-value-in var(--dur-soft) var(--ease-soft) backwards;
+}
+
+/* Smooth height accordion via CSS Grid (no overshoot, so the rows never jump). */
 .accordion-grid {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 220ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: grid-template-rows 420ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .accordion-grid[data-open="true"] {
   grid-template-rows: 1fr;
@@ -260,16 +240,24 @@
   min-height: 0;
 }
 
+/* Pressed controls: a quick, clear shrink while the finger is down, then a springy return to full size
+   with a small overshoot. The :active rule supplies the fast transition; the base rule the spring. */
 .pressable {
   transition:
-    transform 130ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 150ms ease,
-    border-color 150ms ease,
-    color 150ms ease,
-    opacity 150ms ease;
+    transform 420ms var(--ease-bounce),
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    opacity 220ms ease;
 }
 .pressable:active:not(:disabled) {
-  transform: scale(0.96);
+  transform: scale(0.9);
+  transition:
+    transform 110ms cubic-bezier(0.3, 0, 0.6, 1),
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    opacity 220ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -279,11 +267,9 @@
   .anim-backdrop,
   .anim-dialog,
   .anim-page,
-  .anim-page-forward,
-  .anim-page-back,
-  .anim-value,
   .anim-pop,
-  .anim-dock {
+  .anim-dock,
+  .anim-value {
     animation: none !important;
   }
   .accordion-grid,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type TouchEvent } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/common/Header';
@@ -22,6 +22,7 @@ import { CustomPickerModal } from './components/modals/CustomPickerModal';
 import { PeriodSheet } from './components/modals/PeriodSheet';
 import { QuickAddBar } from './components/dashboard/QuickAddBar';
 import { AppTour } from './components/tour/AppTour';
+import { PageSwiper } from './components/common/PageSwiper';
 import {
   isWidgetAction,
   isWidgetRequest,
@@ -251,42 +252,16 @@ function MainContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  // The page slides in from the side it is coming from: forward towards Statistics (or into the
-  // catalog), back towards Today. Stored per tab so re-renders never restart the animation.
-  const pageMotion = useRef({ tab: activeTab, className: 'anim-page-forward' });
-  if (pageMotion.current.tab !== activeTab) {
-    const order = (tab: ActiveTab) => (tab === 'database' ? MAIN_TABS.length : MAIN_TABS.indexOf(tab));
-    pageMotion.current = {
-      tab: activeTab,
-      className: order(activeTab) >= order(pageMotion.current.tab) ? 'anim-page-forward' : 'anim-page-back',
-    };
-  }
-
-  const touch = useRef<{ x: number; y: number; id: number } | null>(null);
-  const onTouchStart = (e: TouchEvent) => {
-    touch.current = null;
-    if (anyModal || getOpenModalCount() || e.touches.length !== 1) return;
-    if ((e.target as Element).closest('.no-scrollbar, .overflow-x-auto, input, textarea, select, [contenteditable="true"], [data-no-swipe]')) return;
-    const finger = e.touches[0];
-    if (finger.clientX < 24 || finger.clientX > window.innerWidth - 24) return;
-    touch.current = { x: finger.clientX, y: finger.clientY, id: finger.identifier };
-  };
-  const onTouchEnd = (e: TouchEvent) => {
-    const start = touch.current;
-    touch.current = null;
-    const end = e.changedTouches[0];
-    if (!start || !end || end.identifier !== start.id || e.touches.length || anyModal || getOpenModalCount()) return;
-    const dx = end.clientX - start.x;
-    const dy = end.clientY - start.y;
-    if (Math.abs(dx) < 72 || Math.abs(dx) < Math.abs(dy) * 1.45) return;
-    if (activeTab === 'database') {
-      if (dx > 0) returnFromDatabase();
-      return;
+  const visibleTabs = MAIN_TABS.filter((tab) => tab !== 'period' || periodShown);
+  const renderMainTab = (tab: ActiveTab) => {
+    switch (tab) {
+      case 'today': return <TodayView />;
+      case 'prebuilt': return <PreBuiltMealsView hideDock={anyModal} />;
+      case 'period': return periodShown ? <PeriodView hideDock={anyModal} /> : null;
+      case 'database': return <FoodDatabaseView />;
+      case 'history': return <HistoryView />;
+      default: return null;
     }
-    const visibleTabs = MAIN_TABS.filter((tab) => tab !== 'period' || periodShown);
-    const index = visibleTabs.indexOf(activeTab);
-    const nextTab = visibleTabs[index + (dx < 0 ? 1 : -1)];
-    if (index >= 0 && nextTab) setActiveTab(nextTab);
   };
 
   // A single history guard lets browser/Android Back dismiss the actual top dialog,
@@ -346,26 +321,16 @@ function MainContent() {
       <WidgetAppBridge />
       <Header />
       <main
-        onTouchStart={onTouchStart}
-        onTouchMove={(e) => {
-          // A mostly vertical drag is scrolling, so it must never switch pages.
-          const start = touch.current;
-          if (!start) return;
-          const dx = Math.abs(e.touches[0].clientX - start.x);
-          const dy = Math.abs(e.touches[0].clientY - start.y);
-          if (e.touches.length !== 1 || (dy > 16 && dy > dx)) touch.current = null;
-        }}
-        onTouchEnd={onTouchEnd}
-        onTouchCancel={() => { touch.current = null; }}
         className={`flex-1 w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}
       >
-        <div key={activeTab} className={pageMotion.current.className}>
-          {activeTab === 'today' && <TodayView />}
-          {activeTab === 'prebuilt' && <PreBuiltMealsView hideDock={anyModal} />}
-          {activeTab === 'period' && periodShown && <PeriodView hideDock={anyModal} />}
-          {activeTab === 'database' && <FoodDatabaseView />}
-          {activeTab === 'history' && <HistoryView />}
-        </div>
+        <PageSwiper
+          tabs={visibleTabs}
+          activeTab={activeTab}
+          onChange={setActiveTab}
+          disabled={anyModal}
+          onSwipeBack={returnFromDatabase}
+          renderTab={renderMainTab}
+        />
       </main>
       {activeTab === 'today' && !anyModal && <QuickAddBar />}
       {isAddFoodOpen && <AddFoodModal />}

@@ -12,6 +12,11 @@
     <string name="widget_poop">Cacca</string>
     <string name="widget_weight">Peso</string>
     <string name="widget_custom">Personalizzato</string>
+    <string name="widget_medium_name">Kakcalculator: Medio</string>
+    <string name="widget_medium_description">Calorie, macro e scorciatoie, in una versione compatta.</string>
+    <string name="widget_letter_carbs">C</string>
+    <string name="widget_letter_protein">P</string>
+    <string name="widget_letter_fat">G</string>
     <string name="widget_intake_desc">Assunte: %1$s kcal</string>
     <string name="widget_burned_desc">Bruciate: %1$s kcal</string>
     <string name="widget_carbs_desc">Carboidrati: %1$s g, %2$s%%</string>
