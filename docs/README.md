@@ -11,6 +11,7 @@
 | Make / host / install the PWA, offline mode, install button | [pwa.md](pwa.md), steps in [pwa-setup.md](pwa-setup.md) |
 | Change the iPhone / Android (PWA + APK) / desktop install guide | [pwa.md](pwa.md) > Install guide |
 | Build / sign / distribute the APK | [android-apk.md](android-apk.md), then [../android/BUILD_APK.md](../android/BUILD_APK.md) |
+| Make the **Download APK** button on the website really download (publish the APK, release workflow) | [apk-download.md](apk-download.md) |
 | Fix a Gradle / Capacitor sync error | [android-gradle-guard.md](android-gradle-guard.md) |
 | Change widgets | [widgets.md](widgets.md) |
 | Change reminders | [notifications.md](notifications.md) |
@@ -47,6 +48,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | Page behaviour or Settings layout | [journal-pages.md](journal-pages.md) / [journal-shell.md](journal-shell.md) |
 | Animation constants | [motion.md](motion.md), [launch-intro.md](launch-intro.md) |
 | Food/activity data or counts | [data-activities.md](data-activities.md), [data-nutrition.md](data-nutrition.md), [data-off-catalogue.md](data-off-catalogue.md) |
+| Where the APK is published / the download button | [apk-download.md](apk-download.md), [pwa-setup.md](pwa-setup.md) §6 |
 | Android version, permissions, modules | `android/BUILD_APK.md`, [android-apk.md](android-apk.md), [file-map/android-native.md](file-map/android-native.md) |
 | Docs structure itself | this file and the root `README.md` |
 
@@ -68,3 +70,7 @@ Checked against repository commit **`4552bf0`** (the later `f037263` only change
 ## Install guide / normal-use round
 
 **Files added:** `src/components/common/InstallGuide.tsx` (device guide: iPhone/iPad, Android PWA + APK, desktop; mounted by `src/App.tsx`, opened with `openInstallGuide()`). **Files changed:** `InstallApp.tsx` (always offers the guide in browsers), `App.tsx` (installed PWA / iOS standalone / Android always show the journal), `pwaInstall.ts` (`isStandaloneApp`, `isIosDevice`, `detectInstallTarget`), `AppTour.tsx` + `tourContent.ts` (install section on the landing page, dead Android ZIP link removed), `config/demo.ts` (normal-use default: `VITE_DEMO_DATA=true` opts into demo data), `public/manifest.webmanifest` (`start_url ./?view=app&source=pwa`, `display_override`, `prefer_related_applications: false`), `public/offline-worker.js` (cache `kakcalculator-shell-v3`), docs. Verified with `npm run build`, `npx tsc --noEmit` (only the documented Next.js leftovers fail) and headless-Chromium screenshots of the tour, guide (desktop/mobile) and a simulated installed launch. Regenerate `changes.patch` with [changes-patch.md](changes-patch.md).
+
+## APK download round (documentation only)
+
+**File added:** `docs/apk-download.md` (why the install guide's **Download APK** button shows "not attached", how to publish the signed APK either by committing it with `git add -f` or via a GitHub Release plus a `pages.yml` step, how to verify and troubleshoot). **Docs updated:** this index, root README, `android-apk.md`, `pwa-setup.md` §6, `changes-patch.md`. **No source, workflow or config file was changed**: the workflow snippet is in the document for you to apply. Checked against the live site: `…/downloads/Kakcalculator.apk` returned 404 and the repository had no release. The steps were not run end to end (no signing key, no Android SDK in the authoring environment).

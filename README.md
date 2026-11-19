@@ -27,6 +27,6 @@ The documentation is split into small single-topic files so that you (or an LLM)
 | [Widgets](docs/widgets.md) | [Notifications](docs/notifications.md) |
 | [Journal pages](docs/journal-pages.md) | [File map](docs/file-map/README.md) |
 | [PWA: how it works](docs/pwa.md) / [PWA setup](docs/pwa-setup.md) | [Known gaps](docs/known-gaps.md) |
-| [Creating `changes.patch`](docs/changes-patch.md) | |
+| [Creating `changes.patch`](docs/changes-patch.md) | [Making the Download APK button work](docs/apk-download.md) |
 
 **Rule:** after every new feature or file, update the matching document (table in [docs/README.md](docs/README.md#keeping-the-docs-current)).
