@@ -80,7 +80,7 @@ function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, 
           aria-label={`${title}: ${open ? t.common.collapse : t.common.expand}`}
           className="min-w-0 flex-1 flex items-center gap-2.5 text-left"
         >
-          <span className="kc-lib-icon size-9 rounded-full bg-transparent text-[var(--text)] flex items-center justify-center shrink-0">
+          <span className="size-9 rounded-full bg-transparent text-[var(--text)] flex items-center justify-center shrink-0">
             {icon}
           </span>
           <span className="min-w-0">
@@ -583,7 +583,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               return (
                 <div
                   key={meal.id}
-                  className={`kc-lib-card bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}
+                  className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}
                 >
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
@@ -670,7 +670,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         )}
                         <div className="pt-2"><FoodMacroGrid food={nut} amount={100} mode={ultraMinimal ? 'minimal' : 'facts'} /></div>
 
-                        <div className="kc-lib-inner bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                        <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                           {meal.ingredients.map((ing, idx) => {
                             const food = allFoods.find((f) => f.id === ing.foodId);
                             return (
@@ -735,7 +735,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
               return (
-                <div key={recipe.id} className={`kc-lib-card bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
+                <div key={recipe.id} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
                     <button
@@ -823,7 +823,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                             </span>
                           )}
                           {recipe.recipeIngredients && recipe.recipeIngredients.length > 0 ? (
-                            <div className="kc-lib-inner bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                            <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                               {recipe.recipeIngredients.map((ing, idx) => {
                                 const food = allFoods.find((f) => f.id === ing.foodId);
                                 const kcal = food ? Math.round((food.calories * ing.amount) / 100) : null;
@@ -879,7 +879,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             onClick={() => setIsBarcodeOpen(true)}
-            className="pressable w-full min-w-0 px-3 py-2.5 kc-lib-btn rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.prebuilt.barcode}
             aria-label={t.prebuilt.barcode}
           >
@@ -889,7 +889,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             onClick={() => setIsCustomFoodOpen(true)}
-            className="pressable w-full min-w-0 px-3 py-2.5 kc-lib-btn rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.customFood}
             aria-label={t.database.customFood}
           >
@@ -899,7 +899,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             onClick={() => setActiveTab('database')}
-            className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 kc-lib-btn rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.browseAll}
             aria-label={t.database.browseAll}
           >

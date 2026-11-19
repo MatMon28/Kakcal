@@ -29,10 +29,6 @@ function listCanScroll(origin: Element, surface: HTMLElement, dx: number) {
   return false;
 }
 
-/** Side the dock of the arriving page enters from: +1 right, -1 left (see .anim-dock in index.css). */
-const setDockSide = (side: number) =>
-  document.documentElement.style.setProperty('--kc-dock-dir', String(Math.sign(side)));
-
 const translate = (px: number) => `translate3d(${px}px,0,0)`;
 
 export function PageSwiper(props: PageSwiperProps) {
@@ -93,7 +89,6 @@ export function PageSwiper(props: PageSwiperProps) {
     rest();
     const tabs = latest.current.tabs;
     const side = activeTab === 'database' || (old !== 'database' && tabs.indexOf(activeTab) > tabs.indexOf(old)) ? 1 : -1;
-    setDockSide(side);
     document.documentElement.classList.add('kc-page-moving');
     settle(side * 16, 160);
   }, [activeTab, rest, settle]);
@@ -110,11 +105,7 @@ export function PageSwiper(props: PageSwiperProps) {
       drag.current = null;
       cancelAnimationFrame(frame.current);
       frame.current = 0;
-      if (g?.locked) {
-        // The page returns where it was: its dock comes back from the side the page returns from.
-        setDockSide(-g.side);
-        settle(g.offset, 160);
-      }
+      if (g?.locked) settle(g.offset, 160);
     };
     const down = (event: PointerEvent) => {
       if (!event.isPrimary) { cancelDrag(); return; }
@@ -147,7 +138,6 @@ export function PageSwiper(props: PageSwiperProps) {
       const side = dx < 0 ? 1 : -1;
       if (side !== g.side) {
         g.side = side;
-        setDockSide(side);
         const index = latest.current.tabs.indexOf(latest.current.activeTab);
         g.target = index < 0 ? undefined : latest.current.tabs[index + side];
         const tab = g.target;
@@ -188,8 +178,6 @@ export function PageSwiper(props: PageSwiperProps) {
           onChange(target);
         });
       }
-      // A committed swipe brings the new dock in from the swipe's side; a cancelled one returns it.
-      setDockSide(g.target && cross ? g.side : -g.side);
       settle(from, Math.min(220, 110 + Math.abs(from) * 0.3));
     };
     const lost = (event: PointerEvent) => {

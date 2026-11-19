@@ -142,7 +142,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
         </div>
 
         {!status.hasData || status.cycleDay === null ? (
-          <div data-tone="rose" className="kc-period-tile rounded-2xl bg-[#FBF1F4] p-4 space-y-1">
+          <div className="rounded-2xl bg-[#FBF1F4] p-4 space-y-1">
             <p className="text-sm font-extrabold text-[#6E2440]">{t.period.emptyTitle}</p>
             <p className="text-xs font-medium text-[#8A455C] leading-relaxed">{t.period.emptyHint}</p>
           </div>
@@ -150,7 +150,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
           <>
             {/* Cycle day + phase / pack day */}
             <div className="grid grid-cols-2 gap-2.5">
-              <div data-tone="rose" className="kc-period-tile rounded-2xl bg-[#FBF1F4] p-3.5">
+              <div className="rounded-2xl bg-[#FBF1F4] p-3.5">
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-[#8A455C]">
                   {t.period.cycleDay}
                 </span>
@@ -165,7 +165,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
                 )}
               </div>
 
-              <div data-tone="violet" className="kc-period-tile rounded-2xl bg-[#F1ECFF] p-3.5">
+              <div className="rounded-2xl bg-[#F1ECFF] p-3.5">
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5B4B93]">
                   {pillMode ? t.period.packDay : t.period.phase}
                 </span>
@@ -188,7 +188,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
 
             {/* Predictions */}
             <div className="grid grid-cols-2 gap-2.5">
-              <div data-tone="amber" className="kc-period-tile rounded-2xl bg-[#FFF6E4] p-3.5">
+              <div className="rounded-2xl bg-[#FFF6E4] p-3.5">
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-[#8A5617]">
                   {t.period.nextPeriod}
                 </span>
@@ -208,7 +208,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
                 </span>
               </div>
 
-              <div data-tone="green" className="kc-period-tile rounded-2xl p-3.5 bg-[#E9FAEF]">
+              <div className={`rounded-2xl p-3.5 ${pillMode ? 'bg-[#E9FAEF]' : 'bg-[#E9FAEF]'}`}>
                 <span className="block text-[10px] font-bold uppercase tracking-wider text-[#1D5C38]">
                   {pillMode ? t.period.withdrawalBleed : t.period.ovulation}
                 </span>

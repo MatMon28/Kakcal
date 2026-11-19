@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 
 export interface DockAction {
@@ -28,7 +28,7 @@ export function ActionDock({ label, actions }: {
         aria-label={label}
         className="kc-dock anim-dock pointer-events-auto bg-[var(--surface)] border border-[var(--border)] shadow-lg shadow-black/10 rounded-full p-1.5 flex items-center gap-1 sm:gap-1.5 max-w-full overflow-x-auto no-scrollbar"
       >
-        {actions.map((action, index) => (
+        {actions.map((action) => (
           <button
             key={action.id}
             type="button"
@@ -37,7 +37,6 @@ export function ActionDock({ label, actions }: {
             aria-label={action.label}
             aria-pressed={action.pressed}
             disabled={action.disabled}
-            style={{ '--i': index } as CSSProperties}
             className={`kc-dock-btn pressable size-12 min-[390px]:size-[3.25rem] shrink-0 rounded-full flex items-center justify-center [&_svg]:size-[22px] enabled:hover:brightness-95 disabled:opacity-50 ${action.tone}`}
           >
             {action.icon}

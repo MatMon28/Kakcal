@@ -104,7 +104,7 @@ export const CustomFoodModal: React.FC = () => {
   };
 
   const inputCls =
-    'w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3.5 h-11 text-[var(--text)] placeholder-[var(--muted)]/60 text-sm font-bold focus:outline-none focus:border-[var(--muted)] transition-colors';
+    'w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-[var(--text)] placeholder-[var(--muted)]/60 text-sm font-bold focus:outline-none focus:border-[var(--muted)] transition-colors';
 
   const numField = (
     val: string,
@@ -125,7 +125,7 @@ export const CustomFoodModal: React.FC = () => {
           const next = cleanDec(e.target.value);
           if (next !== null) setVal(next);
         }}
-        className={`w-full ${nutrient ? 'bg-nutrient text-nutrient-ink' : 'bg-[var(--inset)] text-[var(--text)]'} border border-[var(--border)] rounded-xl pl-3 pr-9 h-11 placeholder-current/55 text-sm font-bold tabular-nums focus:outline-none focus:border-[var(--muted)] transition-colors`}
+        className={`w-full ${nutrient ? 'bg-nutrient text-nutrient-ink' : 'bg-[var(--inset)] text-[var(--text)]'} border border-[var(--border)] rounded-xl pl-3 pr-9 py-2.5 placeholder-current/55 text-sm font-bold tabular-nums focus:outline-none focus:border-[var(--muted)] transition-colors`}
       />
       <span className={`absolute right-2.5 text-[11px] font-bold ${nutrient ? 'text-nutrient-ink' : 'text-[var(--muted)]'} pointer-events-none select-none`}>
         {unitTxt}
@@ -214,7 +214,7 @@ export const CustomFoodModal: React.FC = () => {
                   key={u}
                   type="button"
                   onClick={() => setUnit(u)}
-                  className={`pressable h-11 rounded-xl text-xs font-extrabold border ${
+                  className={`pressable py-2.5 rounded-xl text-xs font-extrabold border ${
                     unit === u
                       ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
                       : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
