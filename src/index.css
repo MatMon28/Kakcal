@@ -27,6 +27,8 @@
   --font-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
 
   /* Shared journal accents for cards, charts, logging controls, and widgets. */
+  --color-nutrient: #F7E9AA;
+  --color-nutrient-ink: #5D4911;
   --color-intake: #C9EFD3;
   --color-intake-ink: #17432A;
   --color-intake-accent: #286540;
@@ -110,6 +112,7 @@
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;
+    scrollbar-gutter: stable;
     scroll-behavior: smooth;
   }
   /* remove the browser tap/focus "circle" artifact on interactive rows;
@@ -202,8 +205,13 @@
 }
 
 .anim-backdrop {
-  animation: kc-fade-in 180ms ease-out both;
+  animation: kc-fade-in 180ms ease-out backwards;
 }
+
+[data-journal-surface] { touch-action: pan-y pinch-zoom; }
+.kc-page-moving { overflow-anchor: none; }
+html.kc-sheet-open, .kc-sheet-open body, .dialog-viewport { overscroll-behavior: none; }
+.kc-sheet-open .anim-dock { visibility: hidden; pointer-events: none; }
 
 .anim-dialog {
   animation: kc-dialog-in var(--dur-soft) var(--ease-soft) backwards;

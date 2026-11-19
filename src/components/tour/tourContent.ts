@@ -135,8 +135,8 @@ export const TOUR_STEPS: TourStep[] = [
     short: { en: 'Food', it: 'Cibo' },
     title: { en: 'Add food', it: 'Aggiungi cibo' },
     body: {
-      en: 'Pick a meal, then search the catalogue of more than a thousand foods in English and Italian. Your favourites are listed first.',
-      it: 'Scegli il pasto, poi cerca nel catalogo di oltre mille alimenti in inglese e italiano. I preferiti compaiono per primi.',
+      en: 'Choose a meal and search your foods, everyday ingredients and 130,000 Open Food Facts products. Your favourites appear first.',
+      it: 'Scegli il pasto e cerca tra i tuoi alimenti, gli ingredienti di base e 130.000 prodotti Open Food Facts. I preferiti compaiono per primi.',
     },
     points: {
       en: [

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
+import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { FoodItem, MealSlotId } from '../../types';
 import { AmountSelector } from '../common/AmountSelector';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
@@ -63,7 +64,6 @@ export const BarcodeLookupModal: React.FC = () => {
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
     allFoods,
-    settings,
     rememberFood,
     language,
     addCustomFood,
@@ -423,47 +423,6 @@ export const BarcodeLookupModal: React.FC = () => {
               </span>
             </div>
 
-            <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums`}>
-              <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670]">
-                <span className="text-[10px] font-bold block">C</span>
-                <span className="text-xs font-extrabold">
-                  {fetchedProduct.carbs !== null ? `${fetchedProduct.carbs}g` : '—'}
-                </span>
-              </div>
-              <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
-                <span className="text-[10px] font-bold block">P</span>
-                <span className="text-xs font-extrabold">
-                  {fetchedProduct.protein !== null ? `${fetchedProduct.protein}g` : '—'}
-                </span>
-              </div>
-              <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
-                <span className="text-[10px] font-bold block">F</span>
-                <span className="text-xs font-extrabold">
-                  {fetchedProduct.fat !== null ? `${fetchedProduct.fat}g` : '—'}
-                </span>
-              </div>
-              <div className="bg-[var(--surface)] p-1.5 rounded-2xl text-[var(--muted)]">
-                <span className="text-[10px] font-bold block">{t.macros.fiber}</span>
-                <span className="text-xs font-extrabold">
-                  {fetchedProduct.fiber !== null ? `${fetchedProduct.fiber}g` : '—'}
-                </span>
-              </div>
-              <div className="bg-[var(--surface)] p-1.5 rounded-2xl text-[var(--muted)]">
-                <span className="text-[10px] font-bold block">{t.macros.salt}</span>
-                <span className="text-xs font-extrabold">
-                  {fetchedProduct.salt !== null ? `${fetchedProduct.salt}g` : '—'}
-                </span>
-              </div>
-              {settings.trackSugar && (
-                <div className="bg-[#F7E9AA] p-1.5 rounded-2xl text-[#6E5B14]">
-                  <span className="text-[10px] font-bold block">{t.macros.sugar}</span>
-                  <span className="text-xs font-extrabold">
-                    {fetchedProduct.sugar != null ? `${fetchedProduct.sugar}g` : '—'}
-                  </span>
-                </div>
-              )}
-            </div>
-
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
               {SLOTS.map((s) => (
                 <button
@@ -486,6 +445,7 @@ export const BarcodeLookupModal: React.FC = () => {
               onChange={setLogAmount}
               unit={fetchedProduct.unit}
             />
+            <FoodMacroGrid food={fetchedProduct} amount={logAmount} />
 
             <div className={`grid grid-cols-1 gap-2 ${foundLocally ? '' : 'sm:grid-cols-2'}`}>
               {!foundLocally && (

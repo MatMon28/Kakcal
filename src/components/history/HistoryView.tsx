@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, Candy, Wheat, X } from 'lucide-react';
-import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
+import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, X } from 'lucide-react';
+import { SecondaryNutrientRow } from '../common/FoodMacroGrid';
 import { useApp } from '../../context/AppContext';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { PoopIcon } from '../common/PoopIcon';
@@ -312,23 +312,7 @@ export const HistoryView: React.FC = () => {
           ))}
         </div>
 
-        <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5 sm:gap-3.5 tabular-nums`}>
-          {([
-            { label: t.stats.avgFiber, value: period.avgFiber, Icon: Wheat },
-            { label: t.stats.avgSalt, value: period.avgSalt, Icon: SaltCrystalIcon },
-            ...(settings.trackSugar ? [{ label: t.stats.avgSugar, value: period.avgSugar, Icon: Candy }] : []),
-          ] satisfies { label: string; value: number; Icon: React.ComponentType<{ size?: number; className?: string }> }[]).map(({ label, value, Icon }) => (
-            <div key={label} role="group" aria-label={`${label}: ${value} g`} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'px-3 py-2.5' : 'px-4 py-3'} flex items-center justify-between`}>
-              {ultraMinimal ? <Icon size={16} aria-hidden="true" className="text-[var(--muted)]" /> : <span className="text-xs sm:text-sm font-semibold text-[var(--muted)]">{label}</span>}
-              <div className="flex items-baseline gap-1">
-                <span className="text-base sm:text-lg font-extrabold text-[var(--text)]">{value}</span>
-                <span className="text-[10px] sm:text-[11px] font-bold text-[var(--muted)]">
-                  {ultraMinimal ? '/day' : 'g'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />
 
         {!settings.hidePoop && (
           <div className={`bg-[#FAE0B4] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
@@ -612,9 +596,9 @@ export const HistoryView: React.FC = () => {
                           </div>
                         </div>
                         {settings.trackSugar && (
-                          <div className="flex items-center justify-between gap-2 pt-0.5 text-[11px] tabular-nums">
-                            <span className="font-bold text-[#6E5B14]">{t.macros.sugar}</span>
-                            <span className="font-extrabold text-[var(--text)]">{day.sugar} g</span>
+                          <div data-nutrient="sugar" className="flex items-center justify-between gap-2 rounded-xl bg-nutrient text-nutrient-ink px-2.5 py-1.5 text-[11px] tabular-nums">
+                            <span className="font-bold">{t.macros.sugar}</span>
+                            <span className="font-extrabold">{day.sugar} g</span>
                           </div>
                         )}
                       </button>

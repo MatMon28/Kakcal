@@ -24,7 +24,14 @@ export const Tabs: React.FC = () => {
 
   useEffect(() => {
     checkScroll();
-    activeBtnRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    // Only pan the tab strip. scrollIntoView can also move the journal underneath a sheet.
+    const nav = scrollRef.current;
+    const active = activeBtnRef.current;
+    if (nav && active && nav.scrollWidth > nav.clientWidth) {
+      const bounds = nav.getBoundingClientRect(), button = active.getBoundingClientRect();
+      const dx = Math.min(0, button.left - bounds.left) + Math.max(0, button.right - bounds.right);
+      if (dx) nav.scrollBy({ left: dx, behavior: 'instant' });
+    }
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
   }, [settings.hidePeriod, activeTab]);

@@ -1,4 +1,4 @@
-import type { FoodItem } from '../types';
+import type { FoodCategory, FoodItem } from '../types';
 import { FOOD_CATEGORIES } from './foodCategories';
 
 /**
@@ -36,6 +36,10 @@ export interface OffCatalog {
   /** Word-prefix search over name + brand; every word must match. Best matches first. */
   search(query: string, limit?: number): FoodItem[];
   findByBarcode(code: string): FoodItem | null;
+  browse(query: string, category: FoodCategory | null, excluded: ReadonlySet<number>): {
+    count: number;
+    page(offset: number, limit: number): FoodItem[];
+  };
 }
 
 function parse(buffer: ArrayBuffer): OffCatalog {
@@ -44,6 +48,7 @@ function parse(buffer: ArrayBuffer): OffCatalog {
   const count = view.getUint32(8, true);
   const at = {} as Record<(typeof FIELDS)[number], number>;
   FIELDS.forEach((key, i) => { at[key] = view.getUint32(16 + i * 4, true); });
+  if (!count || at.end !== buffer.byteLength) throw new Error('Incomplete food catalogue');
 
   const bytes = new Uint8Array(buffer);
   const barcode = new Float64Array(buffer, at.barcode, count);
@@ -147,7 +152,45 @@ function parse(buffer: ArrayBuffer): OffCatalog {
     return index === undefined ? null : food(index);
   };
 
-  return { count, search, findByBarcode };
+  // Keep only matching row indices. Decode names, brands and nutrition for the requested page.
+  const browse: OffCatalog['browse'] = (query, filter, excluded) => {
+    const tokens = normalizeSearch(query).split(' ').filter(Boolean);
+    const group = filter === null ? -1 : FOOD_CATEGORIES.indexOf(filter);
+    const exactCode = /^\d{8,14}$/.test(query.trim()) ? Number(query.trim()) : null;
+    const matches: number[] = [];
+    const accept = (i: number) => (group < 0 || category[i] === group) && !excluded.has(barcode[i]);
+    const all = !query.trim() && group < 0 && excluded.size === 0;
+    if (!all && (!query.trim() || exactCode !== null)) {
+      for (let i = 0; i < count; i++) {
+        if (accept(i) && (exactCode === null || barcode[i] === exactCode)) matches.push(i);
+      }
+    } else if (tokens.length) {
+      const needle = ` ${tokens.reduce((a, b) => a.length >= b.length ? a : b)}`;
+      const words = tokens.map((word) => ` ${word}`);
+      const phrase = ` ${tokens.join(' ')}`;
+      const other: number[] = [];
+      for (let pos = text.indexOf(needle); pos >= 0;) {
+        const i = recordAt(pos);
+        if (accept(i)) {
+          const row = textOf(i);
+          if (words.every((word) => row.includes(word))) (row.startsWith(phrase) ? matches : other).push(i);
+        }
+        pos = text.indexOf(needle, searchOff[i + 1]);
+      }
+      for (const i of other) matches.push(i);
+    }
+    const total = all ? count : matches.length;
+    return {
+      count: total,
+      page(offset, limit) {
+        const start = Math.max(0, offset);
+        const end = Math.min(total, start + limit);
+        return Array.from({ length: Math.max(0, end - start) }, (_, n) => food(all ? start + n : matches[start + n]));
+      },
+    };
+  };
+
+  return { count, search, findByBarcode, browse };
 }
 
 // ---- lazy loading + a tiny store so React can subscribe ----

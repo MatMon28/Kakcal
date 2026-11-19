@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import type { ActiveTab } from '../../types';
 import { prefersReducedMotion } from '../../utils/motion';
@@ -8,339 +8,238 @@ interface PageSwiperProps {
   tabs: ActiveTab[];
   activeTab: ActiveTab;
   onChange: (tab: ActiveTab) => void;
-  renderTab: (tab: ActiveTab) => React.ReactNode;
+  renderTab: (tab: ActiveTab) => ReactNode;
   disabled?: boolean;
   onSwipeBack?: () => void;
 }
 
-const DRAG_THRESHOLD = 6;
-const EDGE_RESERVE = 8;
-const SETTLE_EASING = 'cubic-bezier(0.2, 0, 0, 1)';
-const MOVING_CLASS = 'kc-page-moving';
+type Peer = { tab: ActiveTab; side: number; top: number };
+type Drag = {
+  id: number; origin: Element; startX: number; startY: number; scrollY: number;
+  width: number; locked: boolean; side: number; target?: ActiveTab; offset: number;
+  x: number; time: number; velocity: number;
+};
 
-interface Gesture {
-  id: number;
-  origin: Element;
-  x0: number;
-  y0: number;
-  x: number;
-  width: number;
-  axis: 'x' | 'y' | null;
-  dir: 1 | -1;
-  target: ActiveTab | null;
-  offset: number;
-  samples: { x: number; t: number }[];
-}
-
-interface Pending {
-  tab: ActiveTab | null;
-  animations: Animation[];
-}
-
-/** Horizontal lists keep their own gesture while they can still scroll in that direction. */
-function scrollerTakesGesture(origin: Element, surface: Element, dx: number): boolean {
+function listCanScroll(origin: Element, surface: HTMLElement, dx: number) {
   for (let el: Element | null = origin; el && el !== surface; el = el.parentElement) {
     if (!(el instanceof HTMLElement) || el.scrollWidth <= el.clientWidth + 1) continue;
-    const overflow = getComputedStyle(el).overflowX;
-    if (overflow !== 'auto' && overflow !== 'scroll') continue;
-    if (dx < 0 && el.scrollLeft + el.clientWidth < el.scrollWidth - 1) return true;
-    if (dx > 0 && el.scrollLeft > 1) return true;
+    if (!/auto|scroll/.test(getComputedStyle(el).overflowX)) continue;
+    if (dx < 0 ? el.scrollLeft + el.clientWidth < el.scrollWidth - 1 : el.scrollLeft > 1) return true;
   }
   return false;
 }
 
-/**
- * Main-page navigation driven by Pointer Events. Pointer capture is taken on <main>, not on the
- * touched card, so gestures continue even when React replaces a page. Only transforms are animated;
- * there are no React state updates per frame and no layout properties in the animation.
- */
-export function PageSwiper({ tabs, activeTab, onChange, renderTab, disabled = false, onSwipeBack }: PageSwiperProps) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const currentRef = useRef<HTMLDivElement>(null);
-  const peekRef = useRef<HTMLDivElement>(null);
-  const gesture = useRef<Gesture | null>(null);
-  const pending = useRef<Pending | null>(null);
+const translate = (px: number) => `translate3d(${px}px,0,0)`;
+
+export function PageSwiper(props: PageSwiperProps) {
+  const { activeTab, renderTab } = props;
+  const latest = useRef(props);
+  latest.current = props;
+  const rail = useRef<HTMLDivElement>(null);
+  const drag = useRef<Drag | null>(null);
+  const motion = useRef<Animation | null>(null);
   const frame = useRef(0);
-  const suppressClickUntil = useRef(0);
-  const skipTabAnimation = useRef(false);
-  const previousTab = useRef(activeTab);
-  const activeRef = useRef(activeTab);
-  const tabsRef = useRef(tabs);
-  const onChangeRef = useRef(onChange);
-  const onSwipeBackRef = useRef(onSwipeBack);
-  const disabledRef = useRef(disabled);
-  activeRef.current = activeTab;
-  tabsRef.current = tabs;
-  onChangeRef.current = onChange;
-  onSwipeBackRef.current = onSwipeBack;
-  disabledRef.current = disabled;
-  const [peek, setPeek] = useState<{ tab: ActiveTab; dir: 1 | -1 } | null>(null);
+  const previous = useRef(activeTab);
+  const swipeDestination = useRef<ActiveTab | null>(null);
+  const [peer, setPeer] = useState<Peer | null>(null);
 
-  const setMoving = useCallback((moving: boolean) => {
-    document.documentElement.classList.toggle(MOVING_CLASS, moving);
-  }, []);
-
-  const clearStyles = useCallback(() => {
-    for (const el of [currentRef.current, peekRef.current]) {
-      if (!el) continue;
-      el.style.transform = '';
-      el.style.willChange = '';
-      el.style.opacity = '';
+  const cancelMotion = useCallback(() => {
+    cancelAnimationFrame(frame.current);
+    frame.current = 0;
+    const animation = motion.current;
+    motion.current = null;
+    if (animation) {
+      animation.onfinish = null;
+      animation.cancel();
     }
+    if (rail.current) {
+      rail.current.style.transform = '';
+      rail.current.style.willChange = '';
+    }
+    document.documentElement.classList.remove('kc-page-moving');
   }, []);
 
-  /** Finish a transition atomically. The incoming dock becomes visible only after this point. */
-  const commit = useCallback((tab: ActiveTab | null) => {
-    pending.current = null;
-    if (tab && tab !== activeRef.current) skipTabAnimation.current = true;
-    flushSync(() => {
-      setPeek(null);
-      if (tab && tab !== activeRef.current) onChangeRef.current(tab);
+  const rest = useCallback(() => {
+    cancelMotion();
+    setPeer(null);
+  }, [cancelMotion]);
+
+  // The base style is already at rest. A finished animation cannot pin the live page offscreen.
+  const settle = useCallback((from: number, duration: number) => {
+    const el = rail.current;
+    if (!el || prefersReducedMotion() || !el.animate || Math.abs(from) < 0.5) return rest();
+    el.style.transform = '';
+    el.style.willChange = 'transform';
+    const animation = el.animate([{ transform: translate(from) }, { transform: 'none' }], {
+      duration, easing: 'cubic-bezier(.2,0,0,1)', fill: 'none',
     });
-    clearStyles();
-    setMoving(false);
-  }, [clearStyles, setMoving]);
+    motion.current = animation;
+    animation.onfinish = () => { if (motion.current === animation) rest(); };
+  }, [rest]);
 
-  const finishPending = useCallback(() => {
-    const job = pending.current;
-    if (!job) return;
-    pending.current = null;
-    job.animations.forEach((animation) => animation.cancel());
-    commit(job.tab);
-  }, [commit]);
-
-  const startSettle = useCallback((g: Gesture, destination: ActiveTab | null) => {
-    const current = currentRef.current;
-    const incoming = peekRef.current;
-    if (!current) {
-      commit(destination);
+  useLayoutEffect(() => {
+    const old = previous.current;
+    previous.current = activeTab;
+    if (old === activeTab) return;
+    if (swipeDestination.current === activeTab) {
+      swipeDestination.current = null;
       return;
     }
-    pending.current?.animations.forEach((animation) => animation.cancel());
-    const reduced = prefersReducedMotion() || typeof current.animate !== 'function';
-    const toCurrent = destination ? -g.dir * g.width : 0;
-    const remaining = Math.abs(toCurrent - g.offset);
-    const duration = reduced ? 0 : Math.max(140, Math.min(240, 120 + remaining * 0.25));
-    const animations: Animation[] = [];
-    const moves: { el: HTMLElement | null; from: number; to: number }[] = [
-      { el: current, from: g.offset, to: toCurrent },
-    ];
-    if (incoming && g.target) {
-      moves.push({ el: incoming, from: g.offset + g.dir * g.width, to: destination ? 0 : g.dir * g.width });
-    }
-    if (duration > 0) {
-      for (const move of moves) {
-        if (!move.el) continue;
-        move.el.style.willChange = 'transform';
-        animations.push(move.el.animate(
-          [
-            { transform: `translate3d(${move.from}px, 0, 0)` },
-            { transform: `translate3d(${move.to}px, 0, 0)` },
-          ],
-          { duration, easing: SETTLE_EASING, fill: 'forwards' },
-        ));
-      }
-    }
-    const job: Pending = { tab: destination, animations };
-    pending.current = job;
-    suppressClickUntil.current = performance.now() + duration + 80;
-    if (!animations.length) {
-      commit(destination);
-      return;
-    }
-    void Promise.all(animations.map((animation) => animation.finished.catch(() => undefined)))
-      .then(() => { if (pending.current === job) commit(destination); });
-  }, [commit]);
-
-  const endGesture = useCallback((cancelled = false) => {
-    const g = gesture.current;
-    gesture.current = null;
-    window.cancelAnimationFrame(frame.current);
-    if (!g) return;
-    if (g.axis !== 'x') {
-      setMoving(false);
-      return;
-    }
-    if (cancelled) {
-      startSettle(g, null);
-      return;
-    }
-    const dx = g.x - g.x0;
-    const samples = g.samples;
-    const first = samples[0];
-    const last = samples[samples.length - 1];
-    const velocity = first && last && last.t > first.t ? (last.x - first.x) / (last.t - first.t) : 0;
-    const forward = g.dir * dx < 0;
-    const flick = forward && velocity * g.dir < -0.45 && Math.abs(dx) > 12;
-    const distance = forward && Math.abs(dx) > Math.max(48, g.width * 0.18);
-    const projected = forward && g.dir * (dx + velocity * 160) < -Math.max(40, g.width * 0.12);
-    const destination = g.target && (distance || flick || projected) ? g.target : null;
-    if (!g.target && dx > 64 && onSwipeBackRef.current && !tabsRef.current.includes(activeRef.current)) {
-      onSwipeBackRef.current();
-    }
-    startSettle(g, destination);
-  }, [setMoving, startSettle]);
+    drag.current = null;
+    rest();
+    const tabs = latest.current.tabs;
+    const side = activeTab === 'database' || (old !== 'database' && tabs.indexOf(activeTab) > tabs.indexOf(old)) ? 1 : -1;
+    document.documentElement.classList.add('kc-page-moving');
+    settle(side * 16, 160);
+  }, [activeTab, rest, settle]);
 
   useEffect(() => {
-    const track = trackRef.current;
-    const surface = track?.parentElement;
-    if (!track || !surface) return;
-    const previousTouchAction = surface.style.touchAction;
-    surface.style.touchAction = 'pan-y';
-
-    const onPointerDown = (event: PointerEvent) => {
-      if (!event.isPrimary || (event.pointerType === 'mouse' && event.button !== 0)) return;
-      const origin = event.target as Element;
-      if (origin.closest('[role="dialog"], [data-no-swipe], textarea, [contenteditable="true"], input[type="range"]')) return;
-      if (event.clientX < EDGE_RESERVE || event.clientX > window.innerWidth - EDGE_RESERVE) return;
-      // Capture on the stable <main> before finishing an older transition. Its commit may replace
-      // the touched card, but every following pointer event still arrives here.
-      try { surface.setPointerCapture(event.pointerId); } catch { /* capture is optional on old WebViews */ }
-      finishPending();
-      // A new tap after an interrupted animation is a real tap, not the swipe’s synthetic click.
-      suppressClickUntil.current = 0;
-      gesture.current = null;
-      if (disabledRef.current || getOpenModalCount()) return;
-      gesture.current = {
-        id: event.pointerId,
-        origin,
-        x0: event.clientX,
-        y0: event.clientY,
-        x: event.clientX,
-        width: track.clientWidth || window.innerWidth,
-        axis: null,
-        dir: 1,
-        target: null,
-        offset: 0,
-        samples: [{ x: event.clientX, t: event.timeStamp }],
-      };
-    };
-
-    const applyDrag = () => {
+    const el = rail.current;
+    const viewport = el?.parentElement;
+    const surface = viewport?.closest('main');
+    if (!el || !viewport || !surface) return;
+    let blockDragClick = false;
+    const interrupt = () => { if (motion.current) rest(); };
+    const cancelDrag = () => {
+      const g = drag.current;
+      drag.current = null;
+      cancelAnimationFrame(frame.current);
       frame.current = 0;
-      const g = gesture.current;
-      if (!g || g.axis !== 'x') return;
-      if (currentRef.current) currentRef.current.style.transform = `translate3d(${g.offset}px, 0, 0)`;
-      if (peekRef.current && g.target) {
-        peekRef.current.style.transform = `translate3d(${g.offset + g.dir * g.width}px, 0, 0)`;
-      }
+      if (g?.locked) settle(g.offset, 160);
     };
-
-    const onPointerMove = (event: PointerEvent) => {
-      const g = gesture.current;
-      if (!g || event.pointerId !== g.id) return;
-      const dx = event.clientX - g.x0;
-      const dy = event.clientY - g.y0;
-      if (g.axis === null) {
-        if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx) * 1.1) {
-          g.axis = 'y';
-          gesture.current = null;
-          try { surface.releasePointerCapture(event.pointerId); } catch { /* already released */ }
-          return;
-        }
-        if (Math.abs(dx) < DRAG_THRESHOLD || Math.abs(dx) < Math.abs(dy) * 1.1) return;
-        if (scrollerTakesGesture(g.origin, surface, dx)) {
-          gesture.current = null;
-          try { surface.releasePointerCapture(event.pointerId); } catch { /* already released */ }
-          return;
-        }
-        g.axis = 'x';
-        g.dir = dx < 0 ? 1 : -1;
-        const index = tabsRef.current.indexOf(activeRef.current);
-        g.target = index >= 0 ? tabsRef.current[index + g.dir] ?? null : null;
-        setMoving(true);
-        if (g.target) flushSync(() => setPeek({ tab: g.target!, dir: g.dir }));
-        if (currentRef.current) currentRef.current.style.willChange = 'transform';
-        if (peekRef.current) peekRef.current.style.willChange = 'transform';
+    const down = (event: PointerEvent) => {
+      if (!event.isPrimary) { cancelDrag(); return; }
+      blockDragClick = false;
+      if (event.button !== 0 || latest.current.disabled || getOpenModalCount()) return;
+      if (event.clientX < 8 || event.clientX > window.innerWidth - 8) return;
+      const origin = event.target;
+      if (!(origin instanceof Element) || origin.closest('[data-no-swipe], [role="dialog"], textarea, [contenteditable="true"], input[type="range"]')) return;
+      drag.current = { id: event.pointerId, origin, startX: event.clientX, startY: event.clientY,
+        scrollY: window.scrollY, width: viewport.clientWidth, locked: false, side: 0, offset: 0,
+        x: event.clientX, time: event.timeStamp, velocity: 0 };
+    };
+    const move = (event: PointerEvent) => {
+      const g = drag.current;
+      if (!g || g.id !== event.pointerId) return;
+      const dx = event.clientX - g.startX;
+      const dy = event.clientY - g.startY;
+      if (!g.locked) {
+        if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { cancelDrag(); return; }
+        if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+        if (listCanScroll(g.origin, surface, dx) || getOpenModalCount()) { cancelDrag(); return; }
+        // Leave taps with the original button; capture only a horizontal drag.
+        try { surface.setPointerCapture(event.pointerId); } catch { /* pointer already released */ }
+        g.locked = true;
+        blockDragClick = true;
+        document.documentElement.classList.add('kc-page-moving');
+        el.style.willChange = 'transform';
       }
-      if (g.axis !== 'x') return;
       if (event.cancelable) event.preventDefault();
-      g.x = event.clientX;
-      const now = event.timeStamp;
-      g.samples.push({ x: event.clientX, t: now });
-      while (g.samples.length > 2 && now - g.samples[0].t > 100) g.samples.shift();
-      g.offset = g.target ? dx : dx * 0.25;
-      if (!frame.current) frame.current = window.requestAnimationFrame(applyDrag);
-    };
-
-    const onPointerUp = (event: PointerEvent) => {
-      if (gesture.current?.id !== event.pointerId) return;
-      try { surface.releasePointerCapture(event.pointerId); } catch { /* already released */ }
-      endGesture(false);
-    };
-    const onPointerCancel = (event: PointerEvent) => {
-      if (gesture.current?.id !== event.pointerId) return;
-      endGesture(true);
-    };
-    const onClick = (event: MouseEvent) => {
-      if (performance.now() < suppressClickUntil.current) {
-        event.preventDefault();
-        event.stopPropagation();
-        suppressClickUntil.current = 0;
+      const side = dx < 0 ? 1 : -1;
+      if (side !== g.side) {
+        g.side = side;
+        const index = latest.current.tabs.indexOf(latest.current.activeTab);
+        g.target = index < 0 ? undefined : latest.current.tabs[index + side];
+        const tab = g.target;
+        if (!prefersReducedMotion()) flushSync(() => setPeer(tab ? { tab, side, top: g.scrollY } : null));
       }
+      const dt = event.timeStamp - g.time;
+      if (dt > 0) g.velocity = (event.clientX - g.x) / dt;
+      g.x = event.clientX;
+      g.time = event.timeStamp;
+      g.offset = g.target ? Math.max(-g.width, Math.min(g.width, dx)) : Math.max(-32, Math.min(32, dx * 0.22));
+      if (!frame.current && !prefersReducedMotion()) frame.current = requestAnimationFrame(() => {
+        frame.current = 0;
+        if (drag.current === g) el.style.transform = translate(g.offset);
+      });
     };
-
-    surface.addEventListener('pointerdown', onPointerDown);
-    surface.addEventListener('pointermove', onPointerMove, { passive: false });
-    surface.addEventListener('pointerup', onPointerUp);
-    surface.addEventListener('pointercancel', onPointerCancel);
-    surface.addEventListener('click', onClick, true);
+    const up = (event: PointerEvent) => {
+      const g = drag.current;
+      if (!g || g.id !== event.pointerId) return;
+      drag.current = null;
+      cancelAnimationFrame(frame.current);
+      frame.current = 0;
+      if (!g.locked) return;
+      const dx = event.clientX - g.startX;
+      const velocity = event.timeStamp - g.time < 100 ? g.velocity : 0;
+      const cross = -dx * g.side > Math.min(64, Math.max(28, g.width * 0.1)) ||
+        (-dx * g.side > 12 && -velocity * g.side > 0.4);
+      const { activeTab: old, onChange, onSwipeBack } = latest.current;
+      if (!g.target && old === 'database' && dx > 64) { rest(); onSwipeBack?.(); return; }
+      let from = g.offset;
+      if (g.target && cross) {
+        // Promote the keyed preview instead of mounting the destination twice. The old panel's
+        // offset compensates for the new tab's scroll-to-top in the same layout pass.
+        const target = g.target;
+        swipeDestination.current = target;
+        from += g.side * g.width;
+        flushSync(() => {
+          setPeer({ tab: old, side: -g.side, top: -g.scrollY });
+          onChange(target);
+        });
+      }
+      settle(from, Math.min(220, 110 + Math.abs(from) * 0.3));
+    };
+    const lost = (event: PointerEvent) => {
+      // A child's implicit capture is released when main takes over. That is not cancellation.
+      if (event.type === 'lostpointercapture' && event.target !== surface) return;
+      if (drag.current?.id === event.pointerId) cancelDrag();
+    };
+    const click = (event: MouseEvent) => {
+      if (blockDragClick && event.detail !== 0) { event.preventDefault(); event.stopPropagation(); }
+      blockDragClick = false;
+    };
+    // In Chromium a native fling can swallow the next tap even after pointer capture.
+    // Consume the touch pan only after horizontal lock; vertical scrolls remain native.
+    const consumePagePan = (event: TouchEvent) => {
+      if (drag.current?.locked && event.touches.length === 1 && event.cancelable) event.preventDefault();
+    };
+    const stopNavigation = () => {
+      if (drag.current || motion.current) { drag.current = null; rest(); }
+    };
+    document.addEventListener('pointerdown', interrupt, true);
+    document.addEventListener('kc:overlay-open', stopNavigation);
+    surface.addEventListener('pointerdown', down);
+    surface.addEventListener('touchmove', consumePagePan, { passive: false });
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', lost);
+    surface.addEventListener('lostpointercapture', lost);
+    window.addEventListener('resize', cancelDrag);
+    window.addEventListener('blur', cancelDrag);
+    surface.addEventListener('click', click, true);
     return () => {
-      surface.style.touchAction = previousTouchAction;
-      surface.removeEventListener('pointerdown', onPointerDown);
-      surface.removeEventListener('pointermove', onPointerMove);
-      surface.removeEventListener('pointerup', onPointerUp);
-      surface.removeEventListener('pointercancel', onPointerCancel);
-      surface.removeEventListener('click', onClick, true);
-      window.cancelAnimationFrame(frame.current);
-      gesture.current = null;
-      pending.current?.animations.forEach((animation) => animation.cancel());
-      pending.current = null;
-      setMoving(false);
+      document.removeEventListener('pointerdown', interrupt, true);
+      document.removeEventListener('kc:overlay-open', stopNavigation);
+      surface.removeEventListener('pointerdown', down);
+      surface.removeEventListener('touchmove', consumePagePan);
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', lost);
+      surface.removeEventListener('lostpointercapture', lost);
+      window.removeEventListener('resize', cancelDrag);
+      window.removeEventListener('blur', cancelDrag);
+      surface.removeEventListener('click', click, true);
+      drag.current = null;
+      cancelMotion();
     };
-  }, [endGesture, finishPending, setMoving]);
+  }, [cancelMotion, rest, settle]);
 
-  // Tapping a tab is a separate, subtle entrance. A swipe commit opts out via skipTabAnimation.
-  useEffect(() => {
-    const previous = previousTab.current;
-    previousTab.current = activeTab;
-    if (skipTabAnimation.current) {
-      skipTabAnimation.current = false;
-      return;
-    }
-    const el = currentRef.current;
-    if (!el || pending.current || prefersReducedMotion() || typeof el.animate !== 'function') return;
-    const direction = tabsRef.current.indexOf(activeTab) >= tabsRef.current.indexOf(previous) ? 1 : -1;
-    setMoving(true);
-    const animation = el.animate(
-      [
-        { opacity: 0.55, transform: `translate3d(${direction * 18}px, 0, 0)` },
-        { opacity: 1, transform: 'translate3d(0, 0, 0)' },
-      ],
-      { duration: 180, easing: SETTLE_EASING },
-    );
-    const job: Pending = { tab: null, animations: [animation] };
-    pending.current = job;
-    void animation.finished.catch(() => undefined).then(() => {
-      if (pending.current === job) commit(null);
-    });
-  }, [activeTab, commit, setMoving]);
-
+  const pages = peer && peer.tab !== activeTab ? [activeTab, peer.tab] : [activeTab];
   return (
-    <div ref={trackRef} className="relative overflow-x-clip">
-      <div ref={currentRef}>{renderTab(activeTab)}</div>
-      {peek && (
-        <div
-          data-peek
-          ref={peekRef}
-          aria-hidden="true"
-          inert
-          className="absolute inset-x-0 top-0"
-          style={{ transform: `translate3d(${peek.dir * 100}%, 0, 0)` }}
-        >
-          {renderTab(peek.tab)}
-        </div>
-      )}
+    <div className="relative overflow-x-clip" data-page-viewport>
+      <div ref={rail} className="relative" data-page-rail>
+        {pages.map((tab) => {
+          const other = tab !== activeTab && peer;
+          return (
+            <div key={tab} data-journal-page={tab} inert={Boolean(other)} aria-hidden={other ? true : undefined}
+              className={other ? 'pointer-events-none absolute w-full' : undefined}
+              style={other ? { left: `${other.side * 100}%`, top: other.top } : undefined}>
+              {renderTab(tab)}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

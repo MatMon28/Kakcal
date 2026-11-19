@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/common/Header';
@@ -248,7 +248,7 @@ function MainContent() {
   const hasDock = activeTab === 'today' || activeTab === 'prebuilt' || activeTab === 'period';
   const periodShown = isPeriodShown(settings.hidePeriod);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
@@ -256,8 +256,8 @@ function MainContent() {
   const renderMainTab = (tab: ActiveTab) => {
     switch (tab) {
       case 'today': return <TodayView />;
-      case 'prebuilt': return <PreBuiltMealsView hideDock={anyModal} />;
-      case 'period': return periodShown ? <PeriodView hideDock={anyModal} /> : null;
+      case 'prebuilt': return <PreBuiltMealsView hideDock={tab !== activeTab} />;
+      case 'period': return periodShown ? <PeriodView hideDock={tab !== activeTab} /> : null;
       case 'database': return <FoodDatabaseView />;
       case 'history': return <HistoryView />;
       default: return null;
@@ -320,19 +320,19 @@ function MainContent() {
     <div className="min-h-dvh bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <WidgetAppBridge />
       <Header />
-      <main
-        className={`flex-1 w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}
-      >
-        <PageSwiper
-          tabs={visibleTabs}
-          activeTab={activeTab}
-          onChange={setActiveTab}
-          disabled={anyModal}
-          onSwipeBack={returnFromDatabase}
-          renderTab={renderMainTab}
-        />
+      <main data-journal-surface className="flex-1 min-w-0">
+        <div className={`w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}>
+          <PageSwiper
+            tabs={visibleTabs}
+            activeTab={activeTab}
+            onChange={setActiveTab}
+            disabled={anyModal}
+            onSwipeBack={returnFromDatabase}
+            renderTab={renderMainTab}
+          />
+        </div>
       </main>
-      {activeTab === 'today' && !anyModal && <QuickAddBar />}
+      {activeTab === 'today' && <QuickAddBar />}
       {isAddFoodOpen && <AddFoodModal />}
       {isLogActivityOpen && <LogActivityModal />}
       {isBarcodeOpen && <BarcodeLookupModal />}

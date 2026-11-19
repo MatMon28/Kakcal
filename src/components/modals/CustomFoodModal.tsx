@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useId, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { Modal } from '../common/Modal';
@@ -42,6 +42,7 @@ export const CustomFoodModal: React.FC = () => {
   const [fiberStr, setFiberStr] = useState('');
   const [saltStr, setSaltStr] = useState('');
   const [sugarStr, setSugarStr] = useState('');
+  const fieldId = useId();
 
   const macroKcalEstimate = useMemo(() => {
     const c = parseOptionalNum(carbsStr) ?? 0;
@@ -109,10 +110,12 @@ export const CustomFoodModal: React.FC = () => {
     val: string,
     setVal: (s: string) => void,
     unitTxt: string,
-    placeholder = '—'
+    placeholder = '—',
+    nutrient?: 'fiber' | 'salt' | 'sugar',
   ) => (
     <div className="relative flex items-center">
       <input
+        id={nutrient ? `${fieldId}-${nutrient}` : undefined}
         type="text"
         inputMode="decimal"
         enterKeyHint="done"
@@ -122,9 +125,9 @@ export const CustomFoodModal: React.FC = () => {
           const next = cleanDec(e.target.value);
           if (next !== null) setVal(next);
         }}
-        className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl pl-3 pr-9 py-2.5 text-[var(--text)] placeholder-[var(--muted)]/55 text-sm font-bold tabular-nums focus:outline-none focus:border-[var(--muted)] transition-colors"
+        className={`w-full ${nutrient ? 'bg-nutrient text-nutrient-ink' : 'bg-[var(--inset)] text-[var(--text)]'} border border-[var(--border)] rounded-xl pl-3 pr-9 py-2.5 placeholder-current/55 text-sm font-bold tabular-nums focus:outline-none focus:border-[var(--muted)] transition-colors`}
       />
-      <span className="absolute right-2.5 text-[11px] font-bold text-[var(--muted)] pointer-events-none select-none">
+      <span className={`absolute right-2.5 text-[11px] font-bold ${nutrient ? 'text-nutrient-ink' : 'text-[var(--muted)]'} pointer-events-none select-none`}>
         {unitTxt}
       </span>
     </div>
@@ -268,29 +271,19 @@ export const CustomFoodModal: React.FC = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted)] mb-1">
-              {t.macros.fiber} ({t.activities.optional})
-            </label>
-            {numField(fiberStr, setFiberStr, 'g')}
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-[var(--muted)] mb-1">
-              {t.macros.salt} ({t.activities.optional})
-            </label>
-            {numField(saltStr, setSaltStr, 'g')}
-          </div>
+        <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
+          {([
+            ['fiber', fiberStr, setFiberStr], ['salt', saltStr, setSaltStr],
+            ...(settings.trackSugar ? [['sugar', sugarStr, setSugarStr] as const] : []),
+          ] as const).map(([key, value, setter]) => (
+            <div key={key} className="min-w-0">
+              <label htmlFor={`${fieldId}-${key}`} className="block text-xs font-bold text-[var(--muted)] mb-1">
+                {t.macros[key]} ({t.activities.optional})
+              </label>
+              {numField(value, setter, 'g', undefined, key)}
+            </div>
+          ))}
         </div>
-
-        {settings.trackSugar && (
-          <div>
-            <label className="block text-xs font-bold text-[#6E5B14] mb-1">
-              {t.macros.sugar} ({t.activities.optional})
-            </label>
-            {numField(sugarStr, setSugarStr, 'g')}
-          </div>
-        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1.5">
           <button

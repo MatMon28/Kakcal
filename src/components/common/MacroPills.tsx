@@ -18,7 +18,7 @@ export function MacroPills({ carbs, protein, fat, stretch = false, sugar }: Macr
     { id: 'protein', label: t.macros.protein, value: protein, tone: 'bg-[#FAE0B4] text-[#7D4E14]' },
     { id: 'fat', label: t.macros.fat, value: fat, tone: 'bg-[#E2D6FF] text-[#4D3582]' },
     ...(settings.trackSugar && sugar !== undefined
-      ? [{ id: 'sugar', label: t.macros.sugar, value: sugar, tone: 'bg-[#F7E9AA] text-[#6E5B14]' }]
+      ? [{ id: 'sugar', label: t.macros.sugar, value: sugar, tone: 'bg-nutrient text-nutrient-ink' }]
       : []),
   ];
 

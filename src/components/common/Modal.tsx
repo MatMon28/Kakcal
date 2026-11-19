@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useId, useRef } from 'react';
+import React, { useLayoutEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { SPRING } from '../../utils/spring';
@@ -17,6 +17,7 @@ interface ModalProps {
 
 const openModalStack: Array<() => void> = [];
 let previousBodyOverflow = '';
+let anchor: { page: Element | null; x: number; y: number } | null = null;
 
 export const getOpenModalCount = () => openModalStack.length;
 
@@ -45,14 +46,18 @@ export const Modal: React.FC<ModalProps> = ({
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const panel = panelRef.current;
     const overlay = viewportRef.current;
     if (!isOpen || !panel || !overlay) return;
 
     const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const closeHandler = () => onCloseRef.current();
-    if (!openModalStack.length) previousBodyOverflow = document.body.style.overflow;
+    if (!openModalStack.length) {
+      previousBodyOverflow = document.body.style.overflow;
+      anchor = { page: document.querySelector('[data-journal-page]:not([inert])'), x: window.scrollX, y: window.scrollY };
+      document.documentElement.classList.add('kc-sheet-open');
+    }
     openModalStack.push(closeHandler);
     document.dispatchEvent(new Event('kc:overlay-open'));
     document.body.style.overflow = 'hidden';
@@ -123,94 +128,104 @@ export const Modal: React.FC<ModalProps> = ({
       const wasTop = isTop();
       const idx = openModalStack.lastIndexOf(closeHandler);
       if (idx >= 0) openModalStack.splice(idx, 1);
-      if (!openModalStack.length) document.body.style.overflow = previousBodyOverflow;
+      if (!openModalStack.length) {
+        document.body.style.overflow = previousBodyOverflow;
+        document.documentElement.classList.remove('kc-sheet-open');
+        if (anchor?.page?.isConnected && !anchor.page.hasAttribute('inert') && (window.scrollX !== anchor.x || window.scrollY !== anchor.y)) {
+          window.scrollTo({ left: anchor.x, top: anchor.y, behavior: 'instant' });
+        }
+        anchor = null;
+      }
       if (wasTop && trigger?.isConnected && !panel.contains(trigger)) trigger.focus({ preventScroll: true });
     };
   }, [isOpen]);
 
-  // Swipe the sheet down from its handle or title bar to close it. It follows the finger, then
-  // springs back, or glides away and closes when released far enough or with a fast flick.
-  const sheetDrag = useRef<{ id: number; startY: number; y: number; t: number; vy: number; base: number; active: boolean } | null>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
-  // A sheet animation in flight: any new touch snaps it to its destination before continuing.
-  const sheetMotion = useRef<{ animations: Animation[]; closing: boolean } | null>(null);
-  const finishSheet = useCallback(() => {
-    const job = sheetMotion.current;
-    if (!job) return;
-    sheetMotion.current = null;
-    job.animations.forEach((animation) => animation.cancel());
-    if (job.closing) {
-      onCloseRef.current();
-      return;
-    }
-    if (panelRef.current) panelRef.current.style.transform = '';
-    if (backdropRef.current) backdropRef.current.style.opacity = '';
-  }, []);
-  useEffect(() => {
-    const interrupt = () => finishSheet();
-    window.addEventListener('touchstart', interrupt, { capture: true, passive: true });
-    window.addEventListener('pointerdown', interrupt, { capture: true });
-    return () => {
-      window.removeEventListener('touchstart', interrupt, true);
-      window.removeEventListener('pointerdown', interrupt, true);
-    };
-  }, [finishSheet]);
-  const onSheetTouchStart = (e: React.TouchEvent) => {
-    const finger = e.touches[0];
-    sheetDrag.current = e.touches.length === 1 && finger
-      ? { id: finger.identifier, startY: finger.clientY, y: finger.clientY, t: performance.now(), vy: 0, base: 0, active: false }
-      : null;
-  };
-  const onSheetTouchMove = (e: React.TouchEvent) => {
-    const d = sheetDrag.current;
-    const finger = e.touches[0];
-    if (!d || e.touches.length !== 1 || !finger) { sheetDrag.current = null; return; }
-    const dy = finger.clientY - d.startY;
-    if (!d.active) {
-      if (dy < -8) { sheetDrag.current = null; return; }
-      if (dy <= 8) return;
-      d.active = true;
-      d.base = dy;
-    }
-    const now = performance.now();
-    d.vy = (finger.clientY - d.y) / Math.max(1, now - d.t);
-    d.y = finger.clientY;
-    d.t = now;
-    const offset = Math.max(0, dy - d.base);
-    if (panelRef.current) panelRef.current.style.transform = `translate3d(0, ${offset}px, 0)`;
-    if (backdropRef.current) backdropRef.current.style.opacity = String(Math.max(0.12, 1 - offset / 360));
-  };
-  const onSheetTouchEnd = () => {
-    const d = sheetDrag.current;
-    sheetDrag.current = null;
+  const sheetDrag = useRef<{ id: number; start: number; y: number; time: number; velocity: number; offset: number; active: boolean } | null>(null);
+  const animations = useRef<Animation[]>([]);
+  const closing = useRef(false);
+
+  useLayoutEffect(() => {
+    if (!isOpen) return;
     const panel = panelRef.current;
-    if (!d || !d.active || !panel) return;
-    const offset = Math.max(0, d.y - d.startY - d.base);
     const backdrop = backdropRef.current;
-    const closing = offset > 96 || d.vy > 0.6;
-    if (prefersReducedMotion()) {
-      if (closing) onCloseRef.current();
+    closing.current = false;
+    return () => {
+      sheetDrag.current = null;
+      animations.current.forEach((a) => { a.onfinish = null; a.cancel(); });
+      animations.current = [];
+      if (panel) panel.style.transform = '';
+      if (backdrop) backdrop.style.opacity = '';
+    };
+  }, [isOpen]);
+
+  const finishDrag = (event: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
+    const d = sheetDrag.current;
+    const panel = panelRef.current;
+    const scrim = backdropRef.current;
+    if (!d || d.id !== event.pointerId) return;
+    sheetDrag.current = null;
+    if (!d.active || !panel || !scrim) return;
+    const dismiss = !cancelled && (d.offset > 96 || (d.offset > 16 && event.timeStamp - d.time < 100 && d.velocity > 0.6));
+    closing.current = dismiss;
+    const visibleBottom = (window.visualViewport?.offsetTop ?? 0) + (window.visualViewport?.height ?? innerHeight);
+    const end = dismiss ? d.offset + visibleBottom - panel.getBoundingClientRect().top + 8 : 0;
+    const opacity = scrim.style.opacity || '1';
+    // Set the final styles first: unmounting a dismissed sheet must never reveal its start frame.
+    panel.style.transform = end ? `translate3d(0,${end}px,0)` : '';
+    scrim.style.opacity = dismiss ? '0' : '';
+    if (prefersReducedMotion() || !panel.animate) {
+      if (dismiss) onCloseRef.current();
       return;
     }
-    const toY = closing ? Math.max(offset, window.innerHeight - panel.getBoundingClientRect().top) + 48 : 0;
-    const motion: Animation[] = [panel.animate(
-      [{ transform: `translate3d(0, ${offset}px, 0)` }, { transform: `translate3d(0, ${toY}px, 0)` }],
-      { duration: SPRING.soft.duration, easing: SPRING.soft.easing, fill: 'forwards' })];
-    if (backdrop) {
-      motion.push(backdrop.animate(
-        [{ opacity: Number(backdrop.style.opacity || 1) }, { opacity: closing ? 0 : 1 }],
-        { duration: SPRING.soft.duration, easing: 'linear', fill: 'forwards' }));
-    }
-    const job = { animations: motion, closing };
-    sheetMotion.current = job;
-    void Promise.all(motion.map((animation) => animation.finished.catch(() => undefined)))
-      .then(() => { if (sheetMotion.current === job) finishSheet(); });
+    const options = { duration: dismiss ? 180 : 220, easing: dismiss ? 'cubic-bezier(.3,0,.7,1)' : SPRING.soft.easing };
+    const slide = panel.animate([{ transform: `translate3d(0,${d.offset}px,0)` }, { transform: `translate3d(0,${end}px,0)` }], options);
+    const fade = scrim.animate([{ opacity }, { opacity: dismiss ? 0 : 1 }], options);
+    animations.current = [slide, fade];
+    slide.onfinish = () => {
+      if (animations.current[0] !== slide) return;
+      animations.current = [];
+      if (dismiss) onCloseRef.current();
+    };
   };
+
   const dragHandlers = {
-    onTouchStart: onSheetTouchStart,
-    onTouchMove: onSheetTouchMove,
-    onTouchEnd: onSheetTouchEnd,
-    onTouchCancel: onSheetTouchEnd,
+    onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => {
+      if (!event.isPrimary || event.button !== 0 || closing.current || (event.target as Element).closest('button')) return;
+      const panel = panelRef.current;
+      const scrim = backdropRef.current;
+      if (!panel || !scrim) return;
+      const matrix = getComputedStyle(panel).transform;
+      const offset = matrix === 'none' ? 0 : Math.max(0, new DOMMatrixReadOnly(matrix).m42);
+      const opacity = getComputedStyle(scrim).opacity;
+      animations.current.forEach((a) => { a.onfinish = null; a.cancel(); });
+      animations.current = [];
+      // Pick up an opening or returning sheet at its painted position, without a jump.
+      panel.style.animation = 'none';
+      scrim.style.animation = 'none';
+      panel.style.transform = offset ? `translate3d(0,${offset}px,0)` : '';
+      scrim.style.opacity = opacity;
+      sheetDrag.current = { id: event.pointerId, start: event.clientY - offset, y: event.clientY, time: event.timeStamp, velocity: 0, offset, active: offset > 0 };
+      event.currentTarget.setPointerCapture(event.pointerId);
+    },
+    onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => {
+      const d = sheetDrag.current;
+      if (!d || event.pointerId !== d.id) return;
+      d.offset = Math.max(0, event.clientY - d.start);
+      if (!d.active && d.offset < 5) return;
+      d.active = true;
+      event.preventDefault();
+      d.velocity = (event.clientY - d.y) / Math.max(1, event.timeStamp - d.time);
+      d.y = event.clientY;
+      d.time = event.timeStamp;
+      if (panelRef.current) panelRef.current.style.transform = `translate3d(0,${d.offset}px,0)`;
+      if (backdropRef.current) backdropRef.current.style.opacity = String(Math.max(0.1, 1 - d.offset / 360));
+    },
+    onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => finishDrag(event, false),
+    onPointerCancel: (event: React.PointerEvent<HTMLDivElement>) => finishDrag(event, true),
+    onLostPointerCapture: (event: React.PointerEvent<HTMLDivElement>) => {
+      if (event.target === event.currentTarget) finishDrag(event, true);
+    },
   };
 
   if (!isOpen) return null;
@@ -229,7 +244,7 @@ export const Modal: React.FC<ModalProps> = ({
         tabIndex={-1}
         className={`anim-dialog relative w-full ${maxWidth} max-h-full min-h-0 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-3xl shadow-2xl shadow-black/20 overflow-hidden`}
       >
-        <div className="shrink-0 touch-none flex justify-center pt-2" aria-hidden="true" {...dragHandlers}>
+        <div className="shrink-0 touch-none flex justify-center pt-2" aria-hidden="true" data-sheet-handle {...dragHandlers}>
           <span className="h-1.5 w-11 rounded-full bg-[var(--border)]" />
         </div>
         <div className="px-5 py-3.5 sm:py-4 border-b border-[var(--border)] flex items-center justify-between gap-3 shrink-0 touch-none" {...dragHandlers}>

@@ -374,7 +374,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
       {/* 6. Settings accordion */}
       <PeriodSettingsAccordion />
       <PeriodDayInfoModal date={inspectedDay} onClose={() => setInspectedDay(null)} />
-      {!hideDock && recapText === null && inspectedDay === null && (
+      {!hideDock && (
         <ActionDock label={t.period.dockLabel} actions={cycleActions} />
       )}
     </div>

@@ -90,7 +90,7 @@ try {
   const shortcuts = {
     Food: 'Add Food', Movement: 'Log Activity', Water: 'Add Water', Poop: 'Log Poop', Weight: 'Log Weight',
   };
-  for (const [name, actions] of [['Small widget', Object.keys(shortcuts)], ['Extra-small widget', ['Food', 'Water', 'Poop']], ['Large widget', Object.keys(shortcuts)]]) {
+  for (const [name, actions] of [['Small widget', Object.keys(shortcuts)], ['Extra-small widget', ['Food', 'Water', 'Poop']], ['Medium widget', Object.keys(shortcuts)], ['Large widget', Object.keys(shortcuts)]]) {
     for (const action of actions) {
       const button = page.getByRole('button', { name: `${name}: ${action}`, exact: true });
       assert.equal((await button.innerText()).trim(), '', 'Widget buttons must be icon-only');
@@ -101,7 +101,7 @@ try {
       await dialog.waitFor({ state: 'hidden' });
     }
   }
-  console.log('PASS: all 13 icon-only widget shortcuts open the intended logging dialogs.');
+  console.log('PASS: all 18 default widget shortcuts open the intended logging dialogs.');
 
   // 5. The Large widget has no brand, no "today" tag, and shows the Ultra minimal arrangement.
   const large = page.getByRole('group', { name: 'Large widget', exact: true });
@@ -169,19 +169,17 @@ try {
   console.log('PASS: the Android bundle starts empty and offline, with its bundled Nunito wordmark.');
 
   // 10. Native swipe, Back and widget delivery, simulated at the protocol level only.
+  const input = await clean.newCDPSession(app);
   const swipe = async (points) => {
-    await app.evaluate((pts) => {
-      const el = document.querySelector('main');
-      const touch = ([x, y]) => new Touch({ identifier: 5, target: el, clientX: x, clientY: y });
-      el.dispatchEvent(new TouchEvent('touchstart', { bubbles: true, touches: [touch(pts[0])] }));
-      for (const point of pts.slice(1)) el.dispatchEvent(new TouchEvent('touchmove', { bubbles: true, touches: [touch(point)] }));
-      el.dispatchEvent(new TouchEvent('touchend', { bubbles: true, touches: [], changedTouches: [touch(pts.at(-1))] }));
-    }, points);
-    await app.waitForTimeout(70);
+    for (const [i, [x, y]] of points.entries()) {
+      await input.send('Input.dispatchTouchEvent', { type: i ? 'touchMove' : 'touchStart', touchPoints: [{ x, y }] });
+    }
+    await input.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await app.waitForFunction(() => !document.documentElement.classList.contains('kc-page-moving'));
   };
   const current = () => app.locator('nav[aria-label="Primary"] [aria-current="page"]').getAttribute('aria-label');
   await swipe([[200, 330], [195, 390], [60, 410]]); assert.equal(await current(), 'Today');
-  await swipe([[382, 330], [180, 334]]); assert.equal(await current(), 'Today');
+  await swipe([[387, 330], [180, 334]]); assert.equal(await current(), 'Today');
   await swipe([[300, 330], [170, 333], [80, 335]]); assert.equal(await current(), 'Custom');
   await swipe([[80, 335], [260, 332]]); assert.equal(await current(), 'Today');
   console.log('PASS: horizontal swipes move between pages; vertical and edge gestures do not.');
@@ -214,7 +212,8 @@ try {
   await app.getByRole('button', { name: 'Previous day', exact: true }).click();
   await app.evaluate(() => { window.widgetFixture.pending = 'food'; window.widgetFixture.emit('widgetActionAvailable'); });
   await app.getByRole('dialog', { name: 'Add Food', exact: true }).getByRole('button', { name: /White Bread Roll/ }).click();
-  await app.getByRole('dialog').getByRole('button', { name: /Add to Meal/ }).click();
+  await app.getByRole('dialog').getByRole('button', { name: /Add another item/ }).click();
+  await app.getByRole('dialog').getByRole('button', { name: /Log all/ }).click();
   await app.waitForFunction(() => Object.values(window.widgetFixture.daily.days).some((day) => day.calories === 272));
   const published = await app.evaluate(() => ({
     bmr: window.widgetFixture.daily.bmr,

@@ -23,13 +23,11 @@ import {
   ChevronDown,
   BookOpen,
   ScanBarcode,
-  Wheat,
   X,
 } from 'lucide-react';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MacroPills } from '../common/MacroPills';
-import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
 
 const libraryPalettes = {
   meals: { text: '#7D4E14', muted: '#8A5617', border: '#E8C68E' },
@@ -667,31 +665,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         {meal.description && !ultraMinimal && (
                           <p className="text-xs text-[var(--muted)]">{meal.description}</p>
                         )}
-                        <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums pt-2`}>
-                          <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${nut.carbs} g`} title={t.macros.carbs}>
-                            <span className="text-xs font-extrabold">{nut.carbs}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14] flex items-center justify-center" role="img" aria-label={`${t.macros.protein}: ${nut.protein} g`} title={t.macros.protein}>
-                            <span className="text-xs font-extrabold">{nut.protein}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582] flex items-center justify-center" role="img" aria-label={`${t.macros.fat}: ${nut.fat} g`} title={t.macros.fat}>
-                            <span className="text-xs font-extrabold">{nut.fat}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.fiber}: ${nut.fiber} g`} title={t.macros.fiber}>
-                            {ultraMinimal ? <Wheat size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.fiber}</span>}
-                            <span className="text-xs font-extrabold">{nut.fiber}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.salt}: ${nut.salt} g`} title={t.macros.salt}>
-                            {ultraMinimal ? <SaltCrystalIcon size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.salt}</span>}
-                            <span className="text-xs font-extrabold">{nut.salt}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          {settings.trackSugar && (
-                            <div className="bg-[#F7E9AA] p-1.5 rounded-2xl text-[#6E5B14]" role="img" aria-label={`${t.macros.sugar}: ${nut.sugar} g`} title={t.macros.sugar}>
-                              <span className="text-[10px] font-bold block">{t.macros.sugar}</span>
-                              <span className="text-xs font-extrabold">{nut.sugar}{!ultraMinimal && 'g'}</span>
-                            </div>
-                          )}
-                        </div>
+                        <div className="pt-2"><FoodMacroGrid food={nut} amount={100} mode={ultraMinimal ? 'minimal' : 'facts'} /></div>
 
                         <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                           {meal.ingredients.map((ing, idx) => {
@@ -836,31 +810,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
                       <div className="pt-1 space-y-2.5 border-t border-[var(--border)]">
-                        <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums pt-2`}>
-                          <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${recipe.carbs ?? '—'} g`} title={t.macros.carbs}>
-                            <span className="text-xs font-extrabold">{recipe.carbs ?? '—'}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14] flex items-center justify-center" role="img" aria-label={`${t.macros.protein}: ${recipe.protein ?? '—'} g`} title={t.macros.protein}>
-                            <span className="text-xs font-extrabold">{recipe.protein ?? '—'}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582] flex items-center justify-center" role="img" aria-label={`${t.macros.fat}: ${recipe.fat ?? '—'} g`} title={t.macros.fat}>
-                            <span className="text-xs font-extrabold">{recipe.fat ?? '—'}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.fiber}: ${recipe.fiber ?? '—'} g`} title={t.macros.fiber}>
-                            {ultraMinimal ? <Wheat size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.fiber}</span>}
-                            <span className="text-xs font-extrabold">{recipe.fiber ?? '—'}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]" role="img" aria-label={`${t.macros.salt}: ${recipe.salt ?? '—'} g`} title={t.macros.salt}>
-                            {ultraMinimal ? <SaltCrystalIcon size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.salt}</span>}
-                            <span className="text-xs font-extrabold">{recipe.salt ?? '—'}{!ultraMinimal && 'g'}</span>
-                          </div>
-                          {settings.trackSugar && (
-                            <div className="bg-[#F7E9AA] p-1.5 rounded-2xl text-[#6E5B14]" role="img" aria-label={`${t.macros.sugar}: ${recipe.sugar ?? '—'} g`} title={t.macros.sugar}>
-                              <span className="text-[10px] font-bold block">{t.macros.sugar}</span>
-                              <span className="text-xs font-extrabold">{recipe.sugar ?? '—'}{!ultraMinimal && 'g'}</span>
-                            </div>
-                          )}
-                        </div>
+                        <div className="pt-2"><FoodMacroGrid food={recipe} amount={100} mode={ultraMinimal ? 'minimal' : 'facts'} /></div>
 
                         {/* Ingredients with their original quantities */}
                         <div>
@@ -973,7 +923,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         }}
       />
 
-      {!hideDock && !isCreateOpen && !isRecipeOpen && !activeMealToLog && !activeRecipeToLog && (
+      {!hideDock && (
         <ActionDock
           label={t.prebuilt.creationDock}
           actions={[
@@ -1048,7 +998,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             ))}
           </div>
           {activeRecipeToLog && (
-            <AmountSelector value={recipeLogAmount} onChange={setRecipeLogAmount} unit={activeRecipeToLog.unit} />
+            <>
+              <AmountSelector value={recipeLogAmount} onChange={setRecipeLogAmount} unit={activeRecipeToLog.unit} />
+              <FoodMacroGrid food={activeRecipeToLog} amount={recipeLogAmount} />
+            </>
           )}
           <button
             type="button"
@@ -1337,10 +1290,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   </span>
                   <MacroPills carbs={recipeTotals.c100} protein={recipeTotals.p100} fat={recipeTotals.f100} stretch />
                 </div>
-                <div className="grid grid-cols-2 gap-1 text-center text-[10px] font-bold tabular-nums">
-                  <span className="bg-[#CFE7FE] text-[#183B5E] rounded-lg py-1">{t.macros.fiber} {recipeTotals.fib100}</span>
-                  <span className="bg-[var(--surface)] text-[var(--muted)] rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}</span>
-                  {settings.trackSugar && <span className="bg-[#F7E9AA] text-[#6E5B14] rounded-lg py-1 col-span-2">{t.macros.sugar} {recipeTotals.sugar100}</span>}
+                <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-1 text-center text-[10px] font-bold tabular-nums`}>
+                  <span data-nutrient="fiber" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.fiber} {recipeTotals.fib100}g</span>
+                  <span data-nutrient="salt" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}g</span>
+                  {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {recipeTotals.sugar100}g</span>}
                 </div>
                 <div className="space-y-1.5 max-h-32 overflow-y-auto">
                   {recipeIngs.map((ing, idx) => {

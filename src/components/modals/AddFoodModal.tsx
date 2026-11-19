@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
+import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { AmountSelector } from '../common/AmountSelector';
 import { FoodItem, LoggedFoodItem, MealSlotId, PreBuiltMeal } from '../../types';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
@@ -305,21 +306,7 @@ export const AddFoodModal: React.FC = () => {
   const removeQueued = (key: string) =>
     setQueuedItems((prev) => prev.filter((item) => item.key !== key));
 
-  const preview = useMemo(() => {
-    if (!activeFood) return null;
-    const k = (currentAmount || 0) / 100;
-    const r = (v: number | null, d = 10) => (v !== null ? Math.round(v * k * d) / d : null);
-    return {
-      kcal: Math.round(activeFood.calories * k),
-      carbs: r(activeFood.carbs),
-      protein: r(activeFood.protein),
-      fat: r(activeFood.fat),
-      fiber: r(activeFood.fiber),
-      salt: r(activeFood.salt, 100),
-      sugar: r(activeFood.sugar ?? null),
-    };
-  }, [activeFood, currentAmount]);
-
+  const portionKcal = activeFood ? kcalOf(activeFood, currentAmount) : 0;
   const queuedTotalKcal = queuedItems.reduce((s, e) => s + kcalOf(e.food, e.amount), 0);
 
   // Shared result row: whole row picks the food, the star toggles favourites. It shows the
@@ -364,7 +351,7 @@ export const AddFoodModal: React.FC = () => {
       subtitle={t.mealSlots[targetMealSlot]}
       maxWidth="max-w-xl"
     >
-      {activeFood && preview ? (
+      {activeFood ? (
         /* ---------- QUANTITY SELECTION ---------- */
         <div className="space-y-4">
           <div className="flex items-center justify-between gap-2">
@@ -384,30 +371,14 @@ export const AddFoodModal: React.FC = () => {
               {activeFood.calories} kcal / 100{activeFood.unit}
             </span>
             <div className="text-right tabular-nums">
-              <span className="text-2xl font-extrabold text-[#142E1F]">{preview.kcal}</span>
+              <span className="text-2xl font-extrabold text-[#142E1F]">{portionKcal}</span>
               <span className="text-xs font-bold text-[#1D5C38] ml-1">kcal</span>
             </div>
           </div>
 
           <AmountSelector value={currentAmount} onChange={setCurrentAmount} unit={activeFood.unit} />
 
-          <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums`}>
-            {(
-              [
-                ['C', preview.carbs, 'bg-[#CFE7FE] text-[#1A4670]'],
-                ['P', preview.protein, 'bg-[#FAE0B4] text-[#7D4E14]'],
-                ['F', preview.fat, 'bg-[#E2D6FF] text-[#4D3582]'],
-                [t.macros.fiber, preview.fiber, 'bg-[var(--inset)] text-[var(--muted)]'],
-                [t.macros.salt, preview.salt, 'bg-[var(--inset)] text-[var(--muted)]'],
-                ...(settings.trackSugar ? [[t.macros.sugar, preview.sugar, 'bg-[#F7E9AA] text-[#6E5B14]'] as const] : []),
-              ] as const
-            ).map(([label, val, cls]) => (
-              <div key={label} className={`rounded-2xl p-2 ${cls}`}>
-                <span className="text-[10px] font-bold uppercase block opacity-80 truncate">{label}</span>
-                <span className="text-xs font-extrabold">{val !== null ? `${val}g` : '—'}</span>
-              </div>
-            ))}
-          </div>
+          <FoodMacroGrid food={activeFood} amount={currentAmount} />
 
           {queuedItems.length > 0 && (
             <div className="bg-[var(--inset)] rounded-2xl p-3 space-y-1.5">
@@ -453,7 +424,7 @@ export const AddFoodModal: React.FC = () => {
               className="pressable w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#17432A] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
             >
               <Plus size={16} strokeWidth={2.5} />
-              <span>{t.foodModal.addAnotherBtn} · {preview.kcal} kcal</span>
+              <span>{t.foodModal.addAnotherBtn} · {portionKcal} kcal</span>
             </button>
 
             {queuedItems.length > 0 && (
@@ -464,7 +435,7 @@ export const AddFoodModal: React.FC = () => {
               >
                 <Check size={17} strokeWidth={2.5} />
                 <span>
-                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length + 1))} · {queuedTotalKcal + preview.kcal} kcal
+                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length + 1))} · {queuedTotalKcal + portionKcal} kcal
                 </span>
               </button>
             )}

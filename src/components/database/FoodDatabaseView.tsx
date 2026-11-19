@@ -1,12 +1,13 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useApp } from '../../context/AppContext';
 import { FOOD_CATEGORIES } from '../../data/foodCategories';
+import { catalogueScore, getLoadedOffCatalog, loadOffCatalog } from '../../data/offCatalog';
 import { FoodCategory, FoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
+import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { AmountSelector } from '../common/AmountSelector';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
-import { sortFavoritesFirst } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
@@ -35,9 +36,12 @@ import {
   Soup,
   CakeSlice,
   ExternalLink,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
-const PAGE_STEP = 100;
+const PAGE_SIZE = 36;
+type CatalogFilter = FoodCategory | 'all' | 'custom' | 'favorites';
 const categoryIcons: Record<FoodCategory, typeof Egg> = {
   dairy: Egg, meat_fish: Fish, bakery: Croissant, produce_fruit: Apple,
   produce_veg: Carrot, grains_pasta: Wheat, legumes: Bean, nuts_seeds: Nut,
@@ -48,8 +52,8 @@ const categoryIcons: Record<FoodCategory, typeof Egg> = {
 export const FoodDatabaseView: React.FC = () => {
   const {
     allFoods,
-    settings,
     deleteCustomFood,
+    rememberFood,
     logFoodItem,
     targetMealSlot,
     setIsBarcodeOpen,
@@ -60,11 +64,13 @@ export const FoodDatabaseView: React.FC = () => {
     t,
   } = useApp();
 
-  const [search, setSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<FoodCategory | 'all' | 'custom' | 'favorites'>('all');
-  const [visibleLimit, setVisibleLimit] = useState<number>(PAGE_STEP);
-  const [searchFocused, setSearchFocused] = useState(false);
-  const blurTimer = useRef<number | null>(null);
+  const [search, updateQuery] = useState('');
+  const [selectedCategory, updateCategory] = useState<CatalogFilter>('all');
+  const [page, setPage] = useState(0);
+  const [catalogue, setCatalogue] = useState(getLoadedOffCatalog);
+  const [failed, setFailed] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+  const filters = useRef<HTMLDivElement>(null);
 
   // Quick log modal
   const [foodToLog, setFoodToLog] = useState<FoodItem | null>(null);
@@ -73,21 +79,38 @@ export const FoodDatabaseView: React.FC = () => {
   const [logAmount, setLogAmount] = useState<number>(100);
 
   useEffect(() => {
-    setVisibleLimit(PAGE_STEP);
-  }, [search, selectedCategory]);
+    if (catalogue) return;
+    let current = true;
+    setFailed(false);
+    void loadOffCatalog().then((data) => {
+      if (current) { setCatalogue(data); setFailed(!data); }
+    });
+    return () => { current = false; };
+  }, [attempt, catalogue]);
 
-  useEffect(() => () => {
-    if (blurTimer.current) window.clearTimeout(blurTimer.current);
-  }, []);
+  const setSearch = (value: string) => { updateQuery(value); setPage(0); };
+  const setSelectedCategory = (value: CatalogFilter) => { updateCategory(value); setPage(0); };
 
   const favoriteIds = favoriteFoods ?? [];
   const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
 
   const hasCustomFoods = useMemo(() => allFoods.some((f) => f.isCustom), [allFoods]);
 
-  const filteredFoods = useMemo(() => {
+  const library = useMemo(() => {
+    const byId = new Map(allFoods.map((food) => [food.id, food]));
+    for (const id of favoriteSet) {
+      if (catalogue && id.startsWith('off-') && !byId.has(id)) {
+        const food = catalogue.findByBarcode(id.slice(4));
+        if (food) byId.set(food.id, food);
+      }
+    }
+    return [...byId.values()];
+  }, [allFoods, favoriteSet, catalogue]);
+  const excluded = useMemo(() => new Set(library.filter((f) => f.barcode).map((f) => Number(f.barcode))), [library]);
+
+  const results = useMemo(() => {
     const q = search.trim();
-    const matched = allFoods.filter((f) => {
+    const matched = library.filter((f) => {
       const matchCategory =
         selectedCategory === 'all'
           ? true
@@ -98,38 +121,35 @@ export const FoodDatabaseView: React.FC = () => {
           : f.category === selectedCategory;
       if (!matchCategory) return false;
       if (!q) return true;
-      return fuzzyMatch(q, [f.name_de, f.name_it, f.name_en, f.brand || '']);
+      return f.barcode === q || fuzzyMatch(q, [f.name_de, f.name_it, f.name_en, f.brand || '']);
     });
+    const ranked = matched.map((food) => ({ food, score: !q || food.barcode === q ? 0 : Math.min(
+      ...[food.name_en, food.name_it, food.name_de, food.brand || ''].map((name) => fuzzyScore(q, name)),
+    ) })).sort((a, b) => Number(favoriteSet.has(b.food.id)) - Number(favoriteSet.has(a.food.id)) || a.score - b.score);
+    const off = selectedCategory === 'custom' || selectedCategory === 'favorites' ? null
+      : catalogue?.browse(q, selectedCategory === 'all' ? null : selectedCategory, excluded);
+    const first: FoodItem[] = [], last: FoodItem[] = [];
+    const cutoff = catalogueScore(q);
+    for (const { food, score } of ranked) (favoriteSet.has(food.id) || score <= cutoff ? first : last).push(food);
+    return { first, off, last, total: matched.length + (off?.count ?? 0) };
+  }, [library, search, selectedCategory, favoriteSet, catalogue, excluded]);
 
-    // Focusing the field with no query narrows the catalog to favourites only.
-    if (!q) {
-      return searchFocused && selectedCategory === 'all'
-        ? matched.filter((f) => favoriteSet.has(f.id))
-        : matched;
-    }
-
-    return sortFavoritesFirst(
-      matched
-        .map((f) => ({
-          f,
-          score: Math.min(
-            fuzzyScore(q, f.name_en),
-            fuzzyScore(q, f.name_it),
-            fuzzyScore(q, f.name_de),
-            ...(f.brand ? [fuzzyScore(q, f.brand)] : [])
-          ),
-        }))
-        .sort((a, b) => a.score - b.score)
-        .map((x) => x.f),
-      favoriteIds,
-      (f) => f.id
-    );
-  }, [allFoods, search, selectedCategory, searchFocused, favoriteIds, favoriteSet]);
+  const pages = Math.max(1, Math.ceil(results.total / PAGE_SIZE));
+  const currentPage = Math.min(page, pages - 1);
+  const foods = useMemo(() => {
+    const start = currentPage * PAGE_SIZE, end = start + PAGE_SIZE;
+    const { first, off, last } = results;
+    const head = first.slice(start, end);
+    const middle = off?.page(Math.max(0, start - first.length), PAGE_SIZE - head.length) ?? [];
+    const tailStart = Math.max(0, start - first.length - (off?.count ?? 0));
+    return [...head, ...middle, ...last.slice(tailStart, tailStart + PAGE_SIZE - head.length - middle.length)];
+  }, [currentPage, results]);
 
   const handleConfirmQuickLog = () => {
     if (!foodToLog) return;
     const finalAmount = logAmount > 0 ? logAmount : 100;
     setLastAmount(foodToLog.id, finalAmount);
+    rememberFood(foodToLog);
     logFoodItem(logSlot, foodToLog, finalAmount);
     setFoodToLog(null);
   };
@@ -143,7 +163,10 @@ export const FoodDatabaseView: React.FC = () => {
     { id: 'extra', label: t.mealSlots.extra },
   ];
 
-  const remaining = Math.max(0, filteredFoods.length - visibleLimit);
+  const changePage = (next: number) => {
+    setPage(next);
+    filters.current?.scrollIntoView({ block: 'start', behavior: 'instant' });
+  };
 
   return (
     <div className="space-y-4">
@@ -166,8 +189,8 @@ export const FoodDatabaseView: React.FC = () => {
             <h2 className="text-base sm:text-lg font-extrabold text-[var(--text)]">
               {t.database.title}
             </h2>
-            <span className="text-xs font-medium tabular-nums text-[var(--muted)]">
-              {t.database.itemsCount.replace('{count}', String(filteredFoods.length))}
+            <span aria-live="polite" data-catalogue-count className="text-xs font-medium tabular-nums text-[var(--muted)]">
+              {!catalogue && !failed ? t.database.loadingCatalogue : t.database.itemsCount.replace('{count}', results.total.toLocaleString(language))}
             </span>
           </div>
         </div>
@@ -195,7 +218,11 @@ export const FoodDatabaseView: React.FC = () => {
       </div>
 
       {/* Search & Category Filters */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 space-y-3">
+      <div ref={filters} className="scroll-mt-32 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 space-y-3">
+        {failed && <p role="status" className="text-xs font-semibold text-[var(--muted)]">
+          {t.database.catalogueUnavailable}{' '}
+          <button type="button" className="underline" onClick={() => setAttempt((n) => n + 1)}>{t.database.retry}</button>
+        </p>}
         <div className="relative">
           <Search
             size={16}
@@ -206,14 +233,6 @@ export const FoodDatabaseView: React.FC = () => {
             enterKeyHint="search"
             aria-label={t.database.searchPlaceholder}
             value={search}
-            onFocus={() => {
-              if (blurTimer.current) window.clearTimeout(blurTimer.current);
-              setSearchFocused(true);
-            }}
-            onBlur={() => {
-              if (blurTimer.current) window.clearTimeout(blurTimer.current);
-              blurTimer.current = window.setTimeout(() => setSearchFocused(false), 140);
-            }}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t.database.searchPlaceholder}
             className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-10 pr-9 py-2.5 text-[var(--text)] placeholder-[var(--muted)] text-sm font-medium focus:outline-none focus:border-[var(--muted)] transition-colors"
@@ -221,11 +240,7 @@ export const FoodDatabaseView: React.FC = () => {
           {search && (
             <button
               type="button"
-              onClick={() => {
-                setSearch('');
-                setSearchFocused(false);
-                if (blurTimer.current) window.clearTimeout(blurTimer.current);
-              }}
+              onClick={() => setSearch('')}
               className="pressable absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
               aria-label={t.common.clear}
             >
@@ -302,10 +317,10 @@ export const FoodDatabaseView: React.FC = () => {
       </div>
 
       {/* Foods Grid */}
-      {filteredFoods.length === 0 ? (
+      {results.total === 0 ? (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-8 text-center space-y-3">
           <p className="text-sm font-bold text-[var(--muted)]">
-            {selectedCategory === 'favorites' || (searchFocused && !search.trim())
+            {selectedCategory === 'favorites'
               ? t.favorites.empty
               : t.foodModal.noResults}
           </p>
@@ -320,7 +335,7 @@ export const FoodDatabaseView: React.FC = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filteredFoods.slice(0, visibleLimit).map((food) => {
+          {foods.map((food) => {
             const CategoryIcon = categoryIcons[food.category] ?? Utensils;
             const primaryName =
               language === 'it' ? food.name_it : food.name_en || food.name_de;
@@ -330,6 +345,7 @@ export const FoodDatabaseView: React.FC = () => {
             return (
               <div
                 key={food.id}
+                data-food-id={food.id}
                 className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col justify-between gap-3"
               >
                 <div>
@@ -365,47 +381,7 @@ export const FoodDatabaseView: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Macros per 100g */}
-                  <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 pt-3 text-center tabular-nums`}>
-                    <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670]">
-                      <span className="text-[10px] font-bold block">C</span>
-                      <span className="text-xs font-extrabold">
-                        {food.carbs !== null ? `${food.carbs}g` : '—'}
-                      </span>
-                    </div>
-                    <div className="bg-[#FAE0B4] p-1.5 rounded-2xl text-[#7D4E14]">
-                      <span className="text-[10px] font-bold block">P</span>
-                      <span className="text-xs font-extrabold">
-                        {food.protein !== null ? `${food.protein}g` : '—'}
-                      </span>
-                    </div>
-                    <div className="bg-[#E2D6FF] p-1.5 rounded-2xl text-[#4D3582]">
-                      <span className="text-[10px] font-bold block">F</span>
-                      <span className="text-xs font-extrabold">
-                        {food.fat !== null ? `${food.fat}g` : '—'}
-                      </span>
-                    </div>
-                    <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                      <span className="text-[10px] font-bold block">{t.macros.fiber}</span>
-                      <span className="text-xs font-extrabold">
-                        {food.fiber !== null ? `${food.fiber}g` : '—'}
-                      </span>
-                    </div>
-                    <div className="bg-[var(--inset)] p-1.5 rounded-2xl text-[var(--muted)]">
-                      <span className="text-[10px] font-bold block">{t.macros.salt}</span>
-                      <span className="text-xs font-extrabold">
-                        {food.salt !== null ? `${food.salt}g` : '—'}
-                      </span>
-                    </div>
-                    {settings.trackSugar && (
-                      <div className="bg-[#F7E9AA] p-1.5 rounded-2xl text-[#6E5B14]">
-                        <span className="text-[10px] font-bold block">{t.macros.sugar}</span>
-                        <span className="text-xs font-extrabold">
-                          {food.sugar != null ? `${food.sugar}g` : '—'}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                  <div className="pt-3"><FoodMacroGrid food={food} amount={100} mode="facts" /></div>
                 </div>
 
                 <div className="pt-2 border-t border-[var(--border)] flex items-center justify-between gap-2">
@@ -419,7 +395,7 @@ export const FoodDatabaseView: React.FC = () => {
                     )}
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <FavoriteButton foodId={food.id} variant="card" />
+                    <FavoriteButton foodId={food.id} food={food} variant="card" />
                     {food.isCustom && (
                       <button
                         type="button"
@@ -451,14 +427,14 @@ export const FoodDatabaseView: React.FC = () => {
         </div>
       )}
 
-      {remaining > 0 && (
-        <button
-          type="button"
-          onClick={() => setVisibleLimit((v) => v + PAGE_STEP)}
-          className="pressable w-full py-3 rounded-2xl bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-xs font-extrabold tabular-nums text-[var(--text)]"
-        >
-          {t.database.showMore.replace('{count}', String(remaining))}
-        </button>
+      {pages > 1 && (
+        <nav aria-label={t.database.title} className="flex items-center justify-center gap-4 py-2 text-xs font-bold tabular-nums">
+          <button type="button" aria-label={t.database.prevPage} disabled={!currentPage} onClick={() => changePage(currentPage - 1)}
+            className="pressable grid size-11 place-items-center rounded-full bg-[var(--surface)] border border-[var(--border)] disabled:opacity-40"><ChevronLeft size={17} /></button>
+          <span aria-live="polite">{t.database.pageOf.replace('{page}', String(currentPage + 1)).replace('{pages}', pages.toLocaleString(language))}</span>
+          <button type="button" aria-label={t.database.nextPage} disabled={currentPage + 1 === pages} onClick={() => changePage(currentPage + 1)}
+            className="pressable grid size-11 place-items-center rounded-full bg-[var(--surface)] border border-[var(--border)] disabled:opacity-40"><ChevronRight size={17} /></button>
+        </nav>
       )}
 
       {/* Quick Log Modal */}
@@ -508,6 +484,7 @@ export const FoodDatabaseView: React.FC = () => {
             onChange={setLogAmount}
             unit={foodToLog?.unit || 'g'}
           />
+          {foodToLog && <FoodMacroGrid food={foodToLog} amount={logAmount} />}
 
           <button
             type="button"

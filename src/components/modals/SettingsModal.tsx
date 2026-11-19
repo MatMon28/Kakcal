@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { useOffCatalog } from '../../utils/useOffCatalog';
+import { catalogueScore } from '../../data/offCatalog';
 import { FoodItem } from '../../types';
 import {
   UtensilsCrossed,
@@ -37,6 +39,7 @@ export const SettingsModal: React.FC = () => {
     setActiveTab,
     activeTab,
     allFoods,
+    rememberFood,
     t,
   } = useApp();
 
@@ -49,6 +52,7 @@ export const SettingsModal: React.FC = () => {
   const [newBtnIcon, setNewBtnIcon] = useState('sparkles');
   const [newBtnStats, setNewBtnStats] = useState(true);
   const [editingBtnId, setEditingBtnId] = useState<string | null>(null);
+  const widgetShortcutEnabled = settings.customButtons.length > 0 && settings.widgetCustomButton;
 
   const nameOf = (f: FoodItem) =>
     language === 'it' ? f.name_it : f.name_en || f.name_de;
@@ -56,19 +60,22 @@ export const SettingsModal: React.FC = () => {
   const foodById = (id: string) => allFoods.find((x) => x.id === id);
 
   // Food picker results, same behaviour as the Add Food search (type to find, typos OK)
+  const catalogue = useOffCatalog(pickerIdx !== null);
   const pickerResults = useMemo(() => {
     const q = query.trim();
     if (q.length < 2) return [];
-    return allFoods
+    const local = allFoods
       .map((f) => ({
         f,
         score: fuzzyScore(q, `${f.name_de} ${f.name_it} ${f.name_en} ${f.brand || ''}`),
       }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
-      .sort((a, b) => a.score - b.score)
+      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']));
+    const known = new Set(local.map(({ f }) => f.id));
+    const matches = (catalogue?.search(q, 25) ?? []).filter((f) => !known.has(f.id));
+    return [...local, ...matches.map((f) => ({ f, score: catalogueScore(q) }))].sort((a, b) => a.score - b.score)
       .slice(0, 25)
       .map((x) => x.f);
-  }, [allFoods, query]);
+  }, [allFoods, query, catalogue]);
 
   const seg = (active: boolean) =>
     `pressable flex-1 py-2.5 rounded-xl text-xs font-extrabold text-center border ${
@@ -203,6 +210,7 @@ export const SettingsModal: React.FC = () => {
                     type="button"
                     onClick={() => {
                       const next = [...settings.quickFoods];
+                      rememberFood(food);
                       next[pickerIdx] = food.id;
                       updateSettings({ quickFoods: next });
                       setPickerIdx(null);
@@ -278,7 +286,6 @@ export const SettingsModal: React.FC = () => {
               </span>
               <span className="min-w-0">
                 <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.ultraMinimal}</span>
-                <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.ultraMinimalHint}</span>
               </span>
             </span>
             <SwitchVisual on={settings.ultraMinimal} />
@@ -307,7 +314,6 @@ export const SettingsModal: React.FC = () => {
                     </button>
                   ))}
                 </div>
-                <p className="mt-1.5 px-1 text-[11px] font-medium text-[var(--muted)]">{t.settings.widgetStyleHint}</p>
               </div>
 
             </div>
@@ -356,6 +362,7 @@ export const SettingsModal: React.FC = () => {
           <button
             type="button"
             aria-pressed={settings.trackSugar}
+            aria-label={t.settings.trackSugar}
             onClick={() => updateSettings({ trackSugar: !settings.trackSugar })}
             className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
           >
@@ -365,7 +372,6 @@ export const SettingsModal: React.FC = () => {
               </span>
               <span className="min-w-0">
                 <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.trackSugar}</span>
-                <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.trackSugarHint}</span>
               </span>
             </span>
             <SwitchVisual on={settings.trackSugar} />
@@ -451,9 +457,9 @@ export const SettingsModal: React.FC = () => {
           <div className="space-y-2">
                 <button
                   type="button"
-                  aria-pressed={settings.widgetCustomButton}
+                  aria-pressed={widgetShortcutEnabled}
                   aria-label={t.settings.widgetCustomButton}
-                  disabled={!settings.widgetCustomButton && settings.customButtons.length === 0}
+                  disabled={settings.customButtons.length === 0}
                   onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
                   className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
@@ -463,10 +469,9 @@ export const SettingsModal: React.FC = () => {
                     </span>
                     <span className="min-w-0">
                       <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.widgetCustomButton}</span>
-                      <span className="block text-[11px] font-medium text-[var(--muted)]">{settings.customButtons.length === 0 ? t.settings.widgetCustomButtonNone : t.settings.widgetCustomButtonHint}</span>
                     </span>
                   </span>
-                  <SwitchVisual on={settings.widgetCustomButton} />
+                  <SwitchVisual on={widgetShortcutEnabled} />
                 </button>
           </div>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { Footprints, Scale, Droplets, ArrowUpRight, Sparkles } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
+import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { PoopIcon } from '../common/PoopIcon';
 import { BristolIcon } from '../common/BristolIcon';
 import { TrackerIcon } from '../common/TrackerIcon';
@@ -153,34 +154,8 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
 
         {/* Macros summary when food was logged */}
         {allItems.length > 0 && (
-          <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums`}>
-            <div className="bg-[#CFE7FE] rounded-xl p-1.5 text-[#1A4670]">
-              <span className="text-[10px] font-bold block">C</span>
-              <span className="text-xs font-extrabold">{macros.carbsGrams}g</span>
-            </div>
-            <div className="bg-[#FAE0B4] rounded-xl p-1.5 text-[#7D4E14]">
-              <span className="text-[10px] font-bold block">P</span>
-              <span className="text-xs font-extrabold">{macros.proteinGrams}g</span>
-            </div>
-            <div className="bg-[#E2D6FF] rounded-xl p-1.5 text-[#4D3582]">
-              <span className="text-[10px] font-bold block">F</span>
-              <span className="text-xs font-extrabold">{macros.fatGrams}g</span>
-            </div>
-            <div className="bg-[var(--inset)] rounded-xl p-1.5 text-[var(--muted)]">
-              <span className="text-[10px] font-bold block truncate">{t.macros.fiber}</span>
-              <span className="text-xs font-extrabold text-[var(--text)]">{macros.fiberGrams}g</span>
-            </div>
-            <div className="bg-[var(--inset)] rounded-xl p-1.5 text-[var(--muted)]">
-              <span className="text-[10px] font-bold block truncate">{t.macros.salt}</span>
-              <span className="text-xs font-extrabold text-[var(--text)]">{macros.saltGrams}g</span>
-            </div>
-            {settings.trackSugar && (
-              <div className="bg-[#F7E9AA] rounded-xl p-1.5 text-[#6E5B14]">
-                <span className="text-[10px] font-bold block truncate">{t.macros.sugar}</span>
-                <span className="text-xs font-extrabold">{macros.sugarGrams}g</span>
-              </div>
-            )}
-          </div>
+          <FoodMacroGrid mode="facts" amount={100} food={{ carbs: macros.carbsGrams, protein: macros.proteinGrams,
+            fat: macros.fatGrams, fiber: macros.fiberGrams, salt: macros.saltGrams, sugar: macros.sugarGrams }} />
         )}
 
         {/* Poop */}

@@ -195,8 +195,8 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
       <div className={`mt-2.5 border-t pt-2.5 ${look.style === 'dark' ? 'border-white/20' : 'border-[var(--border)]'}`}>
         <ActionRow
           actions={look.customButton ? WIDGET_ACTIONS : BASE_WIDGET_ACTIONS}
-          label={ui.widgetLabels.large}
-          groupLabel={`${ui.widgetLabels.large} ${ui.actionsLabel}`}
+          label={compact ? ui.widgetLabels.medium : ui.widgetLabels.large}
+          groupLabel={`${compact ? ui.widgetLabels.medium : ui.widgetLabels.large} ${ui.actionsLabel}`}
           ui={ui}
           snapshot={snapshot}
           onAction={onAction}
