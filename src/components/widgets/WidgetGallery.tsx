@@ -85,20 +85,21 @@ function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
 }) {
   const style = TONE[tone];
   const Icon = style.Icon;
+  const heroCls = tone === 'intake' ? 'kc-hero-intake' : 'kc-hero-burned';
   return (
-    <div role="img" aria-label={label} className={`${style.card} flex ${compact ? 'min-h-[74px] p-2' : 'min-h-[104px] p-2.5'} flex-col justify-between rounded-2xl`}>
+    <div role="img" aria-label={label} className={`${heroCls} ${style.card} flex ${compact ? 'min-h-[74px] p-2' : 'min-h-[104px] p-2.5'} flex-col justify-between rounded-2xl`}>
       <div className="flex min-h-5 items-center justify-between gap-1">
         <span className={`inline-flex ${style.accent}`} aria-hidden="true">
           <Icon size={16} />
         </span>
         {pill && (
-          <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
+          <span className={`kc-balance-badge rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
         )}
       </div>
       <div className={`text-center ${compact ? 'text-[19px]' : 'text-[22px]'} font-extrabold tabular-nums tracking-tight ${style.ink}`}>{value}</div>
       {bar !== null && (
-        <div className={`h-1.5 w-full overflow-hidden rounded-full ${style.track}`}>
-          <div className={`h-full rounded-full transition-[width] duration-500 ${style.fill}`} style={{ width: `${bar}%` }} />
+        <div className={`kc-hero-track h-1.5 w-full overflow-hidden rounded-full ${style.track}`}>
+          <div className={`kc-hero-fill h-full rounded-full transition-[width] duration-500 ${style.fill}`} style={{ width: `${bar}%` }} />
         </div>
       )}
     </div>
@@ -119,7 +120,7 @@ function MacroCard({ tone, label, grams, percent, letter }: {
     <div
       role="img"
       aria-label={percent === null ? `${label}: ${grams} g` : `${label}: ${grams} g, ${percent}%`}
-      className={`${style.card} relative rounded-2xl px-1.5 py-2 text-center`}
+      className={`kc-macro-${tone} ${style.card} relative rounded-2xl px-1.5 py-2 text-center`}
     >
       {letter && (
         <span aria-hidden="true" className={`absolute left-2 top-1.5 text-[10px] font-extrabold leading-none ${style.percent}`}>

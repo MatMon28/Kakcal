@@ -1,0 +1,1976 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Kakcalculator &mdash; intro animation &amp; logo overview</title>
+<style>
+  :root { --cream:#FBF3E3; --ink:#232325; --surface:#141417; }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--surface); color:var(--cream); font-family:ui-sans-serif,-apple-system,"Segoe UI",Roboto,sans-serif; padding:34px 26px 60px; }
+  h1 { font-size:22px; letter-spacing:-0.02em; }
+  h2 { font-size:12px; text-transform:uppercase; letter-spacing:0.15em; color:rgba(251,243,227,0.5); margin:36px 0 14px; border-top:1px solid rgba(251,243,227,0.1); padding-top:16px; }
+  p.lead { font-size:13px; color:rgba(251,243,227,0.66); margin-top:7px; max-width:78ch; line-height:1.55; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:14px; }
+  .cell { background:rgba(251,243,227,0.045); border:1px solid rgba(251,243,227,0.1); border-radius:12px; overflow:hidden; }
+  .art { display:flex; align-items:center; justify-content:center; padding:14px; height:190px; }
+  .art svg { max-width:100%; max-height:100%; width:auto; height:auto; display:block; overflow:visible; }
+  .cell.is-wordmark .art { height:120px; }
+  /* the transparent variant is ink-on-nothing, so show it on the cream it is meant for */
+  .cell.is-transparent .art { background:#FBF3E3; }
+  figcaption { font-family:ui-monospace,Menlo,monospace; font-size:10.5px; padding:8px 11px; background:rgba(0,0,0,0.35); color:rgba(251,243,227,0.72); border-top:1px solid rgba(251,243,227,0.08); }
+</style>
+</head>
+<body>
+  <h1>Kakcalculator &mdash; intro animation &amp; logo set</h1>
+  <p class="lead">Every file below is a standalone, dependency-free SVG, shown playing live at its real speed. The <em>-lockup</em> variants run the two-phase launch: the icon animation settles first, then the K and the swirl travel out of the icon and join the wordmark. Full notes in <code>intro_animation.md</code>.</p>
+
+  <h2>Logos &mdash; 7 files</h2>
+  <div class="grid">
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Kakcalculator app icon">
+  <title>Kakcalculator — app icon (inverted)</title>
+  <rect x="8" y="8" width="496" height="496" rx="116" fill="#232325" />
+      <g fill="none" stroke="#FBF3E3" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    </g>
+  <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="#232325" stroke="#232325" stroke-width="9.5" />
+    <g fill="none" stroke="#FBF3E3" stroke-width="3.5">
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+      <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+      <path d="M22 28 Q32 31.5 42 28" />
+      <path d="M16 41 Q32 45.5 48 41" />
+    </g>
+  </g>
+</svg>
+</div>
+          <figcaption>kakcalculator-icon-inverted</figcaption>
+        </figure>
+
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Kakcalculator app icon">
+  <title>Kakcalculator — theme-aware app icon</title>
+  <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-surface, #FBF3E3)" />
+      <g fill="none" stroke="var(--kc-contrast, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    </g>
+  <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-surface, #FBF3E3)" stroke="var(--kc-surface, #FBF3E3)" stroke-width="9.5" />
+    <g fill="none" stroke="var(--kc-contrast, #232325)" stroke-width="3.5">
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+      <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+      <path d="M22 28 Q32 31.5 42 28" />
+      <path d="M16 41 Q32 45.5 48 41" />
+    </g>
+  </g>
+</svg>
+</div>
+          <figcaption>kakcalculator-icon-theme-aware</figcaption>
+        </figure>
+
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Kakcalculator app icon">
+  <title>Kakcalculator — app icon</title>
+  <rect x="8" y="8" width="496" height="496" rx="116" fill="#FBF3E3" />
+      <g fill="none" stroke="#232325" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    </g>
+  <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="#FBF3E3" stroke="#FBF3E3" stroke-width="9.5" />
+    <g fill="none" stroke="#232325" stroke-width="3.5">
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+      <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+      <path d="M22 28 Q32 31.5 42 28" />
+      <path d="M16 41 Q32 45.5 48 41" />
+    </g>
+  </g>
+</svg>
+</div>
+          <figcaption>kakcalculator-icon</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" width="820" height="260" role="img" aria-label="Kakcalculator">
+  <title>Kakcalculator — centered poop &amp; text wordmark (inverted)</title>
+  <rect width="820" height="260" fill="#232325" />
+  <g transform="translate(18, -2) scale(0.52)" fill="none" stroke="#FBF3E3" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M148 132 V392" />
+    <path d="M156 268 L304 132" />
+    <path d="M196 252 L312 392" />
+  </g>
+  <g transform="translate(172, 80) scale(1.45)" fill="none" stroke="#FBF3E3" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+    <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+    <path d="M22 28 Q32 31.5 42 28" />
+    <path d="M16 41 Q32 45.5 48 41" />
+  </g>
+  <text x="252" y="166" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px" fill="#FBF3E3" textLength="552" lengthAdjust="spacingAndGlyphs">kcalculator</text>
+</svg>
+</div>
+          <figcaption>kakcalculator-wordmark-inverted</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" width="820" height="260" role="img" aria-label="Kakcalculator">
+  <title>Kakcalculator — theme-aware wordmark</title>
+  <rect width="820" height="260" fill="var(--kc-surface, #FBF3E3)" />
+  <g transform="translate(18, -2) scale(0.52)" fill="none" stroke="var(--kc-contrast, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M148 132 V392" />
+    <path d="M156 268 L304 132" />
+    <path d="M196 252 L312 392" />
+  </g>
+  <g transform="translate(172, 80) scale(1.45)" fill="none" stroke="var(--kc-contrast, #232325)" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+    <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+    <path d="M22 28 Q32 31.5 42 28" />
+    <path d="M16 41 Q32 45.5 48 41" />
+  </g>
+  <text x="252" y="166" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px" fill="var(--kc-contrast, #232325)" textLength="552" lengthAdjust="spacingAndGlyphs">kcalculator</text>
+</svg>
+</div>
+          <figcaption>kakcalculator-wordmark-theme-aware</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark is-transparent">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" width="820" height="260" role="img" aria-label="Kakcalculator">
+  <title>Kakcalculator — wordmark, transparent background</title>
+  <rect width="820" height="260" fill="none" />
+  <g transform="translate(18, -2) scale(0.52)" fill="none" stroke="#232325" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M148 132 V392" />
+    <path d="M156 268 L304 132" />
+    <path d="M196 252 L312 392" />
+  </g>
+  <g transform="translate(172, 80) scale(1.45)" fill="none" stroke="#232325" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+    <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+    <path d="M22 28 Q32 31.5 42 28" />
+    <path d="M16 41 Q32 45.5 48 41" />
+  </g>
+  <text x="252" y="166" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px" fill="#232325" textLength="552" lengthAdjust="spacingAndGlyphs">kcalculator</text>
+</svg>
+</div>
+          <figcaption>kakcalculator-wordmark-transparent</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 260" width="820" height="260" role="img" aria-label="Kakcalculator">
+  <title>Kakcalculator — centered poop &amp; text wordmark</title>
+  <rect width="820" height="260" fill="#FBF3E3" />
+  <g transform="translate(18, -2) scale(0.52)" fill="none" stroke="#232325" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M148 132 V392" />
+    <path d="M156 268 L304 132" />
+    <path d="M196 252 L312 392" />
+  </g>
+  <g transform="translate(172, 80) scale(1.45)" fill="none" stroke="#232325" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+    <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+    <path d="M22 28 Q32 31.5 42 28" />
+    <path d="M16 41 Q32 45.5 48 41" />
+  </g>
+  <text x="252" y="166" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px" fill="#232325" textLength="552" lengthAdjust="spacingAndGlyphs">kcalculator</text>
+</svg>
+</div>
+          <figcaption>kakcalculator-wordmark</figcaption>
+        </figure></div>
+
+  <h2>Animations, phase 1 only &mdash; 6 files</h2>
+  <div class="grid">
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 01: SKETCH &amp; PLOP (1150ms) --- */
+        .s1-card { animation: s1-card-anim 1150ms linear both; }
+        .s1-stem { stroke-dasharray: 262 600; animation: s1-stem-anim 1150ms linear both; }
+        .s1-upper { stroke-dasharray: 204 600; animation: s1-upper-anim 1150ms linear both; }
+        .s1-lower { stroke-dasharray: 185 600; animation: s1-lower-anim 1150ms linear both; }
+        .s1-poop { animation: s1-poop-anim 1150ms linear both; }
+        .s1-c-bot { stroke-dasharray: 36 100; animation: s1-c-bot-anim 1150ms linear both; }
+        .s1-c-mid { stroke-dasharray: 24 100; animation: s1-c-mid-anim 1150ms linear both; }
+        .s1-c-top { stroke-dasharray: 14 100; animation: s1-c-top-anim 1150ms linear both; }
+    
+        @keyframes s1-card-anim {
+          0% { opacity: 0; transform: scale(0.74); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          24% { opacity: 1; transform: scale(1.018); animation-timing-function: ease-out; }
+          40% { transform: translate(0px, 0px) scale(1, 1); }
+          50% { transform: translate(0px, 0px) scale(1, 1); animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1); }
+          57% { transform: translate(0px, 5px) scale(1.012, 0.988); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          74% { transform: translate(0px, -1.5px) scale(0.997, 1.003); }
+          90%, 100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
+        }
+        @keyframes s1-stem-anim {
+          0%, 9% { opacity: 0; stroke-width: 0; stroke-dashoffset: 262; animation-timing-function: ease-out; }
+          14% { opacity: 1; stroke-width: 96; stroke-dashoffset: 215; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          34%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s1-upper-anim {
+          0%, 21% { opacity: 0; stroke-width: 0; stroke-dashoffset: 204; animation-timing-function: ease-out; }
+          26% { opacity: 1; stroke-width: 96; stroke-dashoffset: 165; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          45%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s1-lower-anim {
+          0%, 31% { opacity: 0; stroke-width: 0; stroke-dashoffset: 185; animation-timing-function: ease-out; }
+          36% { opacity: 1; stroke-width: 96; stroke-dashoffset: 148; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          53%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s1-poop-anim {
+          0%, 42% { opacity: 0; transform: translate(0px, -145px) scale(0.76, 1.24); animation-timing-function: cubic-bezier(0.55, 0.05, 0.85, 0.35); }
+          46% { opacity: 1; transform: translate(0px, -95px) scale(0.82, 1.2); animation-timing-function: cubic-bezier(0.55, 0.08, 0.85, 0.45); }
+          56% { opacity: 1; transform: translate(0px, 4px) scale(1.26, 0.72); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          68% { transform: translate(0px, -14px) scale(0.89, 1.13); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+          79% { transform: translate(0px, 1.5px) scale(1.06, 0.95); animation-timing-function: ease-out; }
+          89% { transform: translate(0px, 0px) scale(0.985, 1.015); }
+          100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
+        }
+        @keyframes s1-c-bot-anim {
+          0%, 52% { stroke-dashoffset: 36; opacity: 0; }
+          56% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          70%, 100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+        @keyframes s1-c-mid-anim {
+          0%, 57% { stroke-dashoffset: 24; opacity: 0; }
+          61% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          75%, 100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+        @keyframes s1-c-top-anim {
+          0%, 62% { stroke-dashoffset: 14; opacity: 0; }
+          66% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          80%, 100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+  </style>
+              <defs>
+                <clipPath id="s1-s1-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s1-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s1-s1-clip)">
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s1-stem" d="M148 132 V392" />
+                        <path class="s1-upper" d="M156 268 L304 132" />
+                        <path class="s1-lower" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 441.6)">
+                        <g class="s1-poop">
+                          <g transform="translate(-365.2 -441.6)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+                              <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+                                <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+                                <path class="s1-c-top" d="M27.5 15.5 Q32 18 36.5 15.5" />
+                                <path class="s1-c-mid" d="M22 28 Q32 31.5 42 28" />
+                                <path class="s1-c-bot" d="M16 41 Q32 45.5 48 41" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+</div>
+          <figcaption>01-sketch-and-plop</figcaption>
+        </figure>
+
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 02: TACTILE KEYPRESS (1120ms) --- */
+        .s2-rig { animation: s2-rig-anim 1120ms linear both; }
+        .s2-skirt { animation: s2-skirt-anim 1120ms linear both; }
+        .s2-cap { animation: s2-cap-anim 1120ms linear both; }
+        .s2-k { animation: s2-k-anim 1120ms linear both; }
+        .s2-poop { animation: s2-poop-anim 1120ms linear both; }
+        .s2-ray { stroke-dasharray: 32 80; animation: s2-ray-anim 1120ms linear both; }
+    
+        @keyframes s2-rig-anim {
+          0% { opacity: 0; transform: scale(0.78); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20% { opacity: 1; transform: scale(0.91); }
+          72% { transform: scale(0.91); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          92%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s2-skirt-anim {
+          0% { opacity: 0; transform: translate(0px, 0px); animation-timing-function: ease-out; }
+          18%, 62% { opacity: 1; transform: translate(0px, 16px); }
+          80%, 100% { opacity: 0; transform: translate(0px, 0px); }
+        }
+        @keyframes s2-cap-anim {
+          0% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20% { transform: translate(0px, -14px); animation-timing-function: ease-in-out; }
+          31% { transform: translate(0px, -18px); animation-timing-function: cubic-bezier(0.65, 0, 0.9, 1); }
+          42% { transform: translate(0px, 14px); }
+          50% { transform: translate(0px, 14px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          66% { transform: translate(0px, -6px); animation-timing-function: ease-out; }
+          84%, 100% { transform: translate(0px, 0px); }
+        }
+        @keyframes s2-k-anim {
+          0%, 6% { opacity: 0; transform: scale(0.88); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22%, 38% { opacity: 1; transform: scale(1); }
+          43% { transform: scale(1.045, 0.96); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          62%, 100% { opacity: 1; transform: scale(1, 1); }
+        }
+        @keyframes s2-poop-anim {
+          0%, 48% { opacity: 0; transform: scale(0) rotate(-18deg); animation-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1); }
+          52% { opacity: 1; }
+          65% { opacity: 1; transform: scale(1.16) rotate(6deg); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+          78% { transform: scale(0.95) rotate(-2.5deg); animation-timing-function: ease-out; }
+          89% { transform: scale(1.02) rotate(0.8deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s2-ray-anim {
+          0%, 51% { opacity: 0; stroke-dashoffset: 32; }
+          55% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          68% { opacity: 1; stroke-dashoffset: 0; animation-timing-function: ease-in; }
+          82%, 100% { opacity: 0; stroke-dashoffset: -32; }
+        }
+  </style>
+              <g transform="translate(256 256)">
+                <g class="s2-rig">
+                  <g transform="translate(-256 -256)">
+                    <g class="s2-skirt">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-ink, #232325)" />
+                      <rect x="14" y="8" width="484" height="486" rx="112" fill="var(--kc-edge, #D5C8B3)" />
+                    </g>
+                    <g class="s2-cap">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                      <g transform="translate(226 262)">
+                        <g class="s2-k">
+                          <g transform="translate(-226 -262)">
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M148 132 V392" />
+                              <path d="M156 268 L304 132" />
+                              <path d="M196 252 L312 392" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="11" stroke-linecap="round">
+                        <path class="s2-ray" d="M356 274 L349 248" />
+                        <path class="s2-ray" d="M394 281 L414 259" />
+                        <path class="s2-ray" d="M424 310 L450 299" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s2-poop">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+</div>
+          <figcaption>02-tactile-keypress</figcaption>
+        </figure>
+
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 03: SWIRL &amp; UNFOLD (1280ms) --- */
+        .s3-bg { animation: s3-bg-anim 1280ms linear both; }
+        .s3-stem { animation: s3-stem-anim 1280ms linear both; }
+        .s3-upper { animation: s3-upper-anim 1280ms linear both; }
+        .s3-lower { animation: s3-lower-anim 1280ms linear both; }
+        .s3-mascot { animation: s3-mascot-anim 1280ms linear both; }
+        .s3-outline { stroke-dasharray: 185 400; animation: s3-outline-anim 1280ms linear both; }
+    
+        @keyframes s3-bg-anim {
+          0% { opacity: 0; transform: scale(0.84); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s3-mascot-anim {
+          0% { opacity: 0; transform: translate(-109.2px, -74px) scale(0.35) rotate(-14deg); animation-timing-function: cubic-bezier(0.22, 1.35, 0.36, 1); }
+          18% { opacity: 1; transform: translate(-109.2px, -110px) scale(1.42) rotate(7deg); animation-timing-function: ease-in-out; }
+          30% { transform: translate(-109.2px, -106.35px) scale(1.36) rotate(-6deg); animation-timing-function: ease-in-out; }
+          38% { transform: translate(-109.2px, -106.35px) scale(1.38) rotate(4deg); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+          68% { transform: translate(7px, 5px) scale(1.06, 0.94) rotate(8deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          83% { transform: translate(-2px, -2px) scale(0.98, 1.02) rotate(-2deg); animation-timing-function: ease-out; }
+          94%, 100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1) rotate(0deg); }
+        }
+        @keyframes s3-outline-anim {
+          0%, 4% { stroke-dashoffset: 185; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          26%, 100% { stroke-dashoffset: 0; }
+        }
+        @keyframes s3-stem-anim {
+          0%, 35% { opacity: 0; transform: scale(0.2, 0.05); animation-timing-function: cubic-bezier(0.22, 1.3, 0.36, 1); }
+          40% { opacity: 1; }
+          58% { opacity: 1; transform: scale(1, 1.04); animation-timing-function: ease-out; }
+          74%, 100% { opacity: 1; transform: scale(1, 1); }
+        }
+        @keyframes s3-upper-anim {
+          0%, 42% { opacity: 0; transform: rotate(-47.4deg) scale(0.62); animation-timing-function: cubic-bezier(0.22, 1.35, 0.36, 1); }
+          46% { opacity: 1; }
+          72% { opacity: 1; transform: rotate(3.8deg) scale(1.02); animation-timing-function: ease-out; }
+          86%, 100% { opacity: 1; transform: rotate(0deg) scale(1); }
+        }
+        @keyframes s3-lower-anim {
+          0%, 46% { opacity: 0; transform: translate(-48px, 0px) rotate(39.6deg) scale(0.68); animation-timing-function: cubic-bezier(0.22, 1.35, 0.36, 1); }
+          50% { opacity: 1; }
+          76% { opacity: 1; transform: translate(0px, 0px) rotate(-3.8deg) scale(1.02); animation-timing-function: ease-out; }
+          90%, 100% { opacity: 1; transform: translate(0px, 0px) rotate(0deg) scale(1); }
+        }
+  </style>
+              <g transform="translate(256 256)">
+                <g class="s3-bg">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                      <g transform="translate(148 262)">
+                        <g class="s3-stem">
+                          <g transform="translate(-148 -262)">
+                            <path d="M148 132 V392" />
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(156 268)">
+                        <g class="s3-upper">
+                          <g transform="translate(-156 -268)">
+                            <path d="M156 268 L304 132" />
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(196 252)">
+                        <g class="s3-lower">
+                          <g transform="translate(-196 -252)">
+                            <path d="M196 252 L312 392" />
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                    <g transform="translate(365.2 370.35)">
+                      <g class="s3-mascot">
+                        <g transform="translate(-365.2 -370.35)">
+                          <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+                              <path class="s3-outline" d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+                              <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+                              <path d="M22 28 Q32 31.5 42 28" />
+                              <path d="M16 41 Q32 45.5 48 41" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+</div>
+          <figcaption>03-swirl-and-unfold</figcaption>
+        </figure>
+
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 04: POLARITY IRIS FLIP (1060ms) --- */
+        .s4-shell { animation: s4-shell-anim 1060ms linear both; }
+        .s4-dark-layer { animation: s4-dark-hide 1060ms linear both; }
+        .s4-dk-1 { stroke-dasharray: 262 600; animation: s4-seg1 1060ms linear both; }
+        .s4-dk-2 { stroke-dasharray: 204 600; animation: s4-seg2 1060ms linear both; }
+        .s4-dk-3 { stroke-dasharray: 185 600; animation: s4-seg3 1060ms linear both; }
+        .s4-dk-badge { animation: s4-badge-pop 1060ms linear both; }
+        .s4-iris { animation: s4-iris-expand 1060ms linear both; }
+        .s4-ring { animation: s4-ring-wave 1060ms linear both; }
+        .s4-lt-badge { animation: s4-lt-badge-spin 1060ms linear both; }
+    
+        @keyframes s4-shell-anim {
+          0% { opacity: 0; transform: scale(0.86); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          18%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s4-dark-hide {
+          0%, 83% { opacity: 1; }
+          86%, 100% { opacity: 0; }
+        }
+        @keyframes s4-seg1 {
+          0%, 6% { opacity: 0; stroke-width: 0; stroke-dashoffset: 262; }
+          10% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          24%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-seg2 {
+          0%, 13% { opacity: 0; stroke-width: 0; stroke-dashoffset: 204; }
+          17% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          31%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-seg3 {
+          0%, 19% { opacity: 0; stroke-width: 0; stroke-dashoffset: 185; }
+          23% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          37%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-badge-pop {
+          0%, 28% { opacity: 0; transform: scale(0) rotate(-20deg); animation-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1); }
+          32% { opacity: 1; }
+          44%, 100% { opacity: 1; transform: scale(1.08) rotate(0deg); }
+        }
+        @keyframes s4-iris-expand {
+          0%, 41% { transform: scale(0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          84%, 100% { transform: scale(1); }
+        }
+        @keyframes s4-ring-wave {
+          0%, 40% { opacity: 0; transform: scale(0.05); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          45% { opacity: 0.9; }
+          82%, 100% { opacity: 0; transform: scale(1.04); }
+        }
+        @keyframes s4-lt-badge-spin {
+          0%, 40% { transform: scale(0.84) rotate(-16deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          66% { transform: scale(1.08) rotate(4deg); animation-timing-function: ease-out; }
+          84%, 100% { transform: scale(1) rotate(0deg); }
+        }
+  </style>
+              <defs>
+                <clipPath id="s4-s4-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+                <mask id="s4-s4-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+                  <g transform="translate(365.2 373.2)">
+                    <g class="s4-iris">
+                      <circle cx="0" cy="0" r="535" fill="#ffffff" />
+                    </g>
+                  </g>
+                </mask>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s4-shell">
+                  <g transform="translate(-256 -256)">
+                    <g class="s4-dark-layer" clip-path="url(#s4-s4-clip)">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-ink, #232325)" />
+                      <g fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s4-dk-1" d="M148 132 V392" />
+                        <path class="s4-dk-2" d="M156 268 L304 132" />
+                        <path class="s4-dk-3" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-dk-badge">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-ink, #232325)" stroke="var(--kc-ink, #232325)" stroke-width="9.5" />
+                              <g fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="3.5">
+                                <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+                                <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+                                <path d="M22 28 Q32 31.5 42 28" />
+                                <path d="M16 41 Q32 45.5 48 41" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-ring">
+                          <circle cx="0" cy="0" r="535" fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="14" />
+                        </g>
+                      </g>
+                    </g>
+                    <g mask="url(#s4-s4-mask)">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M148 132 V392" />
+                        <path d="M156 268 L304 132" />
+                        <path d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-lt-badge">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+</div>
+          <figcaption>04-polarity-iris-flip</figcaption>
+        </figure>
+
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 05: FLUSH VORTEX SPIN (1220ms) --- */
+        .s5-card { animation: s5-card-anim 1220ms linear both; }
+        .s5-vortex-a { animation: s5-vortex-a-anim 1220ms linear both; }
+        .s5-vortex-b { animation: s5-vortex-b-anim 1220ms linear both; }
+        .s5-k { animation: s5-k-anim 1220ms linear both; }
+        .s5-poop { animation: s5-poop-anim 1220ms linear both; }
+    
+        @keyframes s5-card-anim {
+          0% { opacity: 0; transform: scale(0.56) rotate(-26deg); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          26%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s5-vortex-a-anim {
+          0%, 5% { opacity: 0; transform: translate(0px, 0px) scale(1.2) rotate(0deg); }
+          18% { opacity: 0.2; }
+          70%, 100% { opacity: 0; transform: translate(96px, 104px) scale(0.14) rotate(340deg); }
+        }
+        @keyframes s5-vortex-b-anim {
+          0%, 10% { opacity: 0; transform: translate(0px, 0px) scale(1.15) rotate(-40deg); }
+          24% { opacity: 0.26; }
+          74%, 100% { opacity: 0; transform: translate(96px, 104px) scale(0.1) rotate(300deg); }
+        }
+        @keyframes s5-k-anim {
+          0%, 8% { opacity: 0; transform: scale(0.28) rotate(-155deg); animation-timing-function: cubic-bezier(0.22, 1.25, 0.36, 1); }
+          16% { opacity: 1; }
+          60% { opacity: 1; transform: scale(1.04) rotate(7deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          78% { transform: scale(0.985) rotate(-2deg); animation-timing-function: ease-out; }
+          92%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s5-poop-anim {
+          0%, 38% { opacity: 0; transform: scale(0) rotate(-240deg); animation-timing-function: cubic-bezier(0.22, 1.36, 0.36, 1); }
+          44% { opacity: 1; }
+          74% { opacity: 1; transform: scale(1.15) rotate(11deg); animation-timing-function: ease-in-out; }
+          87% { transform: scale(0.96) rotate(-3deg); animation-timing-function: ease-out; }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+  </style>
+              <defs>
+                <clipPath id="s5-s5-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s5-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s5-s5-clip)">
+                      <g transform="translate(268 268)" fill="none" stroke="var(--kc-ink, #232325)" stroke-linecap="round">
+                        <g class="s5-vortex-a">
+                          <circle cx="0" cy="0" r="180" stroke-width="12" stroke-dasharray="110 150" />
+                        </g>
+                        <g class="s5-vortex-b">
+                          <circle cx="0" cy="0" r="112" stroke-width="10" stroke-dasharray="75 110" />
+                        </g>
+                      </g>
+                      <g transform="translate(226 262)">
+                        <g class="s5-k">
+                          <g transform="translate(-226 -262)">
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M148 132 V392" />
+                              <path d="M156 268 L304 132" />
+                              <path d="M196 252 L312 392" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s5-poop">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+</div>
+          <figcaption>05-flush-vortex-spin</figcaption>
+        </figure>
+
+        <figure class="cell">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 06: MODULAR COIL STACK (1240ms) --- */
+        .s6-card { animation: s6-card-anim 1240ms linear both; }
+        .s6-bar-1 { animation: s6-bar1-anim 1240ms linear both; }
+        .s6-bar-2 { animation: s6-bar2-anim 1240ms linear both; }
+        .s6-bar-3 { animation: s6-bar3-anim 1240ms linear both; }
+        .s6-wiper { animation: s6-wiper-anim 1240ms linear both; }
+        .s6-stack-bounce { animation: s6-stack-bounce-anim 1240ms linear both; }
+    
+        @keyframes s6-card-anim {
+          0% { opacity: 0; transform: scale(0.84); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s6-bar1-anim {
+          0%, 8% { opacity: 0; transform: translate(0px, 340px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          14% { opacity: 1; }
+          40% { transform: translate(0px, -14px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          56%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-bar2-anim {
+          0%, 16% { opacity: 0; transform: translate(230px, -212px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22% { opacity: 1; }
+          47% { transform: translate(-11px, 10px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          63%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-bar3-anim {
+          0%, 23% { opacity: 0; transform: translate(200px, 242px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          29% { opacity: 1; }
+          54% { transform: translate(-9px, -11px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          70%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-wiper-anim {
+          0%, 44% { transform: translate(0px, 74px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          55% { transform: translate(0px, 50px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          67% { transform: translate(0px, 37px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          79% { transform: translate(0px, 24px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          91%, 100% { transform: translate(0px, 0px); }
+        }
+        @keyframes s6-stack-bounce-anim {
+          0%, 44% { transform: scale(1, 1); }
+          54% { transform: scale(1.1, 0.9); }
+          61% { transform: scale(0.97, 1.04); }
+          67% { transform: scale(1.08, 0.92); }
+          74% { transform: scale(0.97, 1.04); }
+          80% { transform: scale(1.06, 0.94); }
+          89% { transform: scale(0.96, 1.06); }
+          96%, 100% { transform: scale(1, 1); }
+        }
+  </style>
+              <defs>
+                <clipPath id="s6-s6-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+                <mask id="s6-s6-mask" maskUnits="userSpaceOnUse" x="-12" y="-12" width="88" height="88">
+                  <g class="s6-wiper">
+                    <rect x="-12" y="-12" width="88" height="88" fill="#ffffff" />
+                  </g>
+                </mask>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s6-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s6-s6-clip)">
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s6-bar-1" d="M148 132 V392" />
+                        <path class="s6-bar-2" d="M156 268 L304 132" />
+                        <path class="s6-bar-3" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 441.6)">
+                        <g class="s6-stack-bounce">
+                          <g transform="translate(-365.2 -441.6)">
+                            <g transform="translate(274 282) scale(2.85)" mask="url(#s6-s6-mask)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+</div>
+          <figcaption>06-modular-stack</figcaption>
+        </figure></div>
+
+  <h2>Animations, phase 1 + phase 2 (icon &rarr; app name) &mdash; 6 files</h2>
+  <div class="grid">
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" width="860" height="380" class="lockup" style="--lk-d:1410ms">
+  <style>
+    /* --- 01: SKETCH &amp; PLOP (1150ms) --- */
+        .s1-card { animation: s1-card-anim 1150ms linear both; }
+        .s1-stem { stroke-dasharray: 262 600; animation: s1-stem-anim 1150ms linear both; }
+        .s1-upper { stroke-dasharray: 204 600; animation: s1-upper-anim 1150ms linear both; }
+        .s1-lower { stroke-dasharray: 185 600; animation: s1-lower-anim 1150ms linear both; }
+        .s1-poop { animation: s1-poop-anim 1150ms linear both; }
+        .s1-c-bot { stroke-dasharray: 36 100; animation: s1-c-bot-anim 1150ms linear both; }
+        .s1-c-mid { stroke-dasharray: 24 100; animation: s1-c-mid-anim 1150ms linear both; }
+        .s1-c-top { stroke-dasharray: 14 100; animation: s1-c-top-anim 1150ms linear both; }
+    
+        @keyframes s1-card-anim {
+          0% { opacity: 0; transform: scale(0.74); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          24% { opacity: 1; transform: scale(1.018); animation-timing-function: ease-out; }
+          40% { transform: translate(0px, 0px) scale(1, 1); }
+          50% { transform: translate(0px, 0px) scale(1, 1); animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1); }
+          57% { transform: translate(0px, 5px) scale(1.012, 0.988); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          74% { transform: translate(0px, -1.5px) scale(0.997, 1.003); }
+          90%, 100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
+        }
+        @keyframes s1-stem-anim {
+          0%, 9% { opacity: 0; stroke-width: 0; stroke-dashoffset: 262; animation-timing-function: ease-out; }
+          14% { opacity: 1; stroke-width: 96; stroke-dashoffset: 215; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          34%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s1-upper-anim {
+          0%, 21% { opacity: 0; stroke-width: 0; stroke-dashoffset: 204; animation-timing-function: ease-out; }
+          26% { opacity: 1; stroke-width: 96; stroke-dashoffset: 165; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          45%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s1-lower-anim {
+          0%, 31% { opacity: 0; stroke-width: 0; stroke-dashoffset: 185; animation-timing-function: ease-out; }
+          36% { opacity: 1; stroke-width: 96; stroke-dashoffset: 148; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          53%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s1-poop-anim {
+          0%, 42% { opacity: 0; transform: translate(0px, -145px) scale(0.76, 1.24); animation-timing-function: cubic-bezier(0.55, 0.05, 0.85, 0.35); }
+          46% { opacity: 1; transform: translate(0px, -95px) scale(0.82, 1.2); animation-timing-function: cubic-bezier(0.55, 0.08, 0.85, 0.45); }
+          56% { opacity: 1; transform: translate(0px, 4px) scale(1.26, 0.72); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          68% { transform: translate(0px, -14px) scale(0.89, 1.13); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+          79% { transform: translate(0px, 1.5px) scale(1.06, 0.95); animation-timing-function: ease-out; }
+          89% { transform: translate(0px, 0px) scale(0.985, 1.015); }
+          100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
+        }
+        @keyframes s1-c-bot-anim {
+          0%, 52% { stroke-dashoffset: 36; opacity: 0; }
+          56% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          70%, 100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+        @keyframes s1-c-mid-anim {
+          0%, 57% { stroke-dashoffset: 24; opacity: 0; }
+          61% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          75%, 100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+        @keyframes s1-c-top-anim {
+          0%, 62% { stroke-dashoffset: 14; opacity: 0; }
+          66% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          80%, 100% { stroke-dashoffset: 0; opacity: 1; }
+        }
+    
+    /* ==========================================================================
+           PHASE 2 — BRAND LOCKUP (shared by every animation)
+           The brand layer sits ON TOP of the running animation but is fully transparent
+           until the launch animation has settled. At that instant the icon and the brand
+           layer are pixel-identical, so the hand-off is invisible — then the K and the
+           swirl walk out of the icon and become part of the app name.
+           ========================================================================== */
+        .lockup .lk-brand { animation: lk-brand-in 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-icon { animation: lk-icon-out 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-plate { animation: lk-plate-morph 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-k { animation: lk-k-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-poop { animation: lk-poop-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-word { animation: lk-word-in 1500ms linear var(--lk-d, 1400ms) both; }
+    
+        /* Deterministic SVG transform space (never rely on default transform-origin) */
+        .lockup .lk-k,
+        .lockup .lk-poop {
+          transform-box: view-box;
+          transform-origin: 0 0;
+        }
+    
+        /* Invisible during the whole launch animation, then snapped on in one frame.
+           Both layers are identical at that moment, so nothing can be seen. */
+        @keyframes lk-brand-in {
+          0%, 1% { opacity: 0; }
+          1.8%, 100% { opacity: 1; }
+        }
+        /* Faded out BEHIND the opaque brand plate — never visible to the eye */
+        @keyframes lk-icon-out {
+          0%, 2% { opacity: 1; }
+          9%, 100% { opacity: 0; }
+        }
+        /* Squircle -> wordmark banner. Attributes carry the exact final geometry as a
+           fallback; the keyframes morph it out of the icon's squircle (identical centre). */
+        @keyframes lk-plate-morph {
+          0%, 1.8% { x: 259.5px; y: 19.5px; width: 341px; height: 341px; rx: 79.75px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          7% { x: 239px; y: -1px; width: 382px; height: 382px; rx: 92px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          46% { x: 13px; y: 57px; width: 834px; height: 266px; rx: 47px; }
+          62% { x: 18px; y: 61px; width: 824px; height: 258px; rx: 44px; }
+          74%, 100% { x: 20px; y: 60px; width: 820px; height: 260px; rx: 42px; }
+        }
+        /* Straight out of the icon, easing into the wordmark's K slot */
+        @keyframes lk-k-move {
+          0%, 7% { transform: translate(254px, 14px) scale(0.6875); animation-timing-function: cubic-bezier(0.4, 0, 0.25, 1); }
+          50% { transform: translate(47px, 53px) scale(0.537); }
+          64% { transform: translate(34px, 60px) scale(0.516); }
+          78%, 100% { transform: translate(38px, 58px) scale(0.52); }
+        }
+        /* Hops across on an arc, squash-and-stretch landing next to the K */
+        @keyframes lk-poop-move {
+          0%, 8% { transform: translate(505.075px, 270.575px) scale(1.959375) rotate(0deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 0, 0.5, 1); }
+          30% { transform: translate(392px, 148px) scale(1.6) rotate(-17deg) translate(-32px, -32px); animation-timing-function: ease-in-out; }
+          46% { transform: translate(238.4px, 170px) scale(1.55) rotate(10deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 1.5, 0.5, 1); }
+          60% { transform: translate(238.4px, 191px) scale(1.43, 1.49) rotate(-3deg) translate(-32px, -32px); }
+          72%, 100% { transform: translate(238.4px, 186.4px) scale(1.45) rotate(0deg) translate(-32px, -32px); }
+        }
+        @keyframes lk-word-in {
+          0%, 44% { opacity: 0; transform: translate(0px, 17px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          50% { opacity: 1; }
+          74%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+  </style>
+          <g class="lk-brand">
+            <rect class="lk-plate" x="20" y="60" width="820" height="260" rx="42" fill="var(--kc-cream, #FBF3E3)" />
+            <g class="lk-k" transform="translate(254 14) scale(0.6875)" fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    
+            </g>
+            <g class="lk-poop" transform="translate(505.075 270.575) scale(1.959375) translate(-32 -32)" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+            </g>
+            <g class="lk-word" fill="var(--kc-ink, #232325)">
+              <text x="272" y="226" textLength="552" lengthAdjust="spacingAndGlyphs" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px">kcalculator</text>
+            </g>
+          </g>
+          <g class="lk-icon" transform="translate(254 14) scale(0.6875)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+              <defs>
+                <clipPath id="s1-s1-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s1-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s1-s1-clip)">
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s1-stem" d="M148 132 V392" />
+                        <path class="s1-upper" d="M156 268 L304 132" />
+                        <path class="s1-lower" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 441.6)">
+                        <g class="s1-poop">
+                          <g transform="translate(-365.2 -441.6)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+                              <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+                                <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+                                <path class="s1-c-top" d="M27.5 15.5 Q32 18 36.5 15.5" />
+                                <path class="s1-c-mid" d="M22 28 Q32 31.5 42 28" />
+                                <path class="s1-c-bot" d="M16 41 Q32 45.5 48 41" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </g>
+        </svg>
+</div>
+          <figcaption>01-sketch-and-plop-lockup</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" width="860" height="380" class="lockup" style="--lk-d:1380ms">
+  <style>
+    /* --- 02: TACTILE KEYPRESS (1120ms) --- */
+        .s2-rig { animation: s2-rig-anim 1120ms linear both; }
+        .s2-skirt { animation: s2-skirt-anim 1120ms linear both; }
+        .s2-cap { animation: s2-cap-anim 1120ms linear both; }
+        .s2-k { animation: s2-k-anim 1120ms linear both; }
+        .s2-poop { animation: s2-poop-anim 1120ms linear both; }
+        .s2-ray { stroke-dasharray: 32 80; animation: s2-ray-anim 1120ms linear both; }
+    
+        @keyframes s2-rig-anim {
+          0% { opacity: 0; transform: scale(0.78); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20% { opacity: 1; transform: scale(0.91); }
+          72% { transform: scale(0.91); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          92%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s2-skirt-anim {
+          0% { opacity: 0; transform: translate(0px, 0px); animation-timing-function: ease-out; }
+          18%, 62% { opacity: 1; transform: translate(0px, 16px); }
+          80%, 100% { opacity: 0; transform: translate(0px, 0px); }
+        }
+        @keyframes s2-cap-anim {
+          0% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20% { transform: translate(0px, -14px); animation-timing-function: ease-in-out; }
+          31% { transform: translate(0px, -18px); animation-timing-function: cubic-bezier(0.65, 0, 0.9, 1); }
+          42% { transform: translate(0px, 14px); }
+          50% { transform: translate(0px, 14px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          66% { transform: translate(0px, -6px); animation-timing-function: ease-out; }
+          84%, 100% { transform: translate(0px, 0px); }
+        }
+        @keyframes s2-k-anim {
+          0%, 6% { opacity: 0; transform: scale(0.88); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22%, 38% { opacity: 1; transform: scale(1); }
+          43% { transform: scale(1.045, 0.96); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          62%, 100% { opacity: 1; transform: scale(1, 1); }
+        }
+        @keyframes s2-poop-anim {
+          0%, 48% { opacity: 0; transform: scale(0) rotate(-18deg); animation-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1); }
+          52% { opacity: 1; }
+          65% { opacity: 1; transform: scale(1.16) rotate(6deg); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+          78% { transform: scale(0.95) rotate(-2.5deg); animation-timing-function: ease-out; }
+          89% { transform: scale(1.02) rotate(0.8deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s2-ray-anim {
+          0%, 51% { opacity: 0; stroke-dashoffset: 32; }
+          55% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          68% { opacity: 1; stroke-dashoffset: 0; animation-timing-function: ease-in; }
+          82%, 100% { opacity: 0; stroke-dashoffset: -32; }
+        }
+    
+    /* ==========================================================================
+           PHASE 2 — BRAND LOCKUP (shared by every animation)
+           The brand layer sits ON TOP of the running animation but is fully transparent
+           until the launch animation has settled. At that instant the icon and the brand
+           layer are pixel-identical, so the hand-off is invisible — then the K and the
+           swirl walk out of the icon and become part of the app name.
+           ========================================================================== */
+        .lockup .lk-brand { animation: lk-brand-in 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-icon { animation: lk-icon-out 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-plate { animation: lk-plate-morph 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-k { animation: lk-k-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-poop { animation: lk-poop-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-word { animation: lk-word-in 1500ms linear var(--lk-d, 1400ms) both; }
+    
+        /* Deterministic SVG transform space (never rely on default transform-origin) */
+        .lockup .lk-k,
+        .lockup .lk-poop {
+          transform-box: view-box;
+          transform-origin: 0 0;
+        }
+    
+        /* Invisible during the whole launch animation, then snapped on in one frame.
+           Both layers are identical at that moment, so nothing can be seen. */
+        @keyframes lk-brand-in {
+          0%, 1% { opacity: 0; }
+          1.8%, 100% { opacity: 1; }
+        }
+        /* Faded out BEHIND the opaque brand plate — never visible to the eye */
+        @keyframes lk-icon-out {
+          0%, 2% { opacity: 1; }
+          9%, 100% { opacity: 0; }
+        }
+        /* Squircle -> wordmark banner. Attributes carry the exact final geometry as a
+           fallback; the keyframes morph it out of the icon's squircle (identical centre). */
+        @keyframes lk-plate-morph {
+          0%, 1.8% { x: 259.5px; y: 19.5px; width: 341px; height: 341px; rx: 79.75px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          7% { x: 239px; y: -1px; width: 382px; height: 382px; rx: 92px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          46% { x: 13px; y: 57px; width: 834px; height: 266px; rx: 47px; }
+          62% { x: 18px; y: 61px; width: 824px; height: 258px; rx: 44px; }
+          74%, 100% { x: 20px; y: 60px; width: 820px; height: 260px; rx: 42px; }
+        }
+        /* Straight out of the icon, easing into the wordmark's K slot */
+        @keyframes lk-k-move {
+          0%, 7% { transform: translate(254px, 14px) scale(0.6875); animation-timing-function: cubic-bezier(0.4, 0, 0.25, 1); }
+          50% { transform: translate(47px, 53px) scale(0.537); }
+          64% { transform: translate(34px, 60px) scale(0.516); }
+          78%, 100% { transform: translate(38px, 58px) scale(0.52); }
+        }
+        /* Hops across on an arc, squash-and-stretch landing next to the K */
+        @keyframes lk-poop-move {
+          0%, 8% { transform: translate(505.075px, 270.575px) scale(1.959375) rotate(0deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 0, 0.5, 1); }
+          30% { transform: translate(392px, 148px) scale(1.6) rotate(-17deg) translate(-32px, -32px); animation-timing-function: ease-in-out; }
+          46% { transform: translate(238.4px, 170px) scale(1.55) rotate(10deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 1.5, 0.5, 1); }
+          60% { transform: translate(238.4px, 191px) scale(1.43, 1.49) rotate(-3deg) translate(-32px, -32px); }
+          72%, 100% { transform: translate(238.4px, 186.4px) scale(1.45) rotate(0deg) translate(-32px, -32px); }
+        }
+        @keyframes lk-word-in {
+          0%, 44% { opacity: 0; transform: translate(0px, 17px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          50% { opacity: 1; }
+          74%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+  </style>
+          <g class="lk-brand">
+            <rect class="lk-plate" x="20" y="60" width="820" height="260" rx="42" fill="var(--kc-cream, #FBF3E3)" />
+            <g class="lk-k" transform="translate(254 14) scale(0.6875)" fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    
+            </g>
+            <g class="lk-poop" transform="translate(505.075 270.575) scale(1.959375) translate(-32 -32)" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+            </g>
+            <g class="lk-word" fill="var(--kc-ink, #232325)">
+              <text x="272" y="226" textLength="552" lengthAdjust="spacingAndGlyphs" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px">kcalculator</text>
+            </g>
+          </g>
+          <g class="lk-icon" transform="translate(254 14) scale(0.6875)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+              <g transform="translate(256 256)">
+                <g class="s2-rig">
+                  <g transform="translate(-256 -256)">
+                    <g class="s2-skirt">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-ink, #232325)" />
+                      <rect x="14" y="8" width="484" height="486" rx="112" fill="var(--kc-edge, #D5C8B3)" />
+                    </g>
+                    <g class="s2-cap">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                      <g transform="translate(226 262)">
+                        <g class="s2-k">
+                          <g transform="translate(-226 -262)">
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M148 132 V392" />
+                              <path d="M156 268 L304 132" />
+                              <path d="M196 252 L312 392" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="11" stroke-linecap="round">
+                        <path class="s2-ray" d="M356 274 L349 248" />
+                        <path class="s2-ray" d="M394 281 L414 259" />
+                        <path class="s2-ray" d="M424 310 L450 299" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s2-poop">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </g>
+        </svg>
+</div>
+          <figcaption>02-tactile-keypress-lockup</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" width="860" height="380" class="lockup" style="--lk-d:1540ms">
+  <style>
+    /* --- 03: SWIRL &amp; UNFOLD (1280ms) --- */
+        .s3-bg { animation: s3-bg-anim 1280ms linear both; }
+        .s3-stem { animation: s3-stem-anim 1280ms linear both; }
+        .s3-upper { animation: s3-upper-anim 1280ms linear both; }
+        .s3-lower { animation: s3-lower-anim 1280ms linear both; }
+        .s3-mascot { animation: s3-mascot-anim 1280ms linear both; }
+        .s3-outline { stroke-dasharray: 185 400; animation: s3-outline-anim 1280ms linear both; }
+    
+        @keyframes s3-bg-anim {
+          0% { opacity: 0; transform: scale(0.84); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s3-mascot-anim {
+          0% { opacity: 0; transform: translate(-109.2px, -74px) scale(0.35) rotate(-14deg); animation-timing-function: cubic-bezier(0.22, 1.35, 0.36, 1); }
+          18% { opacity: 1; transform: translate(-109.2px, -110px) scale(1.42) rotate(7deg); animation-timing-function: ease-in-out; }
+          30% { transform: translate(-109.2px, -106.35px) scale(1.36) rotate(-6deg); animation-timing-function: ease-in-out; }
+          38% { transform: translate(-109.2px, -106.35px) scale(1.38) rotate(4deg); animation-timing-function: cubic-bezier(0.45, 0, 0.25, 1); }
+          68% { transform: translate(7px, 5px) scale(1.06, 0.94) rotate(8deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          83% { transform: translate(-2px, -2px) scale(0.98, 1.02) rotate(-2deg); animation-timing-function: ease-out; }
+          94%, 100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1) rotate(0deg); }
+        }
+        @keyframes s3-outline-anim {
+          0%, 4% { stroke-dashoffset: 185; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          26%, 100% { stroke-dashoffset: 0; }
+        }
+        @keyframes s3-stem-anim {
+          0%, 35% { opacity: 0; transform: scale(0.2, 0.05); animation-timing-function: cubic-bezier(0.22, 1.3, 0.36, 1); }
+          40% { opacity: 1; }
+          58% { opacity: 1; transform: scale(1, 1.04); animation-timing-function: ease-out; }
+          74%, 100% { opacity: 1; transform: scale(1, 1); }
+        }
+        @keyframes s3-upper-anim {
+          0%, 42% { opacity: 0; transform: rotate(-47.4deg) scale(0.62); animation-timing-function: cubic-bezier(0.22, 1.35, 0.36, 1); }
+          46% { opacity: 1; }
+          72% { opacity: 1; transform: rotate(3.8deg) scale(1.02); animation-timing-function: ease-out; }
+          86%, 100% { opacity: 1; transform: rotate(0deg) scale(1); }
+        }
+        @keyframes s3-lower-anim {
+          0%, 46% { opacity: 0; transform: translate(-48px, 0px) rotate(39.6deg) scale(0.68); animation-timing-function: cubic-bezier(0.22, 1.35, 0.36, 1); }
+          50% { opacity: 1; }
+          76% { opacity: 1; transform: translate(0px, 0px) rotate(-3.8deg) scale(1.02); animation-timing-function: ease-out; }
+          90%, 100% { opacity: 1; transform: translate(0px, 0px) rotate(0deg) scale(1); }
+        }
+    
+    /* ==========================================================================
+           PHASE 2 — BRAND LOCKUP (shared by every animation)
+           The brand layer sits ON TOP of the running animation but is fully transparent
+           until the launch animation has settled. At that instant the icon and the brand
+           layer are pixel-identical, so the hand-off is invisible — then the K and the
+           swirl walk out of the icon and become part of the app name.
+           ========================================================================== */
+        .lockup .lk-brand { animation: lk-brand-in 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-icon { animation: lk-icon-out 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-plate { animation: lk-plate-morph 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-k { animation: lk-k-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-poop { animation: lk-poop-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-word { animation: lk-word-in 1500ms linear var(--lk-d, 1400ms) both; }
+    
+        /* Deterministic SVG transform space (never rely on default transform-origin) */
+        .lockup .lk-k,
+        .lockup .lk-poop {
+          transform-box: view-box;
+          transform-origin: 0 0;
+        }
+    
+        /* Invisible during the whole launch animation, then snapped on in one frame.
+           Both layers are identical at that moment, so nothing can be seen. */
+        @keyframes lk-brand-in {
+          0%, 1% { opacity: 0; }
+          1.8%, 100% { opacity: 1; }
+        }
+        /* Faded out BEHIND the opaque brand plate — never visible to the eye */
+        @keyframes lk-icon-out {
+          0%, 2% { opacity: 1; }
+          9%, 100% { opacity: 0; }
+        }
+        /* Squircle -> wordmark banner. Attributes carry the exact final geometry as a
+           fallback; the keyframes morph it out of the icon's squircle (identical centre). */
+        @keyframes lk-plate-morph {
+          0%, 1.8% { x: 259.5px; y: 19.5px; width: 341px; height: 341px; rx: 79.75px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          7% { x: 239px; y: -1px; width: 382px; height: 382px; rx: 92px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          46% { x: 13px; y: 57px; width: 834px; height: 266px; rx: 47px; }
+          62% { x: 18px; y: 61px; width: 824px; height: 258px; rx: 44px; }
+          74%, 100% { x: 20px; y: 60px; width: 820px; height: 260px; rx: 42px; }
+        }
+        /* Straight out of the icon, easing into the wordmark's K slot */
+        @keyframes lk-k-move {
+          0%, 7% { transform: translate(254px, 14px) scale(0.6875); animation-timing-function: cubic-bezier(0.4, 0, 0.25, 1); }
+          50% { transform: translate(47px, 53px) scale(0.537); }
+          64% { transform: translate(34px, 60px) scale(0.516); }
+          78%, 100% { transform: translate(38px, 58px) scale(0.52); }
+        }
+        /* Hops across on an arc, squash-and-stretch landing next to the K */
+        @keyframes lk-poop-move {
+          0%, 8% { transform: translate(505.075px, 270.575px) scale(1.959375) rotate(0deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 0, 0.5, 1); }
+          30% { transform: translate(392px, 148px) scale(1.6) rotate(-17deg) translate(-32px, -32px); animation-timing-function: ease-in-out; }
+          46% { transform: translate(238.4px, 170px) scale(1.55) rotate(10deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 1.5, 0.5, 1); }
+          60% { transform: translate(238.4px, 191px) scale(1.43, 1.49) rotate(-3deg) translate(-32px, -32px); }
+          72%, 100% { transform: translate(238.4px, 186.4px) scale(1.45) rotate(0deg) translate(-32px, -32px); }
+        }
+        @keyframes lk-word-in {
+          0%, 44% { opacity: 0; transform: translate(0px, 17px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          50% { opacity: 1; }
+          74%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+  </style>
+          <g class="lk-brand">
+            <rect class="lk-plate" x="20" y="60" width="820" height="260" rx="42" fill="var(--kc-cream, #FBF3E3)" />
+            <g class="lk-k" transform="translate(254 14) scale(0.6875)" fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    
+            </g>
+            <g class="lk-poop" transform="translate(505.075 270.575) scale(1.959375) translate(-32 -32)" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+            </g>
+            <g class="lk-word" fill="var(--kc-ink, #232325)">
+              <text x="272" y="226" textLength="552" lengthAdjust="spacingAndGlyphs" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px">kcalculator</text>
+            </g>
+          </g>
+          <g class="lk-icon" transform="translate(254 14) scale(0.6875)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+              <g transform="translate(256 256)">
+                <g class="s3-bg">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                      <g transform="translate(148 262)">
+                        <g class="s3-stem">
+                          <g transform="translate(-148 -262)">
+                            <path d="M148 132 V392" />
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(156 268)">
+                        <g class="s3-upper">
+                          <g transform="translate(-156 -268)">
+                            <path d="M156 268 L304 132" />
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(196 252)">
+                        <g class="s3-lower">
+                          <g transform="translate(-196 -252)">
+                            <path d="M196 252 L312 392" />
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                    <g transform="translate(365.2 370.35)">
+                      <g class="s3-mascot">
+                        <g transform="translate(-365.2 -370.35)">
+                          <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+                              <path class="s3-outline" d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+                              <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+                              <path d="M22 28 Q32 31.5 42 28" />
+                              <path d="M16 41 Q32 45.5 48 41" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </g>
+        </svg>
+</div>
+          <figcaption>03-swirl-and-unfold-lockup</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" width="860" height="380" class="lockup" style="--lk-d:1320ms">
+  <style>
+    /* --- 04: POLARITY IRIS FLIP (1060ms) --- */
+        .s4-shell { animation: s4-shell-anim 1060ms linear both; }
+        .s4-dark-layer { animation: s4-dark-hide 1060ms linear both; }
+        .s4-dk-1 { stroke-dasharray: 262 600; animation: s4-seg1 1060ms linear both; }
+        .s4-dk-2 { stroke-dasharray: 204 600; animation: s4-seg2 1060ms linear both; }
+        .s4-dk-3 { stroke-dasharray: 185 600; animation: s4-seg3 1060ms linear both; }
+        .s4-dk-badge { animation: s4-badge-pop 1060ms linear both; }
+        .s4-iris { animation: s4-iris-expand 1060ms linear both; }
+        .s4-ring { animation: s4-ring-wave 1060ms linear both; }
+        .s4-lt-badge { animation: s4-lt-badge-spin 1060ms linear both; }
+    
+        @keyframes s4-shell-anim {
+          0% { opacity: 0; transform: scale(0.86); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          18%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s4-dark-hide {
+          0%, 83% { opacity: 1; }
+          86%, 100% { opacity: 0; }
+        }
+        @keyframes s4-seg1 {
+          0%, 6% { opacity: 0; stroke-width: 0; stroke-dashoffset: 262; }
+          10% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          24%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-seg2 {
+          0%, 13% { opacity: 0; stroke-width: 0; stroke-dashoffset: 204; }
+          17% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          31%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-seg3 {
+          0%, 19% { opacity: 0; stroke-width: 0; stroke-dashoffset: 185; }
+          23% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          37%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-badge-pop {
+          0%, 28% { opacity: 0; transform: scale(0) rotate(-20deg); animation-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1); }
+          32% { opacity: 1; }
+          44%, 100% { opacity: 1; transform: scale(1.08) rotate(0deg); }
+        }
+        @keyframes s4-iris-expand {
+          0%, 41% { transform: scale(0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          84%, 100% { transform: scale(1); }
+        }
+        @keyframes s4-ring-wave {
+          0%, 40% { opacity: 0; transform: scale(0.05); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          45% { opacity: 0.9; }
+          82%, 100% { opacity: 0; transform: scale(1.04); }
+        }
+        @keyframes s4-lt-badge-spin {
+          0%, 40% { transform: scale(0.84) rotate(-16deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          66% { transform: scale(1.08) rotate(4deg); animation-timing-function: ease-out; }
+          84%, 100% { transform: scale(1) rotate(0deg); }
+        }
+    
+    /* ==========================================================================
+           PHASE 2 — BRAND LOCKUP (shared by every animation)
+           The brand layer sits ON TOP of the running animation but is fully transparent
+           until the launch animation has settled. At that instant the icon and the brand
+           layer are pixel-identical, so the hand-off is invisible — then the K and the
+           swirl walk out of the icon and become part of the app name.
+           ========================================================================== */
+        .lockup .lk-brand { animation: lk-brand-in 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-icon { animation: lk-icon-out 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-plate { animation: lk-plate-morph 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-k { animation: lk-k-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-poop { animation: lk-poop-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-word { animation: lk-word-in 1500ms linear var(--lk-d, 1400ms) both; }
+    
+        /* Deterministic SVG transform space (never rely on default transform-origin) */
+        .lockup .lk-k,
+        .lockup .lk-poop {
+          transform-box: view-box;
+          transform-origin: 0 0;
+        }
+    
+        /* Invisible during the whole launch animation, then snapped on in one frame.
+           Both layers are identical at that moment, so nothing can be seen. */
+        @keyframes lk-brand-in {
+          0%, 1% { opacity: 0; }
+          1.8%, 100% { opacity: 1; }
+        }
+        /* Faded out BEHIND the opaque brand plate — never visible to the eye */
+        @keyframes lk-icon-out {
+          0%, 2% { opacity: 1; }
+          9%, 100% { opacity: 0; }
+        }
+        /* Squircle -> wordmark banner. Attributes carry the exact final geometry as a
+           fallback; the keyframes morph it out of the icon's squircle (identical centre). */
+        @keyframes lk-plate-morph {
+          0%, 1.8% { x: 259.5px; y: 19.5px; width: 341px; height: 341px; rx: 79.75px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          7% { x: 239px; y: -1px; width: 382px; height: 382px; rx: 92px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          46% { x: 13px; y: 57px; width: 834px; height: 266px; rx: 47px; }
+          62% { x: 18px; y: 61px; width: 824px; height: 258px; rx: 44px; }
+          74%, 100% { x: 20px; y: 60px; width: 820px; height: 260px; rx: 42px; }
+        }
+        /* Straight out of the icon, easing into the wordmark's K slot */
+        @keyframes lk-k-move {
+          0%, 7% { transform: translate(254px, 14px) scale(0.6875); animation-timing-function: cubic-bezier(0.4, 0, 0.25, 1); }
+          50% { transform: translate(47px, 53px) scale(0.537); }
+          64% { transform: translate(34px, 60px) scale(0.516); }
+          78%, 100% { transform: translate(38px, 58px) scale(0.52); }
+        }
+        /* Hops across on an arc, squash-and-stretch landing next to the K */
+        @keyframes lk-poop-move {
+          0%, 8% { transform: translate(505.075px, 270.575px) scale(1.959375) rotate(0deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 0, 0.5, 1); }
+          30% { transform: translate(392px, 148px) scale(1.6) rotate(-17deg) translate(-32px, -32px); animation-timing-function: ease-in-out; }
+          46% { transform: translate(238.4px, 170px) scale(1.55) rotate(10deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 1.5, 0.5, 1); }
+          60% { transform: translate(238.4px, 191px) scale(1.43, 1.49) rotate(-3deg) translate(-32px, -32px); }
+          72%, 100% { transform: translate(238.4px, 186.4px) scale(1.45) rotate(0deg) translate(-32px, -32px); }
+        }
+        @keyframes lk-word-in {
+          0%, 44% { opacity: 0; transform: translate(0px, 17px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          50% { opacity: 1; }
+          74%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+  </style>
+          <g class="lk-brand">
+            <rect class="lk-plate" x="20" y="60" width="820" height="260" rx="42" fill="var(--kc-cream, #FBF3E3)" />
+            <g class="lk-k" transform="translate(254 14) scale(0.6875)" fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    
+            </g>
+            <g class="lk-poop" transform="translate(505.075 270.575) scale(1.959375) translate(-32 -32)" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+            </g>
+            <g class="lk-word" fill="var(--kc-ink, #232325)">
+              <text x="272" y="226" textLength="552" lengthAdjust="spacingAndGlyphs" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px">kcalculator</text>
+            </g>
+          </g>
+          <g class="lk-icon" transform="translate(254 14) scale(0.6875)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+              <defs>
+                <clipPath id="s4-s4-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+                <mask id="s4-s4-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+                  <g transform="translate(365.2 373.2)">
+                    <g class="s4-iris">
+                      <circle cx="0" cy="0" r="535" fill="#ffffff" />
+                    </g>
+                  </g>
+                </mask>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s4-shell">
+                  <g transform="translate(-256 -256)">
+                    <g class="s4-dark-layer" clip-path="url(#s4-s4-clip)">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-ink, #232325)" />
+                      <g fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s4-dk-1" d="M148 132 V392" />
+                        <path class="s4-dk-2" d="M156 268 L304 132" />
+                        <path class="s4-dk-3" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-dk-badge">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-ink, #232325)" stroke="var(--kc-ink, #232325)" stroke-width="9.5" />
+                              <g fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="3.5">
+                                <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+                                <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+                                <path d="M22 28 Q32 31.5 42 28" />
+                                <path d="M16 41 Q32 45.5 48 41" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-ring">
+                          <circle cx="0" cy="0" r="535" fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="14" />
+                        </g>
+                      </g>
+                    </g>
+                    <g mask="url(#s4-s4-mask)">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M148 132 V392" />
+                        <path d="M156 268 L304 132" />
+                        <path d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-lt-badge">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </g>
+        </svg>
+</div>
+          <figcaption>04-polarity-iris-flip-lockup</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" width="860" height="380" class="lockup" style="--lk-d:1480ms">
+  <style>
+    /* --- 05: FLUSH VORTEX SPIN (1220ms) --- */
+        .s5-card { animation: s5-card-anim 1220ms linear both; }
+        .s5-vortex-a { animation: s5-vortex-a-anim 1220ms linear both; }
+        .s5-vortex-b { animation: s5-vortex-b-anim 1220ms linear both; }
+        .s5-k { animation: s5-k-anim 1220ms linear both; }
+        .s5-poop { animation: s5-poop-anim 1220ms linear both; }
+    
+        @keyframes s5-card-anim {
+          0% { opacity: 0; transform: scale(0.56) rotate(-26deg); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          26%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s5-vortex-a-anim {
+          0%, 5% { opacity: 0; transform: translate(0px, 0px) scale(1.2) rotate(0deg); }
+          18% { opacity: 0.2; }
+          70%, 100% { opacity: 0; transform: translate(96px, 104px) scale(0.14) rotate(340deg); }
+        }
+        @keyframes s5-vortex-b-anim {
+          0%, 10% { opacity: 0; transform: translate(0px, 0px) scale(1.15) rotate(-40deg); }
+          24% { opacity: 0.26; }
+          74%, 100% { opacity: 0; transform: translate(96px, 104px) scale(0.1) rotate(300deg); }
+        }
+        @keyframes s5-k-anim {
+          0%, 8% { opacity: 0; transform: scale(0.28) rotate(-155deg); animation-timing-function: cubic-bezier(0.22, 1.25, 0.36, 1); }
+          16% { opacity: 1; }
+          60% { opacity: 1; transform: scale(1.04) rotate(7deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          78% { transform: scale(0.985) rotate(-2deg); animation-timing-function: ease-out; }
+          92%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s5-poop-anim {
+          0%, 38% { opacity: 0; transform: scale(0) rotate(-240deg); animation-timing-function: cubic-bezier(0.22, 1.36, 0.36, 1); }
+          44% { opacity: 1; }
+          74% { opacity: 1; transform: scale(1.15) rotate(11deg); animation-timing-function: ease-in-out; }
+          87% { transform: scale(0.96) rotate(-3deg); animation-timing-function: ease-out; }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+    
+    /* ==========================================================================
+           PHASE 2 — BRAND LOCKUP (shared by every animation)
+           The brand layer sits ON TOP of the running animation but is fully transparent
+           until the launch animation has settled. At that instant the icon and the brand
+           layer are pixel-identical, so the hand-off is invisible — then the K and the
+           swirl walk out of the icon and become part of the app name.
+           ========================================================================== */
+        .lockup .lk-brand { animation: lk-brand-in 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-icon { animation: lk-icon-out 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-plate { animation: lk-plate-morph 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-k { animation: lk-k-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-poop { animation: lk-poop-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-word { animation: lk-word-in 1500ms linear var(--lk-d, 1400ms) both; }
+    
+        /* Deterministic SVG transform space (never rely on default transform-origin) */
+        .lockup .lk-k,
+        .lockup .lk-poop {
+          transform-box: view-box;
+          transform-origin: 0 0;
+        }
+    
+        /* Invisible during the whole launch animation, then snapped on in one frame.
+           Both layers are identical at that moment, so nothing can be seen. */
+        @keyframes lk-brand-in {
+          0%, 1% { opacity: 0; }
+          1.8%, 100% { opacity: 1; }
+        }
+        /* Faded out BEHIND the opaque brand plate — never visible to the eye */
+        @keyframes lk-icon-out {
+          0%, 2% { opacity: 1; }
+          9%, 100% { opacity: 0; }
+        }
+        /* Squircle -> wordmark banner. Attributes carry the exact final geometry as a
+           fallback; the keyframes morph it out of the icon's squircle (identical centre). */
+        @keyframes lk-plate-morph {
+          0%, 1.8% { x: 259.5px; y: 19.5px; width: 341px; height: 341px; rx: 79.75px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          7% { x: 239px; y: -1px; width: 382px; height: 382px; rx: 92px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          46% { x: 13px; y: 57px; width: 834px; height: 266px; rx: 47px; }
+          62% { x: 18px; y: 61px; width: 824px; height: 258px; rx: 44px; }
+          74%, 100% { x: 20px; y: 60px; width: 820px; height: 260px; rx: 42px; }
+        }
+        /* Straight out of the icon, easing into the wordmark's K slot */
+        @keyframes lk-k-move {
+          0%, 7% { transform: translate(254px, 14px) scale(0.6875); animation-timing-function: cubic-bezier(0.4, 0, 0.25, 1); }
+          50% { transform: translate(47px, 53px) scale(0.537); }
+          64% { transform: translate(34px, 60px) scale(0.516); }
+          78%, 100% { transform: translate(38px, 58px) scale(0.52); }
+        }
+        /* Hops across on an arc, squash-and-stretch landing next to the K */
+        @keyframes lk-poop-move {
+          0%, 8% { transform: translate(505.075px, 270.575px) scale(1.959375) rotate(0deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 0, 0.5, 1); }
+          30% { transform: translate(392px, 148px) scale(1.6) rotate(-17deg) translate(-32px, -32px); animation-timing-function: ease-in-out; }
+          46% { transform: translate(238.4px, 170px) scale(1.55) rotate(10deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 1.5, 0.5, 1); }
+          60% { transform: translate(238.4px, 191px) scale(1.43, 1.49) rotate(-3deg) translate(-32px, -32px); }
+          72%, 100% { transform: translate(238.4px, 186.4px) scale(1.45) rotate(0deg) translate(-32px, -32px); }
+        }
+        @keyframes lk-word-in {
+          0%, 44% { opacity: 0; transform: translate(0px, 17px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          50% { opacity: 1; }
+          74%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+  </style>
+          <g class="lk-brand">
+            <rect class="lk-plate" x="20" y="60" width="820" height="260" rx="42" fill="var(--kc-cream, #FBF3E3)" />
+            <g class="lk-k" transform="translate(254 14) scale(0.6875)" fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    
+            </g>
+            <g class="lk-poop" transform="translate(505.075 270.575) scale(1.959375) translate(-32 -32)" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+            </g>
+            <g class="lk-word" fill="var(--kc-ink, #232325)">
+              <text x="272" y="226" textLength="552" lengthAdjust="spacingAndGlyphs" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px">kcalculator</text>
+            </g>
+          </g>
+          <g class="lk-icon" transform="translate(254 14) scale(0.6875)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+              <defs>
+                <clipPath id="s5-s5-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s5-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s5-s5-clip)">
+                      <g transform="translate(268 268)" fill="none" stroke="var(--kc-ink, #232325)" stroke-linecap="round">
+                        <g class="s5-vortex-a">
+                          <circle cx="0" cy="0" r="180" stroke-width="12" stroke-dasharray="110 150" />
+                        </g>
+                        <g class="s5-vortex-b">
+                          <circle cx="0" cy="0" r="112" stroke-width="10" stroke-dasharray="75 110" />
+                        </g>
+                      </g>
+                      <g transform="translate(226 262)">
+                        <g class="s5-k">
+                          <g transform="translate(-226 -262)">
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M148 132 V392" />
+                              <path d="M156 268 L304 132" />
+                              <path d="M196 252 L312 392" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s5-poop">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </g>
+        </svg>
+</div>
+          <figcaption>05-flush-vortex-spin-lockup</figcaption>
+        </figure>
+
+        <figure class="cell is-wordmark">
+          <div class="art"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 380" width="860" height="380" class="lockup" style="--lk-d:1500ms">
+  <style>
+    /* --- 06: MODULAR COIL STACK (1240ms) --- */
+        .s6-card { animation: s6-card-anim 1240ms linear both; }
+        .s6-bar-1 { animation: s6-bar1-anim 1240ms linear both; }
+        .s6-bar-2 { animation: s6-bar2-anim 1240ms linear both; }
+        .s6-bar-3 { animation: s6-bar3-anim 1240ms linear both; }
+        .s6-wiper { animation: s6-wiper-anim 1240ms linear both; }
+        .s6-stack-bounce { animation: s6-stack-bounce-anim 1240ms linear both; }
+    
+        @keyframes s6-card-anim {
+          0% { opacity: 0; transform: scale(0.84); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s6-bar1-anim {
+          0%, 8% { opacity: 0; transform: translate(0px, 340px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          14% { opacity: 1; }
+          40% { transform: translate(0px, -14px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          56%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-bar2-anim {
+          0%, 16% { opacity: 0; transform: translate(230px, -212px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22% { opacity: 1; }
+          47% { transform: translate(-11px, 10px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          63%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-bar3-anim {
+          0%, 23% { opacity: 0; transform: translate(200px, 242px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          29% { opacity: 1; }
+          54% { transform: translate(-9px, -11px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          70%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-wiper-anim {
+          0%, 44% { transform: translate(0px, 74px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          55% { transform: translate(0px, 50px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          67% { transform: translate(0px, 37px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          79% { transform: translate(0px, 24px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          91%, 100% { transform: translate(0px, 0px); }
+        }
+        @keyframes s6-stack-bounce-anim {
+          0%, 44% { transform: scale(1, 1); }
+          54% { transform: scale(1.1, 0.9); }
+          61% { transform: scale(0.97, 1.04); }
+          67% { transform: scale(1.08, 0.92); }
+          74% { transform: scale(0.97, 1.04); }
+          80% { transform: scale(1.06, 0.94); }
+          89% { transform: scale(0.96, 1.06); }
+          96%, 100% { transform: scale(1, 1); }
+        }
+    
+    /* ==========================================================================
+           PHASE 2 — BRAND LOCKUP (shared by every animation)
+           The brand layer sits ON TOP of the running animation but is fully transparent
+           until the launch animation has settled. At that instant the icon and the brand
+           layer are pixel-identical, so the hand-off is invisible — then the K and the
+           swirl walk out of the icon and become part of the app name.
+           ========================================================================== */
+        .lockup .lk-brand { animation: lk-brand-in 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-icon { animation: lk-icon-out 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-plate { animation: lk-plate-morph 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-k { animation: lk-k-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-poop { animation: lk-poop-move 1500ms linear var(--lk-d, 1400ms) both; }
+        .lockup .lk-word { animation: lk-word-in 1500ms linear var(--lk-d, 1400ms) both; }
+    
+        /* Deterministic SVG transform space (never rely on default transform-origin) */
+        .lockup .lk-k,
+        .lockup .lk-poop {
+          transform-box: view-box;
+          transform-origin: 0 0;
+        }
+    
+        /* Invisible during the whole launch animation, then snapped on in one frame.
+           Both layers are identical at that moment, so nothing can be seen. */
+        @keyframes lk-brand-in {
+          0%, 1% { opacity: 0; }
+          1.8%, 100% { opacity: 1; }
+        }
+        /* Faded out BEHIND the opaque brand plate — never visible to the eye */
+        @keyframes lk-icon-out {
+          0%, 2% { opacity: 1; }
+          9%, 100% { opacity: 0; }
+        }
+        /* Squircle -> wordmark banner. Attributes carry the exact final geometry as a
+           fallback; the keyframes morph it out of the icon's squircle (identical centre). */
+        @keyframes lk-plate-morph {
+          0%, 1.8% { x: 259.5px; y: 19.5px; width: 341px; height: 341px; rx: 79.75px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          7% { x: 239px; y: -1px; width: 382px; height: 382px; rx: 92px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          46% { x: 13px; y: 57px; width: 834px; height: 266px; rx: 47px; }
+          62% { x: 18px; y: 61px; width: 824px; height: 258px; rx: 44px; }
+          74%, 100% { x: 20px; y: 60px; width: 820px; height: 260px; rx: 42px; }
+        }
+        /* Straight out of the icon, easing into the wordmark's K slot */
+        @keyframes lk-k-move {
+          0%, 7% { transform: translate(254px, 14px) scale(0.6875); animation-timing-function: cubic-bezier(0.4, 0, 0.25, 1); }
+          50% { transform: translate(47px, 53px) scale(0.537); }
+          64% { transform: translate(34px, 60px) scale(0.516); }
+          78%, 100% { transform: translate(38px, 58px) scale(0.52); }
+        }
+        /* Hops across on an arc, squash-and-stretch landing next to the K */
+        @keyframes lk-poop-move {
+          0%, 8% { transform: translate(505.075px, 270.575px) scale(1.959375) rotate(0deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 0, 0.5, 1); }
+          30% { transform: translate(392px, 148px) scale(1.6) rotate(-17deg) translate(-32px, -32px); animation-timing-function: ease-in-out; }
+          46% { transform: translate(238.4px, 170px) scale(1.55) rotate(10deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 1.5, 0.5, 1); }
+          60% { transform: translate(238.4px, 191px) scale(1.43, 1.49) rotate(-3deg) translate(-32px, -32px); }
+          72%, 100% { transform: translate(238.4px, 186.4px) scale(1.45) rotate(0deg) translate(-32px, -32px); }
+        }
+        @keyframes lk-word-in {
+          0%, 44% { opacity: 0; transform: translate(0px, 17px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          50% { opacity: 1; }
+          74%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+  </style>
+          <g class="lk-brand">
+            <rect class="lk-plate" x="20" y="60" width="820" height="260" rx="42" fill="var(--kc-cream, #FBF3E3)" />
+            <g class="lk-k" transform="translate(254 14) scale(0.6875)" fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M148 132 V392" />
+      <path d="M156 268 L304 132" />
+      <path d="M196 252 L312 392" />
+    
+            </g>
+            <g class="lk-poop" transform="translate(505.075 270.575) scale(1.959375) translate(-32 -32)" stroke-linecap="round" stroke-linejoin="round">
+              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+            </g>
+            <g class="lk-word" fill="var(--kc-ink, #232325)">
+              <text x="272" y="226" textLength="552" lengthAdjust="spacingAndGlyphs" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px">kcalculator</text>
+            </g>
+          </g>
+          <g class="lk-icon" transform="translate(254 14) scale(0.6875)">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+              <defs>
+                <clipPath id="s6-s6-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+                <mask id="s6-s6-mask" maskUnits="userSpaceOnUse" x="-12" y="-12" width="88" height="88">
+                  <g class="s6-wiper">
+                    <rect x="-12" y="-12" width="88" height="88" fill="#ffffff" />
+                  </g>
+                </mask>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s6-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s6-s6-clip)">
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s6-bar-1" d="M148 132 V392" />
+                        <path class="s6-bar-2" d="M156 268 L304 132" />
+                        <path class="s6-bar-3" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 441.6)">
+                        <g class="s6-stack-bounce">
+                          <g transform="translate(-365.2 -441.6)">
+                            <g transform="translate(274 282) scale(2.85)" mask="url(#s6-s6-mask)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>
+          </g>
+        </svg>
+</div>
+          <figcaption>06-modular-stack-lockup</figcaption>
+        </figure></div>
+</body>
+</html>

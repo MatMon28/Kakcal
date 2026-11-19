@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 02: TACTILE KEYPRESS (1120ms) --- */
+        .s2-rig { animation: s2-rig-anim 1120ms linear both; }
+        .s2-skirt { animation: s2-skirt-anim 1120ms linear both; }
+        .s2-cap { animation: s2-cap-anim 1120ms linear both; }
+        .s2-k { animation: s2-k-anim 1120ms linear both; }
+        .s2-poop { animation: s2-poop-anim 1120ms linear both; }
+        .s2-ray { stroke-dasharray: 32 80; animation: s2-ray-anim 1120ms linear both; }
+    
+        @keyframes s2-rig-anim {
+          0% { opacity: 0; transform: scale(0.78); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20% { opacity: 1; transform: scale(0.91); }
+          72% { transform: scale(0.91); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          92%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s2-skirt-anim {
+          0% { opacity: 0; transform: translate(0px, 0px); animation-timing-function: ease-out; }
+          18%, 62% { opacity: 1; transform: translate(0px, 16px); }
+          80%, 100% { opacity: 0; transform: translate(0px, 0px); }
+        }
+        @keyframes s2-cap-anim {
+          0% { transform: translate(0px, 0px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20% { transform: translate(0px, -14px); animation-timing-function: ease-in-out; }
+          31% { transform: translate(0px, -18px); animation-timing-function: cubic-bezier(0.65, 0, 0.9, 1); }
+          42% { transform: translate(0px, 14px); }
+          50% { transform: translate(0px, 14px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          66% { transform: translate(0px, -6px); animation-timing-function: ease-out; }
+          84%, 100% { transform: translate(0px, 0px); }
+        }
+        @keyframes s2-k-anim {
+          0%, 6% { opacity: 0; transform: scale(0.88); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22%, 38% { opacity: 1; transform: scale(1); }
+          43% { transform: scale(1.045, 0.96); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          62%, 100% { opacity: 1; transform: scale(1, 1); }
+        }
+        @keyframes s2-poop-anim {
+          0%, 48% { opacity: 0; transform: scale(0) rotate(-18deg); animation-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1); }
+          52% { opacity: 1; }
+          65% { opacity: 1; transform: scale(1.16) rotate(6deg); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+          78% { transform: scale(0.95) rotate(-2.5deg); animation-timing-function: ease-out; }
+          89% { transform: scale(1.02) rotate(0.8deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s2-ray-anim {
+          0%, 51% { opacity: 0; stroke-dashoffset: 32; }
+          55% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          68% { opacity: 1; stroke-dashoffset: 0; animation-timing-function: ease-in; }
+          82%, 100% { opacity: 0; stroke-dashoffset: -32; }
+        }
+  </style>
+              <g transform="translate(256 256)">
+                <g class="s2-rig">
+                  <g transform="translate(-256 -256)">
+                    <g class="s2-skirt">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-ink, #232325)" />
+                      <rect x="14" y="8" width="484" height="486" rx="112" fill="var(--kc-edge, #D5C8B3)" />
+                    </g>
+                    <g class="s2-cap">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                      <g transform="translate(226 262)">
+                        <g class="s2-k">
+                          <g transform="translate(-226 -262)">
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M148 132 V392" />
+                              <path d="M156 268 L304 132" />
+                              <path d="M196 252 L312 392" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="11" stroke-linecap="round">
+                        <path class="s2-ray" d="M356 274 L349 248" />
+                        <path class="s2-ray" d="M394 281 L414 259" />
+                        <path class="s2-ray" d="M424 310 L450 299" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s2-poop">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>

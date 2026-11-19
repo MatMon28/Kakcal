@@ -18,8 +18,8 @@
           var root = document.documentElement;
           root.setAttribute('data-theme', theme);
           root.setAttribute('data-style', style);
-          if (theme !== 'light' && style === 'classic') {
-            var bg = theme === 'dark' ? '#13151A' : '#272A33';
+          if (theme !== 'light' && (style === 'classic' || style === 'minimal')) {
+            var bg = style === 'minimal' ? (theme === 'dark' ? '#060911' : '#182232') : (theme === 'dark' ? '#13151A' : '#272A33');
             root.style.backgroundColor = bg;
             var meta = document.querySelector('meta[name="theme-color"]');
             if (meta) meta.setAttribute('content', bg);

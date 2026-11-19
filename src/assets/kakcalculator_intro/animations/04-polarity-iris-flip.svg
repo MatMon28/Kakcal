@@ -1,0 +1,128 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 04: POLARITY IRIS FLIP (1060ms) --- */
+        .s4-shell { animation: s4-shell-anim 1060ms linear both; }
+        .s4-dark-layer { animation: s4-dark-hide 1060ms linear both; }
+        .s4-dk-1 { stroke-dasharray: 262 600; animation: s4-seg1 1060ms linear both; }
+        .s4-dk-2 { stroke-dasharray: 204 600; animation: s4-seg2 1060ms linear both; }
+        .s4-dk-3 { stroke-dasharray: 185 600; animation: s4-seg3 1060ms linear both; }
+        .s4-dk-badge { animation: s4-badge-pop 1060ms linear both; }
+        .s4-iris { animation: s4-iris-expand 1060ms linear both; }
+        .s4-ring { animation: s4-ring-wave 1060ms linear both; }
+        .s4-lt-badge { animation: s4-lt-badge-spin 1060ms linear both; }
+    
+        @keyframes s4-shell-anim {
+          0% { opacity: 0; transform: scale(0.86); animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          18%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s4-dark-hide {
+          0%, 83% { opacity: 1; }
+          86%, 100% { opacity: 0; }
+        }
+        @keyframes s4-seg1 {
+          0%, 6% { opacity: 0; stroke-width: 0; stroke-dashoffset: 262; }
+          10% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          24%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-seg2 {
+          0%, 13% { opacity: 0; stroke-width: 0; stroke-dashoffset: 204; }
+          17% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          31%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-seg3 {
+          0%, 19% { opacity: 0; stroke-width: 0; stroke-dashoffset: 185; }
+          23% { opacity: 1; stroke-width: 96; animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1); }
+          37%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
+        }
+        @keyframes s4-badge-pop {
+          0%, 28% { opacity: 0; transform: scale(0) rotate(-20deg); animation-timing-function: cubic-bezier(0.22, 1.4, 0.36, 1); }
+          32% { opacity: 1; }
+          44%, 100% { opacity: 1; transform: scale(1.08) rotate(0deg); }
+        }
+        @keyframes s4-iris-expand {
+          0%, 41% { transform: scale(0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          84%, 100% { transform: scale(1); }
+        }
+        @keyframes s4-ring-wave {
+          0%, 40% { opacity: 0; transform: scale(0.05); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          45% { opacity: 0.9; }
+          82%, 100% { opacity: 0; transform: scale(1.04); }
+        }
+        @keyframes s4-lt-badge-spin {
+          0%, 40% { transform: scale(0.84) rotate(-16deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          66% { transform: scale(1.08) rotate(4deg); animation-timing-function: ease-out; }
+          84%, 100% { transform: scale(1) rotate(0deg); }
+        }
+  </style>
+              <defs>
+                <clipPath id="s4-s4-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+                <mask id="s4-s4-mask" maskUnits="userSpaceOnUse" x="0" y="0" width="512" height="512">
+                  <g transform="translate(365.2 373.2)">
+                    <g class="s4-iris">
+                      <circle cx="0" cy="0" r="535" fill="#ffffff" />
+                    </g>
+                  </g>
+                </mask>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s4-shell">
+                  <g transform="translate(-256 -256)">
+                    <g class="s4-dark-layer" clip-path="url(#s4-s4-clip)">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-ink, #232325)" />
+                      <g fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s4-dk-1" d="M148 132 V392" />
+                        <path class="s4-dk-2" d="M156 268 L304 132" />
+                        <path class="s4-dk-3" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-dk-badge">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-ink, #232325)" stroke="var(--kc-ink, #232325)" stroke-width="9.5" />
+                              <g fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="3.5">
+                                <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+                                <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+                                <path d="M22 28 Q32 31.5 42 28" />
+                                <path d="M16 41 Q32 45.5 48 41" />
+                              </g>
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-ring">
+                          <circle cx="0" cy="0" r="535" fill="none" stroke="var(--kc-cream, #FBF3E3)" stroke-width="14" />
+                        </g>
+                      </g>
+                    </g>
+                    <g mask="url(#s4-s4-mask)">
+                      <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M148 132 V392" />
+                        <path d="M156 268 L304 132" />
+                        <path d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s4-lt-badge">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>

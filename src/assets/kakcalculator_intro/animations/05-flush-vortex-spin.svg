@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 05: FLUSH VORTEX SPIN (1220ms) --- */
+        .s5-card { animation: s5-card-anim 1220ms linear both; }
+        .s5-vortex-a { animation: s5-vortex-a-anim 1220ms linear both; }
+        .s5-vortex-b { animation: s5-vortex-b-anim 1220ms linear both; }
+        .s5-k { animation: s5-k-anim 1220ms linear both; }
+        .s5-poop { animation: s5-poop-anim 1220ms linear both; }
+    
+        @keyframes s5-card-anim {
+          0% { opacity: 0; transform: scale(0.56) rotate(-26deg); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          26%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s5-vortex-a-anim {
+          0%, 5% { opacity: 0; transform: translate(0px, 0px) scale(1.2) rotate(0deg); }
+          18% { opacity: 0.2; }
+          70%, 100% { opacity: 0; transform: translate(96px, 104px) scale(0.14) rotate(340deg); }
+        }
+        @keyframes s5-vortex-b-anim {
+          0%, 10% { opacity: 0; transform: translate(0px, 0px) scale(1.15) rotate(-40deg); }
+          24% { opacity: 0.26; }
+          74%, 100% { opacity: 0; transform: translate(96px, 104px) scale(0.1) rotate(300deg); }
+        }
+        @keyframes s5-k-anim {
+          0%, 8% { opacity: 0; transform: scale(0.28) rotate(-155deg); animation-timing-function: cubic-bezier(0.22, 1.25, 0.36, 1); }
+          16% { opacity: 1; }
+          60% { opacity: 1; transform: scale(1.04) rotate(7deg); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          78% { transform: scale(0.985) rotate(-2deg); animation-timing-function: ease-out; }
+          92%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        @keyframes s5-poop-anim {
+          0%, 38% { opacity: 0; transform: scale(0) rotate(-240deg); animation-timing-function: cubic-bezier(0.22, 1.36, 0.36, 1); }
+          44% { opacity: 1; }
+          74% { opacity: 1; transform: scale(1.15) rotate(11deg); animation-timing-function: ease-in-out; }
+          87% { transform: scale(0.96) rotate(-3deg); animation-timing-function: ease-out; }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+  </style>
+              <defs>
+                <clipPath id="s5-s5-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s5-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s5-s5-clip)">
+                      <g transform="translate(268 268)" fill="none" stroke="var(--kc-ink, #232325)" stroke-linecap="round">
+                        <g class="s5-vortex-a">
+                          <circle cx="0" cy="0" r="180" stroke-width="12" stroke-dasharray="110 150" />
+                        </g>
+                        <g class="s5-vortex-b">
+                          <circle cx="0" cy="0" r="112" stroke-width="10" stroke-dasharray="75 110" />
+                        </g>
+                      </g>
+                      <g transform="translate(226 262)">
+                        <g class="s5-k">
+                          <g transform="translate(-226 -262)">
+                            <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M148 132 V392" />
+                              <path d="M156 268 L304 132" />
+                              <path d="M196 252 L312 392" />
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                      <g transform="translate(365.2 373.2)">
+                        <g class="s5-poop">
+                          <g transform="translate(-365.2 -373.2)">
+                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>

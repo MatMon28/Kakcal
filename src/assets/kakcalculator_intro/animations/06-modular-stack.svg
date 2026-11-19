@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <style>
+    /* --- 06: MODULAR COIL STACK (1240ms) --- */
+        .s6-card { animation: s6-card-anim 1240ms linear both; }
+        .s6-bar-1 { animation: s6-bar1-anim 1240ms linear both; }
+        .s6-bar-2 { animation: s6-bar2-anim 1240ms linear both; }
+        .s6-bar-3 { animation: s6-bar3-anim 1240ms linear both; }
+        .s6-wiper { animation: s6-wiper-anim 1240ms linear both; }
+        .s6-stack-bounce { animation: s6-stack-bounce-anim 1240ms linear both; }
+    
+        @keyframes s6-card-anim {
+          0% { opacity: 0; transform: scale(0.84); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          20%, 100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes s6-bar1-anim {
+          0%, 8% { opacity: 0; transform: translate(0px, 340px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          14% { opacity: 1; }
+          40% { transform: translate(0px, -14px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          56%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-bar2-anim {
+          0%, 16% { opacity: 0; transform: translate(230px, -212px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          22% { opacity: 1; }
+          47% { transform: translate(-11px, 10px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          63%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-bar3-anim {
+          0%, 23% { opacity: 0; transform: translate(200px, 242px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          29% { opacity: 1; }
+          54% { transform: translate(-9px, -11px); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+          70%, 100% { opacity: 1; transform: translate(0px, 0px); }
+        }
+        @keyframes s6-wiper-anim {
+          0%, 44% { transform: translate(0px, 74px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          55% { transform: translate(0px, 50px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          67% { transform: translate(0px, 37px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          79% { transform: translate(0px, 24px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+          91%, 100% { transform: translate(0px, 0px); }
+        }
+        @keyframes s6-stack-bounce-anim {
+          0%, 44% { transform: scale(1, 1); }
+          54% { transform: scale(1.1, 0.9); }
+          61% { transform: scale(0.97, 1.04); }
+          67% { transform: scale(1.08, 0.92); }
+          74% { transform: scale(0.97, 1.04); }
+          80% { transform: scale(1.06, 0.94); }
+          89% { transform: scale(0.96, 1.06); }
+          96%, 100% { transform: scale(1, 1); }
+        }
+  </style>
+              <defs>
+                <clipPath id="s6-s6-clip">
+                  <rect x="8" y="8" width="496" height="496" rx="116" />
+                </clipPath>
+                <mask id="s6-s6-mask" maskUnits="userSpaceOnUse" x="-12" y="-12" width="88" height="88">
+                  <g class="s6-wiper">
+                    <rect x="-12" y="-12" width="88" height="88" fill="#ffffff" />
+                  </g>
+                </mask>
+              </defs>
+              <g transform="translate(256 256)">
+                <g class="s6-card">
+                  <g transform="translate(-256 -256)">
+                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
+                    <g clip-path="url(#s6-s6-clip)">
+                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
+                        <path class="s6-bar-1" d="M148 132 V392" />
+                        <path class="s6-bar-2" d="M156 268 L304 132" />
+                        <path class="s6-bar-3" d="M196 252 L312 392" />
+                      </g>
+                      <g transform="translate(365.2 441.6)">
+                        <g class="s6-stack-bounce">
+                          <g transform="translate(-365.2 -441.6)">
+                            <g transform="translate(274 282) scale(2.85)" mask="url(#s6-s6-mask)" stroke-linecap="round" stroke-linejoin="round">
+                              
+      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
+      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
+        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
+        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
+        <path d="M22 28 Q32 31.5 42 28" />
+        <path d="M16 41 Q32 45.5 48 41" />
+      </g>
+    
+                            </g>
+                          </g>
+                        </g>
+                      </g>
+                    </g>
+                  </g>
+                </g>
+              </g>
+            </svg>

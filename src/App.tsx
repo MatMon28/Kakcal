@@ -187,10 +187,12 @@ function WidgetAppBridge() {
       language: app.language,
       bmr: calculateBMR(app.userProfile),
       widgetStyle: app.settings.widgetStyle,
+      themeStyle: app.settings.themeStyle,
+      monoHue: app.settings.monoHue,
       widgetCustomButton: app.settings.widgetCustomButton && app.settings.customButtons.length > 0,
       days,
     }).catch(() => console.warn('Native widget refresh unavailable'));
-  }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.widgetCustomButton, app.settings.customButtons]);
+  }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.themeStyle, app.settings.monoHue, app.settings.widgetCustomButton, app.settings.customButtons]);
 
   useEffect(() => {
     if (window.parent === window) return;
@@ -217,7 +219,7 @@ function WidgetAppBridge() {
   useEffect(() => {
     if (window.parent === window) return;
     window.parent.postMessage({ channel: WIDGET_CHANNEL, type: 'snapshot', snapshot }, targetOrigin());
-  }, [snapshot]);
+  }, [snapshot, app.settings.theme, app.settings.themeStyle, app.settings.monoHue, app.settings.widgetStyle, app.settings.widgetCustomButton, app.settings.customButtons]);
 
   useEffect(() => {
     const updateDate = () => setToday(getTodayDateString());

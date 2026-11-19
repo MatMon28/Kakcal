@@ -46,6 +46,12 @@ public class JournalDevicePlugin extends Plugin {
         String language = "it".equals(call.getString("language")) ? "it" : "en";
         double bmr = call.getData().optDouble("bmr", Double.NaN);
         String style = "dark".equals(call.getString("widgetStyle")) ? "dark" : "light";
+        String rawThemeStyle = call.getString("themeStyle", "classic");
+        String themeStyle = ("angular".equals(rawThemeStyle) || "aurora".equals(rawThemeStyle) || "pop".equals(rawThemeStyle)
+                || "playful".equals(rawThemeStyle) || "minimal".equals(rawThemeStyle) || "mono".equals(rawThemeStyle))
+                ? rawThemeStyle : "classic";
+        String rawMonoHue = call.getString("monoHue", "#64748b");
+        String monoHue = rawMonoHue != null && rawMonoHue.matches("^#[0-9a-fA-F]{6}$") ? rawMonoHue.toLowerCase() : "#64748b";
         boolean customButton = Boolean.TRUE.equals(call.getBoolean("widgetCustomButton", false));
         if (days == null || !Double.isFinite(bmr) || bmr <= 0) { call.reject("Missing daily nutrition"); return; }
         try {
@@ -65,10 +71,11 @@ public class JournalDevicePlugin extends Plugin {
             }
             SharedPreferences store = JournalWidgetProvider.store(getContext());
             String json = clean.toString();
-            String signature = language + "|" + bmr + "|" + style + "|" + customButton + "|" + json;
+            String signature = language + "|" + bmr + "|" + style + "|" + themeStyle + "|" + monoHue + "|" + customButton + "|" + json;
             if (!signature.equals(store.getString("signature", ""))) {
                 if (!store.edit().putString("days", json).putString("language", language)
                         .putFloat("bmr", (float) bmr).putString("widgetStyle", style)
+                        .putString("themeStyle", themeStyle).putString("monoHue", monoHue)
                         .putBoolean("widgetCustomButton", customButton).putString("signature", signature).commit()) {
                     call.reject("Could not save widget data");
                     return;

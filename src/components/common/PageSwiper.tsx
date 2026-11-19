@@ -15,7 +15,7 @@ interface PageSwiperProps {
 
 type Peer = { tab: ActiveTab; side: number; top: number };
 type Drag = {
-  id: number; origin: Element; startX: number; startY: number; scrollY: number;
+  id: number; origin: Element; startX: number; startY: number; startTime: number; scrollY: number;
   width: number; locked: boolean; side: number; target?: ActiveTab; offset: number;
   x: number; time: number; velocity: number;
 };
@@ -56,7 +56,7 @@ export function PageSwiper(props: PageSwiperProps) {
       rail.current.style.transform = '';
       rail.current.style.willChange = '';
     }
-    document.documentElement.classList.remove('kc-page-moving');
+    document.documentElement.classList.remove('kc-page-moving', 'kc-page-dragging');
   }, []);
 
   const rest = useCallback(() => {
@@ -92,7 +92,7 @@ export function PageSwiper(props: PageSwiperProps) {
     document.documentElement.style.setProperty('--kc-swipe-dir', String(side));
     document.documentElement.dataset.swipeDir = side > 0 ? 'right' : 'left';
     document.documentElement.classList.add('kc-page-moving');
-    settle(side * 16, 160);
+    settle(side * 16, 115);
   }, [activeTab, rest, settle]);
 
   useEffect(() => {
@@ -107,7 +107,8 @@ export function PageSwiper(props: PageSwiperProps) {
       drag.current = null;
       cancelAnimationFrame(frame.current);
       frame.current = 0;
-      if (g?.locked) settle(g.offset, 160);
+      document.documentElement.classList.remove('kc-page-dragging');
+      if (g?.locked) settle(g.offset, 125);
     };
     const down = (event: PointerEvent) => {
       if (!event.isPrimary) { cancelDrag(); return; }
@@ -116,7 +117,7 @@ export function PageSwiper(props: PageSwiperProps) {
       if (event.clientX < 8 || event.clientX > window.innerWidth - 8) return;
       const origin = event.target;
       if (!(origin instanceof Element) || origin.closest('[data-no-swipe], [role="dialog"], textarea, [contenteditable="true"], input[type="range"]')) return;
-      drag.current = { id: event.pointerId, origin, startX: event.clientX, startY: event.clientY,
+      drag.current = { id: event.pointerId, origin, startX: event.clientX, startY: event.clientY, startTime: event.timeStamp,
         scrollY: window.scrollY, width: viewport.clientWidth, locked: false, side: 0, offset: 0,
         x: event.clientX, time: event.timeStamp, velocity: 0 };
     };
@@ -127,13 +128,13 @@ export function PageSwiper(props: PageSwiperProps) {
       const dy = event.clientY - g.startY;
       if (!g.locked) {
         if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { cancelDrag(); return; }
-        if (Math.abs(dx) < 6 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+        if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.25) return;
         if (listCanScroll(g.origin, surface, dx) || getOpenModalCount()) { cancelDrag(); return; }
         // Leave taps with the original button; capture only a horizontal drag.
         try { surface.setPointerCapture(event.pointerId); } catch { /* pointer already released */ }
         g.locked = true;
         blockDragClick = true;
-        document.documentElement.classList.add('kc-page-moving');
+        document.documentElement.classList.add('kc-page-moving', 'kc-page-dragging');
         el.style.willChange = 'transform';
       }
       if (event.cancelable) event.preventDefault();
@@ -149,7 +150,10 @@ export function PageSwiper(props: PageSwiperProps) {
       if (dt > 0) g.velocity = (event.clientX - g.x) / dt;
       g.x = event.clientX;
       g.time = event.timeStamp;
-      g.offset = g.target ? Math.max(-g.width, Math.min(g.width, dx)) : Math.max(-32, Math.min(32, dx * 0.22));
+      const resist = dx - Math.sign(dx) * 8;
+      const abs = Math.abs(resist);
+      const damped = abs < 85 ? resist * 0.72 : Math.sign(resist) * (85 * 0.72 + (abs - 85) * 0.92);
+      g.offset = g.target ? Math.max(-g.width, Math.min(g.width, damped)) : Math.max(-28, Math.min(28, resist * 0.2));
       if (!frame.current && !prefersReducedMotion()) frame.current = requestAnimationFrame(() => {
         frame.current = 0;
         if (drag.current === g) el.style.transform = translate(g.offset);
@@ -161,13 +165,18 @@ export function PageSwiper(props: PageSwiperProps) {
       drag.current = null;
       cancelAnimationFrame(frame.current);
       frame.current = 0;
+      document.documentElement.classList.remove('kc-page-dragging');
       if (!g.locked) return;
       const dx = event.clientX - g.startX;
-      const velocity = event.timeStamp - g.time < 100 ? g.velocity : 0;
-      const cross = -dx * g.side > Math.min(64, Math.max(28, g.width * 0.1)) ||
-        (-dx * g.side > 12 && -velocity * g.side > 0.4);
+      const dist = -dx * g.side;
+      const totalDt = Math.max(1, event.timeStamp - g.startTime);
+      const avgSpeed = dist / totalDt;
+      const velocity = event.timeStamp - g.time < 90 ? -g.velocity * g.side : 0;
+      const minDistance = Math.min(116, Math.max(86, g.width * 0.27));
+      const cross = dist > minDistance ||
+        (dist > Math.max(44, g.width * 0.12) && (velocity > 0.65 || avgSpeed > 0.65));
       const { activeTab: old, onChange, onSwipeBack } = latest.current;
-      if (!g.target && old === 'database' && dx > 64) {
+      if (!g.target && old === 'database' && dx > 86) {
         document.documentElement.style.setProperty('--kc-swipe-dir', '-1');
         document.documentElement.dataset.swipeDir = 'left';
         rest();
@@ -188,7 +197,7 @@ export function PageSwiper(props: PageSwiperProps) {
           onChange(target);
         });
       }
-      settle(from, Math.min(220, 110 + Math.abs(from) * 0.3));
+      settle(from, Math.min(150, 80 + Math.abs(from) * 0.2));
     };
     const lost = (event: PointerEvent) => {
       // A child's implicit capture is released when main takes over. That is not cancellation.

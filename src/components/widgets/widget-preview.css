@@ -18,7 +18,8 @@
   gap: 6px;
   width: 100%;
   padding: 8px 10px;
-  border-radius: 999px;
+  border-radius: var(--dock-radius, 999px);
+  clip-path: var(--clip-dock, none);
   background: color-mix(in srgb, var(--surface) 58%, transparent);
   border: 1px solid color-mix(in srgb, var(--surface) 80%, transparent);
   box-shadow: 0 6px 16px rgb(36 32 28 / 8%);
@@ -42,7 +43,7 @@
   height: 48px;
   padding: 0;
   border: 0;
-  border-radius: 50%;
+  border-radius: var(--dock-btn-radius, 50%);
   background: transparent;
   cursor: pointer;
 }
@@ -57,7 +58,9 @@
   place-items: center;
   width: 100%;
   height: 100%;
-  border-radius: 50%;
+  border-radius: var(--dock-btn-radius, 50%);
+  border: var(--dock-btn-border, none);
+  clip-path: var(--clip-sm, none);
   background: var(--action-fill);
   color: var(--action-ink);
   transition: transform 180ms ease;
@@ -76,12 +79,12 @@
   outline-offset: 3px;
 }
 
-.widget-action-food { --action-fill: var(--color-intake); --action-ink: var(--color-intake-ink); }
-.widget-action-movement { --action-fill: var(--color-activity); --action-ink: var(--color-activity-ink); }
-.widget-action-water { --action-fill: #CFE7FE; --action-ink: #183F66; }
-.widget-action-poop { --action-fill: #FAE0B4; --action-ink: #7D4E14; }
-.widget-action-weight { --action-fill: var(--color-weight); --action-ink: var(--color-weight-ink); }
-.widget-action-custom { --action-fill: #F7E9AA; --action-ink: #6E5B14; }
+.widget-action-food { --action-fill: var(--dock-1, var(--color-intake)); --action-ink: var(--dock-icon-1, var(--color-intake-ink)); }
+.widget-action-movement { --action-fill: var(--dock-2, var(--color-activity)); --action-ink: var(--dock-icon-2, var(--color-activity-ink)); }
+.widget-action-water { --action-fill: var(--dock-3, #CFE7FE); --action-ink: var(--dock-icon-3, #183F66); }
+.widget-action-poop { --action-fill: var(--dock-4, #FAE0B4); --action-ink: var(--dock-icon-4, #7D4E14); }
+.widget-action-weight { --action-fill: var(--dock-5, var(--color-weight)); --action-ink: var(--dock-icon-5, var(--color-weight-ink)); }
+.widget-action-custom { --action-fill: var(--dock-6, #F7E9AA); --action-ink: var(--dock-icon-6, #6E5B14); }
 
 /* Settings > Widgets > Dark: the same translucent glass, but darker. */
 .quick-widget-dark {

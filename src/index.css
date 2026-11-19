@@ -213,7 +213,7 @@
 @keyframes kc-dock-in {
   from {
     opacity: 0;
-    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 40px), 0, 0) scale(0.92);
+    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 22px), 0, 0) scale(0.95);
   }
   to {
     opacity: 1;
@@ -224,7 +224,7 @@
 @keyframes kc-dock-btn-in {
   from {
     opacity: 0;
-    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 18px), 0, 0) scale(0.86);
+    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 10px), 0, 0) scale(0.92);
   }
   to {
     opacity: 1;
@@ -272,18 +272,18 @@ html.kc-sheet-open, .kc-sheet-open body, .dialog-viewport { overscroll-behavior:
 }
 
 .anim-dock {
-  animation: kc-dock-in var(--dur-bounce) var(--ease-bounce) backwards;
-  transition: opacity 120ms ease-out;
+  animation: kc-dock-in 130ms var(--ease-bounce) backwards;
+  transition: opacity 85ms ease-out;
 }
 
 .anim-dock .kc-dock-btn {
-  animation: kc-dock-btn-in var(--dur-bounce) var(--ease-bounce) backwards;
+  animation: kc-dock-btn-in 130ms var(--ease-bounce) backwards;
 }
 
-/* While pages move, both the outgoing and incoming docks stay hidden and untappable. PageSwiper
-   removes this class only after the outgoing page has unmounted, triggering the directional entrance. */
-.kc-page-moving .anim-dock,
-.kc-page-moving .anim-dock .kc-dock-btn {
+/* While the finger is dragging across pages, the dock stays hidden; as soon as the swipe releases,
+   kc-page-dragging is removed so the destination dock and action buttons appear immediately. */
+.kc-page-dragging .anim-dock,
+.kc-page-dragging .anim-dock .kc-dock-btn {
   animation: none !important;
   opacity: 0 !important;
   pointer-events: none !important;
@@ -1087,51 +1087,51 @@ html[data-style="minimal"] {
 }
 
 html[data-style="minimal"][data-theme="dark"] {
-  --bg: #0f172a;
-  --surface: #1e293b;
-  --surface-solid: #1e293b;
-  --inset: #0f172a;
-  --hover: #334155;
-  --border: #334155;
+  --bg: #060911;
+  --surface: #0d1320;
+  --surface-solid: #0d1320;
+  --inset: #070b14;
+  --hover: #172033;
+  --border: #1e293b;
   --text: #f8fafc;
   --muted: #94a3b8;
-  --header-btn-bg: #1e293b;
+  --header-btn-bg: #0d1320;
   --header-icon-color: #3b82f6;
-  --nav-bg: #1e293b;
+  --nav-bg: #0d1320;
   --nav-inactive-color: #94a3b8;
-  --nav-active-bg: #334155;
+  --nav-active-bg: #1e293b;
   --nav-active-color: #f8fafc;
   --meal-icon-color: #3b82f6;
 
-  --card-border: 1px solid #334155;
-  --intake-bg: #1e293b; --intake-text: #bfdbfe; --intake-label: #93c5fd;
-  --intake-track: #334155; --intake-fill: #60a5fa;
+  --card-border: 1px solid #1e293b;
+  --intake-bg: #0d1320; --intake-text: #bfdbfe; --intake-label: #93c5fd;
+  --intake-track: #1e293b; --intake-fill: #60a5fa;
 
-  --burned-bg: #1e293b; --burned-text: #fecaca; --burned-label: #fca5a5;
-  --burned-track: #334155; --burned-fill: #f87171;
-  --badge-bg: #7f1d1d; --badge-text: #fecaca;
+  --burned-bg: #0d1320; --burned-text: #fecaca; --burned-label: #fca5a5;
+  --burned-track: #1e293b; --burned-fill: #f87171;
+  --badge-bg: #450a0a; --badge-text: #fecaca;
 
-  --carbs-bg: #1e293b; --carbs-text: #bfdbfe;
-  --protein-bg: #1e293b; --protein-text: #fde68a;
-  --fat-bg: #1e293b; --fat-text: #e9d5ff;
+  --carbs-bg: #0d1320; --carbs-text: #bfdbfe;
+  --protein-bg: #0d1320; --protein-text: #fde68a;
+  --fat-bg: #0d1320; --fat-text: #e9d5ff;
 
-  --pill-c-bg: #0f172a; --pill-c-text: #93c5fd;
-  --pill-p-bg: #0f172a; --pill-p-text: #fde047;
-  --pill-f-bg: #0f172a; --pill-f-text: #d8b4fe;
+  --pill-c-bg: #060911; --pill-c-text: #93c5fd;
+  --pill-p-bg: #060911; --pill-p-text: #fde047;
+  --pill-f-bg: #060911; --pill-f-text: #d8b4fe;
 
-  --dock-bg: #1e293b;
-  --dock-border: 1px solid #334155;
-  --dock-btn-border: 1px solid #334155;
-  --dock-1: #0f172a; --dock-icon-1: #93c5fd;
-  --dock-2: #3b82f6; --dock-icon-2: #ffffff;
-  --dock-3: #0f172a; --dock-icon-3: #93c5fd;
-  --dock-4: #0f172a; --dock-icon-4: #fde047;
-  --dock-5: #0f172a; --dock-icon-5: #d8b4fe;
-  --dock-6: #0f172a; --dock-icon-6: #f8fafc;
+  --dock-bg: #0d1320;
+  --dock-border: 1px solid #1e293b;
+  --dock-btn-border: 1px solid #1e293b;
+  --dock-1: #060911; --dock-icon-1: #93c5fd;
+  --dock-2: #2563eb; --dock-icon-2: #ffffff;
+  --dock-3: #060911; --dock-icon-3: #93c5fd;
+  --dock-4: #060911; --dock-icon-4: #fde047;
+  --dock-5: #060911; --dock-icon-5: #d8b4fe;
+  --dock-6: #060911; --dock-icon-6: #f8fafc;
 
-  --fiber-bg: #0f172a; --fiber-text: #f8fafc;
-  --salt-bg: #0f172a; --salt-text: #f8fafc;
-  --sugar-bg: #0f172a; --sugar-text: #f8fafc;
+  --fiber-bg: #060911; --fiber-text: #f8fafc;
+  --salt-bg: #060911; --salt-text: #f8fafc;
+  --sugar-bg: #060911; --sugar-text: #f8fafc;
 }
 
 html[data-style="minimal"][data-theme="lite-dark"] {

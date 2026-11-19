@@ -10,6 +10,15 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.RectF;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -40,6 +49,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     private static final String[] ACTIONS = { "food", "movement", "water", "poop", "weight", "custom" };
     private static final int[] BUTTONS = { R.id.widget_food, R.id.widget_movement, R.id.widget_water, R.id.widget_poop, R.id.widget_weight, R.id.widget_custom };
     private static final int[] LABELS = { R.string.widget_food, R.string.widget_movement, R.string.widget_water, R.string.widget_poop, R.string.widget_weight, R.string.widget_custom };
+    private static final int[] ICONS = { R.drawable.widget_food_icon, R.drawable.widget_movement_icon, R.drawable.widget_water_icon, R.drawable.widget_poop_icon, R.drawable.widget_weight_icon, R.drawable.widget_custom_icon };
 
     static SharedPreferences store(Context context) {
         return context.getSharedPreferences("widget_nutrition_v1", Context.MODE_PRIVATE);
@@ -129,6 +139,8 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         SharedPreferences prefs = store(context);
         // Settings > Widgets: a darker translucent look, and the optional custom-tracker button.
         boolean dark = "dark".equals(prefs.getString("widgetStyle", "light"));
+        String themeStyle = prefs.getString("themeStyle", "classic");
+        String monoHue = prefs.getString("monoHue", "#64748b");
         boolean customButton = !essential && prefs.getBoolean("widgetCustomButton", false);
         int layout = large ? (medium ? (dark ? R.layout.widget_medium_dark : R.layout.widget_medium)
             : (dark ? R.layout.widget_large_dark : R.layout.widget_large))
@@ -148,6 +160,13 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             view.setOnClickPendingIntent(BUTTONS[i], PendingIntent.getActivity(context, 100 + i, open,
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
             view.setContentDescription(BUTTONS[i], strings.getString(LABELS[i]));
+            if ("classic".equals(themeStyle)) {
+                view.setImageViewResource(BUTTONS[i], ICONS[i]);
+            } else {
+                Bitmap bmp = renderStyledActionBitmap(context, i, themeStyle, dark, monoHue);
+                if (bmp != null) view.setImageViewBitmap(BUTTONS[i], bmp);
+                else view.setImageViewResource(BUTTONS[i], ICONS[i]);
+            }
         }
         if (!essential) view.setViewVisibility(R.id.widget_custom, customButton ? View.VISIBLE : View.GONE);
         if (large) bindLarge(view, strings, prefs, locale, medium);
@@ -220,5 +239,146 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         view.setTextViewText(value, gramText);
         if (!compact) view.setTextViewText(percent, shareText + "%");
         view.setContentDescription(card, strings.getString(description, gramText, shareText));
+    }
+
+    private static int mixColor(int c1, int c2, float weight) {
+        int r = Math.round(Color.red(c1) * (1f - weight) + Color.red(c2) * weight);
+        int g = Math.round(Color.green(c1) * (1f - weight) + Color.green(c2) * weight);
+        int b = Math.round(Color.blue(c1) * (1f - weight) + Color.blue(c2) * weight);
+        return Color.rgb(Math.max(0, Math.min(255, r)), Math.max(0, Math.min(255, g)), Math.max(0, Math.min(255, b)));
+    }
+
+    private static int contrastText(int bg) {
+        double r = Color.red(bg) / 255.0, g = Color.green(bg) / 255.0, b = Color.blue(bg) / 255.0;
+        r = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+        g = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+        b = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+        return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 0.42 ? Color.parseColor("#090e17") : Color.WHITE;
+    }
+
+    private static Bitmap renderStyledActionBitmap(Context context, int index, String themeStyle, boolean dark, String monoHue) {
+        try {
+            int size = 132;
+            Bitmap bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bmp);
+            int fill = Color.parseColor("#C9EFD3");
+            int ink = Color.parseColor("#17432A");
+            int border = Color.TRANSPARENT;
+            float borderWidth = 0f;
+
+            if ("angular".equals(themeStyle)) {
+                String[] fills = dark
+                    ? new String[]{ "#e6edf3", "#ff551a", "#c7d2fe", "#fde047", "#e9d5ff", "#7dd3fc" }
+                    : new String[]{ "#0b1019", "#ff551a", "#b8d0ff", "#f8da57", "#d4bcff", "#7dd3fc" };
+                fill = Color.parseColor(fills[index]);
+                ink = (!dark && index == 0) ? Color.WHITE : Color.parseColor("#0b1019");
+            } else if ("aurora".equals(themeStyle)) {
+                String[] fills = { "#34d399", "#fb7185", "#60a5fa", "#fb923c", "#a78bfa", "#facc15" };
+                String[] inks = { "#06281e", "#2d0811", "#0f172a", "#1f0a00", "#1e1b4b", "#1c1917" };
+                fill = Color.parseColor(fills[index]);
+                ink = Color.parseColor(inks[index]);
+            } else if ("pop".equals(themeStyle)) {
+                String[] fills = { "#7ef29d", "#ff7a7a", "#7cc4fa", "#ffb84d", "#c99eff", dark ? "#fde047" : "#ffffff" };
+                fill = Color.parseColor(fills[index]);
+                ink = Color.parseColor("#09080d");
+                border = dark ? Color.parseColor("#fef9c3") : Color.BLACK;
+                borderWidth = 4.5f;
+            } else if ("playful".equals(themeStyle)) {
+                String[] fills = { "#34d399", "#fb7185", "#60a5fa", "#fbbf24", "#c084fc", "#fcd34d" };
+                String[] inks = { "#042f2e", "#3b0413", "#172554", "#422006", "#2e1065", "#422006" };
+                fill = Color.parseColor(fills[index]);
+                ink = Color.parseColor(inks[index]);
+            } else if ("minimal".equals(themeStyle)) {
+                if (dark) {
+                    fill = index == 1 ? Color.parseColor("#2563eb") : Color.parseColor("#060911");
+                    String[] inks = { "#93c5fd", "#ffffff", "#93c5fd", "#fde047", "#d8b4fe", "#f8fafc" };
+                    ink = Color.parseColor(inks[index]);
+                    border = Color.parseColor("#1e293b");
+                } else {
+                    fill = index == 1 ? Color.parseColor("#0f172a") : Color.WHITE;
+                    String[] inks = { "#172554", "#ffffff", "#172554", "#713f12", "#3b0764", "#090e17" };
+                    ink = Color.parseColor(inks[index]);
+                    border = Color.parseColor("#cbd5e1");
+                }
+                borderWidth = 3f;
+            } else if ("mono".equals(themeStyle)) {
+                int base = Color.parseColor(monoHue != null && monoHue.matches("^#[0-9a-fA-F]{6}$") ? monoHue : "#64748b");
+                if (dark) {
+                    int cardBg = mixColor(Color.parseColor("#1a2233"), base, 0.24f);
+                    int intakeBg = mixColor(base, Color.WHITE, 0.28f);
+                    int burnedBg = mixColor(base, Color.parseColor("#090d16"), 0.05f);
+                    fill = index == 0 ? intakeBg : (index == 1 ? burnedBg : cardBg);
+                } else {
+                    int cardBg = mixColor(Color.WHITE, base, 0.16f);
+                    int intakeBg = mixColor(base, Color.parseColor("#090e17"), 0.32f);
+                    int burnedBg = mixColor(base, Color.parseColor("#090e17"), 0.08f);
+                    fill = index == 0 ? intakeBg : (index == 1 ? burnedBg : cardBg);
+                }
+                ink = contrastText(fill);
+            }
+
+            Path shape = new Path();
+            float pad = borderWidth > 0 ? borderWidth / 2f : 0f;
+            RectF rect = new RectF(pad, pad, size - pad, size - pad);
+            if ("angular".equals(themeStyle)) {
+                float cut = 26f;
+                shape.moveTo(pad, pad);
+                shape.lineTo(size - pad - cut, pad);
+                shape.lineTo(size - pad, pad + cut);
+                shape.lineTo(size - pad, size - pad);
+                shape.lineTo(pad + cut, size - pad);
+                shape.lineTo(pad, size - pad - cut);
+                shape.close();
+            } else if ("minimal".equals(themeStyle)) {
+                shape.addRoundRect(rect, 30f, 30f, Path.Direction.CW);
+            } else if ("mono".equals(themeStyle)) {
+                shape.addRoundRect(rect, 33f, 33f, Path.Direction.CW);
+            } else {
+                shape.addOval(rect, Path.Direction.CW);
+            }
+
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setColor(fill);
+            canvas.drawPath(shape, paint);
+
+            if (borderWidth > 0) {
+                paint.setStyle(Paint.Style.STROKE);
+                paint.setStrokeWidth(borderWidth);
+                paint.setColor(border);
+                canvas.drawPath(shape, paint);
+            }
+
+            Drawable src = context.getDrawable(ICONS[index]);
+            if (src != null) {
+                // Extract the inner 24x24 glyph from the 48x48 vector drawable by masking out the outer circle
+                Bitmap raw = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+                Canvas rawCanvas = new Canvas(raw);
+                src.setBounds(0, 0, size, size);
+                src.draw(rawCanvas);
+                int centerBg = raw.getPixel(16, 16);
+                int[] pixels = new int[size * size];
+                raw.getPixels(pixels, 0, size, 0, 0, size, size);
+                int br = Color.red(centerBg), bg = Color.green(centerBg), bb = Color.blue(centerBg);
+                for (int p = 0; p < pixels.length; p++) {
+                    int px = pixels[p];
+                    int a = Color.alpha(px);
+                    if (a == 0) continue;
+                    int dist = Math.abs(Color.red(px) - br) + Math.abs(Color.green(px) - bg) + Math.abs(Color.blue(px) - bb);
+                    if (dist < 42) {
+                        pixels[p] = Color.TRANSPARENT;
+                    } else {
+                        int alpha = Math.min(255, dist * 2);
+                        pixels[p] = Color.argb(alpha, Color.red(ink), Color.green(ink), Color.blue(ink));
+                    }
+                }
+                raw.setPixels(pixels, 0, size, 0, 0, size, size);
+                canvas.drawBitmap(raw, 0f, 0f, null);
+                raw.recycle();
+            }
+            return bmp;
+        } catch (Exception ignored) {
+            return null;
+        }
     }
 }

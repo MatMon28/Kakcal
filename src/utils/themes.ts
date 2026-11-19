@@ -52,7 +52,7 @@ export const SIX_NEW_THEMES: ThemePresetMeta[] = [
     id: 'minimal',
     name: { en: 'Minimal', it: 'Minimal' },
     tag: { en: 'Hairline · Crisp Slate', it: 'Essenziale · Ardesia' },
-    swatches: ['#0f172a', '#3b82f6', '#e2e8f0'],
+    swatches: ['#060911', '#3b82f6', '#e2e8f0'],
   },
   {
     id: 'mono',

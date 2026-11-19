@@ -1,5 +1,5 @@
 import { Capacitor, registerPlugin, type PluginListenerHandle } from '@capacitor/core';
-import type { Language } from '../types';
+import type { Language, ThemeStyle } from '../types';
 import type { NutritionValues } from '../components/widgets/widgetContract';
 
 export const isAndroidApp = () => Capacitor.getPlatform() === 'android';
@@ -14,6 +14,10 @@ interface JournalDevicePlugin {
     bmr: number;
     /** Home-screen widget look: light, or a darker translucent style. */
     widgetStyle: 'light' | 'dark';
+    /** Active theme preset so widget button shapes and colours match the app theme style. */
+    themeStyle?: ThemeStyle;
+    /** Active single-hue hex when themeStyle is 'mono'. */
+    monoHue?: string;
     /** Show the custom-tracker button on the Small and Large widgets. */
     widgetCustomButton: boolean;
     days: Record<string, NutritionValues>;

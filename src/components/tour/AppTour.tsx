@@ -90,8 +90,10 @@ export function AppTour() {
       if (window.location.origin !== 'null' && event.origin !== window.location.origin) return;
       if (isWidgetReadyMessage(event.data)) {
         setSnapshot(null);
+        setThemeCfg(readThemeConfig());
         setBootCount((count) => count + 1);
       } else if (isWidgetSnapshotMessage(event.data)) {
+        setThemeCfg(readThemeConfig());
         setSnapshot(event.data.snapshot);
       }
     };
