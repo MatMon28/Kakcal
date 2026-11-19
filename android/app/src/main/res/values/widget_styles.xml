@@ -69,6 +69,19 @@
         <item name="android:textSize">11sp</item>
         <item name="android:textStyle">bold</item>
     </style>
+    <!-- Medium widget: shorter energy cards (no progress bar and a smaller value). -->
+    <style name="WidgetCardCompact" parent="WidgetCard">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:padding">6dp</item>
+    </style>
+
+    <style name="WidgetValueCompact" parent="WidgetValue">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">0</item>
+        <item name="android:textSize">21sp</item>
+    </style>
+
     <!-- Large widget macro cards: a frame so the letter can sit in the top-left corner. -->
     <style name="WidgetMacroCard">
         <item name="android:layout_width">0dp</item>

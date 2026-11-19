@@ -1134,6 +1134,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Switching the app to Dark also sets the home-screen widgets to Dark; both stay independent after that.
       const followDark = partial.theme === 'dark' && partial.widgetStyle === undefined ? { widgetStyle: 'dark' as const } : {};
       const next = { ...prev, ...partial, ...followDark, theme: normalizeTheme(partial.theme ?? prev.theme) };
+      // No trackers means no button to show: keep the widget setting consistent with the data.
+      if (next.customButtons.length === 0) next.widgetCustomButton = false;
       localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
       return next;
     });

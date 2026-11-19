@@ -37,14 +37,16 @@ export function makeSpring(stiffness: number, damping: number): SpringEase {
 }
 
 /** `soft`: about 3 % overshoot, for pages, sheets and docks. `bounce`: about 20 %, for pressed controls. */
+// Guideline: transitions that follow a gesture should settle in 200-300 ms; a press should feel
+// immediate. These springs reach 99 % in ~270 ms (soft) and ~300 ms (bounce).
 const EXACT = {
-  soft: makeSpring(190, 20),
-  bounce: makeSpring(330, 16),
+  soft: makeSpring(520, 34),
+  bounce: makeSpring(950, 31),
 };
 
 const FALLBACK = {
-  soft: { easing: 'cubic-bezier(0.22, 1, 0.36, 1)', duration: 380 },
-  bounce: { easing: 'cubic-bezier(0.34, 1.4, 0.64, 1)', duration: 460 },
+  soft: { easing: 'cubic-bezier(0.22, 1, 0.36, 1)', duration: 260 },
+  bounce: { easing: 'cubic-bezier(0.34, 1.4, 0.64, 1)', duration: 300 },
 };
 
 const supportsLinear = (): boolean =>

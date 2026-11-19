@@ -25,7 +25,11 @@ export interface WidgetAppearance {
 export function readWidgetAppearance(): WidgetAppearance {
   try {
     const saved = JSON.parse(localStorage.getItem('kcalsync_settings') || '{}');
-    return { style: saved.widgetStyle === 'dark' ? 'dark' : 'light', customButton: Boolean(saved.widgetCustomButton) };
+    const buttons = Array.isArray(saved.customButtons) ? saved.customButtons.length : 0;
+    return {
+      style: saved.widgetStyle === 'dark' ? 'dark' : 'light',
+      customButton: Boolean(saved.widgetCustomButton) && buttons > 0,
+    };
   } catch {
     return { style: 'light', customButton: false };
   }

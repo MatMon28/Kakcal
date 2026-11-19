@@ -320,7 +320,7 @@ export const SettingsModal: React.FC = () => {
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
               {t.settings.quickAdd}
             </span>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="space-y-1.5">
               {quickRows.map((r) => {
                 const Icon = r.icon;
                 const isOn = settings.quickAdd[r.key];
@@ -334,7 +334,7 @@ export const SettingsModal: React.FC = () => {
                         quickAdd: { ...settings.quickAdd, [r.key]: !isOn },
                       })
                     }
-                    className="min-h-[54px] flex flex-wrap min-[360px]:flex-nowrap items-center justify-between gap-x-1.5 gap-y-1 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-2.5 py-2 transition-colors text-left"
+                    className="w-full min-h-[52px] flex flex-nowrap items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-3 py-2 transition-colors text-left"
                   >
                     <span className="flex items-center gap-1.5 min-w-0 text-xs font-bold text-[var(--text)]">
                       <span className={`size-7 rounded-full flex items-center justify-center shrink-0 ${r.cls}`}>
@@ -433,8 +433,9 @@ export const SettingsModal: React.FC = () => {
                   type="button"
                   aria-pressed={settings.widgetCustomButton}
                   aria-label={t.settings.widgetCustomButton}
+                  disabled={!settings.widgetCustomButton && settings.customButtons.length === 0}
                   onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
-                  className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
+                  className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="flex items-center gap-2.5 min-w-0">
                     <span className="size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
@@ -442,7 +443,7 @@ export const SettingsModal: React.FC = () => {
                     </span>
                     <span className="min-w-0">
                       <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.widgetCustomButton}</span>
-                      <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.widgetCustomButtonHint}</span>
+                      <span className="block text-[11px] font-medium text-[var(--muted)]">{settings.customButtons.length === 0 ? t.settings.widgetCustomButtonNone : t.settings.widgetCustomButtonHint}</span>
                     </span>
                   </span>
                   <SwitchVisual on={settings.widgetCustomButton} />

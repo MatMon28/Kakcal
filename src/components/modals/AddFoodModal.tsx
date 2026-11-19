@@ -399,30 +399,31 @@ export const AddFoodModal: React.FC = () => {
             </div>
           )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          {/* By default the food is added to a batch, so more items can be added next. The explicit
+              finish button only appears once at least one item is queued. */}
+          <div className="space-y-2 pt-1">
             <button
               type="button"
               onClick={handleAddAnother}
               disabled={currentAmount <= 0}
-              className="pressable w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
+              className="pressable w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#17432A] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
             >
               <Plus size={16} strokeWidth={2.5} />
-              <span>{t.foodModal.addAnotherBtn}</span>
+              <span>{t.foodModal.addAnotherBtn} · {preview.kcal} kcal</span>
             </button>
 
-            <button
-              type="button"
-              onClick={handleLogNow}
-              disabled={currentAmount <= 0 && queuedItems.length === 0}
-              className="pressable w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums disabled:opacity-40"
-            >
-              <Check size={17} strokeWidth={2.5} />
-              <span>
-                {queuedItems.length > 0
-                  ? `${t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length + 1))} · ${queuedTotalKcal + preview.kcal} kcal`
-                  : `${t.foodModal.addBtn} · ${preview.kcal} kcal`}
-              </span>
-            </button>
+            {queuedItems.length > 0 && (
+              <button
+                type="button"
+                onClick={handleLogNow}
+                className="pressable w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums"
+              >
+                <Check size={17} strokeWidth={2.5} />
+                <span>
+                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length))} · {queuedTotalKcal} kcal
+                </span>
+              </button>
+            )}
           </div>
         </div>
       ) : (

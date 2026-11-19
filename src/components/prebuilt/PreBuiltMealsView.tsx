@@ -1089,25 +1089,27 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
             <FoodMacroGrid food={pendingFood} amount={pendingAmount} />
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+            {/* Adding an ingredient queues it and returns to the picker; saving is a separate step. */}
+            <div className="space-y-2 pt-2">
               <button
                 type="button"
                 onClick={handleConfirmAndAddAnother}
                 disabled={pendingAmount <= 0}
-                className="pressable w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
+                className="pressable w-full py-3 px-4 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#6E4412] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
               >
                 <Plus size={16} strokeWidth={2.5} />
                 <span>{t.prebuilt.addAnotherIngredient}</span>
               </button>
-              <button
-                type="button"
-                onClick={() => handleSaveMeal(true)}
-                disabled={pendingAmount <= 0 && newIngredients.length === 0}
-                className="pressable w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums disabled:opacity-40"
-              >
-                <Check size={17} strokeWidth={2.5} />
-                <span>{t.prebuilt.saveMeal} ({newMealNutrition.totalKcal + pendingKcal} kcal)</span>
-              </button>
+              {newIngredients.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => handleSaveMeal(true)}
+                  className="pressable w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums"
+                >
+                  <Check size={17} strokeWidth={2.5} />
+                  <span>{t.prebuilt.saveMeal} ({newMealNutrition.totalKcal + pendingKcal} kcal)</span>
+                </button>
+              )}
             </div>
           </div>
         ) : (

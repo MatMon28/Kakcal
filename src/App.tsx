@@ -187,10 +187,10 @@ function WidgetAppBridge() {
       language: app.language,
       bmr: calculateBMR(app.userProfile),
       widgetStyle: app.settings.widgetStyle,
-      widgetCustomButton: app.settings.widgetCustomButton,
+      widgetCustomButton: app.settings.widgetCustomButton && app.settings.customButtons.length > 0,
       days,
     }).catch(() => console.warn('Native widget refresh unavailable'));
-  }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.widgetCustomButton]);
+  }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.widgetCustomButton, app.settings.customButtons]);
 
   useEffect(() => {
     if (window.parent === window) return;

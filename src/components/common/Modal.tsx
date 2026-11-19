@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react';
+import React, { useCallback, useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { SPRING } from '../../utils/spring';
@@ -132,6 +132,29 @@ export const Modal: React.FC<ModalProps> = ({
   // springs back, or glides away and closes when released far enough or with a fast flick.
   const sheetDrag = useRef<{ id: number; startY: number; y: number; t: number; vy: number; base: number; active: boolean } | null>(null);
   const backdropRef = useRef<HTMLDivElement>(null);
+  // A sheet animation in flight: any new touch snaps it to its destination before continuing.
+  const sheetMotion = useRef<{ animations: Animation[]; closing: boolean } | null>(null);
+  const finishSheet = useCallback(() => {
+    const job = sheetMotion.current;
+    if (!job) return;
+    sheetMotion.current = null;
+    job.animations.forEach((animation) => animation.cancel());
+    if (job.closing) {
+      onCloseRef.current();
+      return;
+    }
+    if (panelRef.current) panelRef.current.style.transform = '';
+    if (backdropRef.current) backdropRef.current.style.opacity = '';
+  }, []);
+  useEffect(() => {
+    const interrupt = () => finishSheet();
+    window.addEventListener('touchstart', interrupt, { capture: true, passive: true });
+    window.addEventListener('pointerdown', interrupt, { capture: true });
+    return () => {
+      window.removeEventListener('touchstart', interrupt, true);
+      window.removeEventListener('pointerdown', interrupt, true);
+    };
+  }, [finishSheet]);
   const onSheetTouchStart = (e: React.TouchEvent) => {
     const finger = e.touches[0];
     sheetDrag.current = e.touches.length === 1 && finger
@@ -178,15 +201,10 @@ export const Modal: React.FC<ModalProps> = ({
         [{ opacity: Number(backdrop.style.opacity || 1) }, { opacity: closing ? 0 : 1 }],
         { duration: SPRING.soft.duration, easing: 'linear', fill: 'forwards' }));
     }
-    void Promise.all(motion.map((animation) => animation.finished.catch(() => undefined))).then(() => {
-      if (closing) {
-        onCloseRef.current();
-        return;
-      }
-      motion.forEach((animation) => animation.cancel());
-      panel.style.transform = '';
-      if (backdrop) backdrop.style.opacity = '';
-    });
+    const job = { animations: motion, closing };
+    sheetMotion.current = job;
+    void Promise.all(motion.map((animation) => animation.finished.catch(() => undefined)))
+      .then(() => { if (sheetMotion.current === job) finishSheet(); });
   };
   const dragHandlers = {
     onTouchStart: onSheetTouchStart,

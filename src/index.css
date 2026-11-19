@@ -158,9 +158,9 @@
    are deliberately longer than a flick so every change reads as a movement, not a blink. */
 :root {
   --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
-  --dur-soft: 380ms;
+  --dur-soft: 260ms;
   --ease-bounce: cubic-bezier(0.34, 1.4, 0.64, 1);
-  --dur-bounce: 460ms;
+  --dur-bounce: 300ms;
 }
 
 @keyframes kc-fade-in {
@@ -202,7 +202,7 @@
 }
 
 .anim-backdrop {
-  animation: kc-fade-in 300ms ease-out both;
+  animation: kc-fade-in 180ms ease-out both;
 }
 
 .anim-dialog {
@@ -210,7 +210,7 @@
 }
 
 .anim-page {
-  animation: kc-fade-in 300ms ease-out;
+  animation: kc-fade-in 200ms ease-out;
 }
 
 .anim-pop {
@@ -230,7 +230,7 @@
 .accordion-grid {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  transition: grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 .accordion-grid[data-open="true"] {
   grid-template-rows: 1fr;
@@ -244,7 +244,7 @@
    with a small overshoot. The :active rule supplies the fast transition; the base rule the spring. */
 .pressable {
   transition:
-    transform 420ms var(--ease-bounce),
+    transform 300ms var(--ease-bounce),
     background-color 220ms ease,
     border-color 220ms ease,
     color 220ms ease,

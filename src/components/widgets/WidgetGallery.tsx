@@ -74,18 +74,19 @@ const MACRO = {
   fat: { card: 'bg-[#E2D6FF]', value: 'text-[#1F1636]', percent: 'text-[#523A8C]' },
 } as const;
 
-function EnergyCard({ tone, label, value, pill, bar }: {
+function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
   tone: keyof typeof TONE;
   label: string;
   value: string;
   pill: string | null;
   /** Progress bar in percent; null hides the bar (the Medium widget). */
   bar: number | null;
+  compact?: boolean;
 }) {
   const style = TONE[tone];
   const Icon = style.Icon;
   return (
-    <div role="img" aria-label={label} className={`${style.card} flex min-h-[104px] flex-col justify-between rounded-2xl p-2.5`}>
+    <div role="img" aria-label={label} className={`${style.card} flex ${compact ? 'min-h-[74px] p-2' : 'min-h-[104px] p-2.5'} flex-col justify-between rounded-2xl`}>
       <div className="flex min-h-5 items-center justify-between gap-1">
         <span className={`inline-flex ${style.accent}`} aria-hidden="true">
           <Icon size={16} />
@@ -94,7 +95,7 @@ function EnergyCard({ tone, label, value, pill, bar }: {
           <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
         )}
       </div>
-      <div className={`text-center text-[22px] font-extrabold tabular-nums tracking-tight ${style.ink}`}>{value}</div>
+      <div className={`text-center ${compact ? 'text-[19px]' : 'text-[22px]'} font-extrabold tabular-nums tracking-tight ${style.ink}`}>{value}</div>
       {bar !== null && (
         <div className={`h-1.5 w-full overflow-hidden rounded-full ${style.track}`}>
           <div className={`h-full rounded-full transition-[width] duration-500 ${style.fill}`} style={{ width: `${bar}%` }} />
@@ -175,6 +176,7 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
           value={kcal(intake)}
           pill={snapshot && net > 0 ? `+${whole.format(net)}` : null}
           bar={compact ? null : intakeBar}
+          compact={compact}
         />
         <EnergyCard
           tone="burned"
@@ -182,6 +184,7 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
           value={kcal(burned)}
           pill={snapshot && net <= 0 ? (net === 0 ? '0' : `-${whole.format(-net)}`) : null}
           bar={compact ? null : burnedBar}
+          compact={compact}
         />
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2">
