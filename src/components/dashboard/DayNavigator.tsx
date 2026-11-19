@@ -201,7 +201,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
                       onClick={() => pickDay(day)}
                       className={`pressable relative w-9 h-9 rounded-full text-xs font-bold tabular-nums flex items-center justify-center ${
                         isSel
-                          ? 'bg-[var(--text)] text-[var(--surface)]'
+                          ? 'bg-[var(--text)] text-[var(--on-text)]'
                           : isTodayCell
                           ? 'bg-[#C9EFD3] text-[#1D5C38]'
                           : 'text-[var(--text)] hover:bg-[var(--inset)]'

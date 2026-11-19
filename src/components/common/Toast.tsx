@@ -9,7 +9,7 @@ export const Toast: React.FC = () => {
     <div className="fixed left-0 right-0 bottom-24 sm:bottom-28 z-50 flex justify-center px-4 pointer-events-none">
       <div
         role="status"
-        className="pointer-events-auto max-w-sm w-full bg-[var(--text)] text-[var(--surface)] rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-lg"
+        className="pointer-events-auto max-w-sm w-full bg-[var(--text)] text-[var(--on-text)] rounded-2xl px-4 py-3 flex items-center justify-between gap-3 shadow-lg"
       >
         <span className="text-sm font-bold">{toast.message}</span>
         <span className="flex items-center gap-1.5 shrink-0">

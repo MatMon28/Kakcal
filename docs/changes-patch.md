@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`7288fe6` ("For github pages")**, the tip of `main` when the launch / search / style round was done. Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`4e5b49d` ("Fixed error")**, the tip of `main` when the readability / notification-icon / start-up round was done. Apply it to a checkout of that commit (or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run
@@ -25,4 +25,4 @@ git reset -q                     # leave the working tree as it was
 
 When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
 
-**Current patch contents:** logo-free theme-coloured launch screens (`LaunchBackground.java`, `splash_themes.xml`, `splash_blank.xml`, boot layer), K + poop notification icons, coherent-favourites search, Aurora container radii and the Minimal Movement button, plus the matching docs. Earlier rounds (PWA) are already in the repository; their steps are in [pwa-setup.md](pwa-setup.md#1-apply-the-patch).
+**Current patch contents:** (1) Aurora Dark / Lite Dark readability: new `--on-text` token replaces `text-[var(--surface)]` in 14 components; (2) notification icons: full-bleed large icon (`scripts/render-notification-icon.mjs`, `ic_notification_large.png`) and a status-bar silhouette that fills its box (`ic_stat_kak.xml`); (3) start-up: the launch animation now ends when loading ends (`useAppReady.ts`, `IntroSplash.tsx`, `intro.css`), start-up work deferred with `src/utils/idle.ts` and `applySplashThemeWhenIdle`, R8 + resource shrinking, `res/raw/keep.xml`, `baseline-prof.txt` and `androidx.profileinstaller`; plus the matching docs. Earlier rounds are already in the repository.

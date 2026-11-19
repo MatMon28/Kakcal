@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { whenIdle } from './idle';
 import { useApp } from '../context/AppContext';
 import { isAndroidApp } from './android';
 import {
@@ -53,8 +54,12 @@ export function useNotificationScheduler(onOpen: (screen: TourScreen) => void) {
     if (!standalone) return;
     if (isAndroidApp()) {
       // Debounced so dragging through time values does not reschedule on every change.
-      const timer = window.setTimeout(() => { void syncNativeNotifications(planRef.current, copyRef.current); }, 400);
-      return () => window.clearTimeout(timer);
+      // Then waits for an idle moment: rescheduling is several native calls and never needed for the first frame.
+      let cancelIdle = () => {};
+      const timer = window.setTimeout(() => {
+        cancelIdle = whenIdle(() => { void syncNativeNotifications(planRef.current, copyRef.current); }, 4000);
+      }, 400);
+      return () => { window.clearTimeout(timer); cancelIdle(); };
     }
     if (!hasAnyReminderEnabled(settings.notifications) || planRef.current.length === 0) return;
     return startWebReminders(planRef.current, open);

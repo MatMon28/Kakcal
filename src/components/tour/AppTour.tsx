@@ -186,7 +186,7 @@ export function AppTour() {
                   aria-pressed={lang === code}
                   onClick={() => chooseLanguage(code)}
                   className={`min-h-8 rounded-full px-3 text-xs font-extrabold uppercase transition-colors ${
-                    lang === code ? 'bg-[var(--text)] text-[var(--surface)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
+                    lang === code ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
                   }`}
                 >
                   {code}
@@ -197,7 +197,7 @@ export function AppTour() {
               <Download size={15} aria-hidden="true" />
               <span>{ui.androidProject}</span>
             </a>
-            <a href={journalUrl} className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[var(--text)] px-4 text-xs font-extrabold text-[var(--surface)]">
+            <a href={journalUrl} className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[var(--text)] px-4 text-xs font-extrabold text-[var(--on-text)]">
               {ui.openApp}
               <ArrowUpRight size={14} aria-hidden="true" />
             </a>
@@ -258,7 +258,7 @@ export function AppTour() {
                 type="button"
                 onClick={() => go(1)}
                 disabled={index === last}
-                className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[var(--text)] px-5 text-sm font-extrabold text-[var(--surface)] disabled:opacity-40"
+                className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[var(--text)] px-5 text-sm font-extrabold text-[var(--on-text)] disabled:opacity-40"
               >
                 {ui.next}
                 <ArrowRight size={16} aria-hidden="true" />

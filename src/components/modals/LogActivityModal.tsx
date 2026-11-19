@@ -311,7 +311,7 @@ export const LogActivityModal: React.FC = () => {
                 onClick={() => setMethod('distance')}
                 className={`pressable py-2 px-3 rounded-xl text-xs font-extrabold ${
                   method === 'distance'
-                    ? 'bg-[var(--text)] text-[var(--surface)]'
+                    ? 'bg-[var(--text)] text-[var(--on-text)]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)]'
                 }`}
               >
@@ -322,7 +322,7 @@ export const LogActivityModal: React.FC = () => {
                 onClick={() => setMethod('duration')}
                 className={`pressable py-2 px-3 rounded-xl text-xs font-extrabold ${
                   method === 'duration'
-                    ? 'bg-[var(--text)] text-[var(--surface)]'
+                    ? 'bg-[var(--text)] text-[var(--on-text)]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)]'
                 }`}
               >

@@ -202,7 +202,7 @@ export const HistoryView: React.FC = () => {
                   setSelectedWeightIdx(null);
                 }}
                 className={`pressable px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap ${
-                  range === key ? 'bg-[var(--text)] text-[var(--surface)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
+                  range === key ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
                 {ultraMinimal ? key === 'custom' ? <CalendarDays size={14} /> : key : label}

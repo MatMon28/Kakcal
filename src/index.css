@@ -104,6 +104,9 @@
   /* aliases used by newer components */
   --bg-card: var(--surface);
   --bg-inner: var(--inset);
+  /* Ink for text drawn ON a solid var(--text) fill (selected segments, toasts). Must be opaque:
+     --surface is translucent white in Aurora dark / lite-dark and made such labels white on white. */
+  --on-text: var(--bg);
 }
 
 [data-theme="lite-dark"] {

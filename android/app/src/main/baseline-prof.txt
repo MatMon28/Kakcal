@@ -1,0 +1,27 @@
+# Baseline profile (hand-written starting point): classes and methods that run on every cold start are
+# compiled ahead of time (AOT) instead of being interpreted/JIT-compiled while the app opens.
+# AGP packages this file into release builds automatically; androidx.profileinstaller installs it on first launch.
+# Replace/extend it with a measured profile from the Android Studio "Baseline Profile Generator" module
+# (see docs/startup-performance.md > "Generate a measured baseline profile").
+
+# The app
+HSPLcom/kcalsync/app/**->**(**)**
+Lcom/kcalsync/app/**;
+
+# Capacitor bridge, WebView set-up and plugin loading
+HSPLcom/getcapacitor/**->**(**)**
+Lcom/getcapacitor/**;
+HSPLcom/capacitorjs/plugins/app/**->**(**)**
+Lcom/capacitorjs/plugins/app/**;
+HSPLcom/capacitorjs/plugins/localnotifications/**->**(**)**
+Lcom/capacitorjs/plugins/localnotifications/**;
+
+# Activity / splash screen / WebView helpers used while the window opens
+HSPLandroidx/core/splashscreen/**->**(**)**
+Landroidx/core/splashscreen/**;
+HSPLandroidx/appcompat/app/AppCompatActivity;->**(**)**
+HSPLandroidx/appcompat/app/AppCompatDelegateImpl;->**(**)**
+HSPLandroidx/webkit/**->**(**)**
+Landroidx/webkit/**;
+HSPLandroidx/activity/**->**(**)**
+HSPLandroidx/core/app/ComponentActivity;->**(**)**

@@ -84,7 +84,7 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
                     type="button"
                     onClick={() => setAllTime(v)}
                     className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold ${
-                      allTime === v ? 'bg-[var(--text)] text-[var(--surface)]' : 'text-[var(--muted)]'
+                      allTime === v ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)]'
                     }`}
                   >
                     {v ? t.period.allTime : t.period.last6}

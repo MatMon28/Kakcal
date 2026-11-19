@@ -149,7 +149,7 @@ export const NotificationSettings: React.FC = () => {
         <button
           type="button"
           onClick={() => void ensurePermission()}
-          className="pressable w-full rounded-xl px-3 py-2.5 text-xs font-extrabold bg-[var(--text)] text-[var(--surface)]"
+          className="pressable w-full rounded-xl px-3 py-2.5 text-xs font-extrabold bg-[var(--text)] text-[var(--on-text)]"
         >
           {copy.allow}
         </button>
@@ -176,7 +176,7 @@ export const NotificationSettings: React.FC = () => {
                 onClick={() => save({ ...n, water: { ...n.water, intervalMinutes: minutes } })}
                 className={`pressable px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border tabular-nums ${
                   active
-                    ? 'bg-[var(--text)] text-[var(--surface)] border-[var(--text)]'
+                    ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
                     : 'bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >

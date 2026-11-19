@@ -197,7 +197,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
           <div className="flex p-0.5 bg-[var(--inset)] rounded-full">
             {[false, true].map((v) => (
               <button key={String(v)} type="button" onClick={() => setRelative(v)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold ${relative === v ? 'bg-[var(--text)] text-[var(--surface)]' : 'text-[var(--muted)]'}`}>
+                className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold ${relative === v ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)]'}`}>
                 {v ? t.period.relative : t.period.absolute}
               </button>
             ))}

@@ -7,6 +7,7 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
+import android.os.Looper;
 import android.webkit.WebView;
 
 /**
@@ -60,6 +61,18 @@ final class LaunchBackground {
     static void applySplashTheme(Context context) {
         String hex = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null);
         if (hex != null) applySplashTheme(context, hex);
+    }
+
+    /**
+     * Same as {@link #applySplashTheme(Context)} but off the start-up path: it only affects the NEXT cold start, so it
+     * runs when the main thread first goes idle (after the first frame) instead of inside Activity.onCreate().
+     */
+    static void applySplashThemeWhenIdle(final Activity activity) {
+        if (Build.VERSION.SDK_INT < 33) return;
+        Looper.myQueue().addIdleHandler(() -> {
+            if (!activity.isFinishing() && !activity.isDestroyed()) applySplashTheme(activity);
+            return false; // run once
+        });
     }
 
     private static void applySplashTheme(Context context, String hex) {

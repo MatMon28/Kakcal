@@ -42,6 +42,8 @@ import { isPeriodShown } from './utils/tourPreview';
 import { useNotificationScheduler } from './utils/useNotificationScheduler';
 import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
+import { whenIdle } from './utils/idle';
+import { useAppReady } from './components/intro/useAppReady';
 import type { ActiveTab } from './types';
 
 const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'history'];
@@ -197,7 +199,8 @@ function WidgetAppBridge() {
       if (date < earliest) continue;
       days[date] = nutritionValues(makeWidgetSnapshot(date, app.language, app.allDayLogs[date], app.userProfile));
     }
-    void JournalDevice.publishNutrition({
+    // The widgets are not part of the first screen: publish once the app is idle (and only the latest change).
+    return whenIdle(() => void JournalDevice.publishNutrition({
       language: app.language,
       bmr: calculateBMR(app.userProfile),
       widgetStyle: app.settings.widgetStyle,
@@ -205,7 +208,7 @@ function WidgetAppBridge() {
       monoHue: app.settings.monoHue,
       widgetCustomButton: app.settings.widgetCustomButton && app.settings.customButtons.length > 0,
       days,
-    }).catch(() => console.warn('Native widget refresh unavailable'));
+    }).catch(() => console.warn('Native widget refresh unavailable')));
   }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.themeStyle, app.settings.monoHue, app.settings.widgetCustomButton, app.settings.customButtons]);
 
   useEffect(() => {
@@ -378,7 +381,9 @@ export function App() {
   introPending ??= shouldShowIntro();
   const [introVisible, setIntroVisible] = useState(introPending);
   const endIntro = useCallback(() => setIntroVisible(false), []);
-  const intro = introVisible && <IntroSplash onDone={endIntro} />;
+  // The intro ends the moment the app is ready (first screen committed, fonts loaded, first frames painted).
+  const appReady = useAppReady();
+  const intro = introVisible && <IntroSplash ready={appReady} onDone={endIntro} />;
   // The logo painted by index.html fades away once the app (and the intro over it) is mounted.
   useEffect(() => { dismissBootSplash(); }, []);
 

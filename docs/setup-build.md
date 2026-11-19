@@ -24,6 +24,7 @@
 | Command | Purpose |
 | --- | --- |
 | `node scripts/check-widget-layouts.mjs` | Fails if a widget layout uses a view class RemoteViews cannot inflate (a plain `<View>` gives "Can't load widget"). |
+| `node scripts/render-notification-icon.mjs` | Re-renders the full-bleed large notification icon (Playwright Chromium needed). |
 | `node scripts/prepare-android.mjs` | **The** Android release preparation: clean no-demo build, copies licences and the OFF catalogue, `npx cap sync android`, integrity checks. Needs `npm install` first. |
 | `npx cap sync android` | Only re-syncs plugins/assets (use after native plugin changes when `dist/` is already a clean Android build). |
 | `npx cap open android` | Opens `android/` in Android Studio. |

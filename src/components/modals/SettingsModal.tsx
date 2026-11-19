@@ -83,7 +83,7 @@ export const SettingsModal: React.FC = () => {
   const seg = (active: boolean) =>
     `pressable flex-1 py-2.5 rounded-xl text-xs font-extrabold text-center border ${
       active
-        ? 'bg-[var(--text)] text-[var(--surface)] border-[var(--text)]'
+        ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
         : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
     }`;
 
@@ -312,7 +312,7 @@ export const SettingsModal: React.FC = () => {
                   onClick={() => updateSettings({ themeStyle: 'classic' })}
                   className={`pressable px-2.5 py-1 rounded-lg text-[11px] font-extrabold border ${
                     settings.themeStyle === 'classic'
-                      ? 'bg-[var(--text)] text-[var(--surface)] border-[var(--text)]'
+                      ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -335,7 +335,7 @@ export const SettingsModal: React.FC = () => {
                       onClick={() => updateSettings({ themeStyle: preset.id })}
                       className={`pressable flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left border transition-colors ${
                         active
-                          ? 'bg-[var(--text)] text-[var(--surface)] border-[var(--text)]'
+                          ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
                           : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] border-[var(--border)]'
                       }`}
                     >

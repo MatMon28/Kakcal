@@ -19,7 +19,8 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(JournalDevicePlugin.class);
         // Window and WebView use the saved app background from the first frame (no cream flash before a dark theme).
         LaunchBackground.applyToWindow(this);
-        LaunchBackground.applySplashTheme(this);
+        // Only matters for the next cold start: done when the main thread is idle, not during onCreate.
+        LaunchBackground.applySplashThemeWhenIdle(this);
         super.onCreate(state);
         if (getBridge() != null) LaunchBackground.applyToWebView(this, getBridge().getWebView());
     }

@@ -2,13 +2,15 @@
 <!--
   Status-bar icon for reminder notifications: the app icon (K + poop) as a single-colour silhouette.
   Android status-bar icons are alpha masks (colour is ignored and tinted), so the cream tile is left out.
-  The full-colour launcher icon is shown on the right of the notification by drawable-xxhdpi/ic_notification_large.png.
+  The logo is scaled to fill the whole 24 dp box. The full-bleed full-colour logo is the large icon (drawable-xxhdpi/ic_notification_large.png, scripts/render-notification-icon.mjs).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
     android:viewportWidth="512"
     android:viewportHeight="512">
+    <!-- Outer group: scales the whole logo (bounds x 80..451, y 50..446) to fill ~22 of the 24 dp. -->
+    <group android:translateX="-57.5" android:translateY="-36.6" android:scaleX="1.18" android:scaleY="1.18">
     <group android:translateX="-6" android:translateY="-22" android:scaleX="0.86" android:scaleY="0.86">
         <path android:strokeColor="#FFFFFFFF" android:strokeWidth="96" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M148,132 V392" />
         <path android:strokeColor="#FFFFFFFF" android:strokeWidth="96" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M156,268 L304,132" />
@@ -21,5 +23,6 @@
             android:strokeWidth="3"
             android:strokeLineJoin="round"
             android:pathData="M32,5 C37,9 39,12.5 36.5,15.5 C41,16 44,18.5 44,22.5 C44,25 43,27 42,28 C46.5,28.5 50,31.5 50,35 C50,37.5 49,39.5 48,41 C52.5,41.5 56,44.5 56,48 C56,52.5 52.5,56 48,56 H16 C11.5,56 8,52.5 8,48 C8,44.5 11.5,41.5 16,41 C15,39.5 14,37.5 14,35 C14,31.5 17.5,28.5 22,28 C21,27 20,25 20,22.5 C20,18.5 23,16 27.5,15.5 C25,12.5 27,9 32,5Z" />
+    </group>
     </group>
 </vector>

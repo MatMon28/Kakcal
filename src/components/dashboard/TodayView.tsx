@@ -123,7 +123,7 @@ export const TodayView: React.FC = () => {
                 title={item.label}
                 className={`pressable inline-flex min-h-7 items-center justify-center gap-1 rounded-full px-2.5 text-[11px] font-extrabold ${
                   layout === item.id
-                    ? 'bg-[var(--text)] text-[var(--surface)]'
+                    ? 'bg-[var(--text)] text-[var(--on-text)]'
                     : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
                 }`}
               >

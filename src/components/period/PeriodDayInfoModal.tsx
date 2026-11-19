@@ -107,7 +107,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
             onClose();
             setActiveTab('today');
           }}
-          className="pressable w-full py-3 px-4 rounded-2xl bg-[var(--text)] text-[var(--surface)] text-sm font-extrabold flex items-center justify-center gap-1.5"
+          className="pressable w-full py-3 px-4 rounded-2xl bg-[var(--text)] text-[var(--on-text)] text-sm font-extrabold flex items-center justify-center gap-1.5"
         >
           <span>{t.period.openInToday}</span>
           <ArrowUpRight size={15} />

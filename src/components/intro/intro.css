@@ -30,6 +30,9 @@
   --kc-edge: #0b0b0e;
 }
 
+/* Loading finished before the animation did: fade out quickly (matches INTERRUPT_FADE_MS). */
+.kc-intro[data-fast='true'] { transition-duration: 140ms; }
+
 .kc-intro[data-leaving='true'] {
   opacity: 0;
   pointer-events: none;
