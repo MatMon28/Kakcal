@@ -114,6 +114,7 @@ export function calculateMacros(items: LoggedFoodItem[]): MacroSummary {
   let fatGrams = 0;
   let fiberGrams = 0;
   let saltGrams = 0;
+  let sugarGrams = 0;
 
   for (const item of items) {
     if (item.carbs !== null && item.carbs !== undefined) {
@@ -130,6 +131,9 @@ export function calculateMacros(items: LoggedFoodItem[]): MacroSummary {
     }
     if (item.salt !== null && item.salt !== undefined) {
       saltGrams += (item.salt * item.amount) / 100;
+    }
+    if (item.sugar !== null && item.sugar !== undefined) {
+      sugarGrams += (item.sugar * item.amount) / 100;
     }
   }
 
@@ -148,6 +152,7 @@ export function calculateMacros(items: LoggedFoodItem[]): MacroSummary {
     fatGrams: Math.round(fatGrams * 10) / 10,
     fiberGrams: Math.round(fiberGrams * 10) / 10,
     saltGrams: Math.round(saltGrams * 100) / 100,
+    sugarGrams: Math.round(sugarGrams * 10) / 10,
     carbsKcal: Math.round(carbsKcal),
     proteinKcal: Math.round(proteinKcal),
     fatKcal: Math.round(fatKcal),

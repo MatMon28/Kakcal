@@ -153,7 +153,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
 
         {/* Macros summary when food was logged */}
         {allItems.length > 0 && (
-          <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
+          <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums`}>
             <div className="bg-[#CFE7FE] rounded-xl p-1.5 text-[#1A4670]">
               <span className="text-[10px] font-bold block">C</span>
               <span className="text-xs font-extrabold">{macros.carbsGrams}g</span>
@@ -174,6 +174,12 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
               <span className="text-[10px] font-bold block truncate">{t.macros.salt}</span>
               <span className="text-xs font-extrabold text-[var(--text)]">{macros.saltGrams}g</span>
             </div>
+            {settings.trackSugar && (
+              <div className="bg-[#F7E9AA] rounded-xl p-1.5 text-[#6E5B14]">
+                <span className="text-[10px] font-bold block truncate">{t.macros.sugar}</span>
+                <span className="text-xs font-extrabold">{macros.sugarGrams}g</span>
+              </div>
+            )}
           </div>
         )}
 

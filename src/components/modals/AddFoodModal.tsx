@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { AmountSelector } from '../common/AmountSelector';
-import { FoodItem, LoggedFoodItem, MealSlotId } from '../../types';
+import { FoodItem, LoggedFoodItem, MealSlotId, PreBuiltMeal } from '../../types';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { FoodResultRow } from '../common/FoodResultRow';
 import { useOffCatalog } from '../../utils/useOffCatalog';
@@ -50,7 +50,6 @@ export const AddFoodModal: React.FC = () => {
     language,
     setIsBarcodeOpen,
     preBuiltMeals,
-    logPreBuiltMealToSlot,
     logItemsToSlot,
     allDayLogs,
     selectedDate,
@@ -227,6 +226,49 @@ export const AddFoodModal: React.FC = () => {
     setSearchTerm('');
   };
 
+  /** Queue a saved meal instead of logging and closing: more foods can be added afterwards. */
+  const queueMeal = (meal: PreBuiltMeal) => {
+    const entries: QueuedEntry[] = [];
+    for (const ingredient of meal.ingredients) {
+      const food = allFoods.find((item) => item.id === ingredient.foodId);
+      if (!food) continue;
+      rememberFood(food);
+      entries.push({ key: `${meal.id}-${ingredient.foodId}-${Date.now()}-${entries.length}`, food, amount: ingredient.amount });
+    }
+    if (!entries.length) return;
+    setQueuedItems((prev) => [...prev, ...entries]);
+    setActiveFood(null);
+    setSearchTerm('');
+  };
+
+  /** Previous-day entries also join the batch, including foods deleted from the catalogue. */
+  const queueLoggedItems = (items: LoggedFoodItem[]) => {
+    const entries = items.map((item, index): QueuedEntry => ({
+      key: `previous-${item.id}-${Date.now()}-${index}`,
+      amount: item.amount,
+      food: allFoods.find((food) => food.id === item.foodId) ?? {
+        id: item.foodId,
+        name_de: item.name,
+        name_it: item.name,
+        name_en: item.name,
+        store: item.store,
+        category: 'prepared',
+        unit: item.unit,
+        calories: item.calories,
+        carbs: item.carbs,
+        protein: item.protein,
+        fat: item.fat,
+        fiber: item.fiber,
+        salt: item.salt,
+        sugar: item.sugar ?? null,
+      },
+    }));
+    if (!entries.length) return;
+    setQueuedItems((prev) => [...prev, ...entries]);
+    setActiveFood(null);
+    setSearchTerm('');
+  };
+
   const handleLogNow = () => {
     const finalEntries: QueuedEntry[] = [...queuedItems];
     if (activeFood && currentAmount > 0) {
@@ -274,6 +316,7 @@ export const AddFoodModal: React.FC = () => {
       fat: r(activeFood.fat),
       fiber: r(activeFood.fiber),
       salt: r(activeFood.salt, 100),
+      sugar: r(activeFood.sugar ?? null),
     };
   }, [activeFood, currentAmount]);
 
@@ -348,7 +391,7 @@ export const AddFoodModal: React.FC = () => {
 
           <AmountSelector value={currentAmount} onChange={setCurrentAmount} unit={activeFood.unit} />
 
-          <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
+          <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums`}>
             {(
               [
                 ['C', preview.carbs, 'bg-[#CFE7FE] text-[#1A4670]'],
@@ -356,6 +399,7 @@ export const AddFoodModal: React.FC = () => {
                 ['F', preview.fat, 'bg-[#E2D6FF] text-[#4D3582]'],
                 [t.macros.fiber, preview.fiber, 'bg-[var(--inset)] text-[var(--muted)]'],
                 [t.macros.salt, preview.salt, 'bg-[var(--inset)] text-[var(--muted)]'],
+                ...(settings.trackSugar ? [[t.macros.sugar, preview.sugar, 'bg-[#F7E9AA] text-[#6E5B14]'] as const] : []),
               ] as const
             ).map(([label, val, cls]) => (
               <div key={label} className={`rounded-2xl p-2 ${cls}`}>
@@ -420,7 +464,7 @@ export const AddFoodModal: React.FC = () => {
               >
                 <Check size={17} strokeWidth={2.5} />
                 <span>
-                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length))} · {queuedTotalKcal} kcal
+                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length + 1))} · {queuedTotalKcal + preview.kcal} kcal
                 </span>
               </button>
             )}
@@ -542,10 +586,7 @@ export const AddFoodModal: React.FC = () => {
                     <button
                       key={res.m.id}
                       type="button"
-                      onClick={() => {
-                        logPreBuiltMealToSlot(res.m.id, targetMealSlot);
-                        close();
-                      }}
+                      onClick={() => queueMeal(res.m)}
                       className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors"
                     >
                       <span className="flex items-center gap-2.5 min-w-0">
@@ -634,10 +675,7 @@ export const AddFoodModal: React.FC = () => {
                         <button
                           key={m.id}
                           type="button"
-                          onClick={() => {
-                            logPreBuiltMealToSlot(m.id, targetMealSlot);
-                            close();
-                          }}
+                          onClick={() => queueMeal(m)}
                           className="pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#FAE0B4] hover:bg-[#F7D69E] text-left"
                         >
                           <span className="flex items-center gap-2 min-w-0">
@@ -686,10 +724,7 @@ export const AddFoodModal: React.FC = () => {
                         <button
                           key={p.date}
                           type="button"
-                          onClick={() => {
-                            logItemsToSlot(targetMealSlot, p.items);
-                            close();
-                          }}
+                          onClick={() => queueLoggedItems(p.items)}
                           className="pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#CFE7FE] hover:bg-[#BDDDFC] text-left"
                         >
                           <span className="flex items-center gap-2.5 min-w-0">

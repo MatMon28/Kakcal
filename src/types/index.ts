@@ -38,7 +38,7 @@ export interface FoodItem {
   fat: number | null;
   fiber: number | null;
   salt: number | null;
-  /** Sugars in g per 100 g/ml (part of carbs). Stored for the planned sugar tracking; nothing reads it yet. */
+  /** Sugars in g per 100 g/ml (part of carbs). Shown when Settings > Today & pages > Track sugar is on. */
   sugar?: number | null;
   /** The product's classic serving in g/ml, when known (Open Food Facts `serving_quantity`). */
   portion?: number;
@@ -70,7 +70,7 @@ export interface LoggedFoodItem {
   fat: number | null;
   fiber: number | null;
   salt: number | null;
-  /** Sugar snapshot per 100 g/ml, kept for later sugar tracking. */
+  /** Sugar snapshot per 100 g/ml, totalled when sugar tracking is enabled. */
   sugar?: number | null;
   loggedAt: string;
 }
@@ -183,6 +183,7 @@ export interface MacroSummary {
   fatGrams: number;
   fiberGrams: number;
   saltGrams: number;
+  sugarGrams: number;
   carbsKcal: number;
   proteinKcal: number;
   fatKcal: number;
@@ -214,6 +215,8 @@ export interface Settings {
     custom: boolean;
   };
   hidePoop: boolean;
+  /** Show and total sugar in Today, food forms and statistics. */
+  trackSugar: boolean;
   hidePeriod: boolean;
   hidePeriodCustomized?: boolean;
   quickFoods: string[]; // food ids for the 3 quick-add shortcut buttons

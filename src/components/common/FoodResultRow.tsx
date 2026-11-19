@@ -40,7 +40,7 @@ export const FoodResultRow: React.FC<FoodResultRowProps> = ({ food, onClick, fav
             {amount}
             {food.unit}
           </span>
-          <MacroPills carbs={scaled(food.carbs)} protein={scaled(food.protein)} fat={scaled(food.fat)} />
+          <MacroPills carbs={scaled(food.carbs)} protein={scaled(food.protein)} fat={scaled(food.fat)} sugar={scaled(food.sugar ?? null)} />
         </span>
         {(food.brand || food.store === 'Open Food Facts') && (
           <span className="block mt-0.5 text-[10px] font-medium text-[var(--muted)] truncate">

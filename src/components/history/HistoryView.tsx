@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, Wheat, X } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, Candy, Wheat, X } from 'lucide-react';
 import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
 import { useApp } from '../../context/AppContext';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
@@ -38,6 +38,7 @@ type DaySummary = {
   fat: number;
   fiber: number;
   salt: number;
+  sugar: number;
   activities: ActivityLog[];
   weightKg?: number;
   waterEntries: WaterEntry[];
@@ -49,7 +50,7 @@ function summarizeDay(date: string, log: DayLog | undefined, bmr: number): DaySu
   if (!log) {
     return {
       date, intake: 0, bmr, actExp: 0, tef: 0, expenditure: bmr, net: -bmr,
-      carbs: 0, protein: 0, fat: 0, fiber: 0, salt: 0, activities: [],
+      carbs: 0, protein: 0, fat: 0, fiber: 0, salt: 0, sugar: 0, activities: [],
       waterEntries: [], poops: [], hasLog: false,
     };
   }
@@ -79,6 +80,7 @@ function summarizeDay(date: string, log: DayLog | undefined, bmr: number): DaySu
     fat: macros.fatGrams,
     fiber: macros.fiberGrams,
     salt: macros.saltGrams,
+    sugar: macros.sugarGrams,
     activities: log.activities,
     weightKg: log.weightKg,
     waterEntries: log.waterEntries ?? [],
@@ -146,6 +148,7 @@ export const HistoryView: React.FC = () => {
       avgFat: loggedDays.length ? avg((day) => day.fat) : 0,
       avgFiber: loggedDays.length ? avg((day) => day.fiber) : 0,
       avgSalt: loggedDays.length ? avg((day) => day.salt) : 0,
+      avgSugar: loggedDays.length ? avg((day) => day.sugar) : 0,
       daysWithPoop: days.filter((day) => day.poops.length > 0),
       weightPoints: [...days]
         .reverse()
@@ -309,11 +312,12 @@ export const HistoryView: React.FC = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 tabular-nums">
+        <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5 sm:gap-3.5 tabular-nums`}>
           {([
-            [t.stats.avgFiber, period.avgFiber, Wheat],
-            [t.stats.avgSalt, period.avgSalt, SaltCrystalIcon],
-          ] as const).map(([label, value, Icon]) => (
+            { label: t.stats.avgFiber, value: period.avgFiber, Icon: Wheat },
+            { label: t.stats.avgSalt, value: period.avgSalt, Icon: SaltCrystalIcon },
+            ...(settings.trackSugar ? [{ label: t.stats.avgSugar, value: period.avgSugar, Icon: Candy }] : []),
+          ] satisfies { label: string; value: number; Icon: React.ComponentType<{ size?: number; className?: string }> }[]).map(({ label, value, Icon }) => (
             <div key={label} role="group" aria-label={`${label}: ${value} g`} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'px-3 py-2.5' : 'px-4 py-3'} flex items-center justify-between`}>
               {ultraMinimal ? <Icon size={16} aria-hidden="true" className="text-[var(--muted)]" /> : <span className="text-xs sm:text-sm font-semibold text-[var(--muted)]">{label}</span>}
               <div className="flex items-baseline gap-1">
@@ -607,6 +611,12 @@ export const HistoryView: React.FC = () => {
                             </div>
                           </div>
                         </div>
+                        {settings.trackSugar && (
+                          <div className="flex items-center justify-between gap-2 pt-0.5 text-[11px] tabular-nums">
+                            <span className="font-bold text-[#6E5B14]">{t.macros.sugar}</span>
+                            <span className="font-extrabold text-[var(--text)]">{day.sugar} g</span>
+                          </div>
+                        )}
                       </button>
                     );
                   })}

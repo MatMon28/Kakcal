@@ -244,7 +244,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   const nameOf = (f: FoodItem) => (language === 'it' ? f.name_it : f.name_en || f.name_de);
 
   const calculateMealNutrition = (ingredients: PreBuiltMealIngredient[]) => {
-    let totalKcal = 0, carbs = 0, protein = 0, fat = 0, fiber = 0, salt = 0;
+    let totalKcal = 0, carbs = 0, protein = 0, fat = 0, fiber = 0, salt = 0, sugar = 0;
     for (const ing of ingredients) {
       const food = allFoods.find((f) => f.id === ing.foodId);
       if (!food) continue;
@@ -255,6 +255,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       if (food.fat !== null) fat += food.fat * factor;
       if (food.fiber !== null) fiber += food.fiber * factor;
       if (food.salt !== null) salt += food.salt * factor;
+      if (food.sugar != null) sugar += food.sugar * factor;
     }
     return {
       totalKcal: Math.round(totalKcal),
@@ -263,6 +264,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       fat: Math.round(fat * 10) / 10,
       fiber: Math.round(fiber * 10) / 10,
       salt: Math.round(salt * 100) / 100,
+      sugar: Math.round(sugar * 10) / 10,
     };
   };
 
@@ -397,7 +399,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   }, [allFoods, recipeSearch, offCatalog]);
 
   const recipeTotals = useMemo(() => {
-    let g = 0, kcal = 0, c = 0, p = 0, f = 0, fib = 0, salt = 0;
+    let g = 0, kcal = 0, c = 0, p = 0, f = 0, fib = 0, salt = 0, sugar = 0;
     for (const ing of recipeIngs) {
       const food = allFoods.find((x) => x.id === ing.foodId);
       if (!food) continue;
@@ -409,6 +411,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       if (food.fat !== null) f += food.fat * k;
       if (food.fiber !== null) fib += food.fiber * k;
       if (food.salt !== null) salt += food.salt * k;
+      if (food.sugar != null) sugar += food.sugar * k;
     }
     const per100 = g > 0 ? 100 / g : 0;
     return {
@@ -419,6 +422,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       f100: Math.round(f * per100 * 10) / 10,
       fib100: Math.round(fib * per100 * 10) / 10,
       salt100: Math.round(salt * per100 * 100) / 100,
+      sugar100: Math.round(sugar * per100 * 10) / 10,
     };
   }, [recipeIngs, allFoods]);
 
@@ -468,6 +472,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       fat: rt.f100,
       fiber: rt.fib100,
       salt: rt.salt100,
+      sugar: rt.sugar100,
       isCustom: true,
       isRecipe: true,
       recipeIngredients: validIngs,
@@ -662,7 +667,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         {meal.description && !ultraMinimal && (
                           <p className="text-xs text-[var(--muted)]">{meal.description}</p>
                         )}
-                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums pt-2">
+                        <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums pt-2`}>
                           <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${nut.carbs} g`} title={t.macros.carbs}>
                             <span className="text-xs font-extrabold">{nut.carbs}{!ultraMinimal && 'g'}</span>
                           </div>
@@ -680,6 +685,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                             {ultraMinimal ? <SaltCrystalIcon size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.salt}</span>}
                             <span className="text-xs font-extrabold">{nut.salt}{!ultraMinimal && 'g'}</span>
                           </div>
+                          {settings.trackSugar && (
+                            <div className="bg-[#F7E9AA] p-1.5 rounded-2xl text-[#6E5B14]" role="img" aria-label={`${t.macros.sugar}: ${nut.sugar} g`} title={t.macros.sugar}>
+                              <span className="text-[10px] font-bold block">{t.macros.sugar}</span>
+                              <span className="text-xs font-extrabold">{nut.sugar}{!ultraMinimal && 'g'}</span>
+                            </div>
+                          )}
                         </div>
 
                         <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
@@ -825,7 +836,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
                       <div className="pt-1 space-y-2.5 border-t border-[var(--border)]">
-                        <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums pt-2">
+                        <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums pt-2`}>
                           <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670] flex items-center justify-center" role="img" aria-label={`${t.macros.carbs}: ${recipe.carbs ?? '—'} g`} title={t.macros.carbs}>
                             <span className="text-xs font-extrabold">{recipe.carbs ?? '—'}{!ultraMinimal && 'g'}</span>
                           </div>
@@ -843,6 +854,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                             {ultraMinimal ? <SaltCrystalIcon size={12} className="mx-auto mb-0.5" /> : <span className="text-[10px] font-bold block">{t.macros.salt}</span>}
                             <span className="text-xs font-extrabold">{recipe.salt ?? '—'}{!ultraMinimal && 'g'}</span>
                           </div>
+                          {settings.trackSugar && (
+                            <div className="bg-[#F7E9AA] p-1.5 rounded-2xl text-[#6E5B14]" role="img" aria-label={`${t.macros.sugar}: ${recipe.sugar ?? '—'} g`} title={t.macros.sugar}>
+                              <span className="text-[10px] font-bold block">{t.macros.sugar}</span>
+                              <span className="text-xs font-extrabold">{recipe.sugar ?? '—'}{!ultraMinimal && 'g'}</span>
+                            </div>
+                          )}
                         </div>
 
                         {/* Ingredients with their original quantities */}
@@ -1323,6 +1340,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 <div className="grid grid-cols-2 gap-1 text-center text-[10px] font-bold tabular-nums">
                   <span className="bg-[#CFE7FE] text-[#183B5E] rounded-lg py-1">{t.macros.fiber} {recipeTotals.fib100}</span>
                   <span className="bg-[var(--surface)] text-[var(--muted)] rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}</span>
+                  {settings.trackSugar && <span className="bg-[#F7E9AA] text-[#6E5B14] rounded-lg py-1 col-span-2">{t.macros.sugar} {recipeTotals.sugar100}</span>}
                 </div>
                 <div className="space-y-1.5 max-h-32 overflow-y-auto">
                   {recipeIngs.map((ing, idx) => {

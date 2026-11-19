@@ -1027,6 +1027,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             ...(p.quickAdd || {}),
           },
           hidePoop: Boolean(p.hidePoop),
+          trackSugar: Boolean(p.trackSugar),
           hidePeriod: resolvedHidePeriod,
           hidePeriodCustomized: customized,
           quickFoods:
@@ -1058,6 +1059,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ultraMinimal: false,
       quickAdd: { food: true, movement: true, water: true, poop: true, weight: true, custom: true },
       hidePoop: false,
+      trackSugar: false,
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
       quickFoods: DEFAULT_QUICK_FOODS,
@@ -1182,6 +1184,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       fat: food.fat,
       fiber: food.fiber,
       salt: food.salt,
+      sugar: food.sugar ?? null,
       loggedAt: new Date().toISOString(),
     };
 
@@ -1408,6 +1411,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           fat: food.fat,
           fiber: food.fiber,
           salt: food.salt,
+          sugar: food.sugar ?? null,
           loggedAt: new Date().toISOString(),
         });
       }

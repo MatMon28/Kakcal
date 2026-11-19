@@ -219,6 +219,14 @@
 
 .anim-dock {
   animation: kc-dock-in var(--dur-bounce) var(--ease-bounce) backwards;
+  transition: opacity 120ms ease-out;
+}
+
+/* While pages move, both the outgoing and incoming docks stay hidden and untappable. PageSwiper
+   removes this class only after the outgoing page has unmounted, so quick buttons never overlap. */
+.kc-page-moving .anim-dock {
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
 .anim-value {

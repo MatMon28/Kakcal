@@ -6,15 +6,20 @@ interface MacroPillsProps {
   fat: number | null | undefined;
   /** Stretch across the available space; otherwise use a compact inline group. */
   stretch?: boolean;
+  /** Sugar for the same portion. Shown only when sugar tracking is enabled and this prop is supplied. */
+  sugar?: number | null;
 }
 
 /** Numeric-only macro pills. Colours/order identify macros visually; labels retain the names and units. */
-export function MacroPills({ carbs, protein, fat, stretch = false }: MacroPillsProps) {
-  const { t } = useApp();
+export function MacroPills({ carbs, protein, fat, stretch = false, sugar }: MacroPillsProps) {
+  const { t, settings } = useApp();
   const macros = [
     { id: 'carbs', label: t.macros.carbs, value: carbs, tone: 'bg-[#CFE7FE] text-[#1A4670]' },
     { id: 'protein', label: t.macros.protein, value: protein, tone: 'bg-[#FAE0B4] text-[#7D4E14]' },
     { id: 'fat', label: t.macros.fat, value: fat, tone: 'bg-[#E2D6FF] text-[#4D3582]' },
+    ...(settings.trackSugar && sugar !== undefined
+      ? [{ id: 'sugar', label: t.macros.sugar, value: sugar, tone: 'bg-[#F7E9AA] text-[#6E5B14]' }]
+      : []),
   ];
 
   return (

@@ -18,6 +18,7 @@ import {
   Pencil,
   Droplet,
   Minimize2,
+  Candy,
   X,
 } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
@@ -350,6 +351,25 @@ export const SettingsModal: React.FC = () => {
               })}
             </div>
           </div>
+
+          {/* Sugar tracking */}
+          <button
+            type="button"
+            aria-pressed={settings.trackSugar}
+            onClick={() => updateSettings({ trackSugar: !settings.trackSugar })}
+            className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
+          >
+            <span className="flex items-center gap-2.5 min-w-0">
+              <span className="size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                <Candy size={15} />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.trackSugar}</span>
+                <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.trackSugarHint}</span>
+              </span>
+            </span>
+            <SwitchVisual on={settings.trackSugar} />
+          </button>
 
           {/* Visibility toggles (kept above food shortcuts) */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">

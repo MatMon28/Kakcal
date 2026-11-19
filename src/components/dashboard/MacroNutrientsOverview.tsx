@@ -1,5 +1,5 @@
 import React from 'react';
-import { Wheat } from 'lucide-react';
+import { Candy, Wheat } from 'lucide-react';
 import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
 import { useApp } from '../../context/AppContext';
 
@@ -61,8 +61,8 @@ export const MacroNutrientsOverview: React.FC = () => {
         </div>
       </div>
 
-      {/* Row 2: Fiber and Salt side by side */}
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5">
+      {/* Row 2: Fibre and salt; with tracking enabled, sugar sits immediately to the right of salt. */}
+      <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5 sm:gap-3.5`}>
         <div role="group" aria-label={`${t.macros.fiber}: ${currentMacros.fiberGrams} g`} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'px-3 py-2.5' : 'px-4 py-3'} flex items-center justify-between`}>
           {ultraMinimal ? <Wheat size={16} aria-hidden="true" className="text-[var(--muted)]" /> : <span className="text-xs sm:text-sm font-semibold text-[var(--muted)]">{t.macros.fiber}</span>}
           <div className="flex items-baseline gap-0.5">
@@ -82,6 +82,18 @@ export const MacroNutrientsOverview: React.FC = () => {
             {!ultraMinimal && <span className="text-xs font-semibold text-[var(--muted)]">g</span>}
           </div>
         </div>
+
+        {settings.trackSugar && (
+          <div role="group" aria-label={`${t.macros.sugar}: ${currentMacros.sugarGrams} g`} className={`bg-[#F7E9AA] rounded-2xl ${ultraMinimal ? 'px-3 py-2.5' : 'px-4 py-3'} flex items-center justify-between`}>
+            {ultraMinimal ? <Candy size={16} aria-hidden="true" className="text-[#6E5B14]" /> : <span className="text-xs sm:text-sm font-semibold text-[#6E5B14]">{t.macros.sugar}</span>}
+            <div className="flex items-baseline gap-0.5">
+              <span className="text-base sm:text-lg font-extrabold tabular-nums text-[#4E400D]">
+                {currentMacros.sugarGrams}
+              </span>
+              {!ultraMinimal && <span className="text-xs font-semibold text-[#6E5B14]">g</span>}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

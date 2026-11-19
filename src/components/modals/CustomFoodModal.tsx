@@ -24,6 +24,7 @@ export const CustomFoodModal: React.FC = () => {
     setIsCustomFoodOpen,
     addCustomFood,
     logFoodItem,
+    settings,
     targetMealSlot,
 
     t,
@@ -40,6 +41,7 @@ export const CustomFoodModal: React.FC = () => {
   const [fatStr, setFatStr] = useState('');
   const [fiberStr, setFiberStr] = useState('');
   const [saltStr, setSaltStr] = useState('');
+  const [sugarStr, setSugarStr] = useState('');
 
   const macroKcalEstimate = useMemo(() => {
     const c = parseOptionalNum(carbsStr) ?? 0;
@@ -59,6 +61,7 @@ export const CustomFoodModal: React.FC = () => {
     setFatStr('');
     setFiberStr('');
     setSaltStr('');
+    setSugarStr('');
   };
 
   const buildFood = (): FoodItem | null => {
@@ -82,6 +85,7 @@ export const CustomFoodModal: React.FC = () => {
       fat: parseOptionalNum(fatStr),
       fiber: parseOptionalNum(fiberStr),
       salt: parseOptionalNum(saltStr),
+      sugar: parseOptionalNum(sugarStr),
       isCustom: true,
     };
   };
@@ -278,6 +282,15 @@ export const CustomFoodModal: React.FC = () => {
             {numField(saltStr, setSaltStr, 'g')}
           </div>
         </div>
+
+        {settings.trackSugar && (
+          <div>
+            <label className="block text-xs font-bold text-[#6E5B14] mb-1">
+              {t.macros.sugar} ({t.activities.optional})
+            </label>
+            {numField(sugarStr, setSugarStr, 'g')}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1.5">
           <button

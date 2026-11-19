@@ -63,6 +63,7 @@ export const BarcodeLookupModal: React.FC = () => {
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
     allFoods,
+    settings,
     rememberFood,
     language,
     addCustomFood,
@@ -422,7 +423,7 @@ export const BarcodeLookupModal: React.FC = () => {
               </span>
             </div>
 
-            <div className="grid grid-cols-5 gap-1.5 text-center tabular-nums">
+            <div className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums`}>
               <div className="bg-[#CFE7FE] p-1.5 rounded-2xl text-[#1A4670]">
                 <span className="text-[10px] font-bold block">C</span>
                 <span className="text-xs font-extrabold">
@@ -453,6 +454,14 @@ export const BarcodeLookupModal: React.FC = () => {
                   {fetchedProduct.salt !== null ? `${fetchedProduct.salt}g` : '—'}
                 </span>
               </div>
+              {settings.trackSugar && (
+                <div className="bg-[#F7E9AA] p-1.5 rounded-2xl text-[#6E5B14]">
+                  <span className="text-[10px] font-bold block">{t.macros.sugar}</span>
+                  <span className="text-xs font-extrabold">
+                    {fetchedProduct.sugar != null ? `${fetchedProduct.sugar}g` : '—'}
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
