@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`4e5b49d` ("Fixed error")**, the tip of `main` when the readability / notification-icon / start-up round was done. Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`492413d` ("Faster startup and fixes")**, the tip of `main` when the install-guide / normal-use round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run
@@ -25,4 +25,4 @@ git reset -q                     # leave the working tree as it was
 
 When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
 
-**Current patch contents:** (1) Aurora Dark / Lite Dark readability: new `--on-text` token replaces `text-[var(--surface)]` in 14 components; (2) notification icons: full-bleed large icon (`scripts/render-notification-icon.mjs`, `ic_notification_large.png`) and a status-bar silhouette that fills its box (`ic_stat_kak.xml`); (3) start-up: the launch animation now ends when loading ends (`useAppReady.ts`, `IntroSplash.tsx`, `intro.css`), start-up work deferred with `src/utils/idle.ts` and `applySplashThemeWhenIdle`, R8 + resource shrinking, `res/raw/keep.xml`, `baseline-prof.txt` and `androidx.profileinstaller`; plus the matching docs. Earlier rounds are already in the repository.
+**Current patch contents (install-guide / normal-use round):** (1) new `src/components/common/InstallGuide.tsx` with iPhone/iPad, Android PWA + APK (danger-warning copy, release/build links) and desktop instructions, English and Italian; (2) `InstallApp.tsx`, `App.tsx` and `pwaInstall.ts` — the guide is reachable in every browser (iOS included) and an installed PWA / iOS Home Screen app / APK always opens the journal, never the tour; (3) `AppTour.tsx` + `tourContent.ts` — install card on the landing page and the dead Android-project ZIP link removed; (4) `src/config/demo.ts` — normal-use mode by default (`VITE_DEMO_DATA=true` opts into demo data); (5) `public/manifest.webmanifest` — `start_url ./?view=app&source=pwa`, `display_override`, `prefer_related_applications: false`; (6) `public/offline-worker.js` — shell cache `kakcalculator-shell-v3`; (7) README and docs. `package.json` is untouched.

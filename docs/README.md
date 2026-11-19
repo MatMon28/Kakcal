@@ -9,6 +9,7 @@
 | Install, build, run scripts | [setup-build.md](setup-build.md) |
 | Run the browser version, tour, URL flags, demo data | [web-preview.md](web-preview.md) |
 | Make / host / install the PWA, offline mode, install button | [pwa.md](pwa.md), steps in [pwa-setup.md](pwa-setup.md) |
+| Change the iPhone / Android (PWA + APK) / desktop install guide | [pwa.md](pwa.md) > Install guide |
 | Build / sign / distribute the APK | [android-apk.md](android-apk.md), then [../android/BUILD_APK.md](../android/BUILD_APK.md) |
 | Fix a Gradle / Capacitor sync error | [android-gradle-guard.md](android-gradle-guard.md) |
 | Change widgets | [widgets.md](widgets.md) |
@@ -39,7 +40,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | --- | --- |
 | Any file (add / rename / delete) | the row in the matching `file-map/*.md` |
 | `package.json` scripts, requirements, build flow | [setup-build.md](setup-build.md), [known-gaps.md](known-gaps.md) |
-| Manifest, icons, `offline-worker.js`, install button, PWA tags in `index.html` | [pwa.md](pwa.md), [pwa-setup.md](pwa-setup.md), `file-map/scripts-public.md` |
+| Manifest, icons, `offline-worker.js`, install button/guide, PWA tags in `index.html` | [pwa.md](pwa.md), [pwa-setup.md](pwa-setup.md), `file-map/scripts-public.md`, `file-map/components-common.md` |
 | Widgets (Java, layouts, gallery, settings) | [widgets.md](widgets.md) and `android/BUILD_APK.md` > Widget behavior |
 | Notifications | [notifications.md](notifications.md) and `android/BUILD_APK.md` > Reminder notifications |
 | Persisted keys / backup | [storage-and-privacy.md](storage-and-privacy.md) |
@@ -61,3 +62,7 @@ Checked against repository commit **`4552bf0`** (the later `f037263` only change
 
 **Readability / notification icon / start-up round (on top of `4e5b49d`, "Fixed error"):** Aurora Dark and Lite Dark labels on `var(--text)` fills no longer white-on-white (`calculations-colors.md`, `file-map/app-shell.md`); full-bleed large notification icon and bigger status-bar icon (`notifications.md`, `brand.md`, `file-map/scripts-public.md`, `file-map/android-native.md`); launch animation interrupted when loading finishes, deferred start-up work, R8 + resource shrinking, baseline profile (`startup-performance.md`, `launch-intro.md`, `file-map/utils.md`, `file-map/tour-widgets-intro.md`, `file-map/android-native.md`, `setup-build.md`, `android/BUILD_APK.md`, `known-gaps.md` #10-11, `changes-patch.md`). Verified by `npm run build`, headless-Chromium screenshots of Aurora Dark / Lite Dark and an intro timing run, XML validation and image inspection; the Android project was **not** compiled and nothing was run on a device.
 
+
+## Install guide / normal-use round
+
+**Files added:** `src/components/common/InstallGuide.tsx` (device guide: iPhone/iPad, Android PWA + APK, desktop; mounted by `src/App.tsx`, opened with `openInstallGuide()`). **Files changed:** `InstallApp.tsx` (always offers the guide in browsers), `App.tsx` (installed PWA / iOS standalone / Android always show the journal), `pwaInstall.ts` (`isStandaloneApp`, `isIosDevice`, `detectInstallTarget`), `AppTour.tsx` + `tourContent.ts` (install section on the landing page, dead Android ZIP link removed), `config/demo.ts` (normal-use default: `VITE_DEMO_DATA=true` opts into demo data), `public/manifest.webmanifest` (`start_url ./?view=app&source=pwa`, `display_override`, `prefer_related_applications: false`), `public/offline-worker.js` (cache `kakcalculator-shell-v3`), docs. Verified with `npm run build`, `npx tsc --noEmit` (only the documented Next.js leftovers fail) and headless-Chromium screenshots of the tour, guide (desktop/mobile) and a simulated installed launch. Regenerate `changes.patch` with [changes-patch.md](changes-patch.md).

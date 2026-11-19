@@ -19,17 +19,33 @@ let started = false;
 let snapshot: PwaInstallState = 'hidden';
 const listeners = new Set<() => void>();
 
-const isStandalone = () =>
-  window.matchMedia?.('(display-mode: standalone)').matches ||
-  (navigator as Navigator & { standalone?: boolean }).standalone === true;
+export const isStandaloneApp = () =>
+  typeof window !== 'undefined' && (
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.matchMedia?.('(display-mode: fullscreen)').matches ||
+    window.matchMedia?.('(display-mode: minimal-ui)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  );
 
-const isIos = () =>
-  /iphone|ipad|ipod/i.test(navigator.userAgent) ||
-  (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+export const isIosDevice = () =>
+  typeof navigator !== 'undefined' && (
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+
+/** Where the current visitor is most likely installing: the guide opens on that tab. */
+export const detectInstallTarget = (): 'ios' | 'android' | 'desktop' => {
+  if (typeof navigator === 'undefined') return 'desktop';
+  if (isIosDevice()) return 'ios';
+  if (/android/i.test(navigator.userAgent)) return 'android';
+  return 'desktop';
+};
+
+const isIos = isIosDevice;
 
 function compute(): PwaInstallState {
   if (typeof window === 'undefined' || isAndroidApp()) return 'hidden';
-  if (installed || isStandalone()) return 'installed';
+  if (installed || isStandaloneApp()) return 'installed';
   if (deferred) return 'available';
   // iOS Safari never fires beforeinstallprompt; the user has to use Share > Add to Home Screen.
   if (isIos() && window.isSecureContext) return 'ios';

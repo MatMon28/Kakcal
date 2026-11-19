@@ -26,7 +26,13 @@ export interface TourUi {
   next: string;
   pages: string;
   openApp: string;
-  androidProject: string;
+  installCta: string;
+  installHeading: string;
+  installLede: string;
+  installIos: string;
+  installAndroid: string;
+  installDesktop: string;
+  installedNote: string;
   language: string;
   liveApp: string;
   liveAppTitle: string;
@@ -468,7 +474,13 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     next: 'Next',
     pages: 'Pages',
     openApp: 'Open full app',
-    androidProject: 'Android project',
+    installCta: 'Install app',
+    installHeading: 'Use Kakcalculator like a real app',
+    installLede: 'Install it on iPhone, Android or your computer: full screen, offline and with its own icon. Android users can also download the APK.',
+    installIos: 'iPhone & iPad',
+    installAndroid: 'Android',
+    installDesktop: 'Computer',
+    installedNote: 'Already installed? Your next launch opens straight into the journal — no tour and no setup.',
     language: 'Language',
     liveApp: 'Live app',
     liveAppTitle: 'Live Kakcalculator app',
@@ -515,7 +527,13 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     next: 'Avanti',
     pages: 'Pagine',
     openApp: 'Apri l’app completa',
-    androidProject: 'Progetto Android',
+    installCta: 'Installa app',
+    installHeading: 'Usa Kakcalculator come una vera app',
+    installLede: 'Installala su iPhone, Android o computer: schermo intero, offline e con la sua icona. Su Android puoi anche scaricare l’APK.',
+    installIos: 'iPhone e iPad',
+    installAndroid: 'Android',
+    installDesktop: 'Computer',
+    installedNote: 'Già installata? Al prossimo avvio si apre direttamente il diario, senza visita guidata né configurazione.',
     language: 'Lingua',
     liveApp: 'App dal vivo',
     liveAppTitle: 'App Kakcalculator dal vivo',

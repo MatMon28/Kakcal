@@ -16,7 +16,7 @@ git apply --index changes.patch      # applies and stages (binary icon PNGs incl
 # repository has moved on?  git apply --3way changes.patch
 ```
 
-New files: `public/manifest.webmanifest`, `public/_headers`, `public/icons/*.png`, `scripts/render-pwa-icons.mjs`, `src/utils/pwaInstall.ts`, `src/components/common/InstallApp.tsx`, `docs/pwa.md`, `docs/pwa-setup.md`. Edited: `index.html`, `public/offline-worker.js`, `src/main.tsx`, `SettingsModal.tsx`, `translations.ts`, `scripts/prepare-android.mjs` and the docs. No new npm dependency, `package.json` is untouched.
+New files in this round: `public/manifest.webmanifest`, `public/_headers`, `public/icons/*.png`, `scripts/render-pwa-icons.mjs`, `src/utils/pwaInstall.ts`, `src/components/common/InstallApp.tsx`, `docs/pwa.md`, `docs/pwa-setup.md`. The install-guide round adds `src/components/common/InstallGuide.tsx` and rewrites `InstallApp.tsx`, updates `App.tsx`, `pwaInstall.ts`, `AppTour.tsx`/`tourContent.ts`, `config/demo.ts`, the manifest and the worker. Edited: `index.html`, `public/offline-worker.js`, `src/main.tsx`, `SettingsModal.tsx`, `translations.ts`, `scripts/prepare-android.mjs` and the docs. No new npm dependency, `package.json` is untouched.
 
 ## 2. Build
 
@@ -85,7 +85,7 @@ Your journal stays on that browser/device (`localStorage`). A browser tab and th
 
 ## 5. Verify
 
-1. Chrome DevTools > **Application** > *Manifest*: no errors, three icons, "Installable" is shown. *Service Workers*: `offline-worker.js` is **activated and running**. *Cache Storage*: `kakcalculator-shell-v2` lists `index.html`, `manifest.webmanifest` and four icons.
+1. Chrome DevTools > **Application** > *Manifest*: no errors, three icons, "Installable" is shown. *Service Workers*: `offline-worker.js` is **activated and running**. *Cache Storage*: `kakcalculator-shell-v3` lists `index.html`, `manifest.webmanifest` and four icons.
 2. Tick *Offline* (Application > Service Workers) or switch on flight mode and reload: the app must still open.
 3. Run **Lighthouse** > Progressive Web App (or *Installable* audit); it should pass.
 4. Open Settings and scroll to the bottom of the profile/backup group: the **Install app** card appears when the browser allows installation, and shows "Installed" inside the installed app.
@@ -99,3 +99,13 @@ Your journal stays on that browser/device (`localStorage`). A browser tab and th
 | Icons or manifest 404 on GitHub Pages | You uploaded only `index.html`, or `dist/` was not the artifact path. Upload the full `dist/`. |
 | `render-pwa-icons.mjs` says "Run npm i --no-save sharp" | Install the helper first; it is intentionally not in `package.json`. |
 | APK shows a manifest 404 | You built it with `npm run android:prepare`, which does not strip the PWA tags. Use `node scripts/prepare-android.mjs` ([setup-build.md](setup-build.md)). |
+
+## 6. Install guide and APK (install-guide round)
+
+The site now explains installation itself, so a visitor does not need this document: the tour landing page and Settings > *Install app* open `InstallGuide.tsx` with tabs for **iPhone/iPad** (Safari → Share → Add to Home Screen), **Android** (Chrome/Edge PWA steps) and **Computer** (Chrome/Edge install icon, Safari's Add to Dock, Firefox note).
+
+For Android the guide also offers the **APK**. The button expects `public/downloads/Kakcalculator.apk`; the file is not tracked in git. Build and copy the signed APK there before `npm run build` if you want the direct download. If the file is missing, the guide says so and links the official GitHub releases and `android/BUILD_APK.md`. It also explains, before the download, that Android/Play Protect may call a direct APK install “unknown source”, “unsafe” or “could be dangerous”, that this is the standard warning for sideloaded files, and that users should only install the file from this page or the official releases.
+
+Installed copies always open the journal: the manifest starts at `./?view=app&source=pwa` and `App.tsx` detects standalone display mode (plus iOS Home Screen) and ignores `?view=tour`. The guide tells the user that after installation every launch goes straight to the journal.
+
+Browser builds are in normal-use mode. To publish a populated demo instead, build with `VITE_DEMO_DATA=true`; the default build starts empty and preserves any journal already on the device.

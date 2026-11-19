@@ -9,7 +9,7 @@
 | File or directory | Role |
 | --- | --- |
 | `src/components/tour/NotificationShowcase.tsx` | The tour's notification previews (real EN/IT strings; each card opens its screen in the live journal). |
-| `src/components/tour/AppTour.tsx`, `tourContent.ts` | Guided webview: a step for every page, including Notifications (English and Italian copy), the live journal beside each step, the widgets last, language and theme that follow the app, and the Open full app link. |
+| `src/components/tour/AppTour.tsx`, `tourContent.ts` | Guided webview: a step for every page, including Notifications (English and Italian copy), the live journal beside each step, the widgets last, language and theme that follow the app, the Open full app link and an **install card** for iPhone/iPad, Android (PWA + APK) and desktop that calls `openInstallGuide()`. The old dead `downloads/Kakcalculator-Android-Studio.zip` link is gone. |
 | `src/components/widgets/WidgetGallery.tsx`, `widget-preview.css` | The four widget designs: translucent Small and Extra-small trays, the Medium widget (no bars, no percentages) and the Large widget (macro letters) in Ultra minimal Today's arrangement, with action button styles matching the active theme style (`classic`, `angular`, `aurora`, `pop`, `playful`, `minimal`, `mono`), Light/Dark look, and optional Custom button chosen in Settings. |
 | `src/components/intro/bootSplash.ts` | `dismissBootSplash()`: fades out the `#kc-boot` background-colour layer (no logo) that `index.html` paints before React mounts. See [Launch intro](../launch-intro.md). |
 | `src/components/intro/useAppReady.ts` | `useAppReady()`: true once the first screen is committed, fonts are loaded and two frames are painted. `IntroSplash` stops the animation when it turns true. |

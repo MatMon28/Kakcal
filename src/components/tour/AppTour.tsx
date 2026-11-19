@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, ArrowUpRight, Download, MousePointer2 } from 'lucide-react';
+import { Apple, ArrowLeft, ArrowRight, ArrowUpRight, Download, Monitor, MousePointer2, Smartphone } from 'lucide-react';
+import { openInstallGuide, type InstallTarget } from '../common/InstallGuide';
 import { Wordmark } from '../common/Brand';
 import { WidgetGallery } from '../widgets/WidgetGallery';
 import { NotificationShowcase } from './NotificationShowcase';
@@ -64,7 +65,6 @@ export function AppTour() {
   const ui = TOUR_UI[lang];
   const appUrl = useMemo(() => `${journalBase()}?view=app&tour=1`, []);
   const journalUrl = useMemo(() => `${journalBase()}?view=app`, []);
-  const androidZip = './downloads/Kakcalculator-Android-Studio.zip';
 
   const go = (delta: number) => setIndex((current) => Math.min(last, Math.max(0, current + delta)));
 
@@ -193,10 +193,14 @@ export function AppTour() {
                 </button>
               ))}
             </div>
-            <a href={androidZip} download className="inline-flex min-h-10 items-center gap-1.5 text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)]">
+            <button
+              type="button"
+              onClick={() => openInstallGuide(undefined, lang)}
+              className="inline-flex min-h-10 items-center gap-1.5 text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)]"
+            >
               <Download size={15} aria-hidden="true" />
-              <span>{ui.androidProject}</span>
-            </a>
+              <span>{ui.installCta}</span>
+            </button>
             <a href={journalUrl} className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-[var(--text)] px-4 text-xs font-extrabold text-[var(--on-text)]">
               {ui.openApp}
               <ArrowUpRight size={14} aria-hidden="true" />
@@ -206,11 +210,53 @@ export function AppTour() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 pb-20 pt-10 sm:px-8">
-        <div className="mb-10 max-w-2xl">
+        <div className="mb-8 max-w-2xl">
           <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">{ui.eyebrow}</p>
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{ui.pageTitle}</h1>
           <p className="mt-3 text-[15px] leading-relaxed text-[var(--muted)]">{ui.pageLede}</p>
         </div>
+
+        <section aria-label={ui.installHeading} className="mb-10 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#C9EFD3] text-[#174A2B]">
+              <Download size={22} aria-hidden="true" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">{ui.installCta}</p>
+              <h2 className="mt-1 text-lg font-extrabold tracking-tight sm:text-xl">{ui.installHeading}</h2>
+              <p className="mt-1 text-xs font-medium leading-relaxed text-[var(--muted)] sm:text-[13px]">{ui.installLede}</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => openInstallGuide(undefined, lang)}
+              className="pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E5E3A] px-5 text-sm font-extrabold text-[#EAF7EE] hover:bg-[#174A2B]"
+            >
+              {ui.installCta}
+              <ArrowUpRight size={15} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="mt-4 grid grid-cols-3 gap-2">
+            {([
+              ['ios', ui.installIos, Apple],
+              ['android', ui.installAndroid, Smartphone],
+              ['desktop', ui.installDesktop, Monitor],
+            ] as Array<[InstallTarget, string, typeof Apple]>).map(([target, label, Icon]) => (
+              <button
+                key={target}
+                type="button"
+                onClick={() => openInstallGuide(target, lang)}
+                className="pressable flex min-h-11 items-center justify-center gap-1.5 rounded-xl border border-[var(--border)] bg-[var(--bg)] px-2 text-[11px] font-extrabold text-[var(--text)] hover:bg-[var(--hover)] sm:text-xs"
+              >
+                <Icon size={15} className="shrink-0" aria-hidden="true" />
+                <span className="truncate">{label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 flex items-start gap-2 text-[11px] font-semibold leading-relaxed text-[var(--muted)]">
+            <ArrowUpRight size={12} className="mt-0.5 shrink-0" aria-hidden="true" />
+            <span>{ui.installedNote}</span>
+          </p>
+        </section>
 
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
           <section aria-label={ui.pages} className="min-w-0">

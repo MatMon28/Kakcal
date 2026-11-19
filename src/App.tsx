@@ -22,8 +22,10 @@ import { CustomPickerModal } from './components/modals/CustomPickerModal';
 import { PeriodSheet } from './components/modals/PeriodSheet';
 import { QuickAddBar } from './components/dashboard/QuickAddBar';
 import { AppTour } from './components/tour/AppTour';
+import { InstallGuideHost } from './components/common/InstallGuide';
 import { PageSwiper } from './components/common/PageSwiper';
 import { IntroSplash } from './components/intro/IntroSplash';
+import { isStandaloneApp } from './utils/pwaInstall';
 import { shouldShowIntro } from './components/intro/introAnimations';
 import { dismissBootSplash } from './components/intro/bootSplash';
 import {
@@ -373,10 +375,12 @@ let introPending: boolean | null = null;
 
 export function App() {
   const view = new URLSearchParams(window.location.search).get('view');
-  // The journal is the default inside the Android bundle and when ?view=app is given.
-  // Everywhere else the guided tour is shown, and it embeds the journal itself.
-  const showJournal = import.meta.env.VITE_ANDROID_RELEASE === 'true' || view === 'app' ||
-    (view !== 'tour' && (window.location.protocol === 'capacitor:' || isAndroidApp()));
+  // Normal (installed) mode: an installed PWA, an iOS Home Screen app and the Android bundle
+  // always open the journal itself — never the marketing/guided-tour page, even with ?view=tour.
+  // The guided tour is only for first-time browser visitors and can be skipped with ?view=app.
+  const installed = isStandaloneApp() || import.meta.env.VITE_ANDROID_RELEASE === 'true' ||
+    window.location.protocol === 'capacitor:' || isAndroidApp();
+  const showJournal = installed || view === 'app';
   // Launch intro (one of six random phase-1 animations); the app mounts underneath it.
   introPending ??= shouldShowIntro();
   const [introVisible, setIntroVisible] = useState(introPending);
@@ -387,13 +391,14 @@ export function App() {
   // The logo painted by index.html fades away once the app (and the intro over it) is mounted.
   useEffect(() => { dismissBootSplash(); }, []);
 
-  if (!showJournal) return <><AppTour />{intro}</>;
+  if (!showJournal) return <><InstallGuideHost /><AppTour />{intro}</>;
 
   return (
     <>
       <AppProvider>
         <MainContent />
       </AppProvider>
+      <InstallGuideHost />
       {intro}
     </>
   );

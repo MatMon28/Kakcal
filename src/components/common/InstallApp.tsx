@@ -1,44 +1,77 @@
 import React, { useState } from 'react';
-import { CheckCircle, Smartphone } from 'lucide-react';
+import { CheckCircle, Download, Smartphone } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
+import { isAndroidApp } from '../../utils/android';
+import { openInstallGuide } from './InstallGuide';
 
 /**
- * "Install app" card for Settings (PWA). Renders nothing in the Android app and in browsers that
- * cannot install the app (for example before the page is served over HTTPS).
+ * "Install app" card for Settings. Always available in a browser (iOS and desktop included),
+ * because manual installation never fires `beforeinstallprompt`. Opens the full guide with
+ * iPhone/iPad, Android (PWA and APK) and desktop steps. Hidden inside the native APK.
  */
 export const InstallApp: React.FC = () => {
-  const { t } = useApp();
+  const { t, language } = useApp();
   const state = usePwaInstallState();
   const [message, setMessage] = useState<string | null>(null);
 
-  if (state === 'hidden') return null;
+  if (isAndroidApp()) return null;
+
+  const ui = language === 'it'
+    ? {
+        howTo: 'Come installare',
+        installedBtn: 'Altri dispositivi',
+        manual: 'Guida per iPhone, Android e PC, con APK per Android.',
+        accepted: t.pwa.accepted,
+      }
+    : {
+        howTo: 'How to install',
+        installedBtn: 'Other devices',
+        manual: 'Guide for iPhone, Android and PC, plus the Android APK.',
+        accepted: t.pwa.accepted,
+      };
 
   const handleInstall = async () => {
     const accepted = await promptInstall();
-    setMessage(accepted ? t.pwa.accepted : t.pwa.dismissed);
+    setMessage(accepted ? ui.accepted : t.pwa.dismissed);
   };
 
   const description =
-    state === 'installed' ? t.pwa.installed : state === 'ios' ? t.pwa.iosDesc : t.pwa.installDesc;
+    state === 'installed' ? t.pwa.installed : state === 'ios' ? t.pwa.iosDesc : ui.manual;
 
   return (
     <section aria-label={t.pwa.title} className="bg-[var(--inset)] rounded-2xl p-3 space-y-2.5">
       <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.pwa.title}</h3>
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-start gap-2.5">
         <span className="w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
           {state === 'installed' ? <CheckCircle size={15} /> : <Smartphone size={15} />}
         </span>
-        <p className="flex-1 text-[11px] font-medium text-[var(--muted)]" role="status">
+        <p className="flex-1 text-[11px] font-medium leading-relaxed text-[var(--muted)]" role="status">
           {message ?? description}
         </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => openInstallGuide(undefined, language)}
+          className={`pressable flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 ${
+            state === 'available'
+              ? 'bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)]'
+              : 'bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B]'
+          }`}
+        >
+          <Download size={15} />
+          <span>{state === 'installed' ? ui.installedBtn : ui.howTo}</span>
+          {state !== 'available' && <span className="font-bold opacity-70">· iPhone · Android · PC</span>}
+        </button>
         {state === 'available' && (
           <button
             type="button"
-            onClick={handleInstall}
-            className="pressable py-2.5 px-4 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs shrink-0"
+            onClick={() => void handleInstall()}
+            className="pressable flex-1 py-2.5 px-3 rounded-xl bg-[#1E5E3A] hover:bg-[#174A2B] text-[#EAF7EE] font-extrabold text-xs flex items-center justify-center gap-1.5"
           >
-            {t.pwa.installBtn}
+            <Smartphone size={15} />
+            <span>{t.pwa.installBtn}</span>
           </button>
         )}
       </div>

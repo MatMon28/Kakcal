@@ -1,4 +1,5 @@
-const CACHE = 'kakcalculator-shell-v2';
+// v3: production launch mode (installed app opens the journal, not the tour) + install guide.
+const CACHE = 'kakcalculator-shell-v3';
 // Static, public food data (the Open Food Facts catalogue). Bump the suffix when it is rebuilt.
 const DATA_CACHE = 'kakcalculator-data-v1';
 const DATA_FILE = new URL('data/off-foods.bin', self.registration.scope).href;
