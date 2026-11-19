@@ -42,6 +42,7 @@ const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'history'];
 
 /** Each widget button opens the same dialog the tour and Today's dock open. */
 const ACTION_SCREEN: Record<WidgetAction, TourScreen> = {
+  custom: 'tracker',
   food: 'food',
   movement: 'activity',
   water: 'water',
@@ -129,6 +130,14 @@ function WidgetAppBridge() {
       case 'custom':
         app.setActiveTab('prebuilt');
         break;
+      case 'tracker': {
+        // The widget's custom button does what the Today dock's custom button does.
+        app.setActiveTab('today');
+        const buttons = app.settings.customButtons;
+        if (buttons.length === 1) app.setCustomButtonOpenId(buttons[0].id);
+        else app.setIsCustomPickerOpen(true);
+        break;
+      }
       case 'period':
         app.setActiveTab('period');
         break;
@@ -173,9 +182,14 @@ function WidgetAppBridge() {
       if (date < earliest) continue;
       days[date] = nutritionValues(makeWidgetSnapshot(date, app.language, app.allDayLogs[date], app.userProfile));
     }
-    void JournalDevice.publishNutrition({ language: app.language, bmr: calculateBMR(app.userProfile), days })
-      .catch(() => console.warn('Native widget refresh unavailable'));
-  }, [today, app.allDayLogs, app.language, app.userProfile]);
+    void JournalDevice.publishNutrition({
+      language: app.language,
+      bmr: calculateBMR(app.userProfile),
+      widgetStyle: app.settings.widgetStyle,
+      widgetCustomButton: app.settings.widgetCustomButton,
+      days,
+    }).catch(() => console.warn('Native widget refresh unavailable'));
+  }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.widgetCustomButton]);
 
   useEffect(() => {
     if (window.parent === window) return;

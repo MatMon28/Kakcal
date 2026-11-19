@@ -1,0 +1,16 @@
+Open Food Facts product data
+============================
+
+public/data/off-foods.bin contains product names, brands, barcodes and per-100 g/ml nutrition values
+(energy, fat, carbohydrates, sugars, protein, fibre, salt) and serving sizes taken from the Open Food
+Facts database, https://world.openfoodfacts.org
+
+(c) Open Food Facts contributors.
+The database is made available under the Open Database Licence (ODbL) 1.0,
+https://opendatacommons.org/licenses/odbl/1-0/ ; its individual contents are under the Database Contents
+Licence 1.0, https://opendatacommons.org/licenses/dbcl/1-0/ .
+
+Changes made: the export was filtered to products with a name, a barcode and a complete, internally
+consistent nutrition table, ranked, and converted to a compact binary file by
+scripts/build-off-catalog.mjs. Product images are not included. Values are crowd-sourced and can be wrong;
+check the package when it matters.

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Star } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import type { FoodItem } from '../../types';
 
 interface FavoriteButtonProps {
   /** Food id, or activity id when `kind="activity"`. */
@@ -9,11 +10,13 @@ interface FavoriteButtonProps {
   variant?: 'row' | 'card';
   /** Which favourite list the star toggles. Defaults to foods. */
   kind?: 'food' | 'activity';
+  /** The food itself: lets a catalogue (Open Food Facts) food be kept when it is starred. */
+  food?: FoodItem;
 }
 
 /** Star toggle for the favourite-food / favourite-activity lists. Results reorder so these appear first. */
-export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant = 'row', kind = 'food' }) => {
-  const { favoriteFoods, toggleFavoriteFood, favoriteActivities, toggleFavoriteActivity, t } = useApp();
+export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant = 'row', kind = 'food', food }) => {
+  const { favoriteFoods, toggleFavoriteFood, favoriteActivities, toggleFavoriteActivity, rememberFood, t } = useApp();
   const active = (kind === 'activity' ? favoriteActivities : favoriteFoods).includes(foodId);
   const toggle = kind === 'activity' ? toggleFavoriteActivity : toggleFavoriteFood;
   const size = variant === 'card' ? 'size-7' : 'size-8';
@@ -23,6 +26,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant 
       type="button"
       onClick={(event) => {
         event.stopPropagation();
+        if (food && !active) rememberFood(food);
         toggle(foodId);
       }}
       aria-pressed={active}

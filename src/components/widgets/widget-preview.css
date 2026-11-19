@@ -81,6 +81,17 @@
 .widget-action-water { --action-fill: #CFE7FE; --action-ink: #183F66; }
 .widget-action-poop { --action-fill: #FAE0B4; --action-ink: #7D4E14; }
 .widget-action-weight { --action-fill: var(--color-weight); --action-ink: var(--color-weight-ink); }
+.widget-action-custom { --action-fill: #F7E9AA; --action-ink: #6E5B14; }
+
+/* Settings > Widgets > Dark: the same translucent glass, but darker. */
+.quick-widget-dark {
+  background: rgb(18 21 27 / 65%);
+  border-color: rgb(255 255 255 / 15%);
+}
+.widget-large-dark {
+  background: rgb(23 26 33 / 72%);
+  backdrop-filter: blur(6px);
+}
 
 @media (prefers-reduced-motion: reduce) {
   .widget-action-icon { transition: none; }

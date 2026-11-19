@@ -3,7 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { FoodItem, MealSlotId } from '../../types';
 import { AmountSelector } from '../common/AmountSelector';
-import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
+import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
+import { getLoadedOffCatalog, loadOffCatalog } from '../../data/offCatalog';
 import {
   Search,
   Loader2,
@@ -22,7 +23,9 @@ interface OpenFoodFactsProduct {
   product_name_it?: string;
   product_name_en?: string;
   brands?: string;
+  serving_quantity?: number | string;
   nutriments?: {
+    sugars_100g?: number;
     'energy-kcal_100g'?: number;
     'energy-kj_100g'?: number;
     energy_100g?: number;
@@ -38,6 +41,11 @@ type BarcodeScanner = {
   detect: (video: HTMLVideoElement) => Promise<{ rawValue: string }[]>;
 };
 type BarcodeScannerConstructor = new (options: { formats: string[] }) => BarcodeScanner;
+/** Open Food Facts `serving_quantity` (g/ml) as the product's classic portion. */
+const classicPortion = (value: number | string | undefined) => {
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 1 && n <= 2000 ? Math.round(n) : undefined;
+};
 const reported = (value: number | undefined) => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 
 const SLOTS: MealSlotId[] = [
@@ -55,6 +63,7 @@ export const BarcodeLookupModal: React.FC = () => {
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
     allFoods,
+    rememberFood,
     language,
     addCustomFood,
     logFoodItem,
@@ -169,10 +178,13 @@ export const BarcodeLookupModal: React.FC = () => {
       return;
     }
     setBarcode(code);
-    const localFood = allFoods.find((food) => food.barcode === code);
+    // Own foods first, then the 130,000 products bundled for offline use.
+    const localFood = allFoods.find((food) => food.barcode === code) ??
+      (getLoadedOffCatalog() ?? (await loadOffCatalog()))?.findByBarcode(code) ?? undefined;
     if (localFood) {
+      rememberFood(localFood);
       setFetchedProduct(localFood);
-      setLogAmount(getLastAmount(localFood.id));
+      setLogAmount(getDefaultAmount(localFood));
       return;
     }
     if (!navigator.onLine) {
@@ -185,7 +197,7 @@ export const BarcodeLookupModal: React.FC = () => {
     setIsLoading(true);
     const timeout = window.setTimeout(() => request.abort(), 8000);
     try {
-      const fields = 'product_name,product_name_de,product_name_it,product_name_en,brands,nutriments';
+      const fields = 'product_name,product_name_de,product_name_it,product_name_en,brands,serving_quantity,nutriments';
       const response = await fetch(
         `https://world.openfoodfacts.org/api/v2/product/${code}.json?fields=${fields}`,
         { signal: request.signal },
@@ -237,13 +249,15 @@ export const BarcodeLookupModal: React.FC = () => {
           fat: reported(nut.fat_100g),
           fiber: reported(nut.fiber_100g),
           salt: reported(nut.salt_100g),
+          sugar: reported(nut.sugars_100g),
+          portion: classicPortion(p.serving_quantity),
           source: { label: 'Open Food Facts', url: `https://world.openfoodfacts.org/product/${code}` },
           barcode: code,
           isCustom: true,
         };
 
         setFetchedProduct(newFood);
-        setLogAmount(getLastAmount(newFood.id));
+        setLogAmount(getDefaultAmount(newFood));
       } else {
         setErrorMsg(t.barcodeModal.notFound);
       }

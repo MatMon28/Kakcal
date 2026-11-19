@@ -10,13 +10,31 @@ import {
 // One serialisable bridge shared by the guided tour, the widget gallery and the
 // native widgets. The same action IDs and nutrition fields feed every presentation.
 export const WIDGET_CHANNEL = 'kakcalculator.widgets.v1';
-export const WIDGET_ACTIONS = ['food', 'movement', 'water', 'poop', 'weight'] as const;
+// 'custom' is the optional sixth button of the Small and Large widgets (Settings > Widgets).
+export const WIDGET_ACTIONS = ['food', 'movement', 'water', 'poop', 'weight', 'custom'] as const;
 export type WidgetAction = (typeof WIDGET_ACTIONS)[number];
+/** The five shortcuts every widget always has. */
+export const BASE_WIDGET_ACTIONS = WIDGET_ACTIONS.filter((action) => action !== 'custom');
+
+export interface WidgetAppearance {
+  style: 'light' | 'dark';
+  customButton: boolean;
+}
+
+/** The widget look chosen in Settings; the browser tour shares the journal's localStorage. */
+export function readWidgetAppearance(): WidgetAppearance {
+  try {
+    const saved = JSON.parse(localStorage.getItem('kcalsync_settings') || '{}');
+    return { style: saved.widgetStyle === 'dark' ? 'dark' : 'light', customButton: Boolean(saved.widgetCustomButton) };
+  } catch {
+    return { style: 'light', customButton: false };
+  }
+}
 
 /** Pages and dialogs the guided tour can show inside the embedded journal. */
 export const TOUR_SCREENS = [
   'today', 'meals', 'food', 'activity', 'water', 'poop', 'weight', 'overview',
-  'custom', 'period', 'statistics', 'profile', 'settings',
+  'custom', 'period', 'statistics', 'profile', 'settings', 'tracker',
 ] as const;
 export type TourScreen = (typeof TOUR_SCREENS)[number];
 

@@ -38,6 +38,10 @@ export interface FoodItem {
   fat: number | null;
   fiber: number | null;
   salt: number | null;
+  /** Sugars in g per 100 g/ml (part of carbs). Stored for the planned sugar tracking; nothing reads it yet. */
+  sugar?: number | null;
+  /** The product's classic serving in g/ml, when known (Open Food Facts `serving_quantity`). */
+  portion?: number;
   source?: FoodSource;
   barcode?: string;
   isCustom?: boolean;
@@ -66,6 +70,8 @@ export interface LoggedFoodItem {
   fat: number | null;
   fiber: number | null;
   salt: number | null;
+  /** Sugar snapshot per 100 g/ml, kept for later sugar tracking. */
+  sugar?: number | null;
   loggedAt: string;
 }
 
@@ -214,6 +220,8 @@ export interface Settings {
   favoriteFoods: string[]; // starred foods: listed first on every food search
   favoriteActivities: string[]; // starred activities (database ids): listed first in the activity search
   customButtons: CustomButtonDef[]; // user-defined quick-add trackers (one button, picker if several)
+  widgetStyle: 'light' | 'dark'; // home-screen widgets: light, or a darker translucent look
+  widgetCustomButton: boolean; // add the custom-tracker button to the Small and Large widgets
 }
 
 export type PeriodFlow = 'none' | 'light' | 'medium' | 'heavy';

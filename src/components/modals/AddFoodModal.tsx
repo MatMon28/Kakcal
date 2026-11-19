@@ -3,7 +3,10 @@ import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { AmountSelector } from '../common/AmountSelector';
 import { FoodItem, LoggedFoodItem, MealSlotId } from '../../types';
-import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
+import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
+import { FoodResultRow } from '../common/FoodResultRow';
+import { useOffCatalog } from '../../utils/useOffCatalog';
+import { catalogueScore } from '../../data/offCatalog';
 import { calculateTotalCalories } from '../../utils/calculations';
 import { addDaysToDateString, formatDateDisplay } from '../../utils/formatters';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
@@ -54,6 +57,7 @@ export const AddFoodModal: React.FC = () => {
     settings,
     favoriteFoods,
     setIsCustomFoodOpen,
+    rememberFood,
     t,
   } = useApp();
 
@@ -72,6 +76,9 @@ export const AddFoodModal: React.FC = () => {
       activeSlotRef.current?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }
   }, [isAddFoodOpen, targetMealSlot, activeFood]);
+
+  // The 130,000-product offline catalogue is fetched the first time this dialog opens.
+  const offCatalog = useOffCatalog(isAddFoodOpen);
 
   const nameOf = (f: FoodItem) =>
     language === 'it' ? f.name_it : f.name_en || f.name_de;
@@ -145,9 +152,15 @@ export const AddFoodModal: React.FC = () => {
     const meals = preBuiltMeals
       .map((m) => ({ kind: 'meal' as const, m, score: fuzzyScore(q, m.name) }))
       .filter((x) => fuzzyMatch(q, [x.m.name]));
-    const ranked = [...meals, ...foods].sort((a, b) => a.score - b.score);
-    return sortFavoritesFirst(ranked, favoriteIds, (r) => (r.kind === 'food' ? r.f.id : '')).slice(0, 30);
-  }, [allFoods, preBuiltMeals, trimmedQuery, isSearching, favoriteIds]);
+    // The offline Open Food Facts catalogue is ranked on the same scale: below an exact match in the
+    // bundled foods, above their loose typo matches (catalogue foods the user already picked are in allFoods).
+    const knownIds = new Set(foods.map((x) => x.f.id));
+    const catalogue = (offCatalog ? offCatalog.search(q, 40) : [])
+      .filter((f) => !knownIds.has(f.id))
+      .map((f) => ({ kind: 'food' as const, f, score: catalogueScore(q) }));
+    const ranked = [...meals, ...foods, ...catalogue].sort((a, b) => a.score - b.score);
+    return sortFavoritesFirst(ranked, favoriteIds, (r) => (r.kind === 'food' ? r.f.id : '')).slice(0, 50);
+  }, [allFoods, preBuiltMeals, trimmedQuery, isSearching, favoriteIds, offCatalog]);
 
   // Saved meals tagged for this slot
   const slotMeals = useMemo(
@@ -191,8 +204,10 @@ export const AddFoodModal: React.FC = () => {
   };
 
   const handlePickFood = (food: FoodItem) => {
+    rememberFood(food);
     setActiveFood(food);
-    setCurrentAmount(getLastAmount(food.id));
+    // Last weight used for this food, else its classic portion, else 100 g/ml.
+    setCurrentAmount(getDefaultAmount(food));
   };
 
   const handleEditQueued = (entry: QueuedEntry) => {
@@ -237,6 +252,7 @@ export const AddFoodModal: React.FC = () => {
       fat: e.food.fat,
       fiber: e.food.fiber,
       salt: e.food.salt,
+      sugar: e.food.sugar ?? null,
       loggedAt: '',
     }));
 
@@ -263,29 +279,10 @@ export const AddFoodModal: React.FC = () => {
 
   const queuedTotalKcal = queuedItems.reduce((s, e) => s + kcalOf(e.food, e.amount), 0);
 
-  // Shared result row: whole row picks the food, the star toggles favourites.
+  // Shared result row: whole row picks the food, the star toggles favourites. It shows the
+  // pre-filled weight (last used, classic portion or 100 g/ml) with the macros of that weight.
   const FoodRow: React.FC<{ food: FoodItem; onClick: () => void }> = ({ food, onClick }) => (
-    <div className="flex items-center gap-2 p-3 hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors">
-      <button type="button" onClick={onClick} className="min-w-0 flex-1 text-left">
-        <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate block">
-          {nameOf(food)}
-          {food.isRecipe && (
-            <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582] align-middle">
-              {t.prebuilt.savedAsRecipe}
-            </span>
-          )}
-        </span>
-        <span className="text-[11px] font-medium tabular-nums text-[var(--muted)]">
-          {getLastAmount(food.id)}
-          {food.unit}
-          {food.brand ? ` · ${food.brand}` : ''}
-        </span>
-      </button>
-      <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
-        {food.calories} kcal/100{food.unit}
-      </span>
-      <FavoriteButton foodId={food.id} />
-    </div>
+    <FoodResultRow food={food} onClick={onClick} favorite />
   );
 
   // Panel shown while the search field is empty/focused or only one char is typed.

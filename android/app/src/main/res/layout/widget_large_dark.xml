@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_surface_dark"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Intake and burned: the two cards of Today in Ultra minimal mode. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_intake_card"
+            style="@style/WidgetCard"
+            android:layout_width="0dp"
+            android:layout_marginEnd="6dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_card_intake_dark">
+
+            <LinearLayout style="@style/WidgetCardHeader">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/widget_intake_icon_dark" />
+                <!-- Spacer. Must be a RemoteViews-compatible class: a plain <View> is not
+                     annotated @RemoteView, so the launcher refuses to inflate it and shows
+                     "Can't load widget" / "Impossibile caricare il widget". -->
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/widget_intake_net"
+                    style="@style/WidgetPill"
+                    android:background="@drawable/widget_pill_surplus_dark"
+                    android:textColor="#17432A"
+                    android:visibility="gone" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/widget_intake_value"
+                style="@style/WidgetValue"
+                android:textColor="#E6F8EB" />
+
+            <ProgressBar
+                android:id="@+id/widget_intake_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="4dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:progressBackgroundTint="#33FFFFFF"
+                android:progressTint="#C9EFD3" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_burned_card"
+            style="@style/WidgetCard"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:background="@drawable/widget_card_burned_dark">
+
+            <LinearLayout style="@style/WidgetCardHeader">
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/widget_burned_icon_dark" />
+                <!-- Spacer: FrameLayout, not <View> (see the intake card above). -->
+                <FrameLayout
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+                <TextView
+                    android:id="@+id/widget_burned_net"
+                    style="@style/WidgetPill"
+                    android:background="@drawable/widget_pill_deficit_dark"
+                    android:textColor="#702D32" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/widget_burned_value"
+                style="@style/WidgetValue"
+                android:textColor="#FBE9E9" />
+
+            <ProgressBar
+                android:id="@+id/widget_burned_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="6dp"
+                android:layout_marginTop="4dp"
+                android:indeterminate="false"
+                android:max="100"
+                android:progress="0"
+                android:progressBackgroundTint="#33FFFFFF"
+                android:progressTint="#F6D0D0" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Carbs, protein and fat: grams with their share of the day's calories. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_marginTop="6dp"
+        android:layout_weight="0.7"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/widget_carbs_card"
+            style="@style/WidgetMacro"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_card_carbs_dark">
+            <TextView
+                android:id="@+id/widget_carbs_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#E3F1FF" />
+            <TextView
+                android:id="@+id/widget_carbs_percent"
+                style="@style/WidgetMacroPercent"
+                android:textColor="#A9D2F7" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_protein_card"
+            style="@style/WidgetMacro"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/widget_card_protein_dark">
+            <TextView
+                android:id="@+id/widget_protein_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#FFF1D9" />
+            <TextView
+                android:id="@+id/widget_protein_percent"
+                style="@style/WidgetMacroPercent"
+                android:textColor="#F0C888" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/widget_fat_card"
+            style="@style/WidgetMacro"
+            android:background="@drawable/widget_card_fat_dark">
+            <TextView
+                android:id="@+id/widget_fat_value"
+                style="@style/WidgetMacroValue"
+                android:textColor="#F1EAFF" />
+            <TextView
+                android:id="@+id/widget_fat_percent"
+                style="@style/WidgetMacroPercent"
+                android:textColor="#C9B5F5" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="#33FFFFFF" />
+
+    <include layout="@layout/widget_actions_five" />
+</LinearLayout>

@@ -58,6 +58,8 @@ interface AppContextType {
   deleteCustomFood: (foodId: string) => void;
   favoriteFoods: string[];
   toggleFavoriteFood: (foodId: string) => void;
+  /** Keep a catalogue (Open Food Facts) food resolvable by id once the user has picked or starred it. */
+  rememberFood: (food: FoodItem) => void;
   favoriteActivities: string[];
   toggleFavoriteActivity: (activityId: string) => void;
   currentDayLog: DayLog;
@@ -180,6 +182,7 @@ const STORAGE_KEYS = {
   LANG: 'kcalsync_lang',
   PROFILE: 'kcalsync_profile',
   CUSTOM_FOODS: 'kcalsync_custom_foods',
+  USED_FOODS: 'kcalsync_used_foods',
   DAY_LOGS: 'kcalsync_day_logs',
   PREBUILT_MEALS: 'kcalsync_prebuilt_meals',
   SETTINGS: 'kcalsync_settings',
@@ -387,7 +390,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
-  const allFoods = useMemo(() => [...customFoods, ...VERIFIED_FOODS], [customFoods]);
+  // Foods picked from the 130,000-product offline catalogue. Lookups by id (favourites, recents,
+  // recipe ingredients) go through allFoods, so a picked or starred catalogue food is kept here.
+  const [usedFoods, setUsedFoods] = useState<FoodItem[]>(() => {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEYS.USED_FOODS) || '[]');
+      return Array.isArray(parsed) ? parsed.filter((f: FoodItem) => f && typeof f.id === 'string') : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const rememberFood = (food: FoodItem) => {
+    if (!food.id.startsWith('off-')) return; // the bundled and custom foods are always available
+    setUsedFoods((prev) => {
+      if (prev[0]?.id === food.id) return prev;
+      const next = [food, ...prev.filter((f) => f.id !== food.id)].slice(0, 3000);
+      try {
+        localStorage.setItem(STORAGE_KEYS.USED_FOODS, JSON.stringify(next));
+      } catch { /* storage full: the food still works for this session */ }
+      return next;
+    });
+  };
+
+  const allFoods = useMemo(() => [...customFoods, ...usedFoods, ...VERIFIED_FOODS], [customFoods, usedFoods]);
 
   // 5. Day Logs with realistic initial data for today and yesterday if first launch
   const [dayLogs, setDayLogs] = useState<Record<string, DayLog>>(() => {
@@ -1020,6 +1046,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 showStats: b.showStats !== false,
               }))
             : [],
+          widgetStyle: p.widgetStyle === 'dark' ? 'dark' : 'light',
+          widgetCustomButton: Boolean(p.widgetCustomButton),
         };
       } catch (e) {
         console.error('Failed to parse settings', e);
@@ -1036,6 +1064,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       favoriteFoods: DEMO_MODE ? DEMO_FAVORITE_FOODS : [],
       favoriteActivities: [],
       customButtons: DEMO_MODE ? DEMO_CUSTOM_BUTTONS : [],
+      widgetStyle: 'light',
+      widgetCustomButton: false,
     };
   });
 
@@ -1400,6 +1430,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       exportedAt: new Date().toISOString(),
       userProfile,
       customFoods,
+      usedFoods,
       dayLogs,
       preBuiltMeals,
       settings,
@@ -1419,6 +1450,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (Array.isArray(data.customFoods)) {
         setCustomFoods(data.customFoods);
         localStorage.setItem(STORAGE_KEYS.CUSTOM_FOODS, JSON.stringify(data.customFoods));
+      }
+      if (Array.isArray(data.usedFoods)) {
+        const used = data.usedFoods.filter((f: FoodItem) => f && typeof f.id === 'string' && f.id.startsWith('off-')).slice(0, 3000);
+        setUsedFoods(used);
+        localStorage.setItem(STORAGE_KEYS.USED_FOODS, JSON.stringify(used));
       }
       if (data.dayLogs && typeof data.dayLogs === 'object' && !Array.isArray(data.dayLogs)) {
         saveDayLogs(normalizeDayLogs(data.dayLogs));
@@ -1508,6 +1544,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         deleteCustomFood,
         favoriteFoods: settings.favoriteFoods ?? [],
         toggleFavoriteFood,
+        rememberFood,
         favoriteActivities: settings.favoriteActivities ?? [],
         toggleFavoriteActivity,
         currentDayLog,

@@ -1,4 +1,4 @@
-import type { TourScreen } from '../widgets/widgetContract';
+import type { TourScreen, WidgetAction } from '../widgets/widgetContract';
 
 export type TourLang = 'en' | 'it';
 
@@ -44,7 +44,7 @@ export interface TourUi {
   extraMeta: string;
   largeMeta: string;
   primary: string;
-  actions: Record<'food' | 'movement' | 'water' | 'poop' | 'weight', string>;
+  actions: Record<WidgetAction, string>;
   intake: string;
   burned: string;
   carbs: string;
@@ -444,7 +444,7 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     extraMeta: '3 actions',
     largeMeta: 'Intake, burned, macros and 5 actions',
     primary: 'Primary',
-    actions: { food: 'Food', movement: 'Movement', water: 'Water', poop: 'Poop', weight: 'Weight' },
+    actions: { food: 'Food', movement: 'Movement', water: 'Water', poop: 'Poop', weight: 'Weight', custom: 'Custom' },
     intake: 'Intake',
     burned: 'Burned',
     carbs: 'Carbs',
@@ -478,7 +478,7 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     extraMeta: '3 azioni',
     largeMeta: 'Assunte, bruciate, macro e 5 azioni',
     primary: 'Principale',
-    actions: { food: 'Cibo', movement: 'Attività', water: 'Acqua', poop: 'Cacca', weight: 'Peso' },
+    actions: { food: 'Cibo', movement: 'Attività', water: 'Acqua', poop: 'Cacca', weight: 'Peso', custom: 'Personalizzato' },
     intake: 'Assunte',
     burned: 'Bruciate',
     carbs: 'Carboidrati',

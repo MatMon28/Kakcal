@@ -2,11 +2,12 @@ import { FoodCategory, FoodItem } from '../types';
 
 /**
  * Additional GENERIC foods (mostly single ingredients).
- * Each row: de|it|en|kcal|carbs|protein|fat|fiber|salt|category|unit|cookable
+ * Each row: de|it|en|kcal|carbs|protein|fat|fiber|salt|category|unit|(unused flag)
  * Values are standard reference values per 100 g / 100 ml.
- * "cookable" rows also get preparation variants generated below (cooked, boiled,
- * grilled, steamed, baked, roasted, pan-fried, air-fried), which is how the
- * database reaches ~1000 entries.
+ * One entry per row: the estimated "boiled / grilled / oven-baked / pan-fried ..." variants that
+ * used to be generated from every cookable row were removed. Real, sourced prepared foods live in
+ * verifiedFoods.ts / usdaFoodRows.ts, and the 130,000-product Open Food Facts catalogue (offCatalog.ts)
+ * provides the rest.
  */
 const ROWS = `
 Apfel|Mela|Apple|52|11.4|0.3|0.2|2.4|0.001|produce_fruit|g|0
@@ -208,24 +209,6 @@ Rührei|Uova Strapazzate|Scrambled Eggs|199|1.6|13.6|15.2|0.0|0.45|prepared|g|0
 Pfannkuchen|Pancake|Pancake|227|28.3|6.4|9.7|0.9|0.60|prepared|g|0
 `;
 
-const VARIANTS: {
-  key: string;
-  de: string;
-  it: string;
-  en: string;
-  factor: number;
-  addFat?: number;
-}[] = [
-  { key: 'cooked', de: 'gekocht', it: 'cotto', en: 'cooked', factor: 0.72 },
-  { key: 'boiled', de: 'in Wasser gekocht', it: 'lessato', en: 'boiled', factor: 0.7 },
-  { key: 'grilled', de: 'gegrillt', it: 'alla griglia', en: 'grilled', factor: 0.82, addFat: 1 },
-  { key: 'steamed', de: 'gedämpft', it: 'al vapore', en: 'steamed', factor: 0.9 },
-  { key: 'baked', de: 'im Ofen gebacken', it: 'al forno', en: 'oven-baked', factor: 0.85, addFat: 1 },
-  { key: 'roasted', de: 'geröstet', it: 'arrosto', en: 'roasted', factor: 0.88, addFat: 1.5 },
-  { key: 'fried', de: 'in der Pfanne gebraten', it: 'in padella', en: 'pan-fried', factor: 0.86, addFat: 6 },
-  { key: 'airfried', de: 'in der Heißluftfritteuse', it: 'in friggitrice ad aria', en: 'air-fried', factor: 0.84 },
-];
-
 const slug = (s: string) =>
   s
     .toLowerCase()
@@ -246,7 +229,7 @@ export const EXTRA_FOODS: FoodItem[] = (() => {
   const out: FoodItem[] = [];
 
   for (const c of parseRows()) {
-    const [de, it, en, kcal, carbs, protein, fat, fiber, salt, category, unit, cookable] = c;
+    const [de, it, en, kcal, carbs, protein, fat, fiber, salt, category, unit] = c;
     const base: FoodItem = {
       id: `genx-${slug(en)}`,
       name_de: de,
@@ -263,25 +246,6 @@ export const EXTRA_FOODS: FoodItem[] = (() => {
       salt: Number(salt),
     };
     out.push(base);
-
-    if (cookable === '1') {
-      for (const v of VARIANTS) {
-        const f = v.factor;
-        out.push({
-          ...base,
-          id: `${base.id}-${v.key}`,
-          name_de: `${de} ${v.de}`,
-          name_it: `${it} ${v.it}`,
-          name_en: `${en} (${v.en})`,
-          calories: Math.round(base.calories * f + (v.addFat || 0) * 9),
-          carbs: Math.round((base.carbs || 0) * f * 10) / 10,
-          protein: Math.round((base.protein || 0) * f * 10) / 10,
-          fat: Math.round(((base.fat || 0) * f + (v.addFat || 0)) * 10) / 10,
-          fiber: base.fiber !== null ? Math.round(base.fiber * f * 10) / 10 : null,
-          salt: base.salt,
-        });
-      }
-    }
   }
 
   return out;

@@ -12,6 +12,10 @@ interface JournalDevicePlugin {
     language: Language;
     /** Basal metabolic rate: the burned figure for a day with no entries. */
     bmr: number;
+    /** Home-screen widget look: light, or a darker translucent style. */
+    widgetStyle: 'light' | 'dark';
+    /** Show the custom-tracker button on the Small and Large widgets. */
+    widgetCustomButton: boolean;
     days: Record<string, NutritionValues>;
   }): Promise<void>;
   exportBackup(data: { json: string }): Promise<void>;

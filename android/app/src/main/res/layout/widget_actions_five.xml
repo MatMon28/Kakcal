@@ -10,4 +10,6 @@
         android:src="@drawable/widget_poop_icon" android:contentDescription="@string/widget_poop" />
     <ImageButton android:id="@+id/widget_weight" style="@style/WidgetAction"
         android:src="@drawable/widget_weight_icon" android:contentDescription="@string/widget_weight" />
+    <ImageButton android:id="@+id/widget_custom" style="@style/WidgetAction" android:visibility="gone"
+        android:src="@drawable/widget_custom_icon" android:contentDescription="@string/widget_custom" />
 </LinearLayout>

@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "android:prepare": "npm install && node scripts/prepare-android.mjs",
+    "android:prepare": "npm install && node scripts/check-widget-layouts.mjs && node scripts/prepare-android.mjs",
     "android:sync": "npx cap sync android",
     "android:build": "npm run android:prepare && cd android && ./gradlew assembleDebug",
     "android:build:win": "npm run android:prepare && cd android && gradlew.bat assembleDebug",
-    "android:open": "npx cap open android"
+    "android:open": "npx cap open android",
+    "android:check-widgets": "node scripts/check-widget-layouts.mjs",
+    "build:catalog": "node scripts/build-off-catalog.mjs"
   },
   "dependencies": {
     "@capacitor/android": "8.6.2",

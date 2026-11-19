@@ -107,7 +107,7 @@ export const TodayView: React.FC = () => {
         {/* Anchor for the guided tour's Meals page. */}
         <div id="today-meals" className="scroll-mt-24" aria-hidden="true" />
         {/* The three layout options replace the redundant Expand all / Collapse all action. */}
-        {!ultraMinimal && <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+        {!ultraMinimal && <div className="flex flex-wrap items-center justify-center gap-2 px-1">
           <div
             role="group"
             aria-label={t.mealSlots.layout}

@@ -4,7 +4,11 @@ import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../.
 import { Modal } from '../common/Modal';
 import { ActionDock } from '../common/ActionDock';
 import { AmountSelector } from '../common/AmountSelector';
-import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
+import { getDefaultAmount, getLastAmount, setLastAmount } from '../../utils/amountMemory';
+import { FoodResultRow } from '../common/FoodResultRow';
+import { FoodMacroGrid } from '../common/FoodMacroGrid';
+import { useOffCatalog } from '../../utils/useOffCatalog';
+import { catalogueScore } from '../../data/offCatalog';
 import { formatKcal } from '../../utils/formatters';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
 import {
@@ -175,6 +179,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     logPreBuiltMealToSlot,
     logFoodItem,
     allFoods,
+    rememberFood,
     language,
     selectedDate,
     setIsBarcodeOpen,
@@ -298,8 +303,9 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   };
 
   const handleSelectFood = (food: FoodItem) => {
+    rememberFood(food);
     setPendingFood(food);
-    setPendingAmount(getLastAmount(food.id));
+    setPendingAmount(getDefaultAmount(food));
   };
 
   const handleConfirmAndAddAnother = () => {
@@ -348,10 +354,13 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     setPendingFood(null);
   };
 
+  // The offline Open Food Facts catalogue also feeds the ingredient searches (loaded on first use).
+  const offCatalog = useOffCatalog(isCreateOpen || isRecipeOpen);
+
   const filteredFoodsForSearch = useMemo(() => {
     const q = ingredientSearch.trim();
     if (q.length < 2) return [];
-    return allFoods
+    const local = allFoods
       .map((f) => ({
         f,
         score: Math.min(
@@ -362,24 +371,30 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         ),
       }))
       .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 35)
-      .map((x) => x.f);
-  }, [allFoods, ingredientSearch]);
+      .sort((a, b) => a.score - b.score);
+    const seen = new Set(local.map((x) => x.f.id));
+    const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
+      .filter((f) => !seen.has(f.id))
+      .map((f) => ({ f, score: catalogueScore(q) }));
+    return [...local, ...catalogue].sort((a, b) => a.score - b.score).slice(0, 40).map((x) => x.f);
+  }, [allFoods, ingredientSearch, offCatalog]);
 
   const recipeResults = useMemo(() => {
     const q = recipeSearch.trim();
     if (q.length < 2) return [];
-    return allFoods
+    const local = allFoods
       .map((f) => ({
         f,
         score: Math.min(fuzzyScore(q, f.name_de), fuzzyScore(q, f.name_it), fuzzyScore(q, f.name_en)),
       }))
       .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 35)
-      .map((x) => x.f);
-  }, [allFoods, recipeSearch]);
+      .sort((a, b) => a.score - b.score);
+    const seen = new Set(local.map((x) => x.f.id));
+    const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
+      .filter((f) => !seen.has(f.id))
+      .map((f) => ({ f, score: catalogueScore(q) }));
+    return [...local, ...catalogue].sort((a, b) => a.score - b.score).slice(0, 40).map((x) => x.f);
+  }, [allFoods, recipeSearch, offCatalog]);
 
   const recipeTotals = useMemo(() => {
     let g = 0, kcal = 0, c = 0, p = 0, f = 0, fib = 0, salt = 0;
@@ -1072,6 +1087,8 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
             <AmountSelector value={pendingAmount} onChange={setPendingAmount} unit={pendingFood.unit} />
 
+            <FoodMacroGrid food={pendingFood} amount={pendingAmount} />
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
               <button
                 type="button"
@@ -1162,6 +1179,13 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                           {food?.unit || 'g'})
                         </button>
                         <div className="flex items-center gap-2 shrink-0 tabular-nums">
+                          {food && (
+                            <MacroPills
+                              carbs={food.carbs == null ? null : (food.carbs * ing.amount) / 100}
+                              protein={food.protein == null ? null : (food.protein * ing.amount) / 100}
+                              fat={food.fat == null ? null : (food.fat * ing.amount) / 100}
+                            />
+                          )}
                           <span className="font-bold text-[var(--muted)]">{kcal} kcal</span>
                           <button
                             type="button"
@@ -1194,22 +1218,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                     <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
                   ) : (
                     filteredFoodsForSearch.map((food) => (
-                      <button
-                        key={food.id}
-                        type="button"
-                        onClick={() => handleSelectFood(food)}
-                        className="w-full p-3 hover:bg-[var(--hover)] text-left flex items-center justify-between gap-3 transition-colors"
-                      >
-                        <span className="min-w-0">
-                          <span className="text-sm font-bold text-[var(--text)] truncate block">
-                            {nameOf(food)}
-                          </span>
-                          <span className="text-[11px] text-[var(--muted)]">{food.store}</span>
-                        </span>
-                        <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
-                          {food.calories} kcal/100{food.unit}
-                        </span>
-                      </button>
+                      <FoodResultRow key={food.id} food={food} onClick={() => handleSelectFood(food)} />
                     ))
                   )}
                 </div>
@@ -1266,6 +1275,8 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             </div>
 
             <AmountSelector value={recipePendingAmt} onChange={setRecipePendingAmt} unit={recipePendingFood.unit} />
+
+            <FoodMacroGrid food={recipePendingFood} amount={recipePendingAmt} />
 
             <button
               type="button"
@@ -1333,6 +1344,16 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                           {food ? nameOf(food) : ing.foodId} ({ing.amount}
                           {food?.unit || 'g'})
                         </button>
+                        {food && (
+                          <span className="ml-auto flex items-center gap-1.5 shrink-0 tabular-nums">
+                            <MacroPills
+                              carbs={food.carbs == null ? null : (food.carbs * ing.amount) / 100}
+                              protein={food.protein == null ? null : (food.protein * ing.amount) / 100}
+                              fat={food.fat == null ? null : (food.fat * ing.amount) / 100}
+                            />
+                            <span className="font-bold text-[var(--muted)]">{Math.round((food.calories * ing.amount) / 100)} kcal</span>
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => setRecipeIngs((prev) => prev.filter((_, i) => i !== idx))}
@@ -1360,25 +1381,15 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                     <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
                   ) : (
                     recipeResults.map((food) => (
-                      <button
+                      <FoodResultRow
                         key={food.id}
-                        type="button"
+                        food={food}
                         onClick={() => {
+                          rememberFood(food);
                           setRecipePendingFood(food);
-                          setRecipePendingAmt(getLastAmount(food.id));
+                          setRecipePendingAmt(getDefaultAmount(food));
                         }}
-                        className="w-full p-3 hover:bg-[var(--hover)] text-left flex items-center justify-between gap-3 transition-colors"
-                      >
-                        <span className="min-w-0">
-                          <span className="text-sm font-bold text-[var(--text)] truncate block">
-                            {nameOf(food)}
-                          </span>
-                          <span className="text-[11px] text-[var(--muted)]">{food.store}</span>
-                        </span>
-                        <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
-                          {food.calories} kcal/100{food.unit}
-                        </span>
-                      </button>
+                      />
                     ))
                   )}
                 </div>

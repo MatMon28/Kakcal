@@ -36,7 +36,8 @@ public class JournalDevicePlugin extends Plugin {
     }
 
     /**
-     * Stores dated numeric totals for the widgets: no meal names, notes, weight or cycle data.
+     * Stores dated numeric totals for the widgets: no meal names, notes, weight or cycle data,
+     * plus the two widget appearance settings (`widgetStyle` light/dark, `widgetCustomButton`).
      * `bmr` is the burned figure for a day with no entries, so the widget matches Today.
      */
     @PluginMethod
@@ -44,6 +45,8 @@ public class JournalDevicePlugin extends Plugin {
         JSObject days = call.getObject("days");
         String language = "it".equals(call.getString("language")) ? "it" : "en";
         double bmr = call.getData().optDouble("bmr", Double.NaN);
+        String style = "dark".equals(call.getString("widgetStyle")) ? "dark" : "light";
+        boolean customButton = Boolean.TRUE.equals(call.getBoolean("widgetCustomButton", false));
         if (days == null || !Double.isFinite(bmr) || bmr <= 0) { call.reject("Missing daily nutrition"); return; }
         try {
             JSONObject clean = new JSONObject();
@@ -62,10 +65,11 @@ public class JournalDevicePlugin extends Plugin {
             }
             SharedPreferences store = JournalWidgetProvider.store(getContext());
             String json = clean.toString();
-            String signature = language + "|" + bmr + "|" + json;
+            String signature = language + "|" + bmr + "|" + style + "|" + customButton + "|" + json;
             if (!signature.equals(store.getString("signature", ""))) {
                 if (!store.edit().putString("days", json).putString("language", language)
-                        .putFloat("bmr", (float) bmr).putString("signature", signature).commit()) {
+                        .putFloat("bmr", (float) bmr).putString("widgetStyle", style)
+                        .putBoolean("widgetCustomButton", customButton).putString("signature", signature).commit()) {
                     call.reject("Could not save widget data");
                     return;
                 }

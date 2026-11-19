@@ -4,7 +4,7 @@ import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { FoodCategory, FoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
 import { AmountSelector } from '../common/AmountSelector';
-import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
+import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
 import { sortFavoritesFirst } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
@@ -427,7 +427,7 @@ export const FoodDatabaseView: React.FC = () => {
                       onClick={() => {
                         setFoodToLog(food);
                         setLogSlot(targetMealSlot);
-                        setLogAmount(getLastAmount(food.id));
+                        setLogAmount(getDefaultAmount(food));
                       }}
                       className="pressable px-3.5 py-1.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold flex items-center gap-1"
                     >

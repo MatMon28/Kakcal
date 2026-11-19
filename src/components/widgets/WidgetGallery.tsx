@@ -1,7 +1,7 @@
-import { Droplets, Flame, Footprints, Scale, Utensils, UtensilsCrossed } from 'lucide-react';
+import { Droplets, Flame, Footprints, Scale, Sparkles, Utensils, UtensilsCrossed } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
 import type { TourLang, TourUi } from '../tour/tourContent';
-import { WIDGET_ACTIONS, type WidgetAction, type WidgetSnapshot } from './widgetContract';
+import { BASE_WIDGET_ACTIONS, WIDGET_ACTIONS, readWidgetAppearance, type WidgetAction, type WidgetSnapshot } from './widgetContract';
 import './widget-preview.css';
 
 interface GalleryProps {
@@ -19,6 +19,7 @@ function ActionIcon({ action }: { action: WidgetAction }) {
   if (action === 'movement') return <Footprints {...props} />;
   if (action === 'water') return <Droplets {...props} />;
   if (action === 'poop') return <PoopIcon size={20} strokeWidth={4.5} />;
+  if (action === 'custom') return <Sparkles {...props} />;
   return <Scale {...props} />;
 }
 
@@ -116,15 +117,16 @@ function MacroCard({ tone, label, grams, percent }: {
 }
 
 /** Small and Extra-small: translucent trays, so the wallpaper shows through. */
-function QuickWidget({ label, actions, ui, snapshot, onAction }: {
+function QuickWidget({ label, actions, ui, snapshot, onAction, dark = false }: {
   label: string;
   actions: readonly WidgetAction[];
   ui: TourUi;
   snapshot: WidgetSnapshot | null;
   onAction: (action: WidgetAction) => void;
+  dark?: boolean;
 }) {
   return (
-    <div className="quick-widget">
+    <div className={`quick-widget${dark ? ' quick-widget-dark' : ''}`}>
       <ActionRow actions={actions} label={label} ui={ui} snapshot={snapshot} onAction={onAction} />
     </div>
   );
@@ -132,6 +134,7 @@ function QuickWidget({ label, actions, ui, snapshot, onAction }: {
 
 /** Large: intake and burned, then macros, then the five actions. Same layout as Ultra minimal Today. */
 function LargeWidget({ ui, lang, snapshot, onAction }: GalleryProps) {
+  const look = readWidgetAppearance();
   const locale = lang === 'it' ? 'it-IT' : 'en-US';
   const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
   const tenth = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
@@ -148,7 +151,7 @@ function LargeWidget({ ui, lang, snapshot, onAction }: GalleryProps) {
   const percent = (value: number) => (snapshot ? `${Math.round(value)}` : '--');
 
   return (
-    <div role="group" aria-label={ui.widgetLabels.large} className="rounded-[26px] border border-[var(--border)] bg-[var(--surface)] p-2.5">
+    <div role="group" aria-label={ui.widgetLabels.large} className={`rounded-[26px] border p-2.5 ${look.style === 'dark' ? 'widget-large-dark border-white/20 text-white' : 'border-[var(--border)] bg-[var(--surface)]'}`}>
       <div className="grid grid-cols-2 gap-2">
         <EnergyCard
           tone="intake"
@@ -170,9 +173,9 @@ function LargeWidget({ ui, lang, snapshot, onAction }: GalleryProps) {
         <MacroCard tone="protein" label={ui.protein} grams={grams(snapshot?.proteinGrams ?? 0)} percent={percent(snapshot?.proteinPercent ?? 0)} />
         <MacroCard tone="fat" label={ui.fat} grams={grams(snapshot?.fatGrams ?? 0)} percent={percent(snapshot?.fatPercent ?? 0)} />
       </div>
-      <div className="mt-2.5 border-t border-[var(--border)] pt-2.5">
+      <div className={`mt-2.5 border-t pt-2.5 ${look.style === 'dark' ? 'border-white/20' : 'border-[var(--border)]'}`}>
         <ActionRow
-          actions={WIDGET_ACTIONS}
+          actions={look.customButton ? WIDGET_ACTIONS : BASE_WIDGET_ACTIONS}
           label={ui.widgetLabels.large}
           groupLabel={`${ui.widgetLabels.large} ${ui.actionsLabel}`}
           ui={ui}
@@ -187,6 +190,7 @@ function LargeWidget({ ui, lang, snapshot, onAction }: GalleryProps) {
 /** The three widget designs, shown on a wallpaper drawn from the app's pastel accents. */
 export function WidgetGallery(props: GalleryProps) {
   const { ui, snapshot, onAction } = props;
+  const look = readWidgetAppearance();
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-3 text-[10px] font-extrabold uppercase tracking-[0.14em] text-[var(--muted)]">
@@ -204,14 +208,14 @@ export function WidgetGallery(props: GalleryProps) {
               <span>{ui.smallTitle}</span>
               <span className="text-[var(--muted)]">{ui.smallMeta} · {ui.primary}</span>
             </figcaption>
-            <QuickWidget label={ui.widgetLabels.small} actions={WIDGET_ACTIONS} ui={ui} snapshot={snapshot} onAction={onAction} />
+            <QuickWidget label={ui.widgetLabels.small} actions={look.customButton ? WIDGET_ACTIONS : BASE_WIDGET_ACTIONS} ui={ui} snapshot={snapshot} onAction={onAction} dark={look.style === 'dark'} />
           </figure>
           <figure className="min-w-0 flex-[0_1_210px] space-y-2">
             <figcaption className="flex items-center justify-between gap-2 text-[11px] font-bold text-[var(--text)]">
               <span>{ui.extraTitle}</span>
               <span className="text-[var(--muted)]">{ui.extraMeta}</span>
             </figcaption>
-            <QuickWidget label={ui.widgetLabels.extra} actions={EXTRA_SMALL_ACTIONS} ui={ui} snapshot={snapshot} onAction={onAction} />
+            <QuickWidget label={ui.widgetLabels.extra} actions={EXTRA_SMALL_ACTIONS} ui={ui} snapshot={snapshot} onAction={onAction} dark={look.style === 'dark'} />
           </figure>
         </div>
 

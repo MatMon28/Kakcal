@@ -281,6 +281,52 @@ export const SettingsModal: React.FC = () => {
             <SwitchVisual on={settings.ultraMinimal} />
           </button>
 
+          {/* Home-screen widgets: look and the optional custom button */}
+          <div>
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
+              {t.settings.widgets}
+            </span>
+            <div className="space-y-2">
+              <div>
+                <div className="flex gap-1.5" role="group" aria-label={t.settings.widgetStyle}>
+                  {([
+                    ['light', t.settings.widgetLight],
+                    ['dark', t.settings.widgetDark],
+                  ] as const).map(([style, label]) => (
+                    <button
+                      key={style}
+                      type="button"
+                      aria-pressed={settings.widgetStyle === style}
+                      onClick={() => updateSettings({ widgetStyle: style })}
+                      className={seg(settings.widgetStyle === style)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+                <p className="mt-1.5 px-1 text-[11px] font-medium text-[var(--muted)]">{t.settings.widgetStyleHint}</p>
+              </div>
+              <button
+                type="button"
+                aria-pressed={settings.widgetCustomButton}
+                aria-label={t.settings.widgetCustomButton}
+                onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
+                className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
+              >
+                <span className="flex items-center gap-2.5 min-w-0">
+                  <span className="size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                    <Sparkles size={15} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.widgetCustomButton}</span>
+                    <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.widgetCustomButtonHint}</span>
+                  </span>
+                </span>
+                <SwitchVisual on={settings.widgetCustomButton} />
+              </button>
+            </div>
+          </div>
+
           {/* Quick-add buttons */}
           <div>
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">

@@ -35,9 +35,10 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         "proteinPercent", "carbsPercent", "fatPercent",
     };
     private static final String MIDNIGHT = "com.kcalsync.app.WIDGET_NEW_DAY";
-    private static final String[] ACTIONS = { "food", "movement", "water", "poop", "weight" };
-    private static final int[] BUTTONS = { R.id.widget_food, R.id.widget_movement, R.id.widget_water, R.id.widget_poop, R.id.widget_weight };
-    private static final int[] LABELS = { R.string.widget_food, R.string.widget_movement, R.string.widget_water, R.string.widget_poop, R.string.widget_weight };
+    /** "custom" is the optional sixth button of the Small and Large widgets (Settings > Widgets). */
+    private static final String[] ACTIONS = { "food", "movement", "water", "poop", "weight", "custom" };
+    private static final int[] BUTTONS = { R.id.widget_food, R.id.widget_movement, R.id.widget_water, R.id.widget_poop, R.id.widget_weight, R.id.widget_custom };
+    private static final int[] LABELS = { R.string.widget_food, R.string.widget_movement, R.string.widget_water, R.string.widget_poop, R.string.widget_weight, R.string.widget_custom };
 
     static SharedPreferences store(Context context) {
         return context.getSharedPreferences("widget_nutrition_v1", Context.MODE_PRIVATE);
@@ -113,15 +114,21 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     private static RemoteViews views(Context context, Class<?> type) {
         boolean large = type == Large.class;
         boolean essential = type == Essential.class;
-        RemoteViews view = new RemoteViews(context.getPackageName(), large ? R.layout.widget_large :
-            essential ? R.layout.widget_essential : R.layout.widget_small);
         SharedPreferences prefs = store(context);
+        // Settings > Widgets: a darker translucent look, and the optional custom-tracker button.
+        boolean dark = "dark".equals(prefs.getString("widgetStyle", "light"));
+        boolean customButton = !essential && prefs.getBoolean("widgetCustomButton", false);
+        int layout = large ? (dark ? R.layout.widget_large_dark : R.layout.widget_large)
+            : essential ? (dark ? R.layout.widget_essential_dark : R.layout.widget_essential)
+            : (dark ? R.layout.widget_small_dark : R.layout.widget_small);
+        RemoteViews view = new RemoteViews(context.getPackageName(), layout);
         Locale locale = "it".equals(prefs.getString("language", "en")) ? Locale.ITALIAN : Locale.ENGLISH;
         Configuration config = new Configuration(context.getResources().getConfiguration());
         config.setLocale(locale);
         Resources strings = context.createConfigurationContext(config).getResources();
         for (int i = 0; i < ACTIONS.length; i++) {
-            if (essential && (i == 1 || i == 4)) continue;
+            if (essential && (i == 1 || i == 4 || i == 5)) continue;
+            if (i == 5 && !customButton) continue;
             Intent open = new Intent(context, MainActivity.class).setAction(OPEN_ACTION)
                 .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 .putExtra(EXTRA_ACTION, ACTIONS[i]);
@@ -129,6 +136,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT));
             view.setContentDescription(BUTTONS[i], strings.getString(LABELS[i]));
         }
+        if (!essential) view.setViewVisibility(R.id.widget_custom, customButton ? View.VISIBLE : View.GONE);
         if (large) bindLarge(view, strings, prefs, locale);
         return view;
     }

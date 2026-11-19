@@ -18,6 +18,10 @@ process.env.VITE_ANDROID_RELEASE = 'true';
 await build({ root, mode: 'android', publicDir: false, build: { emptyOutDir: true } });
 await mkdir('dist/licenses', { recursive: true });
 await cp('public/licenses', 'dist/licenses', { recursive: true });
+// The offline Open Food Facts catalogue (loaded lazily by src/data/offCatalog.ts). publicDir is off above,
+// so it has to be copied explicitly or the APK would silently ship without it.
+await cp('public/data', 'dist/data', { recursive: true });
+if ((await readFile('dist/data/off-foods.bin')).readUInt32LE(0) !== 0x464f464b) throw new Error('dist/data/off-foods.bin is not a KOFF catalogue. Run npm run build:catalog.');
 const html = (await readFile('dist/index.html', 'utf8')).replace('<head>',
   '<head>\n    <meta name="kakcalculator-runtime" content="android-local-no-demo" />');
 await writeFile('dist/index.html', html);
