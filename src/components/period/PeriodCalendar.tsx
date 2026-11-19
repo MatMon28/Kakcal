@@ -265,7 +265,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
                 aria-hidden="true"
                 className={`size-6 rounded-full flex items-center justify-center text-xs font-bold tabular-nums ${
                   isToday
-                    ? 'bg-[var(--text)] text-[var(--surface)]'
+                    ? 'kc-today-dot bg-[var(--text)] text-[var(--bg)]'
                     : isOvul
                     ? `ring-2 ring-[#2E8B57] ${logged || predicted ? 'text-[#6E2440]' : 'text-[var(--text)]'}`
                     : logged || predicted

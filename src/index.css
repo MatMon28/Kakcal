@@ -211,7 +211,12 @@
 }
 
 @keyframes kc-dock-in {
-  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.9); }
+  from { opacity: 0; transform: translate3d(calc(var(--kc-dock-dir) * 88px), 14px, 0) scale(0.92); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes kc-dock-btn-in {
+  from { opacity: 0; transform: translate3d(calc(var(--kc-dock-dir) * 34px), 0, 0) scale(0.7); }
   to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
 }
 
@@ -254,16 +259,31 @@ html.kc-sheet-open, .kc-sheet-open body, .dialog-viewport { overscroll-behavior:
   animation: kc-pop-in var(--dur-soft) var(--ease-soft) backwards;
 }
 
+/* The dock enters from the side the swipe is travelling towards. PageSwiper publishes that side as
+   --kc-dock-dir (+1: the next page arrives from the right, -1: from the left). The pill slides in
+   with the soft spring, then each button follows a few milliseconds apart (--i is the button index). */
+:root { --kc-dock-dir: 0; }
+
 .anim-dock {
   animation: kc-dock-in var(--dur-bounce) var(--ease-bounce) backwards;
-  transition: opacity 120ms ease-out;
+  transition: opacity 140ms ease-out, transform 180ms ease-out;
+}
+.anim-dock .kc-dock-btn {
+  animation: kc-dock-btn-in var(--dur-bounce) var(--ease-bounce) backwards;
+  animation-delay: calc(40ms + var(--i, 0) * 34ms);
 }
 
-/* While pages move, both the outgoing and incoming docks stay hidden and untappable. PageSwiper
-   removes this class only after the outgoing page has unmounted, so quick buttons never overlap. */
+/* While pages move, both the outgoing and incoming docks stay hidden and untappable: the outgoing one
+   leaves against the swipe, the incoming one waits off to the side. The animation is switched off
+   here (not just hidden) so that it replays from the start when PageSwiper removes this class. */
 .kc-page-moving .anim-dock {
+  animation: none !important;
   opacity: 0 !important;
+  transform: translate3d(calc(var(--kc-dock-dir) * -40px), 0, 0) scale(0.94);
   pointer-events: none !important;
+}
+.kc-page-moving .anim-dock .kc-dock-btn {
+  animation: none !important;
 }
 
 .anim-value {
@@ -314,6 +334,7 @@ html.kc-sheet-open, .kc-sheet-open body, .dialog-viewport { overscroll-behavior:
   .anim-page,
   .anim-pop,
   .anim-dock,
+  .anim-dock .kc-dock-btn,
   .anim-value {
     animation: none !important;
   }
@@ -1284,6 +1305,26 @@ html[data-style]:not([data-style="classic"]) .kc-nav-tab-active {
   color: var(--nav-active-color) !important;
 }
 
+/* Floating page pill. While the app-name row is gone, the pill that glides back in has no header
+   background behind it: it turns into translucent glass (--kc-float is set by Header.tsx, 0 at the
+   top of the page and 1 once the name row has vanished). Selector weight beats the theme rules above. */
+.kc-tabs-row {
+  --kc-float: 0;
+  transform-origin: 50% 0;
+}
+:root:root:root .kc-tabs-row .kc-nav-pill {
+  background: color-mix(
+    in srgb,
+    var(--nav-bg, var(--surface)) calc(100% - var(--kc-float) * 34%),
+    transparent
+  ) !important;
+  backdrop-filter: blur(calc(var(--kc-float) * 16px)) saturate(calc(1 + var(--kc-float) * 0.25));
+  -webkit-backdrop-filter: blur(calc(var(--kc-float) * 16px)) saturate(calc(1 + var(--kc-float) * 0.25));
+}
+:root:root:root .kc-tabs-row .kc-nav-pill:not(:hover) {
+  box-shadow: 0 calc(var(--kc-float) * 6px) calc(var(--kc-float) * 18px) rgb(0 0 0 / calc(var(--kc-float) * 0.1));
+}
+
 /* Hero Intake & Burned cards (Today, Statistics, Day Overview) */
 html[data-style]:not([data-style="classic"]) .kc-hero-intake {
   background: var(--intake-bg) !important;
@@ -1425,6 +1466,7 @@ html[data-style]:not([data-style="classic"]) [data-macro="sugar"] {
 /* Meal slot cards, Tracker cards, and Surface cards across all pages */
 html[data-style]:not([data-style="classic"]) [data-meal-slot],
 html[data-style]:not([data-style="classic"]) [data-tracker],
+html[data-style]:not([data-style="classic"]) [data-library-section],
 html[data-style]:not([data-style="classic"]) .kc-themed-card {
   background: var(--surface) !important;
   color: var(--text) !important;
@@ -1436,6 +1478,7 @@ html[data-style]:not([data-style="classic"]) .kc-themed-card {
 
 html[data-style="aurora"] [data-meal-slot],
 html[data-style="aurora"] [data-tracker],
+html[data-style="aurora"] [data-library-section],
 html[data-style="aurora"] .kc-themed-card,
 html[data-style="aurora"] .kc-nav-pill,
 html[data-style="aurora"] .kc-icon-btn {
@@ -1535,4 +1578,108 @@ html[data-style="playful"] main div.rounded-3xl {
   border: var(--card-border, none) !important;
   box-shadow: var(--card-shadow) !important;
   border-radius: var(--card-radius) !important;
+}
+
+/* ==========================================================================
+   CUSTOM PAGE in the 6 new themes. The Meals / Recipes / Foods sections use the theme's own surface
+   (like Today's tracker cards) instead of fixed pastel fills, so the titles, counts, icons and the
+   search / + / chevron buttons always read with the theme's text colours. The tone survives as an
+   accent on the section icon; the meal cards and ingredient lists step one level down the surface scale.
+   ========================================================================== */
+html[data-style]:not([data-style="classic"]) [data-library-section] {
+  --lib-accent: #e08a1e;
+}
+html[data-style]:not([data-style="classic"]) [data-library-section="recipes"] { --lib-accent: #9a7cf0; }
+html[data-style]:not([data-style="classic"]) [data-library-section="foods"] { --lib-accent: #2fb06b; }
+html[data-style]:not([data-style="classic"]) [data-library-section] .kc-lib-icon {
+  color: var(--lib-accent) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-library-section] .kc-lib-card {
+  background: var(--inset) !important;
+  color: var(--text);
+  border: var(--pill-border, 1px solid var(--border)) !important;
+  box-shadow: none !important;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-style]:not([data-style="classic"]) [data-library-section] .kc-lib-inner {
+  background: var(--surface) !important;
+  border: 1px solid var(--border);
+}
+html[data-style]:not([data-style="classic"]) [data-library-section] .kc-lib-btn {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border);
+}
+html[data-style]:not([data-style="classic"]) [data-library-section] .kc-lib-btn:hover {
+  background: var(--hover) !important;
+}
+
+/* Active controls are drawn as "bg text, text in the surface colour". Aurora's surface is translucent
+   glass, which made that label vanish (white on white). The solid page colour is always readable. */
+html[data-style="aurora"] .text-\[var\(--surface\)\] {
+  color: var(--surface-solid, var(--bg));
+}
+
+/* ==========================================================================
+   PERIOD page in the 6 new themes. Light mode keeps the pastel status tiles (dark ink, readable).
+   In Lite Dark and Dark each tile becomes a tinted version of the theme surface, so the page no longer
+   shows four glaring light boxes, and every label inherits the theme text colours.
+   ========================================================================== */
+html[data-style]:not([data-style="classic"]):not([data-theme="light"]) .kc-period-tile {
+  --tile-tint: #f4a6c6;
+  background: color-mix(in srgb, var(--tile-tint) 16%, var(--surface-solid, var(--surface))) !important;
+  border: 1px solid color-mix(in srgb, var(--tile-tint) 38%, transparent);
+  color: var(--text);
+}
+html[data-style]:not([data-style="classic"]):not([data-theme="light"]) .kc-period-tile[data-tone="violet"] { --tile-tint: #b9a2ff; }
+html[data-style]:not([data-style="classic"]):not([data-theme="light"]) .kc-period-tile[data-tone="amber"] { --tile-tint: #f6c36b; }
+html[data-style]:not([data-style="classic"]):not([data-theme="light"]) .kc-period-tile[data-tone="green"] { --tile-tint: #6fdc9a; }
+html[data-style]:not([data-style="classic"]):not([data-theme="light"]) .kc-period-tile *:not([class*="bg-"]) {
+  color: var(--text) !important;
+}
+html[data-style]:not([data-style="classic"]):not([data-theme="light"]) .kc-period-tile [class*="uppercase"]:not([class*="bg-"]),
+html[data-style]:not([data-style="classic"]):not([data-theme="light"]) .kc-period-tile .font-medium:not([class*="bg-"]) {
+  color: var(--tile-tint) !important;
+}
+
+/* ==========================================================================
+   DIALOG FIELDS in the 6 new themes. Text inputs, selects and text areas in every sheet (custom food,
+   meal, recipe, tracker, period tags...) share one look: the theme's inset fill, 1 px border, the
+   theme's corner rule and its text colours. The chamfer clip-path of Angular and the 2xl pills used to
+   cut the borders of some fields while others stayed untouched. The yellow nutrient fields keep their
+   own colours.
+   ========================================================================== */
+html[data-style]:not([data-style="classic"]) [role="dialog"] :is(
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  select,
+  textarea
+):not([class*="bg-nutrient"]) {
+  background-color: var(--inset);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: min(var(--card-radius, 12px), 14px);
+  clip-path: none;
+  box-shadow: none;
+  font-family: inherit;
+}
+html[data-style]:not([data-style="classic"]) [role="dialog"] :is(input, textarea)::placeholder {
+  color: var(--muted);
+  opacity: 0.85;
+}
+html[data-style]:not([data-style="classic"]) [role="dialog"] :is(
+  input:not([type="checkbox"], [type="radio"], [type="range"], [type="file"], [type="color"]),
+  select,
+  textarea
+):focus {
+  border-color: var(--text);
+  outline: none;
+}
+html[data-style]:not([data-style="classic"]) [role="dialog"] [class*="bg-nutrient"] {
+  clip-path: none;
+  border-radius: min(var(--card-radius, 12px), 14px);
+}
+html[data-style]:not([data-style="classic"]) [role="dialog"] select option {
+  background: var(--surface-solid, var(--bg));
+  color: var(--text);
 }

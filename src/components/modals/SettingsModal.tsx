@@ -275,6 +275,34 @@ export const SettingsModal: React.FC = () => {
               </div>
             </div>
 
+            {/* Home-screen widgets: look (the custom button lives in Custom buttons) */}
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
+                {t.settings.widgets}
+              </span>
+              <div className="space-y-2">
+                <div>
+                  <div className="flex gap-1.5" role="group" aria-label={t.settings.widgetStyle}>
+                    {([
+                      ['light', t.settings.widgetLight],
+                      ['dark', t.settings.widgetDark],
+                    ] as const).map(([style, label]) => (
+                      <button
+                        key={style}
+                        type="button"
+                        aria-pressed={settings.widgetStyle === style}
+                        onClick={() => updateSettings({ widgetStyle: style })}
+                        className={seg(settings.widgetStyle === style)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
             {/* 6 New Themes + Classic */}
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -386,35 +414,6 @@ export const SettingsModal: React.FC = () => {
             </span>
             <SwitchVisual on={settings.ultraMinimal} />
           </button>
-
-          {/* Home-screen widgets: look (the custom button lives in Custom buttons) */}
-          <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
-              {t.settings.widgets}
-            </span>
-            <div className="space-y-2">
-              <div>
-                <div className="flex gap-1.5" role="group" aria-label={t.settings.widgetStyle}>
-                  {([
-                    ['light', t.settings.widgetLight],
-                    ['dark', t.settings.widgetDark],
-                  ] as const).map(([style, label]) => (
-                    <button
-                      key={style}
-                      type="button"
-                      aria-pressed={settings.widgetStyle === style}
-                      onClick={() => updateSettings({ widgetStyle: style })}
-                      className={seg(settings.widgetStyle === style)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </div>
-
           </Collapsible>
 
           <Collapsible title={t.settings.todayAndPages}>
