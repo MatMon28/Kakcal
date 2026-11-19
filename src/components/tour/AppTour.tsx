@@ -2,10 +2,12 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeft, ArrowRight, ArrowUpRight, Download, MousePointer2 } from 'lucide-react';
 import { Wordmark } from '../common/Brand';
 import { WidgetGallery } from '../widgets/WidgetGallery';
+import { NotificationShowcase } from './NotificationShowcase';
 import {
   isWidgetReadyMessage,
   isWidgetSnapshotMessage,
   WIDGET_CHANNEL,
+  type TourScreen,
   type WidgetAction,
   type WidgetSnapshot,
 } from '../widgets/widgetContract';
@@ -135,6 +137,12 @@ export function AppTour() {
   const handleAction = (action: WidgetAction) => {
     if (!snapshot) return;
     frameRef.current?.contentWindow?.postMessage({ channel: WIDGET_CHANNEL, type: 'open-action', action }, targetOrigin());
+    phoneRef.current?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
+  };
+
+  // Notification previews drive the live app the same way the widget icons do.
+  const handleScreen = (screen: TourScreen) => {
+    frameRef.current?.contentWindow?.postMessage({ channel: WIDGET_CHANNEL, type: 'show-screen', screen }, targetOrigin());
     phoneRef.current?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'nearest' });
   };
 
@@ -285,12 +293,15 @@ export function AppTour() {
 
           <section
             aria-label={ui.liveApp}
-            className={`min-w-0 ${step.kind === 'widgets' ? '' : 'lg:sticky lg:top-24'}`}
+            className={`min-w-0 ${step.kind === 'widgets' || step.kind === 'notifications' ? '' : 'lg:sticky lg:top-24'}`}
           >
             {/* The phone keeps the same position on every step, so the journal never reloads when the step changes. */}
             <div className="grid gap-10">
               {step.kind === 'widgets' ? (
                 <WidgetGallery ui={ui} lang={lang} snapshot={snapshot} onAction={handleAction} />
+              ) : null}
+              {step.kind === 'notifications' ? (
+                <NotificationShowcase ui={ui} lang={lang} onOpen={handleScreen} />
               ) : null}
               {phone(340)}
             </div>

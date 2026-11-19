@@ -12,7 +12,7 @@ const QUICK = [10, 50, 100, 150, 200, 250];
 
 export const AmountSelector: React.FC<Props> = ({ value, onChange, unit, compact }) => (
   <div className="space-y-2">
-    <AmountStepper value={value} onChange={onChange} unit={unit} compact={compact} />
+    <AmountStepper value={value} onChange={onChange} unit={unit} compact={compact} foodSteps />
     <div className="flex gap-1.5 flex-wrap">
       {QUICK.map((q) => (
         <button

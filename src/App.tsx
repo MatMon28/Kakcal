@@ -36,6 +36,8 @@ import {
 import { addDaysToDateString, getTodayDateString } from './utils/formatters';
 import { isAndroidApp, JournalDevice } from './utils/android';
 import { isPeriodShown } from './utils/tourPreview';
+import { useNotificationScheduler } from './utils/useNotificationScheduler';
+import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
 import type { ActiveTab } from './types';
 
@@ -139,6 +141,12 @@ function WidgetAppBridge() {
         else app.setIsCustomPickerOpen(true);
         break;
       }
+      case 'notifications':
+        // The tour's Notifications step: Settings with its Notifications group expanded.
+        app.setActiveTab('today');
+        app.setIsSettingsOpen(true);
+        requestOpenNotificationSettings();
+        break;
       case 'period':
         app.setActiveTab('period');
         break;
@@ -155,6 +163,9 @@ function WidgetAppBridge() {
         break;
     }
   };
+
+  // Reminder notifications (Settings > Notifications): schedule them, and open the matching screen on a tap.
+  useNotificationScheduler((screen) => showScreenRef.current(screen));
 
   const actionRef = useRef<(action: WidgetAction) => void>(() => {});
   actionRef.current = (action) => showScreenRef.current(ACTION_SCREEN[action]);

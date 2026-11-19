@@ -7,6 +7,7 @@
 //
 //   :capacitor-android  ->  ../node_modules/@capacitor/android/capacitor
 //   :capacitor-app      ->  ../node_modules/@capacitor/app/android
+//   :capacitor-local-notifications -> ../node_modules/@capacitor/local-notifications/android
 //
 // When node_modules/ is missing or incomplete (fresh clone, copied/zipped
 // folder, interrupted install, OneDrive/Dropbox "online-only" or excluded
@@ -28,6 +29,7 @@ def nodeModules   = new File(projectRoot, 'node_modules')
 def requiredCapacitorModules = [
     ':capacitor-android': new File(nodeModules, '@capacitor/android/capacitor/build.gradle'),
     ':capacitor-app'    : new File(nodeModules, '@capacitor/app/android/build.gradle'),
+    ':capacitor-local-notifications': new File(nodeModules, '@capacitor/local-notifications/android/build.gradle'),
 ]
 
 def missingModules = requiredCapacitorModules.findAll { name, marker -> !marker.isFile() }

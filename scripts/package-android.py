@@ -23,6 +23,7 @@ for name in ['README.md', 'package.json', 'package-lock.json', 'capacitor.config
              'index.html', 'vite.config.ts', 'tsconfig.json', '.gitignore',
              'src', 'public/data', 'public/licenses', 'public/offline-worker.js', 'scripts', 'android',
              'node_modules/@capacitor/android/capacitor', 'node_modules/@capacitor/app/android',
+             'node_modules/@capacitor/local-notifications/android', 'node_modules/@capacitor/local-notifications/LICENSE',
              'node_modules/@capacitor/android/LICENSE', 'node_modules/@capacitor/app/LICENSE']:
     source = ROOT / name
     if not source.exists():

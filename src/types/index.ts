@@ -205,6 +205,34 @@ export type Theme = 'light' | 'lite-dark' | 'dark';
 
 export type ThemeStyle = 'classic' | 'angular' | 'aurora' | 'pop' | 'playful' | 'minimal' | 'mono';
 
+/** A reminder sent once a day at a chosen local time ("HH:MM"). */
+export interface DailyReminderSetting {
+  enabled: boolean;
+  time: string;
+}
+
+/** Water reminders repeat every `intervalMinutes` between `from` and `to` ("HH:MM"). */
+export interface WaterReminderSetting {
+  enabled: boolean;
+  intervalMinutes: number;
+  from: string;
+  to: string;
+}
+
+/** Meal slots that get their own reminder (the free-form "extra" slot has no fixed time). */
+export type MealReminderSlotId = Exclude<MealSlotId, 'extra'>;
+
+export interface NotificationSettings {
+  water: WaterReminderSetting;
+  /** One reminder to use your custom buttons (needs at least one custom button). */
+  customButtons: DailyReminderSetting;
+  weight: DailyReminderSetting;
+  /** General "don't forget to log your data" reminder. */
+  logData: DailyReminderSetting;
+  /** One reminder per meal, each with its own switch and time. */
+  meals: Record<MealReminderSlotId, DailyReminderSetting>;
+}
+
 export interface Settings {
   theme: Theme;
   themeStyle: ThemeStyle;
@@ -229,6 +257,7 @@ export interface Settings {
   customButtons: CustomButtonDef[]; // user-defined quick-add trackers (one button, picker if several)
   widgetStyle: 'light' | 'dark'; // home-screen widgets: light, or a darker translucent look
   widgetCustomButton: boolean; // add the custom-tracker button to the Small and Large widgets
+  notifications: NotificationSettings; // reminders: water, custom buttons, weight, general log, meals
 }
 
 export type PeriodFlow = 'none' | 'light' | 'medium' | 'heavy';

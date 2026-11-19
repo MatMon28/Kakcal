@@ -63,7 +63,7 @@ try {
 
   // 2. Every page is explained, in the order of the step list.
   const titles = ['How Kakcalculator works', 'Today', 'Meals', 'Add food', 'Activity', 'Water', 'Poop', 'Weight',
-    'Day overview', 'Custom', 'Period', 'Statistics', 'Profile', 'Settings', 'Home-screen widgets'];
+    'Day overview', 'Custom', 'Period', 'Statistics', 'Profile', 'Settings', 'Notifications', 'Home-screen widgets'];
   const chips = page.getByRole('navigation', { name: 'Pages' }).getByRole('button');
   assert.equal(await chips.count(), titles.length);
   for (const [index, title] of titles.entries()) {
@@ -83,6 +83,13 @@ try {
   await chips.nth(titles.indexOf('Period')).click();
   await frame.getByRole('navigation', { name: 'Primary' }).locator('[aria-current="page"]').filter({ hasText: 'Period' }).waitFor();
   console.log('PASS: Statistics, Settings, Day overview and Period open in the live journal.');
+
+  // 3b. The Notifications step previews the five reminders and opens Settings with that group expanded.
+  await chips.nth(titles.indexOf('Notifications')).click();
+  assert.equal(await page.getByTestId('notification-showcase').locator('li').count(), 5);
+  await frame.getByRole('dialog', { name: 'Settings', exact: true }).waitFor();
+  await frame.getByRole('button', { name: 'Notifications', exact: true }).and(frame.locator('[aria-expanded="true"]')).waitFor();
+  console.log('PASS: the Notifications step shows 5 previews and expands Settings > Notifications in the live journal.');
 
   // 4. The widgets come last and drive the same dialogs as the journal's own docks.
   await chips.nth(titles.indexOf('Home-screen widgets')).click();

@@ -27,6 +27,7 @@ import { PoopIcon } from '../common/PoopIcon';
 import { TrackerIcon, TRACKER_ICONS } from '../common/TrackerIcon';
 import { DataBackup } from '../common/DataBackup';
 import { Collapsible } from '../common/Collapsible';
+import { NotificationSettings } from './NotificationSettings';
 import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
 
 export const SettingsModal: React.FC = () => {
@@ -748,6 +749,9 @@ export const SettingsModal: React.FC = () => {
           </div>
 
           </Collapsible>
+
+          {/* Reminders: water, meals, custom buttons, weight, daily log */}
+          <NotificationSettings />
 
           {/* Foods database */}
           <button

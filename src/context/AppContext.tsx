@@ -38,6 +38,7 @@ import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../ut
 import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
+import { DEFAULT_NOTIFICATION_SETTINGS, normalizeNotificationSettings } from '../utils/notifications';
 import {
   createDemoPeriodData,
   DEMO_CUSTOM_BUTTONS,
@@ -1052,6 +1053,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             : [],
           widgetStyle: p.widgetStyle === 'dark' ? 'dark' : 'light',
           widgetCustomButton: Boolean(p.widgetCustomButton),
+          notifications: normalizeNotificationSettings(p.notifications),
         };
       } catch (e) {
         console.error('Failed to parse settings', e);
@@ -1073,6 +1075,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       customButtons: DEMO_MODE ? DEMO_CUSTOM_BUTTONS : [],
       widgetStyle: 'light',
       widgetCustomButton: false,
+      notifications: DEFAULT_NOTIFICATION_SETTINGS,
     };
   });
 
@@ -1147,6 +1150,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         theme: normalizeTheme(partial.theme ?? prev.theme),
         themeStyle: normalizeThemeStyle(partial.themeStyle ?? prev.themeStyle),
         monoHue: normalizeMonoHue(partial.monoHue ?? prev.monoHue),
+        notifications: normalizeNotificationSettings(partial.notifications ?? prev.notifications),
       };
       // No trackers means no button to show: keep the widget setting consistent with the data.
       if (next.customButtons.length === 0) next.widgetCustomButton = false;

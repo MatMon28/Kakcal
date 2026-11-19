@@ -6,6 +6,10 @@
     "androidScheme": "https"
   },
   "plugins": {
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_kak",
+      "iconColor": "#2E7D4F"
+    },
     "SystemBars": {
       "insetsHandling": "native",
       "initialViewportFitValueHint": "cover"

@@ -5,6 +5,9 @@ interface CollapsibleProps {
   title: string;
   children: React.ReactNode;
   defaultOpen?: boolean;
+  /** Controlled mode: pass both to let the parent open the group (e.g. the tour). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 /**
@@ -12,8 +15,14 @@ interface CollapsibleProps {
  * their own titles when it is open. Closed content stays mounted but inert, so it cannot be
  * reached by keyboard or screen reader.
  */
-export function Collapsible({ title, children, defaultOpen = false }: CollapsibleProps) {
-  const [open, setOpen] = useState(defaultOpen);
+export function Collapsible({ title, children, defaultOpen = false, open: controlledOpen, onOpenChange }: CollapsibleProps) {
+  const [innerOpen, setInnerOpen] = useState(defaultOpen);
+  const open = controlledOpen ?? innerOpen;
+  const setOpen = (next: (value: boolean) => boolean) => {
+    const value = next(open);
+    setInnerOpen(value);
+    onOpenChange?.(value);
+  };
   const id = useId();
   return (
     <section className="rounded-3xl border border-[var(--border)] bg-[var(--inset)]/40 overflow-hidden">

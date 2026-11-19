@@ -8,6 +8,8 @@ interface Props {
   unit: string;
   compact?: boolean;
   ariaLabel?: string;
+  /** Food portions: +10 g below 100, +20 g from 100, +50 g from 200 (water and trackers keep the plain steps). */
+  foodSteps?: boolean;
 }
 
 // Below 100 → step 10, at/above 100 → step 50
@@ -20,7 +22,23 @@ export const stepDown = (v: number) => {
   return Math.max(100, Math.ceil(v / 50) * 50 - 50);
 };
 
-export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact, ariaLabel }) => {
+// Food portions: below 100 → step 10, from 100 up to 200 → step 20, from 200 → step 50
+export const foodStepUp = (v: number) => {
+  if (v < 100) return Math.min(100, Math.floor(v / 10) * 10 + 10);
+  if (v < 200) return Math.min(200, Math.floor(v / 20) * 20 + 20);
+  return Math.floor(v / 50) * 50 + 50;
+};
+
+export const foodStepDown = (v: number) => {
+  if (v <= 0) return 0;
+  if (v <= 100) return Math.max(0, Math.ceil(v / 10) * 10 - 10);
+  if (v <= 200) return Math.max(100, Math.ceil(v / 20) * 20 - 20);
+  return Math.max(200, Math.ceil(v / 50) * 50 - 50);
+};
+
+export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact, ariaLabel, foodSteps }) => {
+  const up = foodSteps ? foodStepUp : stepUp;
+  const down = foodSteps ? foodStepDown : stepDown;
   const valRef = useRef(value);
   valRef.current = value;
   const onChangeRef = useRef(onChange);
@@ -42,7 +60,7 @@ export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact,
   const startHold = (dir: 'up' | 'down') => {
     stopHold();
     didHoldRef.current = false;
-    const stepFn = dir === 'up' ? stepUp : stepDown;
+    const stepFn = dir === 'up' ? up : down;
     holdTimeout.current = window.setTimeout(() => {
       didHoldRef.current = true;
       holdInterval.current = window.setInterval(() => {
@@ -60,7 +78,7 @@ export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact,
       didHoldRef.current = false;
       return;
     }
-    const stepFn = dir === 'up' ? stepUp : stepDown;
+    const stepFn = dir === 'up' ? up : down;
     onChange(stepFn(value));
   };
 

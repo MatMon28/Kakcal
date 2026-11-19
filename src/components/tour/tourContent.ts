@@ -7,7 +7,7 @@ export interface TourStep {
   /** What the embedded journal shows for this step. */
   screen: TourScreen;
   /** Widgets get the gallery beside the live app; every other step shows the app alone. */
-  kind?: 'phone' | 'widgets';
+  kind?: 'phone' | 'widgets' | 'notifications';
   /** Page colours, taken from the app's own tab and card colours. */
   accent: string;
   ink: string;
@@ -52,6 +52,17 @@ export interface TourUi {
   carbs: string;
   protein: string;
   fat: string;
+  notifications: {
+    heading: string;
+    hint: string;
+    appName: string;
+    water: string;
+    meal: string;
+    custom: string;
+    weight: string;
+    log: string;
+    sampleCustom: string;
+  };
 }
 
 export const TOUR_STEPS: TourStep[] = [
@@ -382,12 +393,41 @@ export const TOUR_STEPS: TourStep[] = [
       en: [
         'Ultra minimal replaces most labels with icons and numbers.',
         'Hide the trackers or the Period page you do not use.',
+        'Choose which reminder notifications you receive, and when.',
         'Export or import a JSON backup. Backups are not encrypted, so keep them private.',
       ],
       it: [
         'Ultra minimale sostituisce molte etichette con icone e numeri.',
         'Nascondi i tracker o la pagina Ciclo che non usi.',
+        'Scegli quali notifiche di promemoria ricevere e quando.',
         'Esporta o importa un backup JSON. I backup non sono cifrati: conservali in modo privato.',
+      ],
+    },
+  },
+  {
+    id: 'notifications',
+    screen: 'notifications',
+    kind: 'notifications',
+    accent: '#FAE0B4',
+    ink: '#7D4E14',
+    short: { en: 'Notifications', it: 'Notifiche' },
+    title: { en: 'Notifications', it: 'Notifiche' },
+    body: {
+      en: 'Gentle reminders that help you keep the journal up to date. Switch on only the ones you want in Settings → Notifications. Your phone delivers them even when the app is closed, and tapping one opens the right screen.',
+      it: 'Promemoria discreti che ti aiutano a tenere il diario aggiornato. Attiva solo quelli che vuoi in Impostazioni → Notifiche. Il telefono li consegna anche con l’app chiusa e, toccandone uno, si apre la schermata giusta.',
+    },
+    points: {
+      en: [
+        'Water: choose how often (every 30 minutes up to every 4 hours) and the hours of the day.',
+        'Meals: a separate reminder for each meal, at the time you pick for it.',
+        'Weight, custom buttons and a general “don’t forget to log your data” reminder, each at a time you choose.',
+        'Use “Send a test notification” to check delivery. Android asks for permission the first time you switch one on.',
+      ],
+      it: [
+        'Acqua: scegli ogni quanto (da ogni 30 minuti a ogni 4 ore) e le ore della giornata.',
+        'Pasti: un promemoria separato per ogni pasto, all’orario che scegli.',
+        'Peso, pulsanti personalizzati e un promemoria generale “non dimenticare di registrare i dati”, ciascuno all’orario che preferisci.',
+        'Usa “Invia una notifica di prova” per verificare la consegna. Android chiede il permesso la prima volta che ne attivi una.',
       ],
     },
   },
@@ -454,6 +494,17 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     carbs: 'Carbs',
     protein: 'Protein',
     fat: 'Fat',
+    notifications: {
+      heading: 'Notification preview',
+      hint: 'Tap a card to open the screen it leads to.',
+      appName: 'Kakcalculator',
+      water: 'Every 2 h',
+      meal: '13:00',
+      custom: '19:00',
+      weight: '07:30',
+      log: '21:00',
+      sampleCustom: 'Magnesium, Vitamin D',
+    },
   },
   it: {
     eyebrow: 'Visita guidata',
@@ -490,5 +541,16 @@ export const TOUR_UI: Record<TourLang, TourUi> = {
     carbs: 'Carboidrati',
     protein: 'Proteine',
     fat: 'Grassi',
+    notifications: {
+      heading: 'Anteprima delle notifiche',
+      hint: 'Tocca una scheda per aprire la schermata a cui porta.',
+      appName: 'Kakcalculator',
+      water: 'Ogni 2 h',
+      meal: '13:00',
+      custom: '19:00',
+      weight: '07:30',
+      log: '21:00',
+      sampleCustom: 'Magnesio, Vitamina D',
+    },
   },
 };

@@ -31,5 +31,6 @@ const assets = 'android/app/src/main/assets/';
 if (await readFile(assets + 'public/index.html', 'utf8') !== html) throw new Error('Synced web bundle mismatch.');
 const plugins = JSON.parse(await readFile(assets + 'capacitor.plugins.json', 'utf8'));
 if (!plugins.some((plugin) => plugin.pkg === '@capacitor/app')) throw new Error('Android Back plugin missing.');
+if (!plugins.some((plugin) => plugin.pkg === '@capacitor/local-notifications')) throw new Error('Android notifications plugin missing.');
 console.log(`Android assets ready. SHA-256: ${createHash('sha256').update(html).digest('hex')}`);
 console.log('Open the android folder in Android Studio. See android/BUILD_APK.md.');
