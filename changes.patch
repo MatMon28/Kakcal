@@ -1,0 +1,821 @@
+diff --git a/README.md b/README.md
+index 77f311f..4adfca1 100644
+--- a/README.md
++++ b/README.md
+@@ -1,6 +1,6 @@
+ # Kakcalculator
+ 
+-A local-first nutrition, activity and wellness journal built with React 19, TypeScript, Vite and Tailwind CSS v4. The browser opens a guided tour of every page, with the widgets last; Android has a bundled Capacitor app, four native home-screen widgets and optional reminder [notifications](docs/notifications.md). There is no account or application backend. The browser build is also an installable, offline-capable [PWA](docs/pwa.md) ([setup instructions](docs/pwa-setup.md)). On Android the first thing drawn is the launch animation: the system launch screen, the window, the WebView and the web boot layer are all plain background colour in the colour of your saved theme (no logo, no cream or white flash) and the [animated intro](docs/launch-intro.md) plays straight on top.
++A local-first nutrition, activity and wellness journal built with React 19, TypeScript, Vite and Tailwind CSS v4. The browser opens a guided tour of every page, with the widgets last; Android has a bundled Capacitor app, four native home-screen widgets and optional reminder [notifications](docs/notifications.md). There is no account or application backend. The browser build is also an installable, offline-capable [PWA](docs/pwa.md) ([setup instructions](docs/pwa-setup.md)). New visitors see an **Install guide** (iPhone/iPad, Android with the optional APK and its security-warning notice, computer) on top of the tour; once the app is installed it always opens straight into the journal, and the web build starts empty (normal use, demo data only inside the tour's sandboxed phone). On Android the first thing drawn is the launch animation: the system launch screen, the window, the WebView and the web boot layer are all plain background colour in the colour of your saved theme (no logo, no cream or white flash) and the [animated intro](docs/launch-intro.md) plays straight on top.
+ 
+ ## Quick start
+ 
+@@ -26,7 +26,7 @@ The documentation is split into small single-topic files so that you (or an LLM)
+ | [Setup and build](docs/setup-build.md) | [Android APK](docs/android-apk.md) / [BUILD_APK.md](android/BUILD_APK.md) |
+ | [Widgets](docs/widgets.md) | [Notifications](docs/notifications.md) |
+ | [Journal pages](docs/journal-pages.md) | [File map](docs/file-map/README.md) |
+-| [PWA: how it works](docs/pwa.md) / [PWA setup](docs/pwa-setup.md) | [Known gaps](docs/known-gaps.md) |
++| [PWA: how it works](docs/pwa.md) / [PWA setup](docs/pwa-setup.md) / [Install guide](docs/pwa.md#install-guide-and-always-open-the-app) | [Known gaps](docs/known-gaps.md) |
+ | [Creating `changes.patch`](docs/changes-patch.md) | |
+ 
+ **Rule:** after every new feature or file, update the matching document (table in [docs/README.md](docs/README.md#keeping-the-docs-current)).
+diff --git a/docs/README.md b/docs/README.md
+index 8deac6f..2c1fc68 100644
+--- a/docs/README.md
++++ b/docs/README.md
+@@ -8,6 +8,7 @@
+ | --- | --- |
+ | Install, build, run scripts | [setup-build.md](setup-build.md) |
+ | Run the browser version, tour, URL flags, demo data | [web-preview.md](web-preview.md) |
++| Change the install instructions (iOS / Android / PC / APK) or when the app opens instead of the guide | [pwa.md](pwa.md#install-guide-and-always-open-the-app) |
+ | Make / host / install the PWA, offline mode, install button | [pwa.md](pwa.md), steps in [pwa-setup.md](pwa-setup.md) |
+ | Build / sign / distribute the APK | [android-apk.md](android-apk.md), then [../android/BUILD_APK.md](../android/BUILD_APK.md) |
+ | Fix a Gradle / Capacitor sync error | [android-gradle-guard.md](android-gradle-guard.md) |
+@@ -61,3 +62,4 @@ Checked against repository commit **`4552bf0`** (the later `f037263` only change
+ 
+ **Readability / notification icon / start-up round (on top of `4e5b49d`, "Fixed error"):** Aurora Dark and Lite Dark labels on `var(--text)` fills no longer white-on-white (`calculations-colors.md`, `file-map/app-shell.md`); full-bleed large notification icon and bigger status-bar icon (`notifications.md`, `brand.md`, `file-map/scripts-public.md`, `file-map/android-native.md`); launch animation interrupted when loading finishes, deferred start-up work, R8 + resource shrinking, baseline profile (`startup-performance.md`, `launch-intro.md`, `file-map/utils.md`, `file-map/tour-widgets-intro.md`, `file-map/android-native.md`, `setup-build.md`, `android/BUILD_APK.md`, `known-gaps.md` #10-11, `changes-patch.md`). Verified by `npm run build`, headless-Chromium screenshots of Aurora Dark / Lite Dark and an intro timing run, XML validation and image inspection; the Android project was **not** compiled and nothing was run on a device.
+ 
++**Install guide round (on top of `492413d`, "Faster startup and fixes"):** install instructions for iOS, Android (with the APK and its warning) and desktop on the tour page, an installed PWA (and a browser tab on a device where it was installed) always opens the journal, and the web build left review mode: no demo data in the real journal, the tour's phone runs on an in-memory sandbox. Docs updated: root README, this index, pwa, pwa-setup, web-preview, setup-build, storage-and-privacy, verification, known-gaps (#12-14) and the file maps (app-shell, utils, data, tour-widgets-intro). Verified by `npm run build` and jsdom runs of the built bundle only; no real browser or device install was run.
+diff --git a/docs/changes-patch.md b/docs/changes-patch.md
+index f05677c..d3d91aa 100644
+--- a/docs/changes-patch.md
++++ b/docs/changes-patch.md
+@@ -26,3 +26,5 @@ git reset -q                     # leave the working tree as it was
+ When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
+ 
+ **Current patch contents:** (1) Aurora Dark / Lite Dark readability: new `--on-text` token replaces `text-[var(--surface)]` in 14 components; (2) notification icons: full-bleed large icon (`scripts/render-notification-icon.mjs`, `ic_notification_large.png`) and a status-bar silhouette that fills its box (`ic_stat_kak.xml`); (3) start-up: the launch animation now ends when loading ends (`useAppReady.ts`, `IntroSplash.tsx`, `intro.css`), start-up work deferred with `src/utils/idle.ts` and `applySplashThemeWhenIdle`, R8 + resource shrinking, `res/raw/keep.xml`, `baseline-prof.txt` and `androidx.profileinstaller`; plus the matching docs. Earlier rounds are already in the repository.
++
++**Install guide round:** the base is now commit **`492413d` ("Faster startup and fixes")**, the tip of `main` when the install guide / always-open-the-app / normal-use round was made. This patch contains: new `src/components/tour/InstallGuide.tsx`, `installContent.ts`, `src/config/install.ts`, `src/utils/tourStorage.ts`; changed `src/App.tsx`, `src/main.tsx`, `src/config/demo.ts`, `src/utils/pwaInstall.ts`, `src/components/tour/AppTour.tsx`; and the documentation listed in [README.md](README.md#last-audit). No binary files.
+diff --git a/docs/file-map/app-shell.md b/docs/file-map/app-shell.md
+index f33f415..b16461b 100644
+--- a/docs/file-map/app-shell.md
++++ b/docs/file-map/app-shell.md
+@@ -9,7 +9,7 @@
+ | File or directory | Role |
+ | --- | --- |
+ | `index.html`, `src/main.tsx` | Document shell with the pre-paint theme script (reads `kcalsync_settings.theme` before first paint), the `#kc-boot` boot layer (plain `--bg` colour, no logo; the `kc-boot:start/end` markers are kept for `outline-wordmark.mjs --launch-screens`; hidden in iframes / `?intro=0` / `?tour=1`) and the React entry point (which also registers the PWA worker and starts the install-prompt capture). The `<!-- pwa:start/end -->` block in `index.html` holds the manifest and iOS tags and is removed by `prepare-android.mjs`. |
+-| `src/App.tsx` | Guided tour or journal selection, the bridge that drives the journal for the tour and widgets (native and web), tab routing, global dialogs, page-specific docks, swipe and Back handling. |
++| `src/App.tsx` | Guided tour or journal selection (the journal always opens in the installed PWA / on a device where it was installed: `shouldOpenJournal()`), the bridge that drives the journal for the tour and widgets (native and web), tab routing, global dialogs, page-specific docks, swipe and Back handling. |
+ | `src/index.css`, `src/utils/themes.ts` | Latin-only `@font-face` rules (Plus Jakarta Sans Variable, Space Grotesk Variable, Chakra Petch, Nunito 800), theme tokens for Classic plus the 6 style themes (`angular`, `aurora`, `pop`, `playful`, `minimal` with a deeper `#060911`/`#0d1320` Dark-mode palette, `mono` with a 10-swatch single-hue harmony generator) across Light, Lite Dark and Dark modes, coherent section/sub-card/chip/pill/field styling across Today, Custom, Period, Statistics and Day Overview, shared Intake/Activity/Weight accents, the opaque inverse-ink token `--on-text` (labels on `var(--text)` fills), keyboard-aware bottom-sheet dialog viewport, safe areas, the motion primitives (`anim-*`, `accordion-grid`, `pressable`) and their reduced-motion overrides. |
+ | `src/context/AppContext.tsx` | Local state, persistence, legacy migrations, logging actions, tag catalog changes, and JSON backup. |
+ | `src/types/index.ts`, `src/i18n/translations.ts` | TypeScript data contracts and English/Italian strings. |
+diff --git a/docs/file-map/data.md b/docs/file-map/data.md
+index 5ac0ff2..2355c4a 100644
+--- a/docs/file-map/data.md
++++ b/docs/file-map/data.md
+@@ -13,4 +13,5 @@
+ | `src/data/offCatalog.ts`, `src/utils/useOffCatalog.ts` | Zero-copy reader, word-prefix search, barcode lookup, `catalogueScore` ranking and lazy loading; the React hook that loads it while a food search is open. |
+ | `src/data/activities.ts` | **Activities database** (181 entries from the 2024 Compendium of Physical Activities): MET, Compendium code, EN/IT names, categories and lookup helpers. |
+ | `src/data/samplePreBuiltMeals.ts` | Empty production saved-meal list used when demo mode is disabled. |
+-| `src/config/demo.ts`, `src/data/demoData.ts` | Single demo-mode switch and removable sample journal, period logs, custom trackers, meals and recipes. |
++| `src/config/demo.ts`, `src/data/demoData.ts` | Single demo-mode switch (on only inside the tour's storage sandbox or with `VITE_DEMO_DATA=true`; normal use starts empty) and removable sample journal, period logs, custom trackers, meals and recipes. |
++| `src/config/install.ts` | `APK_URL` (default: latest GitHub release asset `Kakcalculator.apk`, override `VITE_APK_URL`) and `RELEASES_URL` for the install guide. |
+diff --git a/docs/file-map/tour-widgets-intro.md b/docs/file-map/tour-widgets-intro.md
+index 4a15c48..6830126 100644
+--- a/docs/file-map/tour-widgets-intro.md
++++ b/docs/file-map/tour-widgets-intro.md
+@@ -16,3 +16,4 @@
+ | `src/components/intro/introAnimations.ts`, `IntroSplash.tsx`, `intro.css` | Launch intro: the six phase-1 animations from `src/assets/kakcalculator_intro/`, a random pick that differs from the last launch, the theme-aware overlay (its icon card is transparent: `--kc-cream` = `--bg`) and its fade-out. See [Launch intro](../launch-intro.md). |
+ | `src/assets/kakcalculator_intro/` | Supplied launch-animation kit: `animations/` (six phase-1 SVGs, six lockups, wordmark), `logos/`, `intro_animation.md` and the overview sheet. Only the six phase-1 files are imported. |
+ | `src/components/widgets/widgetContract.ts` | Serializable widget actions/snapshot, message validation, and today's nutrition mapping using the app's existing calculations. |
++| `src/components/tour/InstallGuide.tsx`, `installContent.ts` | The **Install** section at the top of the tour page: iPhone/iPad, Android (PWA + APK download with the "file could be harmful" notice) and Computer tabs, device-based default tab, *Install now* button, installed note. Texts (EN/IT) live in `installContent.ts`. See [PWA](../pwa.md#install-guide-and-always-open-the-app). |
+\ No newline at end of file
+diff --git a/docs/file-map/utils.md b/docs/file-map/utils.md
+index b39d6bd..926ca2a 100644
+--- a/docs/file-map/utils.md
++++ b/docs/file-map/utils.md
+@@ -20,5 +20,6 @@
+ | `src/utils/idle.ts` | `whenIdle(task, timeoutMs)`: `requestIdleCallback` wrapper that returns a cancel function. Used to defer widget publishing, launch-colour sync and notification rescheduling out of the start-up path. See [Startup performance](../startup-performance.md). |
+ | `src/utils/spring.ts` | Damped-spring physics sampled into CSS `linear()` curves (`SPRING.soft` 271 ms, `SPRING.bounce` 297 ms) and published as `--ease-*` / `--dur-*` variables at startup. |
+ | `src/utils/motion.ts` | `prefersReducedMotion()` and `slideIn()`: compositor-only Web Animations helpers used for the day-change slide. |
+-| `src/utils/pwaInstall.ts` | PWA install state: captures `beforeinstallprompt`/`appinstalled`, detects standalone and iOS, exposes `usePwaInstallState()` and `promptInstall()`. Started from `main.tsx`; in-memory only. |
++| `src/utils/tourStorage.ts` | First import of `main.tsx`: in the tour's iframe (`?tour=1`) replaces `localStorage` by an in-memory sandbox (language and theme written through, nothing else), so demo data never reaches the real journal. Exports `TOUR_STORAGE_ISOLATED`. |
++| `src/utils/pwaInstall.ts` | PWA install state: captures `beforeinstallprompt`/`appinstalled`, detects standalone and iOS, exposes `usePwaInstallState()` and `promptInstall()`, plus `isStandalone()`, `detectPlatform()` (ios / android / desktop) and `shouldOpenJournal()` (installed app or `kc_pwa_installed` -> open the journal instead of the tour), which `App.tsx` calls. Started from `main.tsx`; in-memory only. |
+ | `src/utils/favorites.ts` | Favourite helpers: `sortFavoritesFirst`, `pinCoherentFavorites` (while typing, only favourites that directly match the text are pinned above the other results), `matchesFirstChar`. |
+diff --git a/docs/known-gaps.md b/docs/known-gaps.md
+index afcb61f..6df2a7d 100644
+--- a/docs/known-gaps.md
++++ b/docs/known-gaps.md
+@@ -19,6 +19,9 @@
+ | 9 | iOS Safari has no install prompt and may evict `localStorage`/caches of sites not opened for a while (not when installed to the Home Screen). | iOS users can lose offline cache or, in rare cases, data. | Tell iOS users to *Add to Home Screen* and to export a backup regularly. |
+ | 10 | Start-up round (R8 + `shrinkResources`, `res/raw/keep.xml`, hand-written `baseline-prof.txt`, `androidx.profileinstaller`, `applySplashThemeWhenIdle`) was written without an Android SDK; Gradle was never run. The 200 ms vs 1.6 s intro figure is from headless Chromium on a desktop CPU. | A keep-rule gap could break a *release* build only (plugin, widgets, launch colour, reminder icons). Real phones will time differently. | Build and test the signed **release** variant on Android 13+ and an older device. Generate a measured baseline profile in Android Studio ([startup-performance.md](startup-performance.md)). |
+ | 11 | The full-bleed large notification icon and the enlarged status-bar silhouette were checked only as an image and as valid XML. | Vendor skins crop and tint notification icons differently. | Send a test notification (Settings > Notifications) on your phone. |
++| 12 | The *Download APK* button points to `releases/latest/download/Kakcalculator.apk` of the GitHub repository (`src/config/install.ts`). | Until a release with an asset of that exact name exists, the button gives a GitHub 404. | Upload the signed APK to a release, or set `VITE_APK_URL`. |
++| 13 | Journals saved by the old review build of the hosted site already contain demo data in `localStorage`; the normal-use change only stops *new* seeding. | Existing visitors keep the sample entries. | They can delete them in the app or clear the site data; new installs start empty. |
++| 14 | `scripts/check-journal.mjs` / `smoke.mjs` assume demo data in `?view=app`. | They fail on an empty journal. | Build with `VITE_DEMO_DATA=true` first ([verification.md](verification.md)). |
+ 
+ Snippet for gap 1 and 2 (`package.json` > `scripts`):
+ 
+diff --git a/docs/pwa-setup.md b/docs/pwa-setup.md
+index ce6f477..8aabd1a 100644
+--- a/docs/pwa-setup.md
++++ b/docs/pwa-setup.md
+@@ -81,6 +81,10 @@ location /icons/                  { add_header Cache-Control "public, max-age=31
+ | **Desktop (Chrome / Edge)** | Settings > *Install app* > **Install**, or the install icon in the address bar. |
+ | **iPhone / iPad (Safari)** | Share > **Add to Home Screen**. Safari offers no install button; Settings shows this hint. Open it from the home-screen icon once while online. |
+ 
++The same steps, in English and Italian and with the Android APK instructions, are shown to visitors by the **Install** section at the top of the tour page ([pwa.md](pwa.md#install-guide-and-always-open-the-app)). Once the app is installed it always opens straight into the journal. To show the guide again in a browser tab, open `<url>/?view=tour`.
++
++**Android APK button:** upload the signed APK to a GitHub release of the repository as `Kakcalculator.apk` (or set `VITE_APK_URL` at build time). Until then the button leads to a GitHub 404.
++
+ Your journal stays on that browser/device (`localStorage`). A browser tab and the installed app on the same device share it; another device or browser does not, so use *Data Backup* (Export/Import JSON) to move data.
+ 
+ ## 5. Verify
+diff --git a/docs/pwa.md b/docs/pwa.md
+index b61503b..a364a5a 100644
+--- a/docs/pwa.md
++++ b/docs/pwa.md
+@@ -28,6 +28,14 @@
+ - **Android app.** The Capacitor APK is unaffected: `scripts/prepare-android.mjs` builds without `public/`, strips the PWA tags from `index.html` and the worker is never registered there. `InstallApp` hides itself inside the APK (`isAndroidApp()`).
+ - **Not included:** background sync, push notifications (reminders are native-Android only, see [notifications.md](notifications.md)), a custom "update available" banner, Windows/Play Store packaging.
+ 
++## Install guide and "always open the app"
++
++- **Install guide.** The tour page (`/`, for new visitors in a browser tab) starts with an *Install* section, `src/components/tour/InstallGuide.tsx`, texts in `installContent.ts` (English and Italian). Tabs: **iPhone / iPad** (Safari > Share > Add to Home Screen), **Android** (Chrome install, plus an **APK download** with the yellow notice that Android / Play Protect may call the file harmful and how to continue), **Computer** (Chrome/Edge install icon and menu, Safari *Add to Dock*, Firefox cannot). The tab matching the device is selected first (`detectPlatform()`); an *Install now* button appears when the browser has fired `beforeinstallprompt`; once installed the section shows a green "installed" note. A header button *Install app* scrolls to it.
++- **APK link.** `src/config/install.ts`: `APK_URL` defaults to the asset `Kakcalculator.apk` of the latest GitHub release (`.../releases/latest/download/Kakcalculator.apk`). Build the APK, create a release and upload it under that name; or build with `VITE_APK_URL=https://... npm run build`. APKs are git-ignored, so the file is never in the repository.
++- **Installed = app only.** `App.tsx` calls `shouldOpenJournal(view)` (`src/utils/pwaInstall.ts`): in standalone / fullscreen / minimal-ui / window-controls-overlay display mode (or iOS `navigator.standalone`) the journal always opens, whatever the URL (`?view=tour` is ignored there, because older iOS saves the *current* URL when adding to the Home Screen). The decision is made in JavaScript, so the service worker and manifest are unchanged.
++- **Remembered per browser.** When the app is installed (`appinstalled`, accepted prompt) or ever runs standalone, `localStorage.kc_pwa_installed = '1'` is set. In a normal tab of the same browser profile the root URL then also opens the journal; the guide only shows to new visitors. `?view=tour` always shows the guide again. iOS keeps the Home Screen app's storage separate from Safari, so the flag only matters where the installed app and the browser share storage (Chrome/Edge/Android/desktop); the standalone check covers iOS.
++- **Normal-use mode (no demo data).** The PWA used to ship in *review mode*: an empty journal was filled with sample meals, activity, recipes, favourites, custom buttons and period data. Now the app starts empty. The tour's embedded phone (`?tour=1`) still shows demo data, but `src/utils/tourStorage.ts` swaps `localStorage` there for an in-memory copy (language and theme are copied in and written back, nothing else), so demo data can never reach the real journal. `src/config/demo.ts` enables demo data only for that sandbox, or for `VITE_DEMO_DATA=true` builds.
++
+ ## Changing things
+ 
+ - **New icon art:** edit the brand SVG, run `npm i --no-save sharp && node scripts/render-pwa-icons.mjs`, commit the PNGs in `public/icons/`.
+diff --git a/docs/setup-build.md b/docs/setup-build.md
+index 9b09410..b4a484c 100644
+--- a/docs/setup-build.md
++++ b/docs/setup-build.md
+@@ -48,3 +48,5 @@ npx cap open android                    # or: cd android && ./gradlew assembleDe
+ ```
+ 
+ The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Re-run `prepare-android.mjs` after every web-app change or Capacitor plugin change; Android Studio never runs `cap sync` itself. Native Java/XML edits only need a Gradle rebuild.
++
++**Build-time switches (browser build):** `VITE_DEMO_DATA=true` seeds demo data in the standalone journal (default: empty, normal use; the Android script forces it off). `VITE_APK_URL=<url>` changes the Android APK download link of the install guide (default: latest GitHub release asset `Kakcalculator.apk`, see `src/config/install.ts`).
+diff --git a/docs/storage-and-privacy.md b/docs/storage-and-privacy.md
+index 55eed2b..ee19d7f 100644
+--- a/docs/storage-and-privacy.md
++++ b/docs/storage-and-privacy.md
+@@ -15,3 +15,5 @@ Camera scanning is optional and depends on `BarcodeDetector` and permission. Kno
+ **PWA / service worker:** in the browser build `offline-worker.js` caches only the app shell (`index.html`), the PWA manifest and icons, and the static catalogue `data/off-foods.bin`. It never caches journal data, backups or barcode lookups, and adds **no new storage keys**. The install button (`src/utils/pwaInstall.ts`) keeps its state in memory only. See [pwa.md](pwa.md).
+ 
+ **Native-only setting:** the Android app stores the current background colour (`#rrggbb`, no personal data) in its own SharedPreferences file `launch_background` so the next launch starts on the same colour (see [launch-intro.md](launch-intro.md)). It is not part of the JSON backup and is rewritten from the theme on every start.
++
++**PWA install flag:** `kc_pwa_installed` (`'1'`, no personal data) is written by `src/utils/pwaInstall.ts` when the PWA is installed or runs standalone; it makes the root URL open the journal instead of the guide on that browser profile. It is not part of the JSON backup. **Tour sandbox:** inside the tour's iframe (`?tour=1`) `localStorage` is an in-memory copy (`src/utils/tourStorage.ts`): only `kcalsync_lang` and the `theme`/`themeStyle`/`monoHue` fields of `kcalsync_settings` are read from and written back to the real storage; demo data lives in memory and is lost on reload.
+diff --git a/docs/verification.md b/docs/verification.md
+index 60c5b53..6ea5d72 100644
+--- a/docs/verification.md
++++ b/docs/verification.md
+@@ -17,3 +17,7 @@ For repeatable web checks, prepare Android assets, run `npm run build`, install
+ **Verification status of this documentation:** the doc set was audited against repository commit `4552bf0` (see [README.md](README.md#last-audit)). The test scripts themselves were **not** re-run in that audit.
+ 
+ **PWA manual check:** after `npm run build && npm run preview`, DevTools > Application should show a valid manifest, an activated `offline-worker.js` and cache `kakcalculator-shell-v2`; reloading with *Offline* ticked must still open the app. Full list in [pwa-setup.md](pwa-setup.md#5-verify).
++
++**Demo data and the test scripts:** the standalone journal now starts empty (normal use). `scripts/check-journal.mjs` and the journal steps of `scripts/smoke.mjs` were written against the populated review build; build with `VITE_DEMO_DATA=true npm run build` before running them. These scripts were not re-run after the install-guide round.
++
++**Install guide round (checked):** `npm run build` passes, and the built bundle was exercised in jsdom: fresh visitor sees the guide with the right tab for desktop / Android / iPhone user agents; Android tab shows the APK link and the warning; standalone display mode opens the journal and sets `kc_pwa_installed`; a normal tab with the flag opens the journal; `?view=tour` still shows the guide; the tour sandbox keeps demo data out of the real storage and writes only theme/language back. A real browser install (beforeinstallprompt, iOS Share sheet, a real APK) was **not** exercised.
+diff --git a/docs/web-preview.md b/docs/web-preview.md
+index 079dd63..5228fcc 100644
+--- a/docs/web-preview.md
++++ b/docs/web-preview.md
+@@ -13,8 +13,9 @@ npm run build
+ npm run preview
+ ```
+ 
+-- `/` (or `?view=tour`): the guided tour. It explains each page beside a live copy of the journal (16 steps, including **Notifications**) and ends with the widgets. `?view=app`: the standalone browser journal. Inside the tour the journal is loaded with `?tour=1`, which shows the Period page for the tour only; the stored Settings switch is not changed. The prepared Android bundle always opens the journal, not the tour or a remote URL.
+-- Browser review builds seed demo data only for missing storage. Use `VITE_DEMO_DATA=false npm run build` for an empty production website (PowerShell: `$env:VITE_DEMO_DATA='false'; npm run build`). The Android preparation script sets this flag itself. No build deletes an existing journal.
++- `/` (or `?view=tour`): the guided tour (for new visitors, see the next bullets). It explains each page beside a live copy of the journal (16 steps, including **Notifications**) and ends with the widgets. `?view=app`: the standalone browser journal. Inside the tour the journal is loaded with `?tour=1`, which shows the Period page for the tour only; the stored Settings switch is not changed. The prepared Android bundle always opens the journal, not the tour or a remote URL.
++- **Normal use is the default:** the standalone journal (`?view=app`, the installed PWA, the Android app) starts empty. Only the tour's embedded phone (`?tour=1`) shows demo data, from an in-memory sandbox (`src/utils/tourStorage.ts`) that never touches the real journal. `VITE_DEMO_DATA=true npm run build` makes the standalone journal seed demo data for missing storage again (review builds, `scripts/check-journal.mjs`; PowerShell: `$env:VITE_DEMO_DATA='true'; npm run build`).
++- **Who sees what at `/`:** new visitors in a browser tab get the tour with the Install guide; the installed PWA (standalone window / Home Screen app) and any browser tab on a device where it was installed open the journal directly. `?view=tour` forces the guide, `?view=app` forces the journal. The Android preparation script sets this flag itself. No build deletes an existing journal.
+ - `npm run build` produces an inlined `dist/index.html` and copies public assets. On HTTPS or localhost, a production browser install caches the app shell after its first successful online load, so it can reopen offline. A first-ever hosted visit or source download still needs a connection. The development server is not an offline installation.
+ - Optional: `python3 scripts/package-android.py` (after `node scripts/prepare-android.mjs`) writes the Android Studio handoff ZIP to `public/downloads/` (that ZIP is **not tracked in git**; the script refuses to run before the Android preparation step). Python is needed only for this. Do not run `cap sync` with the browser preview in `dist/` in place of the Android preparation step.
+ 
+diff --git a/src/App.tsx b/src/App.tsx
+index 005ef6b..8081969 100644
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -39,6 +39,7 @@ import {
+ import { addDaysToDateString, getTodayDateString } from './utils/formatters';
+ import { isAndroidApp, JournalDevice } from './utils/android';
+ import { isPeriodShown } from './utils/tourPreview';
++import { shouldOpenJournal } from './utils/pwaInstall';
+ import { useNotificationScheduler } from './utils/useNotificationScheduler';
+ import { requestOpenNotificationSettings } from './utils/notifications';
+ import { calculateBMR } from './utils/calculations';
+@@ -373,10 +374,12 @@ let introPending: boolean | null = null;
+ 
+ export function App() {
+   const view = new URLSearchParams(window.location.search).get('view');
+-  // The journal is the default inside the Android bundle and when ?view=app is given.
+-  // Everywhere else the guided tour is shown, and it embeds the journal itself.
++  // The journal is shown inside the Android bundle, when ?view=app is given, and always once Kakcalculator
++  // runs as an installed app (or was installed on this browser before). Only new visitors in a browser tab
++  // get the guided tour with the installation instructions, which embeds the journal itself.
+   const showJournal = import.meta.env.VITE_ANDROID_RELEASE === 'true' || view === 'app' ||
+-    (view !== 'tour' && (window.location.protocol === 'capacitor:' || isAndroidApp()));
++    (view !== 'tour' && (window.location.protocol === 'capacitor:' || isAndroidApp())) ||
++    shouldOpenJournal(view);
+   // Launch intro (one of six random phase-1 animations); the app mounts underneath it.
+   introPending ??= shouldShowIntro();
+   const [introVisible, setIntroVisible] = useState(introPending);
+diff --git a/src/components/tour/AppTour.tsx b/src/components/tour/AppTour.tsx
+index f09d4ca..63a3e1a 100644
+--- a/src/components/tour/AppTour.tsx
++++ b/src/components/tour/AppTour.tsx
+@@ -1,8 +1,10 @@
+ import { useEffect, useMemo, useRef, useState } from 'react';
+-import { ArrowLeft, ArrowRight, ArrowUpRight, Download, MousePointer2 } from 'lucide-react';
++import { ArrowLeft, ArrowRight, ArrowUpRight, Download, MousePointer2, Smartphone } from 'lucide-react';
+ import { Wordmark } from '../common/Brand';
+ import { WidgetGallery } from '../widgets/WidgetGallery';
+ import { NotificationShowcase } from './NotificationShowcase';
++import { InstallGuide } from './InstallGuide';
++import { INSTALL_UI } from './installContent';
+ import {
+   isWidgetReadyMessage,
+   isWidgetSnapshotMessage,
+@@ -155,6 +157,9 @@ export function AppTour() {
+     frameRef.current?.contentWindow?.location.reload();
+   };
+ 
++  const scrollToInstall = () =>
++    document.getElementById('install')?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
++
+   const phone = (maxWidth: number) => (
+     <div ref={phoneRef} className="mx-auto w-full" style={{ maxWidth }}>
+       <div className="rounded-[46px] bg-[#24201C] p-2.5 shadow-[0_30px_60px_-28px_rgba(36,32,28,0.55)]">
+@@ -193,6 +198,14 @@ export function AppTour() {
+                 </button>
+               ))}
+             </div>
++            <button
++              type="button"
++              onClick={scrollToInstall}
++              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 text-xs font-extrabold text-[var(--text)] hover:bg-[var(--hover)]"
++            >
++              <Smartphone size={15} aria-hidden="true" />
++              {INSTALL_UI[lang].navLabel}
++            </button>
+             <a href={androidZip} download className="inline-flex min-h-10 items-center gap-1.5 text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)]">
+               <Download size={15} aria-hidden="true" />
+               <span>{ui.androidProject}</span>
+@@ -212,6 +225,8 @@ export function AppTour() {
+           <p className="mt-3 text-[15px] leading-relaxed text-[var(--muted)]">{ui.pageLede}</p>
+         </div>
+ 
++        <InstallGuide lang={lang} appUrl={journalUrl} />
++
+         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
+           <section aria-label={ui.pages} className="min-w-0">
+             <div className="h-1.5 w-full overflow-hidden rounded-full bg-[var(--inset)]" aria-hidden="true">
+diff --git a/src/components/tour/InstallGuide.tsx b/src/components/tour/InstallGuide.tsx
+new file mode 100644
+index 0000000..58593a0
+--- /dev/null
++++ b/src/components/tour/InstallGuide.tsx
+@@ -0,0 +1,152 @@
++import { useMemo, useState } from 'react';
++import { CheckCircle2, Download, Monitor, ShieldAlert, Smartphone, TabletSmartphone } from 'lucide-react';
++import { APK_URL, RELEASES_URL } from '../../config/install';
++import {
++  detectPlatform,
++  promptInstall,
++  usePwaInstallState,
++  type InstallPlatform,
++} from '../../utils/pwaInstall';
++import { INSTALL_UI } from './installContent';
++import type { TourLang } from './tourContent';
++
++const PLATFORMS: InstallPlatform[] = ['ios', 'android', 'desktop'];
++const PLATFORM_ICON = { ios: TabletSmartphone, android: Smartphone, desktop: Monitor } as const;
++
++interface InstallGuideProps {
++  lang: TourLang;
++  /** URL of the journal, opened by the "Open the app" button once the app is installed. */
++  appUrl: string;
++}
++
++/**
++ * How to install Kakcalculator as a PWA on iOS, Android (plus the APK and its security warnings) and
++ * desktop. Shown on the tour page; the tab matching the visitor's device is selected first.
++ * Once the app is installed it turns into a short confirmation.
++ */
++export function InstallGuide({ lang, appUrl }: InstallGuideProps) {
++  const ui = INSTALL_UI[lang];
++  const state = usePwaInstallState();
++  const detected = useMemo(detectPlatform, []);
++  const [platform, setPlatform] = useState<InstallPlatform>(detected);
++  const guide = ui.platforms[platform];
++  const [outcome, setOutcome] = useState<'accepted' | 'dismissed' | null>(null);
++
++  const installNow = async () => setOutcome((await promptInstall()) ? 'accepted' : 'dismissed');
++  const showInstallButton = state === 'available' && platform !== 'ios';
++
++  return (
++    <section
++      id="install"
++      aria-labelledby="install-title"
++      className="mb-12 scroll-mt-24 rounded-[28px] border border-[var(--border)] bg-[var(--surface)] p-5 sm:p-8"
++    >
++      <p className="text-[11px] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">{ui.eyebrow}</p>
++      <h2 id="install-title" className="mt-2 text-2xl font-extrabold tracking-tight sm:text-3xl">{ui.title}</h2>
++      <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-[var(--muted)]">{ui.lede}</p>
++
++      {state === 'installed' ? (
++        <div role="status" className="mt-5 flex flex-wrap items-center gap-3 rounded-2xl bg-[#C9EFD3] p-4 text-[#174A2B]">
++          <CheckCircle2 size={22} className="shrink-0" aria-hidden="true" />
++          <div className="min-w-0 flex-1">
++            <p className="text-sm font-extrabold">{ui.installedTitle}</p>
++            <p className="text-xs font-medium">{ui.installedBody}</p>
++          </div>
++          <a href={appUrl} className="inline-flex min-h-10 items-center rounded-full bg-[#174A2B] px-4 text-xs font-extrabold text-white">
++            {ui.openApp}
++          </a>
++        </div>
++      ) : null}
++
++      <div role="tablist" aria-label={ui.title} className="mt-6 inline-flex max-w-full flex-wrap gap-1 rounded-2xl bg-[var(--inset)] p-1">
++        {PLATFORMS.map((id) => {
++          const Icon = PLATFORM_ICON[id];
++          const active = platform === id;
++          return (
++            <button
++              key={id}
++              type="button"
++              role="tab"
++              aria-selected={active}
++              onClick={() => { setPlatform(id); setOutcome(null); }}
++              className={`inline-flex min-h-10 items-center gap-2 rounded-xl px-3.5 text-xs font-extrabold transition-colors ${
++                active ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
++              }`}
++            >
++              <Icon size={15} aria-hidden="true" />
++              {ui.platforms[id].tab}
++            </button>
++          );
++        })}
++      </div>
++
++      <div role="tabpanel" className="mt-5">
++        <h3 className="text-lg font-extrabold">{guide.heading}</h3>
++        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">{guide.intro}</p>
++
++        <ol className="mt-4 max-w-2xl space-y-3">
++          {guide.steps.map((step, position) => (
++            <li key={step} className="flex gap-3 text-[15px] leading-relaxed">
++              <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-[var(--text)] text-xs font-extrabold text-[var(--on-text)]" aria-hidden="true">
++                {position + 1}
++              </span>
++              <span>{step}</span>
++            </li>
++          ))}
++        </ol>
++
++        {guide.tip ? <p className="mt-4 max-w-2xl text-xs font-semibold leading-relaxed text-[var(--muted)]">{guide.tip}</p> : null}
++
++        {showInstallButton ? (
++          <div className="mt-5 flex flex-wrap items-center gap-3">
++            <button
++              type="button"
++              onClick={installNow}
++              className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[var(--text)] px-5 text-sm font-extrabold text-[var(--on-text)]"
++            >
++              <Download size={16} aria-hidden="true" />
++              {ui.installNow}
++            </button>
++            <span className="text-xs font-semibold text-[var(--muted)]" role="status">
++              {outcome === 'accepted' ? '…' : ui.installNowHint}
++            </span>
++          </div>
++        ) : null}
++
++        {platform === 'android' ? (
++          <div className="mt-7 rounded-2xl border border-[var(--border)] bg-[var(--inset)] p-4 sm:p-5">
++            <h4 className="text-base font-extrabold">{ui.apk.title}</h4>
++            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-[var(--muted)]">{ui.apk.body}</p>
++            <div className="mt-4 flex flex-wrap items-center gap-3">
++              <a
++                href={APK_URL}
++                download
++                className="inline-flex min-h-11 items-center gap-2 rounded-2xl bg-[var(--text)] px-5 text-sm font-extrabold text-[var(--on-text)]"
++              >
++                <Download size={16} aria-hidden="true" />
++                {ui.apk.download}
++              </a>
++              <a href={RELEASES_URL} target="_blank" rel="noreferrer" className="text-xs font-extrabold text-[var(--muted)] underline underline-offset-2 hover:text-[var(--text)]">
++                {ui.apk.allReleases}
++              </a>
++            </div>
++
++            <div className="mt-5 rounded-xl border border-[#E8B04A] bg-[#FFF3D6] p-4 text-[#5B3A00]">
++              <p className="flex items-center gap-2 text-sm font-extrabold">
++                <ShieldAlert size={18} className="shrink-0" aria-hidden="true" />
++                {ui.apk.warningTitle}
++              </p>
++              <p className="mt-2 text-xs font-medium leading-relaxed">{ui.apk.warningIntro}</p>
++              <ul className="mt-2 list-disc space-y-1.5 pl-5 text-xs font-medium leading-relaxed">
++                {ui.apk.warnings.map((warning) => <li key={warning}>{warning}</li>)}
++              </ul>
++              <p className="mt-3 text-xs font-bold leading-relaxed">{ui.apk.safety}</p>
++            </div>
++          </div>
++        ) : null}
++      </div>
++
++      <p className="mt-6 text-xs font-semibold text-[var(--muted)]">{ui.afterInstall}</p>
++    </section>
++  );
++}
+diff --git a/src/components/tour/installContent.ts b/src/components/tour/installContent.ts
+new file mode 100644
+index 0000000..7694359
+--- /dev/null
++++ b/src/components/tour/installContent.ts
+@@ -0,0 +1,168 @@
++import type { InstallPlatform } from '../../utils/pwaInstall';
++import type { TourLang } from './tourContent';
++
++export interface InstallPlatformGuide {
++  tab: string;
++  heading: string;
++  intro: string;
++  steps: string[];
++  /** Optional extra hint under the steps. */
++  tip?: string;
++}
++
++export interface InstallUi {
++  /** Header button that scrolls to the guide. */
++  navLabel: string;
++  eyebrow: string;
++  title: string;
++  lede: string;
++  platforms: Record<InstallPlatform, InstallPlatformGuide>;
++  installNow: string;
++  installNowHint: string;
++  installedTitle: string;
++  installedBody: string;
++  openApp: string;
++  afterInstall: string;
++  /** Android APK block. */
++  apk: {
++    title: string;
++    body: string;
++    download: string;
++    allReleases: string;
++    warningTitle: string;
++    warningIntro: string;
++    warnings: string[];
++    safety: string;
++  };
++}
++
++export const INSTALL_UI: Record<TourLang, InstallUi> = {
++  en: {
++    navLabel: 'Install app',
++    eyebrow: 'Install',
++    title: 'Get Kakcalculator on your device',
++    lede: 'Install it once and it opens like any other app, full screen, with its own icon, and it keeps working offline. No account and no store needed.',
++    platforms: {
++      ios: {
++        tab: 'iPhone / iPad',
++        heading: 'On iPhone or iPad',
++        intro: 'iOS has no install button, but Safari can add the app to your Home Screen in a few taps.',
++        steps: [
++          'Open this page in Safari (on iOS 16.4 and newer other browsers can do it too).',
++          'Tap the Share button (the square with an arrow pointing up) in the toolbar.',
++          'Scroll down and tap “Add to Home Screen”. If you do not see it, tap “View More” first.',
++          'Keep “Open as Web App” switched on if it is shown, then tap “Add”.',
++          'Open Kakcalculator from the new icon on your Home Screen.',
++        ],
++        tip: 'The Home Screen app keeps its own storage on iOS, so install it before you start logging, or move an existing journal with Settings > Data Backup.',
++      },
++      android: {
++        tab: 'Android',
++        heading: 'On Android',
++        intro: 'Two ways: install the web app straight from Chrome, or download the APK to also get native home-screen widgets and reminder notifications.',
++        steps: [
++          'Open this page in Chrome (Edge, Samsung Internet and Brave work too).',
++          'Tap the “Install now” button below, or open the ⋮ menu and choose “Install app” (sometimes called “Add to Home screen”).',
++          'Confirm with “Install”. The icon appears on your Home Screen and in the app drawer.',
++          'Open Kakcalculator from that icon. From now on it always opens the app itself.',
++        ],
++      },
++      desktop: {
++        tab: 'Computer',
++        heading: 'On Windows, macOS, Linux or ChromeOS',
++        intro: 'Chrome and Edge install the app as its own window, with a desktop or Start menu shortcut.',
++        steps: [
++          'Open this page in Chrome or Edge.',
++          'Click the “Install now” button below, or the install icon (a screen with a small arrow) at the right end of the address bar.',
++          'Otherwise open the browser menu: in Chrome choose “Cast, save and share” > “Install page as app…”, in Edge choose “Apps” > “Install this site as an app”.',
++          'Confirm with “Install”. The app opens in its own window and can be pinned to the taskbar or Dock.',
++          'Safari on macOS 14 or newer: File > “Add to Dock…”. Firefox cannot install web apps.',
++        ],
++      },
++    },
++    installNow: 'Install now',
++    installNowHint: 'Your browser is ready to install the app.',
++    installedTitle: 'Kakcalculator is installed',
++    installedBody: 'Open it from your Home Screen, app drawer or desktop. It will always start directly in the app, without this page.',
++    openApp: 'Open the app',
++    afterInstall: 'After installing, Kakcalculator always opens straight into the app. This guide only shows to new visitors.',
++    apk: {
++      title: 'Android: download the APK as well',
++      body: 'The APK is the full Android app. Compared with the web version it adds the four home-screen widgets and optional reminder notifications, and it starts from files on the phone.',
++      download: 'Download APK',
++      allReleases: 'All releases',
++      warningTitle: 'Android may say the file could be harmful',
++      warningIntro: 'That is expected. The APK does not come from the Google Play Store, and Android and Google Play Protect warn about every app installed this way. You may see:',
++      warnings: [
++        '“This type of file can harm your device” when the browser finishes the download. Tap “Download anyway” or “OK”.',
++        '“For your security, your phone is not allowed to install unknown apps from this source”. Tap “Settings” and allow your browser (or Files app) to install unknown apps. You can switch it off again afterwards.',
++        '“Blocked by Play Protect” or “App not scanned”. Tap “More details”, then “Install anyway”.',
++      ],
++      safety: 'Only install the APK from this page or from the official GitHub releases of the project. Kakcalculator has no account and no backend, and your data stays on your phone.',
++    },
++  },
++  it: {
++    navLabel: 'Installa l’app',
++    eyebrow: 'Installazione',
++    title: 'Porta Kakcalculator sul tuo dispositivo',
++    lede: 'Installala una volta e si apre come qualsiasi altra app: a schermo intero, con la sua icona, e funziona anche offline. Nessun account e nessuno store.',
++    platforms: {
++      ios: {
++        tab: 'iPhone / iPad',
++        heading: 'Su iPhone o iPad',
++        intro: 'iOS non ha un pulsante di installazione, ma Safari può aggiungere l’app alla schermata Home in pochi tocchi.',
++        steps: [
++          'Apri questa pagina in Safari (da iOS 16.4 in poi funzionano anche altri browser).',
++          'Tocca il pulsante Condividi (il quadrato con la freccia verso l’alto) nella barra degli strumenti.',
++          'Scorri e tocca “Aggiungi alla schermata Home”. Se non la vedi, tocca prima “Mostra altro”.',
++          'Lascia attivo “Apri come app web” se compare, poi tocca “Aggiungi”.',
++          'Apri Kakcalculator dalla nuova icona nella schermata Home.',
++        ],
++        tip: 'Su iOS l’app nella schermata Home ha un archivio separato: installala prima di iniziare a registrare, oppure sposta un diario esistente con Impostazioni > Backup dati.',
++      },
++      android: {
++        tab: 'Android',
++        heading: 'Su Android',
++        intro: 'Due modi: installa l’app web direttamente da Chrome, oppure scarica l’APK per avere anche i widget nativi e le notifiche di promemoria.',
++        steps: [
++          'Apri questa pagina in Chrome (vanno bene anche Edge, Samsung Internet e Brave).',
++          'Tocca “Installa ora” qui sotto, oppure apri il menu ⋮ e scegli “Installa app” (a volte “Aggiungi a schermata Home”).',
++          'Conferma con “Installa”. L’icona compare nella schermata Home e nell’elenco delle app.',
++          'Apri Kakcalculator da quell’icona. Da ora si apre sempre direttamente l’app.',
++        ],
++      },
++      desktop: {
++        tab: 'Computer',
++        heading: 'Su Windows, macOS, Linux o ChromeOS',
++        intro: 'Chrome ed Edge installano l’app come finestra a sé, con un collegamento sul desktop o nel menu Start.',
++        steps: [
++          'Apri questa pagina in Chrome o in Edge.',
++          'Clicca “Installa ora” qui sotto, oppure l’icona di installazione (uno schermo con una piccola freccia) a destra della barra degli indirizzi.',
++          'In alternativa apri il menu del browser: in Chrome scegli “Trasmetti, salva e condividi” > “Installa pagina come app…”, in Edge scegli “App” > “Installa questo sito come app”.',
++          'Conferma con “Installa”. L’app si apre in una finestra propria e si può fissare alla barra delle applicazioni o al Dock.',
++          'Safari su macOS 14 o successivo: File > “Aggiungi al Dock…”. Firefox non può installare app web.',
++        ],
++      },
++    },
++    installNow: 'Installa ora',
++    installNowHint: 'Il tuo browser è pronto a installare l’app.',
++    installedTitle: 'Kakcalculator è installata',
++    installedBody: 'Aprila dalla schermata Home, dall’elenco delle app o dal desktop. Partirà sempre direttamente dall’app, senza questa pagina.',
++    openApp: 'Apri l’app',
++    afterInstall: 'Dopo l’installazione Kakcalculator si apre sempre direttamente nell’app. Questa guida compare solo ai nuovi visitatori.',
++    apk: {
++      title: 'Android: scarica anche l’APK',
++      body: 'L’APK è l’app Android completa. Rispetto alla versione web aggiunge i quattro widget per la schermata Home e i promemoria opzionali, e parte dai file presenti sul telefono.',
++      download: 'Scarica l’APK',
++      allReleases: 'Tutte le versioni',
++      warningTitle: 'Android può dire che il file potrebbe essere dannoso',
++      warningIntro: 'È normale. L’APK non arriva dal Google Play Store e Android e Google Play Protect avvisano per ogni app installata in questo modo. Potresti vedere:',
++      warnings: [
++        '“Questo tipo di file può danneggiare il dispositivo” al termine del download. Tocca “Scarica comunque” oppure “OK”.',
++        '“Per la tua sicurezza, il telefono non può installare app sconosciute da questa fonte”. Tocca “Impostazioni” e consenti al browser (o all’app File) di installare app sconosciute. Puoi disattivarlo di nuovo dopo.',
++        '“Bloccata da Play Protect” oppure “App non analizzata”. Tocca “Maggiori dettagli”, poi “Installa comunque”.',
++      ],
++      safety: 'Installa l’APK solo da questa pagina o dalle release GitHub ufficiali del progetto. Kakcalculator non ha account né backend e i tuoi dati restano sul telefono.',
++    },
++  },
++};
+diff --git a/src/config/demo.ts b/src/config/demo.ts
+index ba12f11..59c2606 100644
+--- a/src/config/demo.ts
++++ b/src/config/demo.ts
+@@ -1,3 +1,12 @@
+-// Browser review builds are populated. Android preparation always disables seeding.
++import { TOUR_STORAGE_ISOLATED } from '../utils/tourStorage';
++
++/**
++ * Demo data (sample meals, activity, recipes, favourites, custom buttons, period data).
++ *
++ * - The real app (Android APK, installed PWA, the website's journal) starts EMPTY: normal use.
++ * - The guided tour's embedded phone (`?tour=1`) is populated, but only while its storage is the
++ *   in-memory sandbox from `utils/tourStorage.ts`, so demo data can never be saved into a real journal.
++ * - `VITE_DEMO_DATA=true npm run build` brings back populated review builds (never for Android).
++ */
+ export const DEMO_MODE = import.meta.env.VITE_ANDROID_RELEASE !== 'true' &&
+-  import.meta.env.VITE_DEMO_DATA !== 'false';
++  (TOUR_STORAGE_ISOLATED || import.meta.env.VITE_DEMO_DATA === 'true');
+diff --git a/src/config/install.ts b/src/config/install.ts
+new file mode 100644
+index 0000000..8cceae5
+--- /dev/null
++++ b/src/config/install.ts
+@@ -0,0 +1,13 @@
++/**
++ * Where the Android APK is downloaded from (shown in the installation guide on the tour page).
++ *
++ * Default: the file named `Kakcalculator.apk` attached to the newest GitHub release of the repository
++ * (https://github.com/MatMon28/Kakcalculator/releases). Build the APK, create a release and upload it
++ * under exactly that name, and the "Download APK" button works without any further change.
++ * Override at build time with `VITE_APK_URL=https://example.com/Kakcalculator.apk npm run build`.
++ */
++export const RELEASES_URL = 'https://github.com/MatMon28/Kakcalculator/releases/latest';
++
++export const APK_URL: string =
++  (import.meta.env.VITE_APK_URL as string | undefined)?.trim() ||
++  'https://github.com/MatMon28/Kakcalculator/releases/latest/download/Kakcalculator.apk';
+diff --git a/src/main.tsx b/src/main.tsx
+index 7458dee..6cb51f6 100644
+--- a/src/main.tsx
++++ b/src/main.tsx
+@@ -1,3 +1,5 @@
++// Must stay first: inside the guided tour it swaps localStorage for an in-memory sandbox (demo data never persists).
++import "./utils/tourStorage";
+ import { StrictMode } from "react";
+ import { createRoot } from "react-dom/client";
+ // Fonts: latin-only @font-face rules live in index.css (see the note there).
+diff --git a/src/utils/pwaInstall.ts b/src/utils/pwaInstall.ts
+index cb95867..35a73c8 100644
+--- a/src/utils/pwaInstall.ts
++++ b/src/utils/pwaInstall.ts
+@@ -19,14 +19,45 @@ let started = false;
+ let snapshot: PwaInstallState = 'hidden';
+ const listeners = new Set<() => void>();
+ 
+-const isStandalone = () =>
+-  window.matchMedia?.('(display-mode: standalone)').matches ||
+-  (navigator as Navigator & { standalone?: boolean }).standalone === true;
++/** Remembers on this browser profile that the PWA was installed or opened as an app (see `shouldOpenJournal`). */
++const INSTALLED_KEY = 'kc_pwa_installed';
+ 
+-const isIos = () =>
++/** True when the page runs as an installed app (own window / home-screen icon), not in a browser tab. */
++export const isStandalone = () =>
++  ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay'].some(
++    (mode) => window.matchMedia?.(`(display-mode: ${mode})`).matches,
++  ) || (navigator as Navigator & { standalone?: boolean }).standalone === true;
++
++export const isIos = () =>
+   /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+ 
++export type InstallPlatform = 'ios' | 'android' | 'desktop';
++
++/** The device family, used to pick the matching install instructions. */
++export function detectPlatform(): InstallPlatform {
++  if (isIos()) return 'ios';
++  if (/android/i.test(navigator.userAgent)) return 'android';
++  return 'desktop';
++}
++
++function rememberInstalled() {
++  try { localStorage.setItem(INSTALLED_KEY, '1'); } catch { /* storage unavailable */ }
++}
++
++/**
++ * Decides whether the page should open the journal instead of the explanation/installation page.
++ * Inside an installed app this is always true. In a normal browser tab it stays true on a device where
++ * the app was installed before (same browser profile), so the guide only appears for new visitors.
++ * An explicit `?view=tour` still shows the guide in a browser tab.
++ */
++export function shouldOpenJournal(view: string | null): boolean {
++  if (typeof window === 'undefined') return false;
++  if (isStandalone()) { rememberInstalled(); return true; }
++  if (view === 'tour') return false;
++  try { return localStorage.getItem(INSTALLED_KEY) === '1'; } catch { return false; }
++}
++
+ function compute(): PwaInstallState {
+   if (typeof window === 'undefined' || isAndroidApp()) return 'hidden';
+   if (installed || isStandalone()) return 'installed';
+@@ -55,8 +86,10 @@ export function initPwaInstall() {
+   window.addEventListener('appinstalled', () => {
+     installed = true;
+     deferred = null;
++    rememberInstalled();
+     update();
+   });
++  if (isStandalone()) rememberInstalled();
+   snapshot = compute();
+ }
+ 
+@@ -68,7 +101,7 @@ export async function promptInstall(): Promise<boolean> {
+   update();
+   await event.prompt();
+   const { outcome } = await event.userChoice;
+-  if (outcome === 'accepted') installed = true;
++  if (outcome === 'accepted') { installed = true; rememberInstalled(); }
+   update();
+   return outcome === 'accepted';
+ }
+diff --git a/src/utils/tourStorage.ts b/src/utils/tourStorage.ts
+new file mode 100644
+index 0000000..402351b
+--- /dev/null
++++ b/src/utils/tourStorage.ts
+@@ -0,0 +1,93 @@
++/**
++ * Storage sandbox for the guided tour's embedded journal (`?tour=1`).
++ *
++ * The tour fills its live phone with demo data (see `config/demo.ts`). That data must never reach
++ * the real journal, because the tour and the app share one origin and therefore one `localStorage`.
++ * So inside the tour iframe `window.localStorage` is replaced by an in-memory copy:
++ *
++ * - everything the visitor does in the demo phone stays in memory and disappears on reload;
++ * - the language and the theme settings are read from the real storage at start, so the demo looks
++ *   like the visitor's app;
++ * - a language change and a theme change made inside the demo phone are written through to the real
++ *   storage (theme fields only), because the tour page follows them via `storage` events.
++ *
++ * This module must be the first import of `main.tsx` so it runs before any other module reads storage.
++ */
++const LANG_KEY = 'kcalsync_lang';
++const SETTINGS_KEY = 'kcalsync_settings';
++/** The only settings that follow the visitor between the tour page and the demo phone. */
++const SHARED_SETTINGS = ['theme', 'themeStyle', 'monoHue'] as const;
++
++const IS_TOUR_PREVIEW =
++  typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tour') === '1';
++
++function parseObject(raw: string | null): Record<string, unknown> {
++  try {
++    const parsed: unknown = JSON.parse(raw ?? '{}');
++    return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : {};
++  } catch {
++    return {};
++  }
++}
++
++function createSandbox(real: Storage): Storage {
++  const memory = new Map<string, string>();
++
++  const lang = real.getItem(LANG_KEY);
++  if (lang !== null) memory.set(LANG_KEY, lang);
++  const saved = parseObject(real.getItem(SETTINGS_KEY));
++  const shared: Record<string, unknown> = {};
++  for (const field of SHARED_SETTINGS) if (saved[field] !== undefined) shared[field] = saved[field];
++  if (Object.keys(shared).length) memory.set(SETTINGS_KEY, JSON.stringify(shared));
++
++  const writeThrough = (key: string, value: string) => {
++    try {
++      if (key === LANG_KEY) {
++        real.setItem(LANG_KEY, value);
++      } else if (key === SETTINGS_KEY) {
++        const current = parseObject(real.getItem(SETTINGS_KEY));
++        const incoming = parseObject(value);
++        let changed = false;
++        for (const field of SHARED_SETTINGS) {
++          if (incoming[field] !== undefined && incoming[field] !== current[field]) {
++            current[field] = incoming[field];
++            changed = true;
++          }
++        }
++        if (changed) real.setItem(SETTINGS_KEY, JSON.stringify(current));
++      }
++    } catch {
++      /* storage may be unavailable; the demo keeps working in memory */
++    }
++  };
++
++  const sandbox = {
++    get length() { return memory.size; },
++    key: (index: number) => Array.from(memory.keys())[index] ?? null,
++    getItem: (key: string) => memory.get(String(key)) ?? null,
++    setItem: (key: string, value: string) => {
++      memory.set(String(key), String(value));
++      writeThrough(String(key), String(value));
++    },
++    removeItem: (key: string) => { memory.delete(String(key)); },
++    clear: () => { memory.clear(); },
++  };
++  return sandbox as unknown as Storage;
++}
++
++function install(): boolean {
++  if (!IS_TOUR_PREVIEW) return false;
++  try {
++    const sandbox = createSandbox(window.localStorage);
++    Object.defineProperty(window, 'localStorage', { value: sandbox, configurable: true });
++    return window.localStorage === sandbox;
++  } catch {
++    return false;
++  }
++}
++
++/**
++ * True when this page is the tour's embedded journal and its storage is the in-memory sandbox.
++ * Demo data is only ever switched on when this is true (see `config/demo.ts`).
++ */
++export const TOUR_STORAGE_ISOLATED = install();

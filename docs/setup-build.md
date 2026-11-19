@@ -48,3 +48,5 @@ npx cap open android                    # or: cd android && ./gradlew assembleDe
 ```
 
 The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Re-run `prepare-android.mjs` after every web-app change or Capacitor plugin change; Android Studio never runs `cap sync` itself. Native Java/XML edits only need a Gradle rebuild.
+
+**Build-time switches (browser build):** `VITE_DEMO_DATA=true` seeds demo data in the standalone journal (default: empty, normal use; the Android script forces it off). `VITE_APK_URL=<url>` changes the Android APK download link of the install guide (default: latest GitHub release asset `Kakcalculator.apk`, see `src/config/install.ts`).

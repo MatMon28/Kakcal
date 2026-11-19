@@ -19,13 +19,44 @@ let started = false;
 let snapshot: PwaInstallState = 'hidden';
 const listeners = new Set<() => void>();
 
-const isStandalone = () =>
-  window.matchMedia?.('(display-mode: standalone)').matches ||
-  (navigator as Navigator & { standalone?: boolean }).standalone === true;
+/** Remembers on this browser profile that the PWA was installed or opened as an app (see `shouldOpenJournal`). */
+const INSTALLED_KEY = 'kc_pwa_installed';
 
-const isIos = () =>
+/** True when the page runs as an installed app (own window / home-screen icon), not in a browser tab. */
+export const isStandalone = () =>
+  ['standalone', 'fullscreen', 'minimal-ui', 'window-controls-overlay'].some(
+    (mode) => window.matchMedia?.(`(display-mode: ${mode})`).matches,
+  ) || (navigator as Navigator & { standalone?: boolean }).standalone === true;
+
+export const isIos = () =>
   /iphone|ipad|ipod/i.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+export type InstallPlatform = 'ios' | 'android' | 'desktop';
+
+/** The device family, used to pick the matching install instructions. */
+export function detectPlatform(): InstallPlatform {
+  if (isIos()) return 'ios';
+  if (/android/i.test(navigator.userAgent)) return 'android';
+  return 'desktop';
+}
+
+function rememberInstalled() {
+  try { localStorage.setItem(INSTALLED_KEY, '1'); } catch { /* storage unavailable */ }
+}
+
+/**
+ * Decides whether the page should open the journal instead of the explanation/installation page.
+ * Inside an installed app this is always true. In a normal browser tab it stays true on a device where
+ * the app was installed before (same browser profile), so the guide only appears for new visitors.
+ * An explicit `?view=tour` still shows the guide in a browser tab.
+ */
+export function shouldOpenJournal(view: string | null): boolean {
+  if (typeof window === 'undefined') return false;
+  if (isStandalone()) { rememberInstalled(); return true; }
+  if (view === 'tour') return false;
+  try { return localStorage.getItem(INSTALLED_KEY) === '1'; } catch { return false; }
+}
 
 function compute(): PwaInstallState {
   if (typeof window === 'undefined' || isAndroidApp()) return 'hidden';
@@ -55,8 +86,10 @@ export function initPwaInstall() {
   window.addEventListener('appinstalled', () => {
     installed = true;
     deferred = null;
+    rememberInstalled();
     update();
   });
+  if (isStandalone()) rememberInstalled();
   snapshot = compute();
 }
 
@@ -68,7 +101,7 @@ export async function promptInstall(): Promise<boolean> {
   update();
   await event.prompt();
   const { outcome } = await event.userChoice;
-  if (outcome === 'accepted') installed = true;
+  if (outcome === 'accepted') { installed = true; rememberInstalled(); }
   update();
   return outcome === 'accepted';
 }

@@ -17,3 +17,7 @@ For repeatable web checks, prepare Android assets, run `npm run build`, install 
 **Verification status of this documentation:** the doc set was audited against repository commit `4552bf0` (see [README.md](README.md#last-audit)). The test scripts themselves were **not** re-run in that audit.
 
 **PWA manual check:** after `npm run build && npm run preview`, DevTools > Application should show a valid manifest, an activated `offline-worker.js` and cache `kakcalculator-shell-v2`; reloading with *Offline* ticked must still open the app. Full list in [pwa-setup.md](pwa-setup.md#5-verify).
+
+**Demo data and the test scripts:** the standalone journal now starts empty (normal use). `scripts/check-journal.mjs` and the journal steps of `scripts/smoke.mjs` were written against the populated review build; build with `VITE_DEMO_DATA=true npm run build` before running them. These scripts were not re-run after the install-guide round.
+
+**Install guide round (checked):** `npm run build` passes, and the built bundle was exercised in jsdom: fresh visitor sees the guide with the right tab for desktop / Android / iPhone user agents; Android tab shows the APK link and the warning; standalone display mode opens the journal and sets `kc_pwa_installed`; a normal tab with the flag opens the journal; `?view=tour` still shows the guide; the tour sandbox keeps demo data out of the real storage and writes only theme/language back. A real browser install (beforeinstallprompt, iOS Share sheet, a real APK) was **not** exercised.

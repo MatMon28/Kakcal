@@ -81,6 +81,10 @@ location /icons/                  { add_header Cache-Control "public, max-age=31
 | **Desktop (Chrome / Edge)** | Settings > *Install app* > **Install**, or the install icon in the address bar. |
 | **iPhone / iPad (Safari)** | Share > **Add to Home Screen**. Safari offers no install button; Settings shows this hint. Open it from the home-screen icon once while online. |
 
+The same steps, in English and Italian and with the Android APK instructions, are shown to visitors by the **Install** section at the top of the tour page ([pwa.md](pwa.md#install-guide-and-always-open-the-app)). Once the app is installed it always opens straight into the journal. To show the guide again in a browser tab, open `<url>/?view=tour`.
+
+**Android APK button:** upload the signed APK to a GitHub release of the repository as `Kakcalculator.apk` (or set `VITE_APK_URL` at build time). Until then the button leads to a GitHub 404.
+
 Your journal stays on that browser/device (`localStorage`). A browser tab and the installed app on the same device share it; another device or browser does not, so use *Data Backup* (Export/Import JSON) to move data.
 
 ## 5. Verify

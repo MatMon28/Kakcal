@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, ArrowRight, ArrowUpRight, Download, MousePointer2 } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Download, MousePointer2, Smartphone } from 'lucide-react';
 import { Wordmark } from '../common/Brand';
 import { WidgetGallery } from '../widgets/WidgetGallery';
 import { NotificationShowcase } from './NotificationShowcase';
+import { InstallGuide } from './InstallGuide';
+import { INSTALL_UI } from './installContent';
 import {
   isWidgetReadyMessage,
   isWidgetSnapshotMessage,
@@ -155,6 +157,9 @@ export function AppTour() {
     frameRef.current?.contentWindow?.location.reload();
   };
 
+  const scrollToInstall = () =>
+    document.getElementById('install')?.scrollIntoView({ behavior: prefersReducedMotion() ? 'auto' : 'smooth', block: 'start' });
+
   const phone = (maxWidth: number) => (
     <div ref={phoneRef} className="mx-auto w-full" style={{ maxWidth }}>
       <div className="rounded-[46px] bg-[#24201C] p-2.5 shadow-[0_30px_60px_-28px_rgba(36,32,28,0.55)]">
@@ -193,6 +198,14 @@ export function AppTour() {
                 </button>
               ))}
             </div>
+            <button
+              type="button"
+              onClick={scrollToInstall}
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--surface)] px-3.5 text-xs font-extrabold text-[var(--text)] hover:bg-[var(--hover)]"
+            >
+              <Smartphone size={15} aria-hidden="true" />
+              {INSTALL_UI[lang].navLabel}
+            </button>
             <a href={androidZip} download className="inline-flex min-h-10 items-center gap-1.5 text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)]">
               <Download size={15} aria-hidden="true" />
               <span>{ui.androidProject}</span>
@@ -211,6 +224,8 @@ export function AppTour() {
           <h1 className="mt-2 text-3xl font-extrabold tracking-tight sm:text-4xl">{ui.pageTitle}</h1>
           <p className="mt-3 text-[15px] leading-relaxed text-[var(--muted)]">{ui.pageLede}</p>
         </div>
+
+        <InstallGuide lang={lang} appUrl={journalUrl} />
 
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:gap-14">
           <section aria-label={ui.pages} className="min-w-0">

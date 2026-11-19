@@ -39,6 +39,7 @@ import {
 import { addDaysToDateString, getTodayDateString } from './utils/formatters';
 import { isAndroidApp, JournalDevice } from './utils/android';
 import { isPeriodShown } from './utils/tourPreview';
+import { shouldOpenJournal } from './utils/pwaInstall';
 import { useNotificationScheduler } from './utils/useNotificationScheduler';
 import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
@@ -373,10 +374,12 @@ let introPending: boolean | null = null;
 
 export function App() {
   const view = new URLSearchParams(window.location.search).get('view');
-  // The journal is the default inside the Android bundle and when ?view=app is given.
-  // Everywhere else the guided tour is shown, and it embeds the journal itself.
+  // The journal is shown inside the Android bundle, when ?view=app is given, and always once Kakcalculator
+  // runs as an installed app (or was installed on this browser before). Only new visitors in a browser tab
+  // get the guided tour with the installation instructions, which embeds the journal itself.
   const showJournal = import.meta.env.VITE_ANDROID_RELEASE === 'true' || view === 'app' ||
-    (view !== 'tour' && (window.location.protocol === 'capacitor:' || isAndroidApp()));
+    (view !== 'tour' && (window.location.protocol === 'capacitor:' || isAndroidApp())) ||
+    shouldOpenJournal(view);
   // Launch intro (one of six random phase-1 animations); the app mounts underneath it.
   introPending ??= shouldShowIntro();
   const [introVisible, setIntroVisible] = useState(introPending);

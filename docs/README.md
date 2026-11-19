@@ -8,6 +8,7 @@
 | --- | --- |
 | Install, build, run scripts | [setup-build.md](setup-build.md) |
 | Run the browser version, tour, URL flags, demo data | [web-preview.md](web-preview.md) |
+| Change the install instructions (iOS / Android / PC / APK) or when the app opens instead of the guide | [pwa.md](pwa.md#install-guide-and-always-open-the-app) |
 | Make / host / install the PWA, offline mode, install button | [pwa.md](pwa.md), steps in [pwa-setup.md](pwa-setup.md) |
 | Build / sign / distribute the APK | [android-apk.md](android-apk.md), then [../android/BUILD_APK.md](../android/BUILD_APK.md) |
 | Fix a Gradle / Capacitor sync error | [android-gradle-guard.md](android-gradle-guard.md) |
@@ -61,3 +62,4 @@ Checked against repository commit **`4552bf0`** (the later `f037263` only change
 
 **Readability / notification icon / start-up round (on top of `4e5b49d`, "Fixed error"):** Aurora Dark and Lite Dark labels on `var(--text)` fills no longer white-on-white (`calculations-colors.md`, `file-map/app-shell.md`); full-bleed large notification icon and bigger status-bar icon (`notifications.md`, `brand.md`, `file-map/scripts-public.md`, `file-map/android-native.md`); launch animation interrupted when loading finishes, deferred start-up work, R8 + resource shrinking, baseline profile (`startup-performance.md`, `launch-intro.md`, `file-map/utils.md`, `file-map/tour-widgets-intro.md`, `file-map/android-native.md`, `setup-build.md`, `android/BUILD_APK.md`, `known-gaps.md` #10-11, `changes-patch.md`). Verified by `npm run build`, headless-Chromium screenshots of Aurora Dark / Lite Dark and an intro timing run, XML validation and image inspection; the Android project was **not** compiled and nothing was run on a device.
 
+**Install guide round (on top of `492413d`, "Faster startup and fixes"):** install instructions for iOS, Android (with the APK and its warning) and desktop on the tour page, an installed PWA (and a browser tab on a device where it was installed) always opens the journal, and the web build left review mode: no demo data in the real journal, the tour's phone runs on an in-memory sandbox. Docs updated: root README, this index, pwa, pwa-setup, web-preview, setup-build, storage-and-privacy, verification, known-gaps (#12-14) and the file maps (app-shell, utils, data, tour-widgets-intro). Verified by `npm run build` and jsdom runs of the built bundle only; no real browser or device install was run.

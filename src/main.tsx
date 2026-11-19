@@ -1,3 +1,5 @@
+// Must stay first: inside the guided tour it swaps localStorage for an in-memory sandbox (demo data never persists).
+import "./utils/tourStorage";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 // Fonts: latin-only @font-face rules live in index.css (see the note there).
