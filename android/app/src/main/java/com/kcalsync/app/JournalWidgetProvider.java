@@ -50,6 +50,8 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     private static final int[] BUTTONS = { R.id.widget_food, R.id.widget_movement, R.id.widget_water, R.id.widget_poop, R.id.widget_weight, R.id.widget_custom };
     private static final int[] LABELS = { R.string.widget_food, R.string.widget_movement, R.string.widget_water, R.string.widget_poop, R.string.widget_weight, R.string.widget_custom };
     private static final int[] ICONS = { R.drawable.widget_food_icon, R.drawable.widget_movement_icon, R.drawable.widget_water_icon, R.drawable.widget_poop_icon, R.drawable.widget_weight_icon, R.drawable.widget_custom_icon };
+    /** Same icons without the circular plate; tinted per theme style by renderStyledActionBitmap. */
+    private static final int[] GLYPHS = { R.drawable.widget_glyph_food, R.drawable.widget_glyph_movement, R.drawable.widget_glyph_water, R.drawable.widget_glyph_poop, R.drawable.widget_glyph_weight, R.drawable.widget_glyph_custom };
 
     static SharedPreferences store(Context context) {
         return context.getSharedPreferences("widget_nutrition_v1", Context.MODE_PRIVATE);
@@ -349,32 +351,15 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 canvas.drawPath(shape, paint);
             }
 
-            Drawable src = context.getDrawable(ICONS[index]);
-            if (src != null) {
-                // Extract the inner 24x24 glyph from the 48x48 vector drawable by masking out the outer circle
-                Bitmap raw = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
-                Canvas rawCanvas = new Canvas(raw);
-                src.setBounds(0, 0, size, size);
-                src.draw(rawCanvas);
-                int centerBg = raw.getPixel(16, 16);
-                int[] pixels = new int[size * size];
-                raw.getPixels(pixels, 0, size, 0, 0, size, size);
-                int br = Color.red(centerBg), bg = Color.green(centerBg), bb = Color.blue(centerBg);
-                for (int p = 0; p < pixels.length; p++) {
-                    int px = pixels[p];
-                    int a = Color.alpha(px);
-                    if (a == 0) continue;
-                    int dist = Math.abs(Color.red(px) - br) + Math.abs(Color.green(px) - bg) + Math.abs(Color.blue(px) - bb);
-                    if (dist < 42) {
-                        pixels[p] = Color.TRANSPARENT;
-                    } else {
-                        int alpha = Math.min(255, dist * 2);
-                        pixels[p] = Color.argb(alpha, Color.red(ink), Color.green(ink), Color.blue(ink));
-                    }
-                }
-                raw.setPixels(pixels, 0, size, 0, 0, size, size);
-                canvas.drawBitmap(raw, 0f, 0f, null);
-                raw.recycle();
+            // Glyph-only vectors (no circular plate), tinted with the style's ink colour. The old code
+            // cut the glyph out of the classic circle icon by colour distance, which painted the
+            // whole plate in ink (or erased dark glyphs) as soon as a non-classic style was used.
+            Drawable glyph = context.getDrawable(GLYPHS[index]);
+            if (glyph != null) {
+                glyph = glyph.mutate();
+                glyph.setTint(ink);
+                glyph.setBounds(0, 0, size, size);
+                glyph.draw(canvas);
             }
             return bmp;
         } catch (Exception ignored) {

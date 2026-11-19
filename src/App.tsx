@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/common/Header';
@@ -23,6 +23,8 @@ import { PeriodSheet } from './components/modals/PeriodSheet';
 import { QuickAddBar } from './components/dashboard/QuickAddBar';
 import { AppTour } from './components/tour/AppTour';
 import { PageSwiper } from './components/common/PageSwiper';
+import { IntroSplash } from './components/intro/IntroSplash';
+import { shouldShowIntro } from './components/intro/introAnimations';
 import {
   isWidgetAction,
   isWidgetRequest,
@@ -362,19 +364,30 @@ function MainContent() {
   );
 }
 
+/** Decided once per page load, so a re-render can never replay the intro. */
+let introPending: boolean | null = null;
+
 export function App() {
   const view = new URLSearchParams(window.location.search).get('view');
   // The journal is the default inside the Android bundle and when ?view=app is given.
   // Everywhere else the guided tour is shown, and it embeds the journal itself.
   const showJournal = import.meta.env.VITE_ANDROID_RELEASE === 'true' || view === 'app' ||
     (view !== 'tour' && (window.location.protocol === 'capacitor:' || isAndroidApp()));
+  // Launch intro (one of six random phase-1 animations); the app mounts underneath it.
+  introPending ??= shouldShowIntro();
+  const [introVisible, setIntroVisible] = useState(introPending);
+  const endIntro = useCallback(() => setIntroVisible(false), []);
+  const intro = introVisible && <IntroSplash onDone={endIntro} />;
 
-  if (!showJournal) return <AppTour />;
+  if (!showJournal) return <><AppTour />{intro}</>;
 
   return (
-    <AppProvider>
-      <MainContent />
-    </AppProvider>
+    <>
+      <AppProvider>
+        <MainContent />
+      </AppProvider>
+      {intro}
+    </>
   );
 }
 

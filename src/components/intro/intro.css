@@ -1,0 +1,48 @@
+/*
+ * Launch intro overlay. It sits on top of the already-mounting journal (never waits for it),
+ * holds the final frame (the exact brand icon) briefly, then fades out.
+ * Palette tokens follow src/assets/kakcalculator_intro/intro_animation.md §5.
+ */
+.kc-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-items: center;
+  background: var(--bg, #EFE9DD);
+  --kc-cream: #FBF3E3;
+  --kc-ink: #232325;
+  --kc-edge: #D5C8B3;
+  opacity: 1;
+  transition: opacity 240ms ease-out;
+  touch-action: manipulation;
+}
+
+/* Dark / Lite Dark: the card takes the surface colour exactly so only the cream strokes remain. */
+.kc-intro[data-dark='true'] {
+  --kc-cream: var(--bg, #141417);
+  --kc-ink: #FBF3E3;
+  --kc-edge: #0b0b0e;
+}
+
+.kc-intro[data-leaving='true'] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.kc-intro__art {
+  width: min(52vw, 232px);
+  aspect-ratio: 1;
+  pointer-events: none;
+}
+
+.kc-intro__art > svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kc-intro { transition: none; }
+}
