@@ -567,12 +567,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         <div className="accordion-inner">
         {preBuiltMeals.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
-          <p className="text-xs font-medium text-[#7D4E14] px-1 py-1">
+          <p className="kc-section-empty text-xs font-medium text-[#7D4E14] px-1 py-1">
             {t.common.emptyMeals}
           </p>
         ) : visibleMeals.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
-          <p className="text-xs font-medium text-[#7D4E14] px-1 py-2 text-center">
+          <p className="kc-section-empty text-xs font-medium text-[#7D4E14] px-1 py-2 text-center">
             {t.prebuilt.noMatches}
           </p>
         ) : (
@@ -583,6 +583,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               return (
                 <div
                   key={meal.id}
+                  data-library-card
                   className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}
                 >
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
@@ -640,7 +641,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         onClick={() => handleOpenLogModal(meal)}
                         title={t.prebuilt.logMeal}
                         aria-label={`${t.prebuilt.logMeal}: ${meal.name}`}
-                        className={`pressable ${ultraMinimal ? 'size-8 px-0' : 'h-8 px-3'} bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1`}
+                        className={`kc-action-pill pressable ${ultraMinimal ? 'size-8 px-0' : 'h-8 px-3'} bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1`}
                       >
                         <Plus size={14} strokeWidth={2.5} />
                         <span className={ultraMinimal ? 'sr-only' : 'whitespace-nowrap'}>{t.common.log}</span>
@@ -670,7 +671,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         )}
                         <div className="pt-2"><FoodMacroGrid food={nut} amount={100} mode={ultraMinimal ? 'minimal' : 'facts'} /></div>
 
-                        <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                        <div data-library-ingredients className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                           {meal.ingredients.map((ing, idx) => {
                             const food = allFoods.find((f) => f.id === ing.foodId);
                             return (
@@ -722,12 +723,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         <div className="accordion-inner">
         {savedRecipes.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
-          <p className="text-xs font-medium text-[#4D3582] px-1 py-1">
+          <p className="kc-section-empty text-xs font-medium text-[#4D3582] px-1 py-1">
             {t.prebuilt.noRecipes}
           </p>
         ) : visibleRecipes.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
-          <p className="text-xs font-medium text-[#4D3582] px-1 py-2 text-center">
+          <p className="kc-section-empty text-xs font-medium text-[#4D3582] px-1 py-2 text-center">
             {t.prebuilt.noMatches}
           </p>
         ) : (
@@ -735,7 +736,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
               return (
-                <div key={recipe.id} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
+                <div key={recipe.id} data-library-card className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
                     <button
@@ -788,7 +789,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         }}
                         title={t.prebuilt.logRecipe}
                         aria-label={`${t.prebuilt.logRecipe}: ${nameOf(recipe)}`}
-                        className={`pressable ${ultraMinimal ? 'size-8 px-0' : 'h-8 px-3'} bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1`}
+                        className={`kc-action-pill pressable ${ultraMinimal ? 'size-8 px-0' : 'h-8 px-3'} bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-xl text-[11px] flex items-center justify-center gap-1`}
                       >
                         <Plus size={14} strokeWidth={2.5} />
                         <span className={ultraMinimal ? 'sr-only' : 'whitespace-nowrap'}>{t.common.log}</span>
@@ -823,7 +824,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                             </span>
                           )}
                           {recipe.recipeIngredients && recipe.recipeIngredients.length > 0 ? (
-                            <div className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
+                            <div data-library-ingredients className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                               {recipe.recipeIngredients.map((ing, idx) => {
                                 const food = allFoods.find((f) => f.id === ing.foodId);
                                 const kcal = food ? Math.round((food.calories * ing.amount) / 100) : null;
@@ -878,6 +879,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
+            data-library-food-btn
             onClick={() => setIsBarcodeOpen(true)}
             className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.prebuilt.barcode}
@@ -888,6 +890,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           </button>
           <button
             type="button"
+            data-library-food-btn
             onClick={() => setIsCustomFoodOpen(true)}
             className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.customFood}
@@ -898,6 +901,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           </button>
           <button
             type="button"
+            data-library-food-btn
             onClick={() => setActiveTab('database')}
             className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.browseAll}
@@ -954,7 +958,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 onClick={() => setSelectedSlot(slot.id)}
                 className={`pressable p-3 rounded-2xl border text-xs font-bold text-center ${
                   selectedSlot === slot.id
-                    ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
+                    ? 'kc-chip-active bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
@@ -965,7 +969,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             onClick={confirmLogToSlot}
-            className="pressable w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+            className="kc-primary-btn pressable w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
@@ -992,7 +996,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 onClick={() => setRecipeLogSlot(slot.id)}
                 className={`pressable p-3 rounded-2xl border text-xs font-bold text-center ${
                   recipeLogSlot === slot.id
-                    ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                    ? 'kc-chip-active bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
@@ -1016,7 +1020,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               }
             }}
             disabled={recipeLogAmount <= 0}
-            className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
+            className="kc-primary-btn pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
@@ -1048,7 +1052,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               <span>{t.common.back}</span>
             </button>
 
-            <div className="flex items-center justify-between bg-[#FAE0B4] rounded-2xl px-4 py-3 tabular-nums">
+            <div className="kc-modal-banner flex items-center justify-between bg-[#FAE0B4] rounded-2xl px-4 py-3 tabular-nums">
               <span className="text-xs font-bold text-[#7D4E14]">
                 {pendingFood.calories} kcal / 100{pendingFood.unit}
               </span>
@@ -1068,7 +1072,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 type="button"
                 onClick={handleConfirmAndAddAnother}
                 disabled={pendingAmount <= 0}
-                className="pressable w-full py-3 px-4 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#6E4412] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
+                className="kc-primary-btn pressable w-full py-3 px-4 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#6E4412] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
               >
                 <Plus size={16} strokeWidth={2.5} />
                 <span>{t.prebuilt.addAnotherIngredient}</span>
@@ -1111,7 +1115,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   onClick={() => setNewMealSlot(s.id)}
                   className={`pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
                     newMealSlot === s.id
-                      ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
+                      ? 'kc-chip-active bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -1126,7 +1130,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <span className="text-xs font-extrabold text-[var(--text)]">
                     {t.prebuilt.ingredientsCount.replace('{count}', String(newIngredients.length))}
                   </span>
-                  <span className="text-xs font-extrabold tabular-nums px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B]">
+                  <span className="kc-action-pill text-xs font-extrabold tabular-nums px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B]">
                     {newMealNutrition.totalKcal} kcal
                   </span>
                 </div>
@@ -1204,7 +1208,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               <button
                 type="button"
                 onClick={() => handleSaveMeal(false)}
-                className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums"
+                className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums"
               >
                 <Check size={18} strokeWidth={2.5} />
                 <span>
@@ -1240,7 +1244,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               <span>{t.common.back}</span>
             </button>
 
-            <div className="flex items-center justify-between bg-[#E2D6FF] rounded-2xl px-4 py-3 tabular-nums">
+            <div className="kc-modal-banner flex items-center justify-between bg-[#E2D6FF] rounded-2xl px-4 py-3 tabular-nums">
               <span className="text-xs font-bold text-[#4D3582]">
                 {recipePendingFood.calories} kcal / 100{recipePendingFood.unit}
               </span>
@@ -1264,7 +1268,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 setRecipePendingFood(null);
                 setRecipeSearch('');
               }}
-              className="pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+              className="kc-primary-btn pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
             >
               <Plus size={17} strokeWidth={2.5} />
               <span>{t.prebuilt.addIngredient}</span>
@@ -1377,7 +1381,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 type="button"
                 onClick={saveRecipe}
                 disabled={!recipeName.trim() || recipeIngs.every((i) => i.amount <= 0)}
-                className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
+                className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
               >
                 <Check size={18} strokeWidth={2.5} />
                 <span>

@@ -56,19 +56,19 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
   // Collapsed: latest entry as a peach pill, or "none today" (in ultra minimal: signal bars + poop + bristol).
   const summary = settings.ultraMinimal ? (
     latest ? (
-      <span className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 bg-[#FDF3E0] text-[#7D4E14] text-[11px] font-extrabold leading-none">
+      <span className="kc-custom-pill inline-flex items-center gap-1.5 rounded-lg px-2 py-1 bg-[#FDF3E0] text-[#7D4E14] text-[11px] font-extrabold leading-none">
         <span className="inline-flex items-end gap-[1.5px] h-3 mr-0.5" aria-hidden="true">
-          <span className={`w-0.5 h-1 rounded-full ${sizeBarCount(latest.size) >= 1 ? 'bg-[#7D4E14]' : 'bg-[#7D4E14]/25'}`} />
-          <span className={`w-0.5 h-1.5 rounded-full ${sizeBarCount(latest.size) >= 2 ? 'bg-[#7D4E14]' : 'bg-[#7D4E14]/25'}`} />
-          <span className={`w-0.5 h-2 rounded-full ${sizeBarCount(latest.size) >= 3 ? 'bg-[#7D4E14]' : 'bg-[#7D4E14]/25'}`} />
-          <span className={`w-0.5 h-2.5 rounded-full ${sizeBarCount(latest.size) >= 4 ? 'bg-[#7D4E14]' : 'bg-[#7D4E14]/25'}`} />
+          <span className={`w-0.5 h-1 rounded-full ${sizeBarCount(latest.size) >= 1 ? 'bg-current' : 'bg-current/25'}`} />
+          <span className={`w-0.5 h-1.5 rounded-full ${sizeBarCount(latest.size) >= 2 ? 'bg-current' : 'bg-current/25'}`} />
+          <span className={`w-0.5 h-2 rounded-full ${sizeBarCount(latest.size) >= 3 ? 'bg-current' : 'bg-current/25'}`} />
+          <span className={`w-0.5 h-2.5 rounded-full ${sizeBarCount(latest.size) >= 4 ? 'bg-current' : 'bg-current/25'}`} />
         </span>
-        <PoopIcon size={12} className="text-[#7D4E14] shrink-0" />
+        <PoopIcon size={12} className="text-current shrink-0" />
         {latest.bristol ? <span className="tabular-nums">{latest.bristol}</span> : null}
       </span>
     ) : null
   ) : latest ? (
-    <span className="inline-flex items-center gap-1 rounded-lg px-2 py-1 bg-[#FDF3E0] text-[#7D4E14] text-[11px] font-extrabold leading-none max-w-full">
+    <span className="kc-custom-pill inline-flex items-center gap-1 rounded-lg px-2 py-1 bg-[#FDF3E0] text-[#7D4E14] text-[11px] font-extrabold leading-none max-w-full">
       <span className="truncate">{sizeLabel(latest.size)}</span>
       {latest.bristol && <span className="shrink-0">· B{latest.bristol}</span>}
       {entries.length > 1 && <span className="shrink-0">+{entries.length - 1}</span>}
@@ -109,8 +109,8 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
                 <PoopIcon size={15} className="text-[var(--muted)] shrink-0" />
                 <span className={`font-bold text-[var(--text)] ${settings.ultraMinimal ? 'sr-only' : ''}`}>{sizeLabel(p.size)}</span>
                 {p.bristol && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] text-[10px] font-extrabold">
-                    <BristolIcon type={p.bristol} size={13} className="text-[#7D4E14]" />
+                  <span className="kc-custom-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] text-[10px] font-extrabold">
+                    <BristolIcon type={p.bristol} size={13} className="text-current" />
                     B{p.bristol}
                   </span>
                 )}

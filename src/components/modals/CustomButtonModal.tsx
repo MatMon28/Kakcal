@@ -42,9 +42,9 @@ export function CustomButtonModal() {
           close();
         }}
       >
-        <div className="bg-[#F7E9AA] rounded-2xl p-3.5 flex items-center justify-between gap-2 text-[#6E5B14]">
+        <div className="kc-modal-banner bg-[#F7E9AA] rounded-2xl p-3.5 flex items-center justify-between gap-2 text-[#6E5B14]">
           <span className="flex items-center gap-2.5 text-sm font-extrabold">
-            <span className="size-9 rounded-full bg-[#FCF4D6] flex items-center justify-center shrink-0">
+            <span className="kc-custom-icon-badge size-9 rounded-full bg-[#FCF4D6] flex items-center justify-center shrink-0">
               <TrackerIcon icon={def.icon} size={17} />
             </span>
             {isQuantity ? t.tracker.total : formatDateDisplay(selectedDate, language)}
@@ -67,7 +67,7 @@ export function CustomButtonModal() {
                   onClick={() => setQty(amount)}
                   className={`pressable min-h-9 px-1 py-1 rounded-xl text-xs font-extrabold tabular-nums border break-words ${
                     qty === amount
-                      ? 'bg-[#F7E9AA] text-[#6E5B14] border-[#E4D27E]'
+                      ? 'kc-chip-active bg-[#F7E9AA] text-[#6E5B14] border-[#E4D27E]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -86,7 +86,7 @@ export function CustomButtonModal() {
                 onClick={() => setDone(value)}
                 className={`pressable py-3 rounded-2xl text-sm font-extrabold border ${
                   done === value
-                    ? value ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]' : 'bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]'
+                    ? value ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]' : 'kc-chip-active bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
@@ -99,7 +99,7 @@ export function CustomButtonModal() {
         <button
           type="submit"
           disabled={!canSave}
-          className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
+          className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>{t.settings.logCustom}{isQuantity && qty > 0 ? ` · ${formatQty(qty)}` : ''}</span>

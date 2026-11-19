@@ -43,10 +43,10 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
         aria-valuemax={targetMl}
         aria-valuenow={Math.min(totalMl, targetMl)}
         aria-valuetext={`${totalMl} / ${targetMl} ml`}
-        className={compact ? 'h-2.5 flex-1 rounded-full bg-[#E8F3FF] overflow-hidden' : 'flex flex-1 gap-1 min-w-0'}
+        className={compact ? 'kc-water-track h-2.5 flex-1 rounded-full bg-[#E8F3FF] overflow-hidden' : 'flex flex-1 gap-1 min-w-0'}
       >
         {compact ? (
-          <div className="h-full bg-[#2E7CC4] rounded-full transition-[width] duration-300 ease-out" style={{ width: `${progress}%` }} />
+          <div className="kc-water-fill h-full bg-[#2E7CC4] rounded-full transition-[width] duration-300 ease-out" style={{ width: `${progress}%` }} />
         ) : (
           Array.from({ length: blockCount }).map((_, i) => {
             const capacity = Math.max(1, Math.min(BLOCK, targetMl - i * BLOCK));
@@ -56,10 +56,10 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
               <div
                 key={i}
                 data-water-block
-                className="flex-1 min-w-0 h-7 rounded-md bg-[#E8F3FF] overflow-hidden"
+                className="kc-water-track flex-1 min-w-0 h-7 rounded-md bg-[#E8F3FF] overflow-hidden"
                 title={`${Math.round(amount)} / ${capacity} ml`}
               >
-                <div className="h-full bg-[#2E7CC4] transition-[width] duration-300 ease-out" style={{ width: `${fill * 100}%` }} />
+                <div className="kc-water-fill h-full bg-[#2E7CC4] transition-[width] duration-300 ease-out" style={{ width: `${fill * 100}%` }} />
               </div>
             );
           })

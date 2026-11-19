@@ -113,7 +113,7 @@ export const CustomFoodModal: React.FC = () => {
     placeholder = '—',
     nutrient?: 'fiber' | 'salt' | 'sugar',
   ) => (
-    <div className="relative flex items-center">
+    <div className="relative flex items-center" data-custom-nutrient={nutrient}>
       <input
         id={nutrient ? `${fieldId}-${nutrient}` : undefined}
         type="text"
@@ -125,9 +125,9 @@ export const CustomFoodModal: React.FC = () => {
           const next = cleanDec(e.target.value);
           if (next !== null) setVal(next);
         }}
-        className={`w-full ${nutrient ? 'bg-nutrient text-nutrient-ink' : 'bg-[var(--inset)] text-[var(--text)]'} border border-[var(--border)] rounded-xl pl-3 pr-9 py-2.5 placeholder-current/55 text-sm font-bold tabular-nums focus:outline-none focus:border-[var(--muted)] transition-colors`}
+        className={`kc-custom-num-input w-full ${nutrient ? 'bg-nutrient text-nutrient-ink' : 'bg-[var(--inset)] text-[var(--text)]'} border border-[var(--border)] rounded-xl pl-3 pr-9 py-2.5 placeholder-current/55 text-sm font-bold tabular-nums focus:outline-none focus:border-[var(--muted)] transition-colors`}
       />
-      <span className={`absolute right-2.5 text-[11px] font-bold ${nutrient ? 'text-nutrient-ink' : 'text-[var(--muted)]'} pointer-events-none select-none`}>
+      <span className={`kc-custom-num-unit absolute right-2.5 text-[11px] font-bold ${nutrient ? 'text-nutrient-ink' : 'text-[var(--muted)]'} pointer-events-none select-none`}>
         {unitTxt}
       </span>
     </div>
@@ -216,7 +216,7 @@ export const CustomFoodModal: React.FC = () => {
                   onClick={() => setUnit(u)}
                   className={`pressable py-2.5 rounded-xl text-xs font-extrabold border ${
                     unit === u
-                      ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+                      ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
                       : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -236,7 +236,7 @@ export const CustomFoodModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setKcalStr(String(macroKcalEstimate))}
-                className="pressable px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B] text-[10px] font-extrabold tabular-nums"
+                className="kc-action-pill pressable px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B] text-[10px] font-extrabold tabular-nums"
               >
                 {t.database.fromMacros.replace('{kcal}', String(macroKcalEstimate))}
               </button>
@@ -252,19 +252,19 @@ export const CustomFoodModal: React.FC = () => {
 
         <div className="grid grid-cols-3 gap-2">
           <div>
-            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#CFE7FE] text-[#1A4670] mb-1">
+            <label data-macro="carbs" className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#CFE7FE] text-[#1A4670] mb-1">
               {t.macros.carbs}
             </label>
             {numField(carbsStr, setCarbsStr, 'g')}
           </div>
           <div>
-            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] mb-1">
+            <label data-macro="protein" className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] mb-1">
               {t.macros.protein}
             </label>
             {numField(proteinStr, setProteinStr, 'g')}
           </div>
           <div>
-            <label className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582] mb-1">
+            <label data-macro="fat" className="inline-block text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582] mb-1">
               {t.macros.fat}
             </label>
             {numField(fatStr, setFatStr, 'g')}
@@ -299,7 +299,7 @@ export const CustomFoodModal: React.FC = () => {
             type="button"
             onClick={() => handleSave(true)}
             disabled={!name.trim()}
-            className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
+            className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
           >
             <Plus size={16} strokeWidth={2.5} />
             <span>

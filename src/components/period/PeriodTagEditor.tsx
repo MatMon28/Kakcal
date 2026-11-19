@@ -58,7 +58,7 @@ export function PeriodTagEditor({ group, selected, onChange }: {
         {options.map((tag) => {
           const isSelected = selected.includes(tag.id);
           const tone = isSelected
-            ? 'bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
+            ? 'kc-period-chip bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
             : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]';
           return managing ? (
             <div key={tag.id} className={`min-h-9 pl-3 pr-0.5 rounded-full border text-xs font-bold flex items-center gap-1 ${tone}`}>
@@ -126,7 +126,7 @@ export function PeriodTagEditor({ group, selected, onChange }: {
             className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3.5 py-2.5 text-base font-semibold text-[var(--text)]"
           />
           {error && <p id={`${inputId}-error`} role="alert" className="text-xs font-medium text-[var(--text-warn)]">{t.period.tagError}</p>}
-          <button type="submit" disabled={!label.trim()} className="pressable w-full min-h-11 rounded-xl bg-[#F4C6D8] text-[#6E2440] hover:bg-[#EFB3CC] inline-flex items-center justify-center gap-1.5 text-sm font-extrabold disabled:opacity-40">
+          <button type="submit" disabled={!label.trim()} className="kc-primary-btn pressable w-full min-h-11 rounded-xl bg-[#F4C6D8] text-[#6E2440] hover:bg-[#EFB3CC] inline-flex items-center justify-center gap-1.5 text-sm font-extrabold disabled:opacity-40">
             <Plus size={16} />
             {addTitle}
           </button>

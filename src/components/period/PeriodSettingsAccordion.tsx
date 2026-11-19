@@ -152,7 +152,7 @@ export const PeriodSettingsAccordion: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => updatePeriodSettings({ packStart: getTodayDateString() })}
-                      className="pressable px-3 py-2 rounded-xl bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] text-xs font-extrabold whitespace-nowrap"
+                      className="kc-action-pill pressable px-3 py-2 rounded-xl bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] text-xs font-extrabold whitespace-nowrap"
                     >
                       {t.period.startPackToday}
                     </button>

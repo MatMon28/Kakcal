@@ -175,7 +175,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
             <button
               type="button"
               onClick={jumpToday}
-              className="pressable px-2.5 py-1 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[11px] font-extrabold"
+              className="kc-period-pill pressable px-2.5 py-1 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[11px] font-extrabold"
             >
               {t.header.today}
             </button>
@@ -230,6 +230,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
             <button
               key={i}
               type="button"
+              data-period-cell={logged ? 'logged' : predicted ? 'predicted' : undefined}
               onClick={() => onSelect(ds)}
               onDoubleClick={() => openDayInfo(ds)}
               onPointerUp={(e) => {
@@ -257,19 +258,20 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
                     size={9}
                     strokeWidth={2.4}
                     fill="currentColor"
-                    className={logged || predicted ? 'text-[#9E2344]' : 'text-[var(--text-heart)]'}
+                    className={logged || predicted ? 'kc-period-cell-ink text-[#9E2344]' : 'text-[var(--text-heart)]'}
                   />
                 </span>
               )}
               <span
                 aria-hidden="true"
+                data-period-day-num={isToday ? 'today' : logged || predicted ? 'marked' : undefined}
                 className={`size-6 rounded-full flex items-center justify-center text-xs font-bold tabular-nums ${
                   isToday
                     ? 'bg-[var(--text)] text-[var(--surface)]'
                     : isOvul
-                    ? `ring-2 ring-[#2E8B57] ${logged || predicted ? 'text-[#6E2440]' : 'text-[var(--text)]'}`
+                    ? `ring-2 ring-[#2E8B57] ${logged || predicted ? 'kc-period-cell-ink text-[#6E2440]' : 'text-[var(--text)]'}`
                     : logged || predicted
-                    ? 'text-[#6E2440]'
+                    ? 'kc-period-cell-ink text-[#6E2440]'
                     : 'text-[var(--text)]'
                 }`}
               >
@@ -302,11 +304,11 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
           <div className="accordion-inner">
             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-2 text-[11px] font-bold text-[var(--muted)]">
               <span className="flex items-center gap-1.5">
-                <span className="w-4 h-4 rounded-md bg-[#F4C6D8]" /> {t.period.legendPeriod}
+                <span data-period-cell="logged" className="w-4 h-4 rounded-md bg-[#F4C6D8]" /> {t.period.legendPeriod}
               </span>
               {!pillMode && (
                 <span className="flex items-center gap-1.5">
-                  <span className="w-4 h-4 rounded-md bg-[#FBE4EE] border border-dashed border-[#E79CBB]" />{' '}
+                  <span data-period-cell="predicted" className="w-4 h-4 rounded-md bg-[#FBE4EE] border border-dashed border-[#E79CBB]" />{' '}
                   {t.period.legendPredicted}
                 </span>
               )}

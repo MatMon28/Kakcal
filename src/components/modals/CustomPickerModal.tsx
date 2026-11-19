@@ -37,7 +37,7 @@ export const CustomPickerModal: React.FC = () => {
               className="pressable w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-3 text-left"
             >
               <span className="flex items-center gap-2.5 min-w-0">
-                <span className="w-9 h-9 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                <span className="kc-custom-icon-badge w-9 h-9 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
                   <TrackerIcon icon={b.icon} size={16} />
                 </span>
                 <span className="min-w-0">

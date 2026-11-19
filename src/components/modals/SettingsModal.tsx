@@ -275,6 +275,29 @@ export const SettingsModal: React.FC = () => {
               </div>
             </div>
 
+            {/* Home-screen widgets: look (just below Theme; the custom button lives in Custom buttons) */}
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
+                {t.settings.widgets}
+              </span>
+              <div className="flex gap-1.5" role="group" aria-label={t.settings.widgetStyle}>
+                {([
+                  ['light', t.settings.widgetLight],
+                  ['dark', t.settings.widgetDark],
+                ] as const).map(([style, label]) => (
+                  <button
+                    key={style}
+                    type="button"
+                    aria-pressed={settings.widgetStyle === style}
+                    onClick={() => updateSettings({ widgetStyle: style })}
+                    className={seg(settings.widgetStyle === style)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             {/* 6 New Themes + Classic */}
             <div>
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -386,34 +409,6 @@ export const SettingsModal: React.FC = () => {
             </span>
             <SwitchVisual on={settings.ultraMinimal} />
           </button>
-
-          {/* Home-screen widgets: look (the custom button lives in Custom buttons) */}
-          <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
-              {t.settings.widgets}
-            </span>
-            <div className="space-y-2">
-              <div>
-                <div className="flex gap-1.5" role="group" aria-label={t.settings.widgetStyle}>
-                  {([
-                    ['light', t.settings.widgetLight],
-                    ['dark', t.settings.widgetDark],
-                  ] as const).map(([style, label]) => (
-                    <button
-                      key={style}
-                      type="button"
-                      aria-pressed={settings.widgetStyle === style}
-                      onClick={() => updateSettings({ widgetStyle: style })}
-                      className={seg(settings.widgetStyle === style)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            </div>
-          </div>
 
           </Collapsible>
 
@@ -560,7 +555,7 @@ export const SettingsModal: React.FC = () => {
                   className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span className="flex items-center gap-2.5 min-w-0">
-                    <span className="size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                    <span className="kc-custom-icon-badge size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
                       <Sparkles size={15} />
                     </span>
                     <span className="min-w-0">
@@ -587,7 +582,7 @@ export const SettingsModal: React.FC = () => {
                     className="flex items-center justify-between gap-2 bg-[var(--inset)] rounded-2xl px-3 py-2.5"
                   >
                     <span className="flex items-center gap-2.5 min-w-0">
-                      <span className="w-8 h-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                      <span className="kc-custom-icon-badge w-8 h-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
                         <TrackerIcon icon={b.icon} size={15} />
                       </span>
                       <span className="min-w-0">
@@ -643,7 +638,7 @@ export const SettingsModal: React.FC = () => {
                     aria-label={t.settings.customName}
                     maxLength={40}
                     autoFocus
-                    className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
+                    className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
                   />
 
                   {/* Icon picker */}
@@ -661,8 +656,8 @@ export const SettingsModal: React.FC = () => {
                           aria-pressed={newBtnIcon === ic}
                           className={`pressable h-9 rounded-xl flex items-center justify-center border ${
                             newBtnIcon === ic
-                              ? 'bg-[#E2D6FF] border-[#C9B8F2] text-[#4D3582]'
-                              : 'bg-[var(--surface)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]'
+                              ? 'kc-chip-active bg-[#E2D6FF] border-[#C9B8F2] text-[#4D3582]'
+                              : 'bg-[var(--inset)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]'
                           }`}
                         >
                           <TrackerIcon icon={ic} size={16} />
@@ -677,8 +672,8 @@ export const SettingsModal: React.FC = () => {
                       onClick={() => setNewBtnType('quantity')}
                       className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
                         newBtnType === 'quantity'
-                          ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
-                          : 'bg-[var(--surface)] text-[var(--muted)] border-[var(--border)]'
+                          ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+                          : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
                       }`}
                     >
                       {t.settings.typeQuantity}
@@ -688,8 +683,8 @@ export const SettingsModal: React.FC = () => {
                       onClick={() => setNewBtnType('toggle')}
                       className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
                         newBtnType === 'toggle'
-                          ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
-                          : 'bg-[var(--surface)] text-[var(--muted)] border-[var(--border)]'
+                          ? 'kc-chip-active bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                          : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
                       }`}
                     >
                       {t.settings.typeToggle}
@@ -707,7 +702,7 @@ export const SettingsModal: React.FC = () => {
                       placeholder={t.settings.customUnitPlaceholder}
                       aria-label={t.settings.customUnit}
                       maxLength={12}
-                      className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
+                      className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
                     />
                   )}
 
@@ -716,7 +711,7 @@ export const SettingsModal: React.FC = () => {
                     type="button"
                     aria-pressed={newBtnStats}
                     onClick={() => setNewBtnStats((v) => !v)}
-                    className="w-full flex items-center justify-between gap-2 bg-[var(--surface)] rounded-xl px-3 py-2 text-left"
+                    className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-left"
                   >
                     <span className="text-xs font-bold text-[var(--text)]">{t.settings.showStatsQ}</span>
                     <SwitchVisual on={newBtnStats} />
@@ -726,7 +721,7 @@ export const SettingsModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={resetBtnForm}
-                      className="pressable flex-1 py-2.5 rounded-xl bg-[var(--surface)] border border-[var(--border)] text-xs font-extrabold text-[var(--muted)]"
+                      className="pressable flex-1 py-2.5 rounded-xl bg-[var(--inset)] border border-[var(--border)] text-xs font-extrabold text-[var(--muted)]"
                     >
                       {t.common.cancel}
                     </button>
@@ -734,7 +729,7 @@ export const SettingsModal: React.FC = () => {
                       type="button"
                       disabled={!newBtnName.trim()}
                       onClick={finishBtnForm}
-                      className="pressable flex-1 py-2.5 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold disabled:opacity-40"
+                      className="kc-primary-btn pressable flex-1 py-2.5 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold disabled:opacity-40"
                     >
                       {t.common.save}
                     </button>
@@ -744,7 +739,7 @@ export const SettingsModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setCreatingBtn(true)}
-                className="pressable w-full py-2.5 rounded-2xl bg-[var(--surface)] hover:bg-[var(--inset)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center gap-1.5"
+                className="pressable w-full py-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center gap-1.5"
               >
                 <Plus size={14} strokeWidth={2.5} />
                 <span>{t.settings.newCustomBtn}</span>

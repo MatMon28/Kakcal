@@ -22,7 +22,7 @@ export function PeriodSheet() {
   const pillInactive = settings.trackPill && isInactivePackDay(settings, date);
 
   const chip = (active: boolean) => `pressable min-h-8 px-3 rounded-full text-xs font-bold border ${active
-    ? 'bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
+    ? 'kc-period-chip bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'}`;
 
   return (
@@ -33,7 +33,7 @@ export function PeriodSheet() {
           onClick={() => patch({ isPeriod: !draft.isPeriod })}
           aria-pressed={draft.isPeriod}
           className={`w-full py-3 rounded-2xl text-sm font-extrabold border flex items-center justify-center gap-2 ${draft.isPeriod
-            ? 'bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
+            ? 'kc-period-chip bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
             : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'}`}
         >
           <Droplet size={16} /> {t.period.periodDay} {draft.isPeriod && <Check size={15} />}
@@ -57,7 +57,7 @@ export function PeriodSheet() {
             onClick={() => patch({ pillTaken: !draft.pillTaken })}
             aria-pressed={Boolean(draft.pillTaken)}
             className={`pressable w-full py-2.5 rounded-2xl text-sm font-extrabold border flex items-center justify-center gap-2 disabled:opacity-60 ${draft.pillTaken
-              ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+              ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
               : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'}`}
           >
             <Pill size={15} />
@@ -78,7 +78,7 @@ export function PeriodSheet() {
           <button
             type="button"
             onClick={() => { saveDraft(); markPeriodStart(date); close(); }}
-            className="pressable py-3 px-2 rounded-2xl bg-[#F4C6D8] hover:bg-[#EFB3CC] text-[#6E2440] text-xs font-extrabold flex items-center justify-center gap-1.5"
+            className="kc-period-pill pressable py-3 px-2 rounded-2xl bg-[#F4C6D8] hover:bg-[#EFB3CC] text-[#6E2440] text-xs font-extrabold flex items-center justify-center gap-1.5"
           >
             <Play size={14} /> {t.period.startedHere}
           </button>
@@ -94,7 +94,7 @@ export function PeriodSheet() {
           type="button"
           onClick={() => { saveDraft(); close(); }}
           disabled={!dirty}
-          className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+          className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
         >
           <Check size={18} strokeWidth={2.5} /> {t.period.logButton}
         </button>

@@ -316,9 +316,9 @@ export const HistoryView: React.FC = () => {
 
         {!settings.hidePoop && (
           <div className={`kc-themed-card bg-[#FAE0B4] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
-            <div className="flex items-center justify-between">
-              {ultraMinimal ? <span className="inline-flex items-center text-[#7D4E14]" title={t.poop.poopsInPeriod}><PoopIcon size={15} /><span className="sr-only">{t.poop.poopsInPeriod}</span></span> : <span className="text-sm font-extrabold text-[#7D4E14]">{t.poop.poopsInPeriod}</span>}
-              <span className="text-sm font-extrabold tabular-nums text-[#7D4E14]">
+            <div className="kc-custom-stat-header flex items-center justify-between text-[#7D4E14]">
+              {ultraMinimal ? <span className="inline-flex items-center" title={t.poop.poopsInPeriod}><PoopIcon size={15} /><span className="sr-only">{t.poop.poopsInPeriod}</span></span> : <span className="text-sm font-extrabold">{t.poop.poopsInPeriod}</span>}
+              <span className="text-sm font-extrabold tabular-nums">
                 {t.poop.countOf
                   .replace('{a}', String(period.daysWithPoop.length))
                   .replace('{b}', String(period.total))}
@@ -335,7 +335,7 @@ export const HistoryView: React.FC = () => {
                     title={formatDateDisplay(day.date, language)}
                     aria-label={formatDateDisplay(day.date, language)}
                     className={`pressable w-9 h-9 rounded-full flex items-center justify-center hover:scale-105 ${
-                      pooped ? 'bg-[#FDF3E0] text-[#8A5A2B]' : 'bg-[#FDF3E0]/50 text-[#B89862]'
+                      pooped ? 'kc-custom-stat-dot-active bg-[#FDF3E0] text-[#8A5A2B]' : 'kc-custom-stat-dot-empty bg-[#FDF3E0]/50 text-[#B89862]'
                     }`}
                   >
                     {pooped ? (
@@ -361,8 +361,8 @@ export const HistoryView: React.FC = () => {
               if (button.type === 'toggle') {
                 const doneDays = values.filter((entry) => entry.value === true).length;
                 return (
-                  <div key={button.id} className={`bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
-                    <div className="flex items-center justify-between text-[#6E5B14]">
+                  <div key={button.id} className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
+                    <div className="kc-custom-stat-header flex items-center justify-between text-[#6E5B14]">
                       <span className="flex items-center gap-2 text-sm font-extrabold" aria-label={button.name} title={button.name}>
                         <TrackerIcon icon={button.icon} size={15} /> <span className={ultraMinimal ? 'sr-only' : ''}>{button.name}</span>
                       </span>
@@ -377,7 +377,7 @@ export const HistoryView: React.FC = () => {
                           title={`${formatDateDisplay(entry.date, language)} — ${entry.value === true ? t.settings.done : t.settings.notDone}`}
                           aria-label={`${formatDateDisplay(entry.date, language)} — ${entry.value === true ? t.settings.done : t.settings.notDone}`}
                           className={`pressable w-9 h-9 rounded-full flex items-center justify-center text-xs font-extrabold hover:scale-105 ${
-                            entry.value === true ? 'bg-[#C9EFD3] text-[#174A2B]' : 'bg-[#FCF4D6]/70 text-[#8A7224]/60'
+                            entry.value === true ? 'kc-custom-stat-dot-active bg-[#C9EFD3] text-[#174A2B]' : 'kc-custom-stat-dot-empty bg-[#FCF4D6]/70 text-[#8A7224]/60'
                           }`}
                         >
                           {entry.value === true ? '✓' : <X size={13} />}
@@ -393,8 +393,8 @@ export const HistoryView: React.FC = () => {
               const total = Math.round(numbers.reduce((sum, value) => sum + value, 0) * 10) / 10;
               const max = Math.max(1, ...numbers);
               return (
-                <div key={button.id} className={`bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'relative p-3 pb-8' : 'p-4 sm:p-5'}`}>
-                  <div className="flex items-center justify-between gap-2 text-[#6E5B14]">
+                <div key={button.id} className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'relative p-3 pb-8' : 'p-4 sm:p-5'}`}>
+                  <div className="kc-custom-stat-header flex items-center justify-between gap-2 text-[#6E5B14]">
                     <span className="flex items-center gap-2 text-sm font-extrabold" aria-label={button.name} title={button.name}>
                       <TrackerIcon icon={button.icon} size={15} /> <span className={ultraMinimal ? 'sr-only' : ''}>{button.name}</span>
                     </span>
@@ -402,7 +402,7 @@ export const HistoryView: React.FC = () => {
                       <span className="block text-sm font-extrabold" aria-label={`${button.name}: ${average}${button.unit ? ` ${button.unit}` : ''} ${t.stats.perDay}`}>
                         {average}{!ultraMinimal && button.unit ? ` ${button.unit}` : ''} {!ultraMinimal && t.stats.perDay}
                       </span>
-                      {!ultraMinimal && <span className="block text-[11px] font-bold text-[#8A7224]">
+                      {!ultraMinimal && <span className="kc-custom-stat-sub block text-[11px] font-bold text-[#8A7224]">
                         {total}{button.unit ? ` ${button.unit}` : ''} · {numbers.length}/{period.total}
                       </span>}
                     </span>
@@ -418,13 +418,13 @@ export const HistoryView: React.FC = () => {
                           onClick={() => setInspectedDate(entry.date)}
                           title={`${formatDateDisplay(entry.date, language)} — ${value > 0 ? `${value}${button.unit ? ` ${button.unit}` : ''}` : '—'}`}
                           aria-label={`${formatDateDisplay(entry.date, language)} — ${value > 0 ? `${value}${button.unit ? ` ${button.unit}` : ''}` : '—'}`}
-                          className={`flex-1 rounded-md transition-opacity hover:opacity-80 ${value > 0 ? 'bg-[#6E5B14]' : 'bg-[#FCF4D6]/70'}`}
+                          className={`flex-1 rounded-md transition-opacity hover:opacity-80 ${value > 0 ? 'kc-custom-stat-bar-active bg-[#6E5B14]' : 'kc-custom-stat-bar-empty bg-[#FCF4D6]/70'}`}
                           style={{ height: `${height}%` }}
                         />
                       );
                     })}
                   </div>
-                  {ultraMinimal && <span className="absolute bottom-2 right-3 text-[10px] font-bold text-[#8A7224]">{t.stats.perDay}</span>}
+                  {ultraMinimal && <span className="kc-custom-stat-sub absolute bottom-2 right-3 text-[10px] font-bold text-[#8A7224]">{t.stats.perDay}</span>}
                 </div>
               );
             })}

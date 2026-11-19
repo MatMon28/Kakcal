@@ -89,6 +89,8 @@ export function PageSwiper(props: PageSwiperProps) {
     rest();
     const tabs = latest.current.tabs;
     const side = activeTab === 'database' || (old !== 'database' && tabs.indexOf(activeTab) > tabs.indexOf(old)) ? 1 : -1;
+    document.documentElement.style.setProperty('--kc-swipe-dir', String(side));
+    document.documentElement.dataset.swipeDir = side > 0 ? 'right' : 'left';
     document.documentElement.classList.add('kc-page-moving');
     settle(side * 16, 160);
   }, [activeTab, rest, settle]);
@@ -165,12 +167,20 @@ export function PageSwiper(props: PageSwiperProps) {
       const cross = -dx * g.side > Math.min(64, Math.max(28, g.width * 0.1)) ||
         (-dx * g.side > 12 && -velocity * g.side > 0.4);
       const { activeTab: old, onChange, onSwipeBack } = latest.current;
-      if (!g.target && old === 'database' && dx > 64) { rest(); onSwipeBack?.(); return; }
+      if (!g.target && old === 'database' && dx > 64) {
+        document.documentElement.style.setProperty('--kc-swipe-dir', '-1');
+        document.documentElement.dataset.swipeDir = 'left';
+        rest();
+        onSwipeBack?.();
+        return;
+      }
       let from = g.offset;
       if (g.target && cross) {
         // Promote the keyed preview instead of mounting the destination twice. The old panel's
         // offset compensates for the new tab's scroll-to-top in the same layout pass.
         const target = g.target;
+        document.documentElement.style.setProperty('--kc-swipe-dir', String(g.side));
+        document.documentElement.dataset.swipeDir = g.side > 0 ? 'right' : 'left';
         swipeDestination.current = target;
         from += g.side * g.width;
         flushSync(() => {

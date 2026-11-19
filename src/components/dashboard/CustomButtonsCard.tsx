@@ -22,7 +22,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
   const headline = (
     <>
       <span className="font-extrabold">{loggedCount}</span>
-      <span className="text-[12px] font-semibold text-[#8A7224]/75 ml-1">/ {trackers.length}</span>
+      <span className="text-[12px] font-semibold text-[var(--muted)] opacity-80 ml-1">/ {trackers.length}</span>
     </>
   );
 
@@ -34,7 +34,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
         {logged.map(({ tracker, value }) => (
           <span
             key={tracker.id}
-            className="inline-flex items-center justify-center gap-1 rounded-lg px-2 min-h-6 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap shrink-0 max-w-full"
+            className="kc-custom-pill inline-flex items-center justify-center gap-1 rounded-lg px-2 min-h-6 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap shrink-0 max-w-full"
           >
             <TrackerIcon icon={tracker.icon} size={11} className="shrink-0" />
             <button
@@ -57,7 +57,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
         {logged.map(({ tracker, value }) => (
           <span
             key={tracker.id}
-            className="inline-flex items-center gap-1 rounded-lg px-2 min-h-6 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap shrink-0 max-w-full"
+            className="kc-custom-pill inline-flex items-center gap-1 rounded-lg px-2 min-h-6 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap shrink-0 max-w-full"
           >
             <TrackerIcon icon={tracker.icon} size={11} className="shrink-0" />
             <button
@@ -101,7 +101,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
                   aria-pressed={value === true}
                   aria-label={`${tracker.name}: ${value === true ? t.settings.done : t.settings.notDone}`}
                   className={`pressable ${settings.ultraMinimal ? 'size-7 p-0 justify-center' : 'px-2.5 py-1'} rounded-full text-[11px] font-extrabold inline-flex items-center gap-1 shrink-0 ${
-                    value === true ? 'bg-[#C9EFD3] text-[#174A2B]' : 'bg-[var(--inset)] text-[var(--muted)]'
+                    value === true ? 'kc-action-pill bg-[#C9EFD3] text-[#174A2B]' : 'bg-[var(--inset)] text-[var(--muted)]'
                   }`}
                 >
                   {settings.ultraMinimal ? (value === true ? <Check size={13} strokeWidth={2.5} /> : <X size={12} />) : (
@@ -132,7 +132,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
                   </span>
                 )}
               </span>
-              <span className="shrink-0 rounded-lg px-2 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none">
+              <span className="kc-custom-pill shrink-0 rounded-lg px-2 py-1 bg-[#FCF4D6] text-[#6E5B14] text-[11px] font-extrabold tabular-nums leading-none">
                 {typeof value === 'number' ? `${formatTrackerAmount(value, language)}${settings.ultraMinimal ? '' : tracker.unit ? ` ${tracker.unit}` : ''}` : '—'}
               </span>
               <ChevronRight size={14} className="shrink-0 text-[var(--muted)]" />

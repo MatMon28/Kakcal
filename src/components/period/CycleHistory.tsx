@@ -132,7 +132,7 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
                   <div key={c.start} className="flex-1 flex flex-col items-center justify-end h-full" title={`${formatDateDisplay(c.start, language)} · ${c.length}`}>
                     <span className="text-[9px] font-extrabold text-[var(--muted)] mb-0.5">{c.length}</span>
                     <div
-                      className="w-full rounded-t-md bg-[#F4C6D8]"
+                      className="kc-period-bar w-full rounded-t-md bg-[#F4C6D8]"
                       style={{ height: `${((c.length as number) / maxLen) * 100}%` }}
                     />
                   </div>
@@ -143,16 +143,16 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
         )}
 
         {flags.length > 0 && (
-          <div className="bg-[#FAE0B4] rounded-2xl p-3 space-y-1">
-            <span className="flex items-center gap-1.5 text-xs font-extrabold text-[#7D4E14]">
+          <div data-period-card="flags" className="bg-[#FAE0B4] rounded-2xl p-3 space-y-1">
+            <span data-period-value className="flex items-center gap-1.5 text-xs font-extrabold text-[#7D4E14]">
               <Info size={13} /> {t.period.flagTitle}
             </span>
             {flags.map((f) => (
-              <p key={f} className="text-[11px] font-medium text-[#7D4E14]">
+              <p key={f} data-period-value className="text-[11px] font-medium text-[#7D4E14]">
                 {f}
               </p>
             ))}
-            <p className="text-[11px] font-medium text-[#A87C3F]">{t.period.flagNote}</p>
+            <p data-period-label className="text-[11px] font-medium text-[#A87C3F]">{t.period.flagNote}</p>
           </div>
         )}
       </div>

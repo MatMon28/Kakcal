@@ -105,7 +105,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
   const chip = (active: boolean) =>
     `pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
       active
-        ? 'bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
+        ? 'kc-period-chip bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]'
         : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
     }`;
 
@@ -114,7 +114,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
       {/* Header */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-full bg-transparent text-[#6E2440] flex items-center justify-center shrink-0">
+          <div className="kc-period-header-icon w-9 h-9 rounded-full bg-transparent text-[#6E2440] flex items-center justify-center shrink-0">
             <Droplet size={17} />
           </div>
           <div>
@@ -131,7 +131,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">
-            <CalendarHeart size={15} className="text-[#B85C7A]" />
+            <CalendarHeart size={15} className="kc-period-header-icon text-[#B85C7A]" />
             {t.period.statusTitle}
           </span>
           {!pillMode && status.hasData && status.predicted.fromHistory && (
@@ -142,34 +142,34 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
         </div>
 
         {!status.hasData || status.cycleDay === null ? (
-          <div className="rounded-2xl bg-[#FBF1F4] p-4 space-y-1">
-            <p className="text-sm font-extrabold text-[#6E2440]">{t.period.emptyTitle}</p>
-            <p className="text-xs font-medium text-[#8A455C] leading-relaxed">{t.period.emptyHint}</p>
+          <div data-period-card="empty" className="rounded-2xl bg-[#FBF1F4] p-4 space-y-1">
+            <p data-period-value className="text-sm font-extrabold text-[#6E2440]">{t.period.emptyTitle}</p>
+            <p data-period-label className="text-xs font-medium text-[#8A455C] leading-relaxed">{t.period.emptyHint}</p>
           </div>
         ) : (
           <>
             {/* Cycle day + phase / pack day */}
             <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-2xl bg-[#FBF1F4] p-3.5">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#8A455C]">
+              <div data-period-card="cycle" className="rounded-2xl bg-[#FBF1F4] p-3.5">
+                <span data-period-label className="block text-[10px] font-bold uppercase tracking-wider text-[#8A455C]">
                   {t.period.cycleDay}
                 </span>
                 <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-3xl font-extrabold text-[#6E2440] leading-none">{status.cycleDay}</span>
-                  <span className="text-xs font-bold text-[#8A455C]">/ {status.predicted.length}</span>
+                  <span data-period-value className="text-3xl font-extrabold text-[#6E2440] leading-none">{status.cycleDay}</span>
+                  <span data-period-label className="text-xs font-bold text-[#8A455C]">/ {status.predicted.length}</span>
                 </div>
                 {status.daysLate > 0 && (
-                  <span className="inline-block mt-2 px-2 py-0.5 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[10px] font-extrabold">
+                  <span className="kc-period-pill inline-block mt-2 px-2 py-0.5 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[10px] font-extrabold">
                     {t.period.daysLate.replace('{n}', String(status.daysLate))}
                   </span>
                 )}
               </div>
 
-              <div className="rounded-2xl bg-[#F1ECFF] p-3.5">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#5B4B93]">
+              <div data-period-card="phase" className="rounded-2xl bg-[#F1ECFF] p-3.5">
+                <span data-period-label className="block text-[10px] font-bold uppercase tracking-wider text-[#5B4B93]">
                   {pillMode ? t.period.packDay : t.period.phase}
                 </span>
-                <span className="block text-lg font-extrabold text-[#3B2E6E] mt-1 leading-tight">
+                <span data-period-value className="block text-lg font-extrabold text-[#3B2E6E] mt-1 leading-tight">
                   {pillMode
                     ? pd !== null
                       ? t.period.packDayOf.replace('{d}', String(pd)).replace('{n}', String(settings.packLength))
@@ -177,7 +177,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
                     : phaseLabel}
                 </span>
                 {!pillMode && (
-                  <span className="block text-[10px] font-medium text-[#5B4B93] mt-1 leading-snug">{phaseNote}</span>
+                  <span data-period-label className="block text-[10px] font-medium text-[#5B4B93] mt-1 leading-snug">{phaseNote}</span>
                 )}
               </div>
             </div>
@@ -188,18 +188,18 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
 
             {/* Predictions */}
             <div className="grid grid-cols-2 gap-2.5">
-              <div className="rounded-2xl bg-[#FFF6E4] p-3.5">
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#8A5617]">
+              <div data-period-card="next" className="rounded-2xl bg-[#FFF6E4] p-3.5">
+                <span data-period-label className="block text-[10px] font-bold uppercase tracking-wider text-[#8A5617]">
                   {t.period.nextPeriod}
                 </span>
-                <span className="block text-sm font-extrabold text-[#2D1E0B] mt-1">
+                <span data-period-value className="block text-sm font-extrabold text-[#2D1E0B] mt-1">
                   {status.nextPeriodRange
                     ? `${formatDateDisplay(status.nextPeriodRange[0], language)} – ${formatDateDisplay(status.nextPeriodRange[1], language)}`
                     : status.nextPeriod
                     ? formatDateDisplay(status.nextPeriod, language)
                     : '—'}
                 </span>
-                <span className="block text-[11px] font-bold text-[#8A5617] mt-0.5">
+                <span data-period-label className="block text-[11px] font-bold text-[#8A5617] mt-0.5">
                   {status.daysLate > 0
                     ? t.period.daysLate.replace('{n}', String(status.daysLate))
                     : status.daysUntilNext === 0
@@ -208,12 +208,12 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
                 </span>
               </div>
 
-              <div className={`rounded-2xl p-3.5 ${pillMode ? 'bg-[#E9FAEF]' : 'bg-[#E9FAEF]'}`}>
-                <span className="block text-[10px] font-bold uppercase tracking-wider text-[#1D5C38]">
+              <div data-period-card="ovulation" className={`rounded-2xl p-3.5 ${pillMode ? 'bg-[#E9FAEF]' : 'bg-[#E9FAEF]'}`}>
+                <span data-period-label className="block text-[10px] font-bold uppercase tracking-wider text-[#1D5C38]">
                   {pillMode ? t.period.withdrawalBleed : t.period.ovulation}
                 </span>
                 {pillMode ? (
-                  <span className="block text-sm font-extrabold text-[#142E1F] mt-1">
+                  <span data-period-value className="block text-sm font-extrabold text-[#142E1F] mt-1">
                     {bleed
                       ? formatDateDisplay(bleed, language)
                       : settings.inactiveDays === 0
@@ -222,10 +222,10 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
                   </span>
                 ) : (
                   <>
-                    <span className="block text-sm font-extrabold text-[#142E1F] mt-1">
+                    <span data-period-value className="block text-sm font-extrabold text-[#142E1F] mt-1">
                       {status.ovulation ? formatDateDisplay(status.ovulation, language) : '—'}
                     </span>
-                    <span className="block text-[10px] font-medium text-[#1D5C38]">
+                    <span data-period-label className="block text-[10px] font-medium text-[#1D5C38]">
                       ({t.period.estimate})
                     </span>
                   </>
@@ -254,7 +254,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
           <button
             type="button"
             onClick={openQuickLog}
-            className="pressable min-h-9 px-3 rounded-full bg-[#F4C6D8] text-[#6E2440] text-xs font-extrabold shrink-0 flex items-center gap-1.5"
+            className="kc-period-pill pressable min-h-9 px-3 rounded-full bg-[#F4C6D8] text-[#6E2440] text-xs font-extrabold shrink-0 flex items-center gap-1.5"
           >
             <Plus size={14} /> {t.period.quickLog}
           </button>
@@ -266,7 +266,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
           onClick={() => patch({ isPeriod: !draft.isPeriod })}
           aria-pressed={draft.isPeriod}
           className={`w-full py-3 rounded-2xl text-sm font-extrabold border transition-colors flex items-center justify-center gap-2 ${
-            draft.isPeriod ? 'bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+            draft.isPeriod ? 'kc-period-chip bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
           }`}
         >
           <Droplet size={16} />
@@ -297,7 +297,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
               onClick={() => patch({ pillTaken: !draft.pillTaken })}
               aria-pressed={Boolean(draft.pillTaken)}
               className={`w-full py-2.5 rounded-2xl text-sm font-extrabold border transition-colors flex items-center justify-center gap-2 disabled:opacity-60 ${
-                draft.pillTaken ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                draft.pillTaken ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
               }`}
             >
               <Pill size={15} />
@@ -333,7 +333,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
               rows={3}
               className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-base text-[var(--text)] resize-y"
             />
-            <button type="submit" className="pressable w-full py-3 rounded-2xl bg-[#C9EFD3] text-[#174A2B] font-extrabold text-sm">{t.common.save}</button>
+            <button type="submit" className="kc-primary-btn pressable w-full py-3 rounded-2xl bg-[#C9EFD3] text-[#174A2B] font-extrabold text-sm">{t.common.save}</button>
           </form>
         </Modal>
 
@@ -343,7 +343,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
           onClick={saveDay}
           disabled={!dirty}
           className={`w-full py-3 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 transition-colors ${
-            dirty ? 'bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B]' : 'bg-[var(--inset)] text-[var(--muted)]'
+            dirty ? 'kc-primary-btn bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B]' : 'bg-[var(--inset)] text-[var(--muted)]'
           }`}
         >
           {dirty ? <Plus size={16} strokeWidth={2.5} /> : <Check size={16} strokeWidth={2.5} />}
