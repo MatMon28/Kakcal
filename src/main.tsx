@@ -6,6 +6,7 @@ import App from "./App";
 import faviconUrl from "./assets/brand/kakcalculator-icon.svg";
 import { isAndroidApp } from "./utils/android";
 import { applyMotionTokens } from "./utils/spring";
+import { initPwaInstall } from "./utils/pwaInstall";
 
 // Set at runtime so the single-file build embeds the icon instead of writing a separate file.
 const favicon = document.createElement("link");
@@ -23,6 +24,9 @@ if (import.meta.env.PROD && import.meta.env.VITE_ANDROID_RELEASE !== "true" &&
     });
   });
 }
+
+// Capture the browser's install prompt early so Settings can offer "Install app" later (PWA).
+initPwaInstall();
 
 applyMotionTokens();
 

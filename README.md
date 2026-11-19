@@ -1,13 +1,13 @@
 # Kakcalculator
 
-A local-first nutrition, activity and wellness journal built with React 19, TypeScript, Vite and Tailwind CSS v4. The browser opens a guided tour of every page, with the widgets last; Android has a bundled Capacitor app, four native home-screen widgets and optional reminder [notifications](docs/notifications.md). There is no account or application backend. There is never a blank page on launch: the full-name logo is shown first (Android system splash and an inline boot screen in `index.html`), then the animated intro plays on a transparent card ([launch intro](docs/launch-intro.md)).
+A local-first nutrition, activity and wellness journal built with React 19, TypeScript, Vite and Tailwind CSS v4. The browser opens a guided tour of every page, with the widgets last; Android has a bundled Capacitor app, four native home-screen widgets and optional reminder [notifications](docs/notifications.md). There is no account or application backend. The browser build is also an installable, offline-capable [PWA](docs/pwa.md) ([setup instructions](docs/pwa-setup.md)). There is never a blank page on launch: the full-name logo is shown first (Android system splash and an inline boot screen in `index.html`), then the animated intro plays on a transparent card ([launch intro](docs/launch-intro.md)).
 
 ## Quick start
 
 ```sh
 npm ci
 npm run dev -- --host 0.0.0.0   # browser preview / guided tour
-npm run build                   # inlined dist/index.html (browser preview)
+npm run build                   # inlined dist/index.html + PWA files (manifest, icons, worker); host dist/ over HTTPS
 node scripts/prepare-android.mjs && npx cap open android   # clean Android build, then Android Studio
 ```
 
@@ -26,6 +26,7 @@ The documentation is split into small single-topic files so that you (or an LLM)
 | [Setup and build](docs/setup-build.md) | [Android APK](docs/android-apk.md) / [BUILD_APK.md](android/BUILD_APK.md) |
 | [Widgets](docs/widgets.md) | [Notifications](docs/notifications.md) |
 | [Journal pages](docs/journal-pages.md) | [File map](docs/file-map/README.md) |
-| [Known gaps](docs/known-gaps.md) | [Creating `changes.patch`](docs/changes-patch.md) |
+| [PWA: how it works](docs/pwa.md) / [PWA setup](docs/pwa-setup.md) | [Known gaps](docs/known-gaps.md) |
+| [Creating `changes.patch`](docs/changes-patch.md) | |
 
 **Rule:** after every new feature or file, update the matching document (table in [docs/README.md](docs/README.md#keeping-the-docs-current)).

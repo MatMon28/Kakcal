@@ -22,8 +22,10 @@ await cp('public/licenses', 'dist/licenses', { recursive: true });
 // so it has to be copied explicitly or the APK would silently ship without it.
 await cp('public/data', 'dist/data', { recursive: true });
 if ((await readFile('dist/data/off-foods.bin')).readUInt32LE(0) !== 0x464f464b) throw new Error('dist/data/off-foods.bin is not a KOFF catalogue. Run npm run build:catalog.');
-const html = (await readFile('dist/index.html', 'utf8')).replace('<head>',
+// The PWA tags (manifest, apple-touch-icon) point at files from public/, which this build does not ship.
+const html = (await readFile('dist/index.html', 'utf8')).replace(/[ \t]*<!-- pwa:start[\s\S]*?<!-- pwa:end -->\n?/, '').replace('<head>',
   '<head>\n    <meta name="kakcalculator-runtime" content="android-local-no-demo" />');
+if (html.includes('manifest.webmanifest')) throw new Error('PWA tags were not removed from the Android build.');
 await writeFile('dist/index.html', html);
 const sync = spawnSync(process.execPath, [path.join(root, 'node_modules/@capacitor/cli/bin/capacitor'), 'sync', 'android'], { stdio: 'inherit' });
 if (sync.status !== 0) throw new Error('Capacitor sync failed. Run npm ci and try again.');

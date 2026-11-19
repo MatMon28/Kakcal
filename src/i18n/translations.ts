@@ -1,6 +1,15 @@
 export const translations = {
   en: {
     appName: 'Kakcalculator',
+    pwa: {
+      title: 'Install app',
+      installBtn: 'Install',
+      installDesc: 'Add Kakcalculator to your home screen or desktop. It opens full screen and works offline.',
+      installed: 'Installed. Kakcalculator runs as an app on this device.',
+      iosDesc: 'In Safari tap Share, then Add to Home Screen.',
+      accepted: 'Installing…',
+      dismissed: 'Installation cancelled. You can try again any time.',
+    },
     nav: {
       today: 'Today',
       prebuilt: 'Custom',
@@ -649,6 +658,15 @@ export const translations = {
   },
   it: {
     appName: 'Kakcalculator',
+    pwa: {
+      title: 'Installa app',
+      installBtn: 'Installa',
+      installDesc: 'Aggiungi Kakcalculator alla schermata Home o al desktop. Si apre a schermo intero e funziona offline.',
+      installed: 'Installata. Kakcalculator funziona come app su questo dispositivo.',
+      iosDesc: 'In Safari tocca Condividi, poi Aggiungi alla schermata Home.',
+      accepted: 'Installazione in corso…',
+      dismissed: 'Installazione annullata. Puoi riprovare quando vuoi.',
+    },
     nav: {
       today: 'Oggi',
       prebuilt: 'Personalizzati',

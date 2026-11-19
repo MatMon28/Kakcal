@@ -19,3 +19,4 @@
 | `src/utils/formatters.ts`, `fuzzy.ts`, `amountMemory.ts`, `usePersistentState.ts`, `cn.ts` | Dates and formatting with cached `Intl` formatters (`numberFormatter`, `dateFormatter`), fuzzy search, remembered portions and the default-weight rule (`getDefaultAmount`: last used, else classic portion, else 100), persisted UI state, and class-name helpers. |
 | `src/utils/spring.ts` | Damped-spring physics sampled into CSS `linear()` curves (`SPRING.soft` 271 ms, `SPRING.bounce` 297 ms) and published as `--ease-*` / `--dur-*` variables at startup. |
 | `src/utils/motion.ts` | `prefersReducedMotion()` and `slideIn()`: compositor-only Web Animations helpers used for the day-change slide. |
+| `src/utils/pwaInstall.ts` | PWA install state: captures `beforeinstallprompt`/`appinstalled`, detects standalone and iOS, exposes `usePwaInstallState()` and `promptInstall()`. Started from `main.tsx`; in-memory only. |

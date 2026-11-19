@@ -15,3 +15,5 @@ For repeatable web checks, prepare Android assets, run `npm run build`, install 
 **Prerequisite not declared in `package.json`:** both test scripts `import { chromium } from 'playwright'`, but `playwright` is not a dependency. Install it first (`npm i -D playwright && npx playwright install chromium`) or run them with `npx -p playwright`. `scripts/smoke-entry.tsx` and the committed `scripts/smoke.bundle.js` are an older jsdom harness that `smoke.mjs` no longer references.
 
 **Verification status of this documentation:** the doc set was audited against repository commit `4552bf0` (see [README.md](README.md#last-audit)). The test scripts themselves were **not** re-run in that audit.
+
+**PWA manual check:** after `npm run build && npm run preview`, DevTools > Application should show a valid manifest, an activated `offline-worker.js` and cache `kakcalculator-shell-v2`; reloading with *Offline* ticked must still open the app. Full list in [pwa-setup.md](pwa-setup.md#5-verify).

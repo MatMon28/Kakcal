@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`d63060e` ("Fixed intro animation")**, the tip of `main` when this round was done. Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`6b6999e` ("Widget fix")**, the tip of `main` when the PWA round was done. Apply it to a checkout of that commit (or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run
@@ -24,3 +24,5 @@ git reset -q                     # leave the working tree as it was
 ```
 
 When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
+
+**Current patch contents:** the PWA round (manifest, icons, install button, worker v2, docs). Steps to use it are in [pwa-setup.md](pwa-setup.md#1-apply-the-patch).

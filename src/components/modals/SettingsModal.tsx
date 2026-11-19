@@ -26,6 +26,7 @@ import {
 import { PoopIcon } from '../common/PoopIcon';
 import { TrackerIcon, TRACKER_ICONS } from '../common/TrackerIcon';
 import { DataBackup } from '../common/DataBackup';
+import { InstallApp } from '../common/InstallApp';
 import { Collapsible } from '../common/Collapsible';
 import { NotificationSettings } from './NotificationSettings';
 import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
@@ -776,6 +777,9 @@ export const SettingsModal: React.FC = () => {
 
           {/* JSON backup now lives in Settings, not Statistics */}
           <DataBackup />
+
+          {/* PWA: shown only when the browser can install the app */}
+          <InstallApp />
         </div>
       )}
     </Modal>

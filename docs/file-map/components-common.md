@@ -20,3 +20,4 @@
 | `src/components/common/AmountSelector.tsx`, `AmountStepper.tsx`, `NumericInput.tsx` | Shared portion presets, steppers, and decimal fields. **Food portions** (`AmountSelector` → `AmountStepper foodSteps`) step by **10 g below 100 g, 20 g from 100 g up to 200 g and 50 g from 200 g** (`foodStepUp` / `foodStepDown`, snapping to the grid, symmetrical for the − button and for press-and-hold). Water and custom trackers keep the plain `stepUp` / `stepDown` steps. |
 | `src/components/common/PoopIcon.tsx`, `BristolIcon.tsx`, `TrackerIcon.tsx`, `SaltCrystalIcon.tsx` | Bowel, tracker, and faceted salt-crystal icon sets. |
 | `src/components/common/Brand.tsx` | Inline `Wordmark` (transparent, header on every page, using the bundled Nunito font) and `AppIcon` (the icon artwork). |
+| `src/components/common/InstallApp.tsx` | Settings card with the PWA **Install** button / iOS hint / "Installed" note; renders nothing when install is impossible or inside the APK. |

@@ -8,6 +8,7 @@
 | --- | --- |
 | Install, build, run scripts | [setup-build.md](setup-build.md) |
 | Run the browser version, tour, URL flags, demo data | [web-preview.md](web-preview.md) |
+| Make / host / install the PWA, offline mode, install button | [pwa.md](pwa.md), steps in [pwa-setup.md](pwa-setup.md) |
 | Build / sign / distribute the APK | [android-apk.md](android-apk.md), then [../android/BUILD_APK.md](../android/BUILD_APK.md) |
 | Fix a Gradle / Capacitor sync error | [android-gradle-guard.md](android-gradle-guard.md) |
 | Change widgets | [widgets.md](widgets.md) |
@@ -38,6 +39,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | --- | --- |
 | Any file (add / rename / delete) | the row in the matching `file-map/*.md` |
 | `package.json` scripts, requirements, build flow | [setup-build.md](setup-build.md), [known-gaps.md](known-gaps.md) |
+| Manifest, icons, `offline-worker.js`, install button, PWA tags in `index.html` | [pwa.md](pwa.md), [pwa-setup.md](pwa-setup.md), `file-map/scripts-public.md` |
 | Widgets (Java, layouts, gallery, settings) | [widgets.md](widgets.md) and `android/BUILD_APK.md` > Widget behavior |
 | Notifications | [notifications.md](notifications.md) and `android/BUILD_APK.md` > Reminder notifications |
 | Persisted keys / backup | [storage-and-privacy.md](storage-and-privacy.md) |
@@ -52,3 +54,5 @@ Then regenerate the patch ([changes-patch.md](changes-patch.md)). Keep each docu
 ## Last audit
 
 Checked against repository commit **`4552bf0`** (the later `f037263` only changed docs; later changes replace `splash_blank.xml` with `splash_wordmark.xml`, add the `#kc-boot` boot screen, the theme-matching widget trays and the transparent intro card) ("Added animations"): npm scripts vs `package.json`, every path mentioned in the docs vs the file tree, activity count (181), tour steps (16), widget providers (4), Gradle modules (3), versions (versionCode 3 / 1.1.0, AGP 8.13.0, Gradle 8.14.3, minSdk 24, SDK 36), wrapper JAR SHA-256, notification IDs, storage keys, OFF catalogue statistics (130,000 products; 128,697 with sugar; 25,758 with portion), `DATA_CACHE` name and Capacitor config. Discrepancies are fixed in the text or listed in [known-gaps.md](known-gaps.md). Runtime/UI claims (animation timings, pixel sizes, screenshot-level UI behaviour) were carried over from the previous README and were **not** re-measured; the test scripts were not re-run.
+
+**PWA round (on top of `6b6999e`):** added `pwa.md`, `pwa-setup.md`, the manifest, icons, install button and worker update. Docs updated for this round: root README, this index, setup-build, known-gaps, storage-and-privacy, brand, verification, journal-pages, web-preview, changes-patch and the file maps (app-shell, utils, components-common, scripts-public). The PWA was checked by build output, static serving and the Android tag stripping; the browser install/offline flow was **not** exercised in a live browser (see [known-gaps.md](known-gaps.md) #8).
