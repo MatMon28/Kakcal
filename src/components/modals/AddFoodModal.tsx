@@ -11,7 +11,7 @@ import { catalogueScore } from '../../data/offCatalog';
 import { calculateTotalCalories } from '../../utils/calculations';
 import { addDaysToDateString, formatDateDisplay } from '../../utils/formatters';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
-import { matchesFirstChar, sortFavoritesFirst } from '../../utils/favorites';
+import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
 import {
   Search,
@@ -159,7 +159,7 @@ export const AddFoodModal: React.FC = () => {
       .filter((f) => !knownIds.has(f.id))
       .map((f) => ({ kind: 'food' as const, f, score: catalogueScore(q) }));
     const ranked = [...meals, ...foods, ...catalogue].sort((a, b) => a.score - b.score);
-    return sortFavoritesFirst(ranked, favoriteIds, (r) => (r.kind === 'food' ? r.f.id : '')).slice(0, 50);
+    return pinCoherentFavorites(ranked, favoriteIds, (r) => (r.kind === 'food' ? r.f.id : ''), (r) => r.score, q).slice(0, 50);
   }, [allFoods, preBuiltMeals, trimmedQuery, isSearching, favoriteIds, offCatalog]);
 
   // Saved meals tagged for this slot

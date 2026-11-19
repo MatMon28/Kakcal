@@ -1123,7 +1123,7 @@ html[data-style="minimal"][data-theme="dark"] {
   --dock-border: 1px solid #1e293b;
   --dock-btn-border: 1px solid #1e293b;
   --dock-1: #060911; --dock-icon-1: #93c5fd;
-  --dock-2: #2563eb; --dock-icon-2: #ffffff;
+  --dock-2: #060911; --dock-icon-2: #fda4af;
   --dock-3: #060911; --dock-icon-3: #93c5fd;
   --dock-4: #060911; --dock-icon-4: #fde047;
   --dock-5: #060911; --dock-icon-5: #d8b4fe;
@@ -1172,7 +1172,7 @@ html[data-style="minimal"][data-theme="lite-dark"] {
   --dock-border: 1px solid #475569;
   --dock-btn-border: 1px solid #475569;
   --dock-1: #172030; --dock-icon-1: #bfdbfe;
-  --dock-2: #3b82f6; --dock-icon-2: #ffffff;
+  --dock-2: #172030; --dock-icon-2: #fda4af;
   --dock-3: #172030; --dock-icon-3: #bfdbfe;
   --dock-4: #172030; --dock-icon-4: #fde68a;
   --dock-5: #172030; --dock-icon-5: #e9d5ff;
@@ -1221,7 +1221,7 @@ html[data-style="minimal"][data-theme="light"] {
   --dock-border: 1.5px solid #cbd5e1;
   --dock-btn-border: 1px solid #cbd5e1;
   --dock-1: #ffffff; --dock-icon-1: #172554;
-  --dock-2: #0f172a; --dock-icon-2: #ffffff;
+  --dock-2: #ffffff; --dock-icon-2: #9f1239;
   --dock-3: #ffffff; --dock-icon-3: #172554;
   --dock-4: #ffffff; --dock-icon-4: #713f12;
   --dock-5: #ffffff; --dock-icon-5: #3b0764;
@@ -1752,4 +1752,24 @@ html[data-style="playful"] main div.rounded-3xl {
   border: var(--card-border, none) !important;
   box-shadow: var(--card-shadow) !important;
   border-radius: var(--card-radius) !important;
+}
+
+/*
+ * Aurora: --micro-radius / --pill-radius are 999px (right for small chips and buttons), but the rules above also
+ * apply them to tall containers (Custom page cards and ingredient lists, Period cards, calendar days, day-overview
+ * rows), which turned them into stretched pill shapes. Containers get ordinary rounded corners instead.
+ */
+html[data-style="aurora"]:not([data-style="classic"]) [data-library-card],
+html[data-style="aurora"]:not([data-style="classic"]) [data-period-card],
+html[data-style="aurora"]:not([data-style="classic"]) [data-day-overview-card],
+html[data-style="aurora"]:not([data-style="classic"]) .kc-modal-banner {
+  border-radius: 18px !important;
+}
+html[data-style="aurora"]:not([data-style="classic"]) [data-library-ingredients],
+html[data-style="aurora"]:not([data-style="classic"]) [data-day-overview-row],
+html[data-style="aurora"]:not([data-style="classic"]) button[data-period-cell] {
+  border-radius: 14px !important;
+}
+html[data-style="aurora"]:not([data-style="classic"]) span[data-period-cell] {
+  border-radius: 5px !important;
 }

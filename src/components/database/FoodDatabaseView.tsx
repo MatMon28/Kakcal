@@ -125,12 +125,17 @@ export const FoodDatabaseView: React.FC = () => {
     });
     const ranked = matched.map((food) => ({ food, score: !q || food.barcode === q ? 0 : Math.min(
       ...[food.name_en, food.name_it, food.name_de, food.brand || ''].map((name) => fuzzyScore(q, name)),
-    ) })).sort((a, b) => Number(favoriteSet.has(b.food.id)) - Number(favoriteSet.has(a.food.id)) || a.score - b.score);
+    ) }));
+    // Typing: only favourites that are a direct hit for the text go above the rest (see pinCoherentFavorites).
+    // Browsing without a search keeps all favourites first.
+    const directLimit = Math.max(1, q.split(/\s+/).length);
+    const pinned = (food: FoodItem, score: number) => favoriteSet.has(food.id) && (!q || score <= directLimit);
+    ranked.sort((a, b) => Number(pinned(b.food, b.score)) - Number(pinned(a.food, a.score)) || a.score - b.score);
     const off = selectedCategory === 'custom' || selectedCategory === 'favorites' ? null
       : catalogue?.browse(q, selectedCategory === 'all' ? null : selectedCategory, excluded);
     const first: FoodItem[] = [], last: FoodItem[] = [];
     const cutoff = catalogueScore(q);
-    for (const { food, score } of ranked) (favoriteSet.has(food.id) || score <= cutoff ? first : last).push(food);
+    for (const { food, score } of ranked) (pinned(food, score) || score <= cutoff ? first : last).push(food);
     return { first, off, last, total: matched.length + (off?.count ?? 0) };
   }, [library, search, selectedCategory, favoriteSet, catalogue, excluded]);
 

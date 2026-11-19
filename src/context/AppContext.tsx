@@ -36,6 +36,7 @@ import { addDaysToDateString, getTodayDateString } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../utils/customTrackers';
 import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
+import { syncLaunchBackground } from '../utils/android';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
 import { DEFAULT_NOTIFICATION_SETTINGS, normalizeNotificationSettings } from '../utils/notifications';
@@ -1161,6 +1162,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   useEffect(() => {
     applyThemeAttributes(settings.theme, settings.themeStyle, settings.monoHue);
+    // Native launch screen / window / WebView follow the current background (Android only).
+    syncLaunchBackground(getComputedStyle(document.documentElement).getPropertyValue('--bg').trim());
   }, [settings.theme, settings.themeStyle, settings.monoHue]);
 
   useEffect(() => {

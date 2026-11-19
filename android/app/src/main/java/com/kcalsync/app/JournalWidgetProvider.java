@@ -311,13 +311,13 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 ink = Color.parseColor(inks[index]);
             } else if ("minimal".equals(themeStyle)) {
                 if (dark) {
-                    fill = index == 1 ? Color.parseColor("#2563eb") : Color.parseColor("#060911");
-                    String[] inks = { "#93c5fd", "#ffffff", "#93c5fd", "#fde047", "#d8b4fe", "#f8fafc" };
+                    fill = Color.parseColor("#060911");
+                    String[] inks = { "#93c5fd", "#fda4af", "#93c5fd", "#fde047", "#d8b4fe", "#f8fafc" };
                     ink = Color.parseColor(inks[index]);
                     border = Color.parseColor("#1e293b");
                 } else {
-                    fill = index == 1 ? Color.parseColor("#0f172a") : Color.WHITE;
-                    String[] inks = { "#172554", "#ffffff", "#172554", "#713f12", "#3b0764", "#090e17" };
+                    fill = Color.WHITE;
+                    String[] inks = { "#172554", "#9f1239", "#172554", "#713f12", "#3b0764", "#090e17" };
                     ink = Color.parseColor(inks[index]);
                     border = Color.parseColor("#cbd5e1");
                 }

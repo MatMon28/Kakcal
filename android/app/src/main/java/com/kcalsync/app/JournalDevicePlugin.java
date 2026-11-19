@@ -20,6 +20,13 @@ import org.json.JSONObject;
 
 @CapacitorPlugin(name = "JournalDevice")
 public class JournalDevicePlugin extends Plugin {
+    /** Stores the app's current background colour (`#rrggbb`) for the native launch surfaces, see LaunchBackground. */
+    @PluginMethod
+    public void setLaunchBackground(PluginCall call) {
+        if (LaunchBackground.save(getContext(), call.getString("color"))) call.resolve();
+        else call.reject("Expected a #rrggbb colour");
+    }
+
     @PluginMethod
     public void takeWidgetAction(PluginCall call) {
         JSObject result = new JSObject();

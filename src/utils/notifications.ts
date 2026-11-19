@@ -293,6 +293,7 @@ export function syncNativeNotifications(plan: PlannedNotification[], copy: Notif
         body: n.body,
         channelId: n.channelId,
         smallIcon: 'ic_stat_kak',
+        largeIcon: 'ic_notification_large',
         iconColor: '#2E7D4F',
         extra: { screen: n.screen },
         // Daily at hour:minute. `second: 0` matters: without it Android keeps the seconds of "now".
@@ -366,6 +367,7 @@ export async function sendTestNotification(copy: NotificationCopy): Promise<void
         body: copy.testBody,
         channelId: 'kc-reminders',
         smallIcon: 'ic_stat_kak',
+        largeIcon: 'ic_notification_large',
         iconColor: '#2E7D4F',
         extra: { screen: 'today' },
         schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true },

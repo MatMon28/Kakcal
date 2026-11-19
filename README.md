@@ -1,6 +1,6 @@
 # Kakcalculator
 
-A local-first nutrition, activity and wellness journal built with React 19, TypeScript, Vite and Tailwind CSS v4. The browser opens a guided tour of every page, with the widgets last; Android has a bundled Capacitor app, four native home-screen widgets and optional reminder [notifications](docs/notifications.md). There is no account or application backend. The browser build is also an installable, offline-capable [PWA](docs/pwa.md) ([setup instructions](docs/pwa-setup.md)). There is never a blank page on launch: the full-name logo is shown first (Android system splash and an inline boot screen in `index.html`), then the animated intro plays on a transparent card ([launch intro](docs/launch-intro.md)).
+A local-first nutrition, activity and wellness journal built with React 19, TypeScript, Vite and Tailwind CSS v4. The browser opens a guided tour of every page, with the widgets last; Android has a bundled Capacitor app, four native home-screen widgets and optional reminder [notifications](docs/notifications.md). There is no account or application backend. The browser build is also an installable, offline-capable [PWA](docs/pwa.md) ([setup instructions](docs/pwa-setup.md)). On Android the first thing drawn is the launch animation: the system launch screen, the window, the WebView and the web boot layer are all plain background colour in the colour of your saved theme (no logo, no cream or white flash) and the [animated intro](docs/launch-intro.md) plays straight on top.
 
 ## Quick start
 

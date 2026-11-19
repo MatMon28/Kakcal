@@ -7,6 +7,30 @@ export function sortFavoritesFirst<T>(items: T[], favoriteIds: readonly string[]
   return [...items].sort((a, b) => Number(favorites.has(getId(b))) - Number(favorites.has(getId(a))));
 }
 
+/**
+ * Search ordering: only favourites that are a *direct* hit for the typed text (every query word is an exact,
+ * prefix or substring match, `fuzzyScore` <= number of words) are pinned above the other results. Favourites
+ * that only match through typo tolerance, or not at all, keep their normal rank. `items` must already be
+ * sorted by score (best first); the order inside both groups is preserved.
+ */
+export function pinCoherentFavorites<T>(
+  items: T[],
+  favoriteIds: readonly string[],
+  getId: (item: T) => string,
+  getScore: (item: T) => number,
+  query: string
+): T[] {
+  if (favoriteIds.length === 0) return items;
+  const favorites = new Set(favoriteIds);
+  const directLimit = Math.max(1, query.trim().split(/\s+/).length);
+  const pinned: T[] = [];
+  const rest: T[] = [];
+  for (const item of items) {
+    (favorites.has(getId(item)) && getScore(item) <= directLimit ? pinned : rest).push(item);
+  }
+  return [...pinned, ...rest];
+}
+
 export const isFavorite = (favoriteIds: readonly string[], foodId: string): boolean =>
   favoriteIds.includes(foodId);
 

@@ -17,7 +17,11 @@ public class MainActivity extends BridgeActivity {
             getIntent().removeExtra(JournalWidgetProvider.EXTRA_ACTION);
         }
         registerPlugin(JournalDevicePlugin.class);
+        // Window and WebView use the saved app background from the first frame (no cream flash before a dark theme).
+        LaunchBackground.applyToWindow(this);
+        LaunchBackground.applySplashTheme(this);
         super.onCreate(state);
+        if (getBridge() != null) LaunchBackground.applyToWebView(this, getBridge().getWebView());
     }
 
     @Override

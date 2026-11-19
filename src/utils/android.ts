@@ -23,6 +23,15 @@ interface JournalDevicePlugin {
     days: Record<string, NutritionValues>;
   }): Promise<void>;
   exportBackup(data: { json: string }): Promise<void>;
+  /** Tells the native launch surfaces (system launch screen, window, WebView) the current app background `#rrggbb`. */
+  setLaunchBackground(data: { color: string }): Promise<void>;
 }
 
 export const JournalDevice = registerPlugin<JournalDevicePlugin>('JournalDevice');
+
+/** Android only: mirror the app background colour natively so the next launch starts on the same colour. */
+export function syncLaunchBackground(color: string): void {
+  if (!isAndroidApp() || !/^#[0-9a-fA-F]{6}$/.test(color)) return;
+  // An older native build without this method just rejects; nothing to do then.
+  JournalDevice.setLaunchBackground({ color }).catch(() => undefined);
+}

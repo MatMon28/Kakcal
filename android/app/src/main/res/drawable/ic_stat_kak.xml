@@ -1,11 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Monochrome status-bar icon for reminder notifications (Material "notifications" bell). Android tints it. -->
+<!--
+  Status-bar icon for reminder notifications: the app icon (K + poop) as a single-colour silhouette.
+  Android status-bar icons are alpha masks (colour is ignored and tinted), so the cream tile is left out.
+  The full-colour launcher icon is shown on the right of the notification by drawable-xxhdpi/ic_notification_large.png.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
-    android:viewportWidth="24"
-    android:viewportHeight="24">
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M12,22c1.1,0 2,-0.9 2,-2h-4c0,1.1 0.89,2 2,2zM18,16v-5c0,-3.07 -1.64,-5.64 -4.5,-6.32V4c0,-0.83 -0.67,-1.5 -1.5,-1.5s-1.5,0.67 -1.5,1.5v0.68C7.63,5.36 6,7.92 6,11v5l-2,2v1h16v-1l-2,-2z" />
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+    <group android:translateX="-6" android:translateY="-22" android:scaleX="0.86" android:scaleY="0.86">
+        <path android:strokeColor="#FFFFFFFF" android:strokeWidth="96" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M148,132 V392" />
+        <path android:strokeColor="#FFFFFFFF" android:strokeWidth="96" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M156,268 L304,132" />
+        <path android:strokeColor="#FFFFFFFF" android:strokeWidth="96" android:strokeLineCap="round" android:strokeLineJoin="round" android:pathData="M196,252 L312,392" />
+    </group>
+    <group android:translateX="296" android:translateY="292" android:scaleX="2.75" android:scaleY="2.75">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:strokeColor="#FFFFFFFF"
+            android:strokeWidth="3"
+            android:strokeLineJoin="round"
+            android:pathData="M32,5 C37,9 39,12.5 36.5,15.5 C41,16 44,18.5 44,22.5 C44,25 43,27 42,28 C46.5,28.5 50,31.5 50,35 C50,37.5 49,39.5 48,41 C52.5,41.5 56,44.5 56,48 C56,52.5 52.5,56 48,56 H16 C11.5,56 8,52.5 8,48 C8,44.5 11.5,41.5 16,41 C15,39.5 14,37.5 14,35 C14,31.5 17.5,28.5 22,28 C21,27 20,25 20,22.5 C20,18.5 23,16 27.5,15.5 C25,12.5 27,9 32,5Z" />
+    </group>
 </vector>
