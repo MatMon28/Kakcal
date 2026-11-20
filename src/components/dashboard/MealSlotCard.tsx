@@ -7,6 +7,7 @@ import { setLastAmount } from '../../utils/amountMemory';
 import { AmountSelector } from '../common/AmountSelector';
 import { MacroPills } from '../common/MacroPills';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
+import { MealNutrientTotals } from './MealNutrientTotals';
 import { useMealSlots } from '../../utils/mealSlots';
 import {
   Coffee,
@@ -283,7 +284,12 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
                 </span>
               </button>
             ) : (
-              items.map((item) => {
+              <>
+              {/* Whole-meal fibre, salt and sugar (the carbs / protein / fat of the meal are in the header). */}
+              <div className="py-2.5">
+                <MealNutrientTotals fiber={slotMacros.fiberGrams} salt={slotMacros.saltGrams} sugar={slotMacros.sugarGrams} compact={compact} />
+              </div>
+              {items.map((item) => {
                 const isEditing = editingItemId === item.id;
                 const displayAmt = isEditing ? editAmount : item.amount;
                 const itemKcal = Math.round((item.calories * displayAmt) / 100);
@@ -381,7 +387,8 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
                     )}
                   </div>
                 );
-              })
+              })}
+              </>
             )}
           </div>
         </div>

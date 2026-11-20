@@ -17,3 +17,4 @@
 | (Item nutrition) `src/components/dashboard/MealSlotCard.tsx` | Each item of an expanded meal shows its own macros, fibre, salt and sugar through `FoodMacroGrid dense`. |
 
 | (Round: calories auto-hide, pencil row) `MealSlotCard.tsx`, `DayNavigator.tsx`, `EnergyBalanceCards.tsx`, `WaterCard.tsx` | `MealSlotCard` hides the calories when too narrow (`useCramped`); `DayNavigator` accepts `trailing` (the pencil); Burned and Water cards show the new goal badges. |
+| (Round: meal totals) `src/components/dashboard/MealNutrientTotals.tsx`, `MealSlotCard.tsx` | New `MealNutrientTotals` shows the whole meal's fibre, salt and (with Track sugar) sugar as yellow `bg-nutrient` fields at the top of an expanded meal, above the items (icon + number only in Compact). Values come from `calculateMacros(items)` (`fiberGrams`, `saltGrams`, `sugarGrams`). |
