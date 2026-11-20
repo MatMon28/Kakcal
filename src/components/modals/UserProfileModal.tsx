@@ -5,6 +5,7 @@ import { NumericInput } from '../common/NumericInput';
 import { calculateBMR } from '../../utils/calculations';
 import { formatKcal } from '../../utils/formatters';
 import { Check } from 'lucide-react';
+import { BodyMeasuresProfile } from './BodyMeasuresProfile';
 
 export const UserProfileModal: React.FC = () => {
   const {
@@ -134,6 +135,9 @@ export const UserProfileModal: React.FC = () => {
             {formatKcal(previewBmr)} kcal
           </span>
         </div>
+
+        {/* Advanced > Body measurements: choose what to track (renders nothing when the option is off) */}
+        <BodyMeasuresProfile />
 
         {/* Save */}
         <button

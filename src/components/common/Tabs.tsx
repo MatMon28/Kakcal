@@ -2,10 +2,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { ActiveTab } from '../../types';
 import { isPeriodShown } from '../../utils/tourPreview';
-import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useAdvanced } from '../../utils/advancedStore';
+import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, PersonStanding, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const Tabs: React.FC = () => {
   const { t, activeTab, setActiveTab, settings } = useApp();
+  const bodyShown = useAdvanced().body.enabled;
   const scrollRef = useRef<HTMLDivElement>(null);
   const activeBtnRef = useRef<HTMLButtonElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -34,7 +36,7 @@ export const Tabs: React.FC = () => {
     }
     window.addEventListener('resize', checkScroll);
     return () => window.removeEventListener('resize', checkScroll);
-  }, [settings.hidePeriod, activeTab]);
+  }, [settings.hidePeriod, activeTab, bodyShown]);
 
   const navItems = [
     {
@@ -56,6 +58,17 @@ export const Tabs: React.FC = () => {
             label: t.nav.period,
             icon: Droplet,
             activeClass: 'bg-[#F4C6D8] text-[#6E2440]',
+          },
+        ]
+      : []),
+    // Advanced > Body measurements: the Body page sits just left of Statistics.
+    ...(bodyShown
+      ? [
+          {
+            id: 'body' as ActiveTab,
+            label: t.nav.body,
+            icon: PersonStanding,
+            activeClass: 'bg-[#E2D6FF] text-[#49346F]',
           },
         ]
       : []),

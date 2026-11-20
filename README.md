@@ -32,7 +32,10 @@ The documentation is split into small single-topic files so that you (or an LLM)
 | [Journal pages](docs/journal-pages.md) | [File map](docs/file-map/README.md) |
 | [PWA: how it works](docs/pwa.md) / [PWA setup](docs/pwa-setup.md) | [Known gaps](docs/known-gaps.md) |
 | [Creating `changes.patch`](docs/changes-patch.md) | [Making the Download APK button work](docs/apk-download.md) |
+| [Advanced personalisation: goals/limits, body measurements](docs/advanced-personalisation.md) | |
 
 Settings ends with a plain red **Delete all data** button (double confirmation, no section title) that erases the local journal; the Medium widget is 4x2 by default (macro row as tall as the buttons, intake/burned cards fill the rest and are always the biggest); in the Mono style every dock/widget button has the same colour; meal and recipe ingredient searches show favourites first (starred) and sit above the existing ingredients when editing; the reminder notification icon is the real K + poop logo as a transparent-background glyph (K cut around the poop, poop tier lines visible).
+
+**Advanced personalisation (Settings > Advanced):** opt-in daily *objectives/limits* for calories, fibre, carbs, protein, fat, salt and sugar (a small check/exclamation icon appears in the field on Today when reached) and *body measurements* (a Body page left of Statistics with a graph per measure over 3M/6M/1Y/custom, Upper body / Lower body / Custom update buttons, a tracking section in Profile and custom measures). See [docs/advanced-personalisation.md](docs/advanced-personalisation.md).
 
 **Rule:** after every new feature or file, update the matching document (table in [docs/README.md](docs/README.md#keeping-the-docs-current)).

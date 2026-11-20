@@ -2,6 +2,7 @@ import { Candy, Wheat } from 'lucide-react';
 import type { FoodItem } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { SaltCrystalIcon } from './SaltCrystalIcon';
+import { GoalBadge } from './GoalBadge';
 
 const extraIcons = { fiber: Wheat, salt: SaltCrystalIcon, sugar: Candy };
 type Extra = keyof typeof extraIcons;
@@ -54,7 +55,11 @@ export function SecondaryNutrientRow({ fiber, salt, sugar, average = false }: {
         return (
           <div key={key} data-nutrient={key} role="group" title={labels[key]} aria-label={`${labels[key]}: ${values[key]} g`}
             className={`bg-nutrient text-nutrient-ink rounded-2xl flex flex-wrap items-center justify-between gap-x-1.5 ${settings.ultraMinimal ? 'px-3 py-2.5' : 'px-3 py-3 sm:px-4'}`}>
-            {settings.ultraMinimal ? <Icon size={16} aria-hidden="true" /> : <span className="text-xs sm:text-sm font-semibold">{labels[key]}</span>}
+            <span className="inline-flex items-center gap-1.5">
+              {settings.ultraMinimal ? <Icon size={16} aria-hidden="true" /> : <span className="text-xs sm:text-sm font-semibold">{labels[key]}</span>}
+              {/* Settings > Advanced: objective / limit reached (daily totals only, not the period averages) */}
+              {!average && <GoalBadge goal={key} amount={values[key]} />}
+            </span>
             <span className="whitespace-nowrap text-base sm:text-lg font-extrabold">{values[key]}
               {(!settings.ultraMinimal || average) && <small className="ml-0.5 text-xs font-semibold">{settings.ultraMinimal ? '/day' : 'g'}</small>}
             </span>

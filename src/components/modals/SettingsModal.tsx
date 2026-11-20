@@ -30,6 +30,7 @@ import { InstallApp } from '../common/InstallApp';
 import { DeleteAllData } from '../common/DeleteAllData';
 import { Collapsible } from '../common/Collapsible';
 import { NotificationSettings } from './NotificationSettings';
+import { AdvancedSettings } from './AdvancedSettings';
 import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
 
 export const SettingsModal: React.FC = () => {
@@ -751,6 +752,9 @@ export const SettingsModal: React.FC = () => {
           </div>
 
           </Collapsible>
+
+          {/* Advanced personalisation: goals / limits and body measurements (all opt-in) */}
+          <AdvancedSettings />
 
           {/* Reminders: water, meals, custom buttons, weight, daily log */}
           <NotificationSettings />

@@ -8,6 +8,7 @@ import { PreBuiltMealsView } from './components/prebuilt/PreBuiltMealsView';
 import { PeriodView } from './components/period/PeriodView';
 import { FoodDatabaseView } from './components/database/FoodDatabaseView';
 import { HistoryView } from './components/history/HistoryView';
+import { BodyView } from './components/body/BodyView';
 import { AddFoodModal } from './components/modals/AddFoodModal';
 import { LogActivityModal } from './components/modals/LogActivityModal';
 import { BarcodeLookupModal } from './components/modals/BarcodeLookupModal';
@@ -44,11 +45,12 @@ import { isPeriodShown } from './utils/tourPreview';
 import { useNotificationScheduler } from './utils/useNotificationScheduler';
 import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
+import { useAdvanced } from './utils/advancedStore';
 import { whenIdle } from './utils/idle';
 import { useAppReady } from './components/intro/useAppReady';
 import type { ActiveTab } from './types';
 
-const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'history'];
+const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'body', 'history'];
 
 /** Each widget button opens the same dialog the tour and Today's dock open. */
 const ACTION_SCREEN: Record<WidgetAction, TourScreen> = {
@@ -266,20 +268,26 @@ function MainContent() {
   const anyModal = isAddFoodOpen || isLogActivityOpen || isBarcodeOpen || isProfileOpen ||
     isSettingsOpen || isWaterOpen || isPoopOpen || isWeightOpen || isCustomFoodOpen ||
     isCustomPickerOpen || isPeriodSheetOpen || customButtonOpenId !== null;
-  const hasDock = activeTab === 'today' || activeTab === 'prebuilt' || activeTab === 'period';
+  const hasDock = activeTab === 'today' || activeTab === 'prebuilt' || activeTab === 'period' || activeTab === 'body';
   const periodShown = isPeriodShown(settings.hidePeriod);
+  // Settings > Advanced > Body measurements: the Body page exists only while the option is on.
+  const bodyShown = useAdvanced().body.enabled;
+  useEffect(() => {
+    if (!bodyShown && activeTab === 'body') setActiveTab('today');
+  }, [bodyShown, activeTab, setActiveTab]);
 
   useLayoutEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
-  const visibleTabs = MAIN_TABS.filter((tab) => tab !== 'period' || periodShown);
+  const visibleTabs = MAIN_TABS.filter((tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown));
   const renderMainTab = (tab: ActiveTab) => {
     switch (tab) {
       case 'today': return <TodayView />;
       case 'prebuilt': return <PreBuiltMealsView hideDock={tab !== activeTab} />;
       case 'period': return periodShown ? <PeriodView hideDock={tab !== activeTab} /> : null;
       case 'database': return <FoodDatabaseView />;
+      case 'body': return bodyShown ? <BodyView hideDock={tab !== activeTab} /> : null;
       case 'history': return <HistoryView />;
       default: return null;
     }

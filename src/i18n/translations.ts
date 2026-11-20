@@ -16,6 +16,7 @@ export const translations = {
       period: 'Period',
       database: 'Foods',
       history: 'Statistics',
+      body: 'Body',
       profile: 'Profile',
     },
     header: {
@@ -684,6 +685,7 @@ export const translations = {
       period: 'Ciclo',
       database: 'Alimenti',
       history: 'Statistiche',
+      body: 'Corpo',
       profile: 'Profilo',
     },
     header: {

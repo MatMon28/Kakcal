@@ -1,6 +1,7 @@
 import React from 'react';
 import { SecondaryNutrientRow } from '../common/FoodMacroGrid';
 import { useApp } from '../../context/AppContext';
+import { GoalBadge } from '../common/GoalBadge';
 
 export const MacroNutrientsOverview: React.FC = () => {
   const { currentMacros, settings, t } = useApp();
@@ -12,7 +13,8 @@ export const MacroNutrientsOverview: React.FC = () => {
       {/* Row 1: Carbs, Protein, Fat side by side with % below grams */}
       <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
         {/* Carbs (Pastel Blue) */}
-        <div role="group" aria-label={`${t.macros.carbs}: ${currentMacros.carbsGrams} g`} className={`kc-macro-carbs bg-[#CFE7FE] rounded-3xl ${macroPadding} text-center`}>
+        <div role="group" aria-label={`${t.macros.carbs}: ${currentMacros.carbsGrams} g`} className={`kc-macro-carbs bg-[#CFE7FE] rounded-3xl ${macroPadding} relative text-center`}>
+          <GoalBadge goal="carbs" amount={currentMacros.carbsGrams} className="absolute top-1.5 right-1.5" />
           <span className={`${ultraMinimal ? 'sr-only' : 'text-[11px] font-bold uppercase tracking-wider text-[#1A4670] block truncate'}`}>
             {t.macros.carbs}
           </span>
@@ -28,7 +30,8 @@ export const MacroNutrientsOverview: React.FC = () => {
         </div>
 
         {/* Protein (Pastel Peach) */}
-        <div role="group" aria-label={`${t.macros.protein}: ${currentMacros.proteinGrams} g`} className={`kc-macro-protein bg-[#FAE0B4] rounded-3xl ${macroPadding} text-center`}>
+        <div role="group" aria-label={`${t.macros.protein}: ${currentMacros.proteinGrams} g`} className={`kc-macro-protein bg-[#FAE0B4] rounded-3xl ${macroPadding} relative text-center`}>
+          <GoalBadge goal="protein" amount={currentMacros.proteinGrams} className="absolute top-1.5 right-1.5" />
           <span className={`${ultraMinimal ? 'sr-only' : 'text-[11px] font-bold uppercase tracking-wider text-[#7D4E14] block truncate'}`}>
             {t.macros.protein}
           </span>
@@ -44,7 +47,8 @@ export const MacroNutrientsOverview: React.FC = () => {
         </div>
 
         {/* Fat (Pastel Lavender) */}
-        <div role="group" aria-label={`${t.macros.fat}: ${currentMacros.fatGrams} g`} className={`kc-macro-fat bg-[#E2D6FF] rounded-3xl ${macroPadding} text-center`}>
+        <div role="group" aria-label={`${t.macros.fat}: ${currentMacros.fatGrams} g`} className={`kc-macro-fat bg-[#E2D6FF] rounded-3xl ${macroPadding} relative text-center`}>
+          <GoalBadge goal="fat" amount={currentMacros.fatGrams} className="absolute top-1.5 right-1.5" />
           <span className={`${ultraMinimal ? 'sr-only' : 'text-[11px] font-bold uppercase tracking-wider text-[#523A8C] block truncate'}`}>
             {t.macros.fat}
           </span>

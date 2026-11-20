@@ -29,3 +29,5 @@ Snippet for gap 1 and 2 (`package.json` > `scripts`):
 "android:check-widgets": "node scripts/check-widget-layouts.mjs",
 "build:catalog": "node scripts/build-off-catalog.mjs"
 ```
+
+**Advanced personalisation round:** verified by `tsc`, `npm run build` and a jsdom run of the built bundle (goal icons, tab order, Body cards, dock buttons, pop-up). Visual layout (icon sizes in each of the 7 themes, charts) was **not** checked in a real browser or on a device. The guided tour does not mention the Body page (it is opt-in and off by default).

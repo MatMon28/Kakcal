@@ -2,6 +2,7 @@ import React from 'react';
 import { Flame, Utensils } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatKcal } from '../../utils/formatters';
+import { GoalBadge } from '../common/GoalBadge';
 
 export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = false }) => {
   const { t, settings, currentIntakeCalories, currentExpenditure, netBalance } = useApp();
@@ -30,9 +31,13 @@ export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = 
       <div role="group" aria-label={`${t.energy.intake}: ${formatKcal(currentIntakeCalories)} kcal`} className={`kc-hero-intake bg-intake rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
         <div>
           <div className={`flex items-center justify-between gap-1 ${ultraMinimal ? 'min-h-5' : 'mb-1 min-h-[22px]'}`}>
-            <span className={`${ultraMinimal ? 'inline-flex items-center text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.energy.intake}>
-              {ultraMinimal && <Utensils size={15} aria-hidden="true" />}
-              <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.intake}</span>
+            <span className="inline-flex min-w-0 items-center gap-1.5">
+              <span className={`${ultraMinimal ? 'inline-flex items-center text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.energy.intake}>
+                {ultraMinimal && <Utensils size={15} aria-hidden="true" />}
+                <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.intake}</span>
+              </span>
+              {/* Settings > Advanced: calorie objective / limit reached */}
+              <GoalBadge goal="calories" amount={currentIntakeCalories} />
             </span>
             {netPositive && surplusPill}
           </div>

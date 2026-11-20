@@ -38,6 +38,7 @@ import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../ut
 import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
 import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
+import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
 import { DEFAULT_NOTIFICATION_SETTINGS, normalizeNotificationSettings } from '../utils/notifications';
@@ -1462,6 +1463,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       settings,
       periodData,
       customActivities,
+      advanced: exportAdvanced(), // goals/limits + body measures (Settings > Advanced)
     };
     return JSON.stringify(data, null, 2);
   };
@@ -1510,6 +1512,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (Array.isArray(data.customActivities)) {
         setCustomActivities(persistCustomActivities(normalizeCustomActivities(data.customActivities)));
       }
+      importAdvanced(data.advanced);
       if (data.periodData && typeof data.periodData === 'object') {
         try {
           savePeriodData(normalizePeriodData(data.periodData));

@@ -199,7 +199,7 @@ export interface EnergyExpenditureSummary {
   totalExpenditure: number;
 }
 
-export type ActiveTab = 'today' | 'prebuilt' | 'period' | 'database' | 'history';
+export type ActiveTab = 'today' | 'prebuilt' | 'period' | 'database' | 'body' | 'history';
 
 export type Theme = 'light' | 'lite-dark' | 'dark';
 
