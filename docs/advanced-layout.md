@@ -10,6 +10,8 @@ Off by default. **Settings > Advanced** has an *Advanced layout* switch and, dir
 
 ## What the user sees
 
+- **Where the pencil is:** on *Today* it is at the end of the calendar row; on *Statistics* and *Body* it sits **right next to the time-period selector** (`PencilRow` in `LayoutToolbar.tsx`; the selector stays centred, an empty twin of the same width is on its left). While the page is being edited the pencil is not drawn there (fields are inert while editing; use **Done** in the toolbar) but its place stays reserved. If the `range` field is removed the pencil returns to the top of the page (`pencilItem="range"` on `LayoutToolbar`), so it can never be lost.
+
 - With the switch on, a small **pencil** appears at the top of **Today**, **Statistics** and **Body** (not on other pages). Off = the original pages, byte-for-byte the same markup as before (Today, Statistics and Body keep their original code path).
 - Pressing the pencil (tooltip *Edit this page*) starts editing that page: a toolbar (*Editing* - **Add**, **Reset page**, **Done**) appears. Fields are inert while editing, so nothing is logged by accident. Everything is done on the field itself:
   - **Editable fields are outlined:** as soon as the pencil is pressed, every field gets a **dashed (segmented) outline** that follows its corners, so you can see what can be edited. The outline is one SVG rectangle, so the dash pattern is the same all the way round.
@@ -25,6 +27,13 @@ Off by default. **Settings > Advanced** has an *Advanced layout* switch and, dir
   - **Body:** *New body measure* (name + unit), created and tracked like a Profile custom measure.
   - **Statistics:** removed fields only.
 - Removed custom meal types can be deleted for good from the same list (trash button, with confirmation).
+
+## Fixes found by testing the editor
+
+- The remove X, the reset button and the side / corner resize knobs sit *inside* the field's left / right edge. The page viewport (`PageSwiper`) clips horizontally, so on full-width fields the X used to be cut in half. The X is `-top-3 right-1`, the reset button `-top-3 left-1`.
+- The dashed / solid outline clamps its corner radius to half of the field's shortest side: a pill (the Compact / Normal / Expanded switch) used to be outlined as a thin ellipse.
+- The side knobs' hit area (`top-4 bottom-4`) no longer collapses on 44 px high fields.
+- A field no longer gets `min-height: 64px` in the first edit frame. It made every field below a short one (the period selector, the layout switch) jump down by about 26 px the first time a page was edited, because places are measured in that frame.
 
 ## Fields per page
 

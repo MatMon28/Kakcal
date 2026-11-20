@@ -99,7 +99,10 @@ const Outline: React.FC<{ solid: boolean }> = ({ solid }) => {
   const ref = useRef<SVGSVGElement>(null);
   const [radius, setRadius] = useState(OUTLINE_FALLBACK_RADIUS);
   useLayoutEffect(() => {
-    const next = cardRadius(ref.current?.parentElement ?? null);
+    const parent = ref.current?.parentElement ?? null;
+    // An SVG corner is elliptical when the radius is larger than half of a side, so it is clamped to a circle.
+    const limit = parent ? Math.min(parent.offsetWidth, parent.offsetHeight) / 2 : OUTLINE_FALLBACK_RADIUS;
+    const next = Math.max(0, Math.min(cardRadius(parent), limit));
     setRadius((current) => (current === next ? current : next));
   });
   return (
@@ -135,14 +138,15 @@ const Outline: React.FC<{ solid: boolean }> = ({ solid }) => {
 type Edge = 'n' | 's' | 'e' | 'w' | 'sw' | 'se';
 
 // Literal class names so that Tailwind finds them. Hit areas are 24 px wide, the visible knob is one small round dot, the same on every side. The top
-// corners are left free for the reset and remove buttons.
+// corners are left free for the reset and remove buttons. Everything sits inside the field's left / right edge: the page
+// viewport clips horizontally (PageSwiper), so a control hanging out of a full-width field would be cut in half.
 const HANDLES: { edge: Edge; box: string; knob: string }[] = [
-  { edge: 'n', box: 'left-7 right-7 -top-2 h-6 cursor-ns-resize', knob: 'size-3.5' },
-  { edge: 's', box: 'left-7 right-7 -bottom-2 h-6 cursor-ns-resize', knob: 'size-3.5' },
-  { edge: 'w', box: 'top-7 bottom-7 -left-2 w-6 cursor-ew-resize', knob: 'size-3.5' },
-  { edge: 'e', box: 'top-7 bottom-7 -right-2 w-6 cursor-ew-resize', knob: 'size-3.5' },
-  { edge: 'sw', box: '-bottom-2 -left-2 size-7 cursor-nesw-resize', knob: 'size-3.5' },
-  { edge: 'se', box: '-bottom-2 -right-2 size-7 cursor-nwse-resize', knob: 'size-3.5' },
+  { edge: 'n', box: 'left-9 right-9 -top-2 h-6 cursor-ns-resize', knob: 'size-3.5' },
+  { edge: 's', box: 'left-9 right-9 -bottom-2 h-6 cursor-ns-resize', knob: 'size-3.5' },
+  { edge: 'w', box: 'top-4 bottom-4 left-0 w-5 cursor-ew-resize', knob: 'size-3.5' },
+  { edge: 'e', box: 'top-4 bottom-4 right-0 w-5 cursor-ew-resize', knob: 'size-3.5' },
+  { edge: 'sw', box: '-bottom-2 left-0 size-6 cursor-nesw-resize', knob: 'size-3.5' },
+  { edge: 'se', box: '-bottom-2 right-0 size-6 cursor-nwse-resize', knob: 'size-3.5' },
 ];
 
 const ctl =
@@ -169,7 +173,7 @@ const Controls: React.FC<ControlsProps> = ({ item, customSize, onResizeStart, on
         <button
           type="button"
           data-ctl
-          className={`${ctl} -top-3 -left-3`}
+          className={`${ctl} -top-3 left-1`}
           onClick={onReset}
           aria-label={`${text.resetSize}: ${item.label}`}
           title={text.resetSize}
@@ -181,7 +185,7 @@ const Controls: React.FC<ControlsProps> = ({ item, customSize, onResizeStart, on
         type="button"
         data-ctl
         data-layout-remove
-        className={`${ctl} -top-3 -right-3 !bg-[#F6D0D0] !text-[#7A2727] !border-[#E4AAAA]`}
+        className={`${ctl} -top-3 right-1 !bg-[#F6D0D0] !text-[#7A2727] !border-[#E4AAAA]`}
         onClick={onRemove}
         aria-label={`${text.remove}: ${item.label}`}
         title={text.remove}
@@ -848,7 +852,7 @@ export const EditableGrid: React.FC<{
               animate && cell && !moving ? 'transition-[top,left,width] duration-200 ease-out' : ''
             } ${
               isEditing
-                ? `${height || item.selfStart || cell ? '' : 'min-h-[64px]'} touch-pan-y rounded-3xl outline-none ${isSelected ? 'z-20' : ''} ${
+                ? `touch-pan-y rounded-3xl outline-none ${isSelected ? 'z-20' : ''} ${
                     isLifted ? 'cursor-grabbing shadow-2xl will-change-transform scale-[1.02] opacity-95' : 'cursor-pointer'
                   }`
                 : ''

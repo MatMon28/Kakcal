@@ -8,7 +8,7 @@ import { formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { ActionDock, type DockAction } from '../common/ActionDock';
 import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
-import { LayoutToolbar } from '../layout/LayoutToolbar';
+import { LayoutToolbar, PencilRow } from '../layout/LayoutToolbar';
 import { useLayoutText } from '../../i18n/layout';
 import { useLayout } from '../../utils/layoutStore';
 import { BodyPartIcon } from '../common/BodyPartIcon';
@@ -137,7 +137,7 @@ export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false })
 
   const rangeNode = (
     <div className={settings.ultraMinimal ? 'space-y-3' : 'space-y-4'}>
-      <div className="flex justify-center">
+      <PencilRow page="body">
         <div
           role="group"
           aria-label={text.body.range}
@@ -159,7 +159,7 @@ export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false })
             </button>
           ))}
         </div>
-      </div>
+      </PencilRow>
 
       {range === 'custom' && (
         <div className="flex flex-wrap items-center justify-center gap-2.5 px-1">
@@ -197,7 +197,7 @@ export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false })
   return (
     <div className={settings.ultraMinimal ? 'space-y-3' : 'space-y-4'}>
       {/* Settings > Advanced > Advanced layout: the pencil icon (and, while editing, the toolbar). */}
-      <LayoutToolbar page="body" items={items} extra="measure" />
+      <LayoutToolbar page="body" items={items} extra="measure" pencilItem="range" />
       {layoutEnabled ? (
         <EditableGrid page="body" items={items} className={settings.ultraMinimal ? 'gap-y-3 gap-x-2.5' : 'gap-y-4 gap-x-3 sm:gap-x-4'} />
       ) : rangeNode}

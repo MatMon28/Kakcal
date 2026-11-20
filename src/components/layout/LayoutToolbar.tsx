@@ -50,6 +50,25 @@ export const LayoutPencil: React.FC<{ page: LayoutPageId }> = ({ page }) => {
 };
 
 /**
+ * Puts the pencil next to a control it belongs with (the time-period selector of Statistics and Body). The control stays
+ * centred: an empty twin of the same width sits on its left. While the page is being edited the pencil is not drawn here
+ * (fields are inert while editing; the toolbar below has Done) but its place stays reserved, so nothing jumps.
+ * Nothing changes when Advanced layout is off.
+ */
+export const PencilRow: React.FC<{ page: LayoutPageId; children: React.ReactNode }> = ({ page, children }) => {
+  const { enabled } = useLayout();
+  const editing = useEditingPage() === page;
+  if (!enabled) return <div className="flex justify-center">{children}</div>;
+  return (
+    <div className="flex items-center justify-center gap-1.5" data-layout-pencil-row={page}>
+      <span className="size-9 shrink max-[360px]:hidden" aria-hidden="true" />
+      <div className="min-w-0 flex justify-center">{children}</div>
+      <span className="size-9 shrink-0 flex items-center justify-center">{!editing && <LayoutPencil page={page} />}</span>
+    </div>
+  );
+};
+
+/**
  * The top of an editable page. With Settings > Advanced > Advanced layout on it shows a small pencil icon;
  * while editing it shows Add / Reset page / Done. "Add" lists the removed fields and, on Today, creates a new meal
  * type (on Body, a new measure).
@@ -60,7 +79,12 @@ export const LayoutToolbar: React.FC<{
   extra?: LayoutExtra;
   /** Draw the pencil here (default). Today puts it in the calendar row instead (`<LayoutPencil>`), so it passes `false`. */
   pencil?: boolean;
-}> = ({ page, items, extra, pencil = true }) => {
+  /**
+   * Id of the field that carries the pencil itself (`range` on Statistics and Body, through `<PencilRow>`). The pencil is
+   * drawn at the top of the page only while that field is removed, so it can never be lost.
+   */
+  pencilItem?: string;
+}> = ({ page, items, extra, pencil = true, pencilItem }) => {
   const { enabled } = useLayout();
   const editing = useEditingPage() === page;
   const text = useLayoutText().toolbar;
@@ -75,6 +99,7 @@ export const LayoutToolbar: React.FC<{
 
   if (!editing) {
     if (!pencil) return null;
+    if (pencilItem && !hidden.some((item) => item.id === pencilItem)) return null;
     return (
       <div className="flex justify-end -mb-1">
         <LayoutPencil page={page} />

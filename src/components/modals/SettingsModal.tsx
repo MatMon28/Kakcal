@@ -454,27 +454,8 @@ export const SettingsModal: React.FC = () => {
             </div>
           </InlineCollapse>
 
-          {/* Sugar tracking */}
-          <button
-            type="button"
-            aria-pressed={settings.trackSugar}
-            aria-label={t.settings.trackSugar}
-            onClick={() => updateSettings({ trackSugar: !settings.trackSugar })}
-            className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
-          >
-            <span className="flex items-center gap-2.5 min-w-0">
-              <span className="size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
-                <Candy size={15} />
-              </span>
-              <span className="min-w-0">
-                <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.trackSugar}</span>
-              </span>
-            </span>
-            <SwitchVisual on={settings.trackSugar} />
-          </button>
-
-          {/* Tracking toggles (kept above food shortcuts). Stored as hidePoop / hidePeriod, shown inverted: on = tracked. */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+          {/* Tracking toggles, in this order: poop, period, sugar (kept above food shortcuts). Poop / period are stored as hidePoop / hidePeriod and shown inverted: on = tracked. */}
+          <div className="grid grid-cols-1 gap-1.5" data-track-toggles>
             <button
               type="button"
               aria-pressed={!settings.hidePoop}
@@ -510,6 +491,22 @@ export const SettingsModal: React.FC = () => {
               </span>
               <span className="scale-[0.82] origin-right shrink-0">
                 <SwitchVisual on={!settings.hidePeriod} />
+              </span>
+            </button>
+            <button
+              type="button"
+              aria-pressed={settings.trackSugar}
+              onClick={() => updateSettings({ trackSugar: !settings.trackSugar })}
+              className="min-h-[54px] flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-3 py-2 transition-colors text-left"
+            >
+              <span className="flex items-center gap-2 text-xs font-bold text-[var(--text)]">
+                <span className="size-7 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                  <Candy size={13} />
+                </span>
+                {t.settings.trackSugar}
+              </span>
+              <span className="scale-[0.82] origin-right shrink-0">
+                <SwitchVisual on={settings.trackSugar} />
               </span>
             </button>
           </div>

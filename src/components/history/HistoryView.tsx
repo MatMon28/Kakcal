@@ -4,7 +4,7 @@ import { SecondaryNutrientCard, SecondaryNutrientRow } from '../common/FoodMacro
 import { useApp } from '../../context/AppContext';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
-import { LayoutToolbar } from '../layout/LayoutToolbar';
+import { LayoutToolbar, PencilRow } from '../layout/LayoutToolbar';
 import { useLayoutText } from '../../i18n/layout';
 import { useLayout } from '../../utils/layoutStore';
 import { PoopIcon } from '../common/PoopIcon';
@@ -180,7 +180,7 @@ export const HistoryView: React.FC = () => {
   // ---- Advanced layout: every block of the page as a field of the editable grid ----
   const rangeNode = (
     <div className={ultraMinimal ? 'space-y-3' : 'space-y-4'}>
-        <div className="flex justify-center">
+        <PencilRow page="stats">
           <div
             role="group"
             aria-label={t.stats.dateRange}
@@ -209,7 +209,7 @@ export const HistoryView: React.FC = () => {
               </button>
             ))}
           </div>
-        </div>
+        </PencilRow>
 
         {range === 'custom' && (
           <div className="flex flex-wrap items-center justify-center gap-2.5 px-1">
@@ -635,7 +635,7 @@ export const HistoryView: React.FC = () => {
     <>
       <div className={ultraMinimal ? 'space-y-3' : 'space-y-4'}>
         {/* Settings > Advanced > Advanced layout: the pencil icon (and, while editing, the toolbar). */}
-        <LayoutToolbar page="stats" items={items} />
+        <LayoutToolbar page="stats" items={items} pencilItem="range" />
         {layoutEnabled ? (
           <EditableGrid page="stats" items={items} className={ultraMinimal ? 'gap-y-3 gap-x-2.5' : 'gap-y-4 gap-x-3 sm:gap-x-4'} />
         ) : (
