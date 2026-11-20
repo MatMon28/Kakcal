@@ -87,13 +87,10 @@ function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
   const Icon = style.Icon;
   const heroCls = tone === 'intake' ? 'kc-hero-intake' : 'kc-hero-burned';
   if (compact) {
-    // Medium (4x2): one line (icon, value, badge) in a card that is taller than the macro row below it and always the
+    // Medium (4x2): one line (value, badge, no icon) in a card that is taller than the macro row below it and always the
     // biggest item of the widget; the macro row is exactly as tall as the buttons.
     return (
       <div role="img" aria-label={label} className={`${heroCls} ${style.card} flex min-h-[64px] items-center gap-2 rounded-2xl px-2.5 py-2`}>
-        <span className={`inline-flex shrink-0 ${style.accent}`} aria-hidden="true">
-          <Icon size={28} />
-        </span>
         <div className={`min-w-0 flex-1 text-center text-[26px] font-extrabold leading-none tabular-nums tracking-tight ${style.ink}`}>{value}</div>
         {pill && (
           <span className={`kc-balance-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>

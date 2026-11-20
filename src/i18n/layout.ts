@@ -9,7 +9,7 @@ const layoutText = {
   en: {
     settings: {
       title: 'Advanced layout',
-      desc: 'A pencil on Today, Statistics and Body lets you drag, resize, remove and add fields',
+      desc: 'A pencil on Today, Statistics and Body lets you move (hold a field), resize, remove and add fields',
       restore: 'Restore original layout',
       restoreTitle: 'Restore the original layout?',
       restoreText: 'Order, sizes and removed fields of Today, Statistics and Body go back to the original. Your data and the meal types you added are kept.',
@@ -22,7 +22,7 @@ const layoutText = {
       add: 'Add',
       reset: 'Reset page',
       editing: 'Personalising',
-      hint: 'Drag a field by its handle to move it, pull its sides or corners to resize it.',
+      hint: 'Touch a field to select it, then pull its sides or corners to resize it. Hold a field to move it anywhere, blank space included.',
       removedTitle: 'Removed fields',
       nothingRemoved: 'No removed fields. Remove a field with ✕ and it shows up here.',
       newMealTitle: 'New meal type',
@@ -41,9 +41,6 @@ const layoutText = {
       resetConfirm: 'Reset',
     },
     item: {
-      earlier: 'Move earlier',
-      later: 'Move later',
-      drag: 'Drag to move',
       resizeWidth: 'Width: pull the left or right side (arrow keys)',
       resizeHeight: 'Height: pull the top or bottom side (arrow keys)',
       resizeBoth: 'Pull to resize',
@@ -72,7 +69,7 @@ const layoutText = {
   it: {
     settings: {
       title: 'Layout avanzato',
-      desc: 'Una matita in Oggi, Statistiche e Corpo permette di trascinare, ridimensionare, rimuovere e aggiungere campi',
+      desc: 'Una matita in Oggi, Statistiche e Corpo permette di spostare (tieni premuto un campo), ridimensionare, rimuovere e aggiungere campi',
       restore: 'Ripristina layout originale',
       restoreTitle: 'Ripristinare il layout originale?',
       restoreText: 'Ordine, dimensioni e campi rimossi di Oggi, Statistiche e Corpo tornano all’originale. I tuoi dati e i tipi di pasto aggiunti restano.',
@@ -85,7 +82,7 @@ const layoutText = {
       add: 'Aggiungi',
       reset: 'Ripristina pagina',
       editing: 'Personalizzazione',
-      hint: 'Trascina un campo dalla sua maniglia per spostarlo, tira i lati o gli angoli per ridimensionarlo.',
+      hint: 'Tocca un campo per selezionarlo, poi tira i lati o gli angoli per ridimensionarlo. Tieni premuto un campo per spostarlo ovunque, anche lasciando spazi vuoti.',
       removedTitle: 'Campi rimossi',
       nothingRemoved: 'Nessun campo rimosso. Rimuovi un campo con ✕ e comparirà qui.',
       newMealTitle: 'Nuovo tipo di pasto',
@@ -104,9 +101,6 @@ const layoutText = {
       resetConfirm: 'Ripristina',
     },
     item: {
-      earlier: 'Sposta prima',
-      later: 'Sposta dopo',
-      drag: 'Trascina per spostare',
       resizeWidth: 'Larghezza: tira il lato sinistro o destro (tasti freccia)',
       resizeHeight: 'Altezza: tira il lato superiore o inferiore (tasti freccia)',
       resizeBoth: 'Tira per ridimensionare',

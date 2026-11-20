@@ -7,7 +7,7 @@
     android:padding="4dp">
 
     <!-- Medium (default 4x2, about 100 dp minimum). From the top: the intake / burned cards take ALL the height that is left
-         (and are always the biggest items: 30 dp icon, value auto-sized up to 26 sp), then the macro row, exactly as tall as the
+         (and are always the biggest items: no icon, value auto-sized up to 26 sp), then the macro row, exactly as tall as the
          buttons (40 dp), then the five 40 dp buttons. No progress bars and no percentages; the macro cards show grams only.
          Same RemoteViews-compatible classes as the Large layout. -->
     <LinearLayout
@@ -24,12 +24,6 @@
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
             android:background="@drawable/widget_card_intake">
-            <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
-                    android:scaleType="fitCenter"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/widget_intake_icon" />
             <TextView
                 android:id="@+id/widget_intake_value"
                 style="@style/WidgetValueRow"
@@ -48,12 +42,6 @@
             android:layout_width="0dp"
             android:layout_weight="1"
             android:background="@drawable/widget_card_burned">
-            <ImageView
-                    android:layout_width="30dp"
-                    android:layout_height="match_parent"
-                    android:scaleType="fitCenter"
-                    android:importantForAccessibility="no"
-                    android:src="@drawable/widget_burned_icon" />
             <TextView
                 android:id="@+id/widget_burned_value"
                 style="@style/WidgetValueRow"

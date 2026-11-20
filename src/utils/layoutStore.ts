@@ -26,6 +26,8 @@ export const MAX_COLS = 6;
 export const MIN_HEIGHT = 44;
 export const MAX_HEIGHT = 900;
 export const HEIGHT_STEP = 4;
+/** Highest row index a field can be placed on (free placement). */
+export const MAX_ROW = 200;
 
 /** Widths stored by the first version of the advanced layout (1/3, 1/2, 2/3, full) as columns. */
 const LEGACY_WIDTH_COLS: Record<string, number> = { third: 2, half: 3, twothirds: 4, full: 6 };
@@ -94,7 +96,11 @@ function normalizePage(raw: unknown): PageLayout {
       if (typeof value.cols === 'number' && Number.isFinite(value.cols)) prefs.cols = clampCols(value.cols);
       else if (typeof value.width === 'string' && value.width in LEGACY_WIDTH_COLS) prefs.cols = LEGACY_WIDTH_COLS[value.width];
       if (typeof value.height === 'number' && Number.isFinite(value.height)) prefs.height = clampHeight(value.height);
-      if (prefs.cols || prefs.height) items[id] = prefs;
+      if (typeof value.col === 'number' && typeof value.row === 'number' && Number.isInteger(value.col) && Number.isInteger(value.row)) {
+        prefs.col = Math.min(MAX_COLS - 1, Math.max(0, value.col));
+        prefs.row = Math.min(MAX_ROW, Math.max(0, value.row));
+      }
+      if (prefs.cols || prefs.height || prefs.row !== undefined) items[id] = prefs;
     }
   }
   return { order: strings(expandLegacyIds(src.order)), hidden: strings(expandLegacyIds(src.hidden)), items };
@@ -212,23 +218,6 @@ function updatePage(page: LayoutPageId, fn: (layout: PageLayout) => PageLayout) 
   commit({ ...state, pages: { ...state.pages, [page]: fn(state.pages[page]) } });
 }
 
-/** Moves a field one place earlier (-1) or later (1) among the fields that are shown. `ids` = all current field ids. */
-export function moveItem(page: LayoutPageId, id: string, direction: -1 | 1, ids: string[]) {
-  updatePage(page, (layout) => {
-    const order = mergeOrder(layout.order, ids);
-    const shown = order.filter((x) => !layout.hidden.includes(x));
-    const at = shown.indexOf(id);
-    const other = shown[at + direction];
-    if (at < 0 || other === undefined) return { ...layout, order };
-    const next = [...order];
-    const a = next.indexOf(id);
-    const b = next.indexOf(other);
-    next[a] = other;
-    next[b] = id;
-    return { ...layout, order: next };
-  });
-}
-
 function patchItem(layout: PageLayout, id: string, patch: Partial<LayoutItemPrefs>): PageLayout {
   const merged = { ...layout.items[id], ...patch };
   const { [id]: _old, ...rest } = layout.items;
@@ -236,7 +225,11 @@ function patchItem(layout: PageLayout, id: string, patch: Partial<LayoutItemPref
   const clean: LayoutItemPrefs = {};
   if (merged.cols) clean.cols = clampCols(merged.cols);
   if (merged.height) clean.height = clampHeight(merged.height);
-  return { ...layout, items: clean.cols || clean.height ? { ...rest, [id]: clean } : rest };
+  if (merged.col !== undefined && merged.row !== undefined) {
+    clean.col = Math.min(MAX_COLS - 1, Math.max(0, Math.round(merged.col)));
+    clean.row = Math.min(MAX_ROW, Math.max(0, Math.round(merged.row)));
+  }
+  return { ...layout, items: clean.cols || clean.height || clean.row !== undefined ? { ...rest, [id]: clean } : rest };
 }
 
 /** Sets the width (columns) and / or height (px) of a field. A key set to `undefined` goes back to the original. */
@@ -245,25 +238,33 @@ export function setItemSize(page: LayoutPageId, id: string, size: Partial<Layout
 }
 
 /**
- * Stores a new order of the *shown* fields (after a drag and drop). Removed fields keep their own slots in the
- * stored order; the shown ones are laid into the remaining slots in the new order. `ids` = all current field ids.
+ * Applies several changes at once (one write): a drop moves one field and may shift or collapse rows of others; a
+ * resize changes `col`, `cols` and `height`. A key set to `undefined` goes back to the original. Pass `col` and `row`
+ * together.
  */
-export function reorderItems(page: LayoutPageId, shownOrder: string[], ids: string[]) {
+export function applyItemChanges(page: LayoutPageId, changes: Record<string, Partial<LayoutItemPrefs>>) {
   updatePage(page, (layout) => {
-    const order = mergeOrder(layout.order, ids);
-    const hidden = new Set(layout.hidden);
-    const queue = shownOrder.filter((id) => order.includes(id) && !hidden.has(id));
-    const next = order.map((id) => (hidden.has(id) ? id : queue.shift() ?? id));
-    return next.join('\u0000') === order.join('\u0000') ? { ...layout, order } : { ...layout, order: next };
+    let next = layout;
+    for (const [id, patch] of Object.entries(changes)) next = patchItem(next, id, patch);
+    return next;
   });
 }
 
-export function hideItem(page: LayoutPageId, id: string) {
-  updatePage(page, (layout) => (layout.hidden.includes(id) ? layout : { ...layout, hidden: [...layout.hidden, id] }));
+/**
+ * Removes a field. `others` can move the remaining fields at the same time (the grid closes the row the field leaves).
+ * A removed field forgets its place.
+ */
+export function hideItem(page: LayoutPageId, id: string, others: Record<string, Partial<LayoutItemPrefs>> = {}) {
+  updatePage(page, (layout) => {
+    let next = layout.hidden.includes(id) ? layout : { ...layout, hidden: [...layout.hidden, id] };
+    for (const [other, patch] of Object.entries(others)) next = patchItem(next, other, patch);
+    return patchItem(next, id, { col: undefined, row: undefined });
+  });
 }
 
+/** Brings a removed field back. It has no place any more, so it appears after the placed fields. */
 export function showItem(page: LayoutPageId, id: string) {
-  updatePage(page, (layout) => ({ ...layout, hidden: layout.hidden.filter((x) => x !== id) }));
+  updatePage(page, (layout) => patchItem({ ...layout, hidden: layout.hidden.filter((x) => x !== id) }, id, { col: undefined, row: undefined }));
 }
 
 // ----- Meal types -----

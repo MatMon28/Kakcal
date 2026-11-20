@@ -14,7 +14,7 @@ import { useApp } from '../../context/AppContext';
 import { useLayoutText } from '../../i18n/layout';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { slideIn } from '../../utils/motion';
-import { mealItemId, useLayout } from '../../utils/layoutStore';
+import { mealItemId, setItemSize, useLayout } from '../../utils/layoutStore';
 import { BUILT_IN_MEAL_SLOTS } from '../../utils/mealItems';
 import { useMealSlots } from '../../utils/mealSlots';
 import { MealSlotId } from '../../types';
@@ -128,15 +128,27 @@ export const TodayView: React.FC = () => {
     </div>
   ) : null;
 
-  const mealCard = (slotId: MealSlotId) => (
-    <MealSlotCard
-      slotId={slotId}
-      compact={displayLayout === 'compact'}
-      ultraMinimal={ultraMinimal}
-      open={displayLayout === 'expanded' || openSlots.includes(slotId)}
-      onToggle={() => toggleSlot(slotId)}
-    />
-  );
+  const mealCard = (slotId: MealSlotId) => {
+    const open = displayLayout === 'expanded' || openSlots.includes(slotId);
+    const own = layoutState.enabled ? layoutState.pages.today.items[mealItemId(slotId)] : undefined;
+    return (
+      <MealSlotCard
+        slotId={slotId}
+        compact={displayLayout === 'compact'}
+        ultraMinimal={ultraMinimal}
+        open={open}
+        onToggle={() => {
+          // A meal field that was made smaller goes back to its classic size when its arrow is pressed (a closed one
+          // also opens, an open one stays open).
+          if (own?.cols || own?.height) {
+            setItemSize('today', mealItemId(slotId), { cols: undefined, height: undefined });
+            if (open) return;
+          }
+          toggleSlot(slotId);
+        }}
+      />
+    );
+  };
 
   const trackerCard = (id: TrackerId) => {
     const open = displayLayout === 'expanded' || openTrackers.includes(id);
@@ -176,6 +188,9 @@ export const TodayView: React.FC = () => {
       node: mealCard(slotId),
       span: cardSpan(displayLayout === 'expanded' || openSlots.includes(slotId)),
       selfStart: true,
+      // Smallest meal field: icon, expand arrow and + stay visible (meal name and numbers may be cut off).
+      minCols: compact ? 2 : 3,
+      minHeight: compact ? 52 : 56,
     })),
     ...TRACKERS.map((id): LayoutItem => ({
       id: `tracker:${id}`,
