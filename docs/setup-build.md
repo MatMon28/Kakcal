@@ -24,7 +24,7 @@
 | Command | Purpose |
 | --- | --- |
 | `node scripts/check-widget-layouts.mjs` | Fails if a widget layout uses a view class RemoteViews cannot inflate (a plain `<View>` gives "Can't load widget"). |
-| `node scripts/generate-notification-icon.mjs` | Re-generates `ic_stat_kak.xml` (disc with the logo cut out; `npm i --no-save paper-jsdom` first). |
+| `node scripts/generate-notification-icon.mjs` | Re-generates `ic_stat_kak.xml` (transparent-background K + poop glyph; `npm i --no-save paper-jsdom` first). |
 | `node scripts/prepare-android.mjs` | **The** Android release preparation: clean no-demo build, copies licences and the OFF catalogue, `npx cap sync android`, integrity checks. Needs `npm install` first. |
 | `npx cap sync android` | Only re-syncs plugins/assets (use after native plugin changes when `dist/` is already a clean Android build). |
 | `npx cap open android` | Opens `android/` in Android Studio. |

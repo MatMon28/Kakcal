@@ -21,8 +21,8 @@
             android:layout_weight="1"
             android:background="@drawable/widget_card_intake_dark">
             <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:importantForAccessibility="no"
                     android:src="@drawable/widget_intake_icon_dark" />
             <TextView
@@ -44,8 +44,8 @@
             android:layout_weight="1"
             android:background="@drawable/widget_card_burned_dark">
             <ImageView
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
                     android:importantForAccessibility="no"
                     android:src="@drawable/widget_burned_icon_dark" />
             <TextView

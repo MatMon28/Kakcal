@@ -25,5 +25,5 @@
 | `scripts/package-android.py` | Zips the synced Android project (no keys or caches) to `public/downloads/Kakcalculator-Android-Studio.zip` (untracked output). Refuses to run before `prepare-android.mjs`. |
 | `scripts/smoke-entry.tsx`, `scripts/smoke.bundle.js` | Legacy jsdom smoke harness (entry + prebuilt IIFE). Not referenced by `smoke.mjs`; safe to ignore. |
 | `public/manifest.webmanifest`, `public/icons/*.png`, `public/_headers` | PWA manifest (relative `start_url`/`scope`, `start_url ./?view=app&source=pwa`, `prefer_related_applications: false`), the four PNG icons, and revalidation headers for Netlify/Cloudflare ([pwa.md](../pwa.md)). |
-| `scripts/generate-notification-icon.mjs` | Generates `res/drawable/ic_stat_kak.xml` (disc minus K + poop) with paper.js boolean operations (`npm i --no-save paper-jsdom`). |
+| `scripts/generate-notification-icon.mjs` | Generates `res/drawable/ic_stat_kak.xml` (transparent K + poop glyph) with paper.js boolean operations (`npm i --no-save paper-jsdom`). |
 | `scripts/render-pwa-icons.mjs` | Renders the PWA icons from the brand SVG with `sharp` (`npm i --no-save sharp`). |

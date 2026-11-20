@@ -31,6 +31,6 @@ The documentation is split into small single-topic files so that you (or an LLM)
 | [PWA: how it works](docs/pwa.md) / [PWA setup](docs/pwa-setup.md) | [Known gaps](docs/known-gaps.md) |
 | [Creating `changes.patch`](docs/changes-patch.md) | [Making the Download APK button work](docs/apk-download.md) |
 
-Settings ends with a plain red **Delete all data** button (double confirmation, no section title) that erases the local journal; the Medium widget is 4x2 by default.
+Settings ends with a plain red **Delete all data** button (double confirmation, no section title) that erases the local journal; the Medium widget is 4x2 by default (intake/burned cards larger than the macros); the reminder notification icon is a transparent-background K + poop glyph.
 
 **Rule:** after every new feature or file, update the matching document (table in [docs/README.md](docs/README.md#keeping-the-docs-current)).
