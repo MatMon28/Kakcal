@@ -1,21 +1,21 @@
-import React, { useEffect, useRef, useState, useSyncExternalStore } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { RotateCcw, X } from 'lucide-react';
 import { useLayoutText } from '../../i18n/layout';
-import type { LayoutPageId } from '../../types/layout';
+import type { LayoutItemPrefs, LayoutPageId } from '../../types/layout';
 import {
   GRID_COLS,
-  freeRange,
-  planMove,
-  planRemove,
+  resolveFree,
   resolvePlacements,
-  rowAt,
+  snapTop,
   spanCols,
-  type Cell,
+  type FreeCell,
+  type FreeInput,
 } from '../../utils/layoutGrid';
 import {
   HEIGHT_STEP,
   MIN_COLS,
   applyItemChanges,
+  clampCols,
   clampHeight,
   hideItem,
   mergeOrder,
@@ -24,7 +24,7 @@ import {
   useLayout,
 } from '../../utils/layoutStore';
 
-/** One personalisable field of a page. */
+/** One editable field of a page. */
 export interface LayoutItem {
   id: string;
   /** Name shown in the "Add" list once the field has been removed. */
@@ -42,6 +42,12 @@ export interface LayoutItem {
   minCols?: number;
   /** Smallest height in px (default 44). Meal cards keep their first row (icon, name, +, arrow) visible. */
   minHeight?: number;
+  /**
+   * The field is expanded right now (an open meal). While expanded and not being edited it is shown in its classic
+   * form (original width, natural height) at its place; the shape chosen by the user is kept and comes back as soon as
+   * the field is collapsed again.
+   */
+  expanded?: boolean;
 }
 
 /** The fields of a page in the user's order, split into shown and removed ones. */
@@ -67,25 +73,59 @@ const subscribeWide = (onChange: () => void) => {
 const useWide = () => useSyncExternalStore(subscribeWide, () => window.matchMedia('(min-width: 768px)').matches, () => false);
 
 // ---------------------------------------------------------------------------------------------
-// Resize handles: the four sides and the four corners of the selected field
+// Outline: dashed (this field can be edited) or solid and uniform (this field is selected)
 // ---------------------------------------------------------------------------------------------
 
-type Edge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw';
+/** Corner radius of the field outline (matches the `rounded-3xl` cards). */
+const OUTLINE_RADIUS = 24;
 
-// Literal class names so that Tailwind finds them. Hit areas are 24 px wide, the visible knob is smaller.
+/**
+ * One SVG rectangle that follows the field's box exactly, so the line has the same thickness on all four sides and
+ * the same dash pattern all the way round (dashed = editable, solid = selected / lifted).
+ */
+const Outline: React.FC<{ solid: boolean }> = ({ solid }) => (
+  <svg
+    aria-hidden="true"
+    data-layout-outline={solid ? 'solid' : 'dashed'}
+    className={`pointer-events-none absolute inset-0 z-[5] size-full overflow-visible ${
+      solid ? 'text-[color:var(--text)]' : 'text-[color:var(--muted)] opacity-80'
+    }`}
+  >
+    <rect
+      x="0"
+      y="0"
+      width="100%"
+      height="100%"
+      rx={OUTLINE_RADIUS}
+      ry={OUTLINE_RADIUS}
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={solid ? 3 : 2}
+      strokeDasharray={solid ? undefined : '10 7'}
+      strokeLinecap="round"
+    />
+  </svg>
+);
+
+// ---------------------------------------------------------------------------------------------
+// Resize handles: the four sides and the two bottom corners of the selected field
+// ---------------------------------------------------------------------------------------------
+
+type Edge = 'n' | 's' | 'e' | 'w' | 'sw' | 'se';
+
+// Literal class names so that Tailwind finds them. Hit areas are 24 px wide, the visible knob is smaller. The top
+// corners are left free for the reset and remove buttons.
 const HANDLES: { edge: Edge; box: string; knob: string }[] = [
   { edge: 'n', box: 'left-7 right-7 -top-2 h-6 cursor-ns-resize', knob: 'h-1.5 w-9' },
   { edge: 's', box: 'left-7 right-7 -bottom-2 h-6 cursor-ns-resize', knob: 'h-1.5 w-9' },
   { edge: 'w', box: 'top-7 bottom-7 -left-2 w-6 cursor-ew-resize', knob: 'w-1.5 h-9' },
   { edge: 'e', box: 'top-7 bottom-7 -right-2 w-6 cursor-ew-resize', knob: 'w-1.5 h-9' },
-  { edge: 'nw', box: '-top-2 -left-2 size-7 cursor-nwse-resize', knob: 'size-3' },
-  { edge: 'ne', box: '-top-2 -right-2 size-7 cursor-nesw-resize', knob: 'size-3' },
   { edge: 'sw', box: '-bottom-2 -left-2 size-7 cursor-nesw-resize', knob: 'size-3' },
   { edge: 'se', box: '-bottom-2 -right-2 size-7 cursor-nwse-resize', knob: 'size-3' },
 ];
 
 const ctl =
-  'pressable size-8 rounded-full flex items-center justify-center text-[var(--text)] bg-[var(--surface)] border border-[var(--border)] shadow-md hover:bg-[var(--hover)]';
+  'pressable pointer-events-auto absolute size-7 rounded-full flex items-center justify-center text-[var(--text)] bg-[var(--surface)] border border-[var(--border)] shadow-md hover:bg-[var(--hover)]';
 
 interface ControlsProps {
   item: LayoutItem;
@@ -96,29 +136,37 @@ interface ControlsProps {
   onRemove: () => void;
 }
 
-/** What is drawn over the selected field: the resize knobs, the remove button (and "original size" when resized). */
+/**
+ * What is drawn over the selected field: the resize knobs, the remove button in the top-right corner and "original
+ * size" in the top-left corner (only once the field was resized).
+ */
 const Controls: React.FC<ControlsProps> = ({ item, customSize, onResizeStart, onNudge, onReset, onRemove }) => {
   const text = useLayoutText().item;
   return (
     <div className="absolute inset-0 z-10 pointer-events-none" data-layout-controls>
-      <div className="absolute inset-0 flex items-center justify-center p-1">
-        <div className="pointer-events-auto flex items-center gap-1.5" data-ctl>
-          {customSize && !item.fixed && (
-            <button type="button" className={ctl} onClick={onReset} aria-label={`${text.resetSize}: ${item.label}`} title={text.resetSize}>
-              <RotateCcw size={14} />
-            </button>
-          )}
-          <button
-            type="button"
-            className={`${ctl} !bg-[#F6D0D0] !text-[#7A2727] !border-[#E4AAAA]`}
-            onClick={onRemove}
-            aria-label={`${text.remove}: ${item.label}`}
-            title={text.remove}
-          >
-            <X size={15} />
-          </button>
-        </div>
-      </div>
+      {customSize && !item.fixed && (
+        <button
+          type="button"
+          data-ctl
+          className={`${ctl} -top-3 -left-3`}
+          onClick={onReset}
+          aria-label={`${text.resetSize}: ${item.label}`}
+          title={text.resetSize}
+        >
+          <RotateCcw size={14} />
+        </button>
+      )}
+      <button
+        type="button"
+        data-ctl
+        data-layout-remove
+        className={`${ctl} -top-3 -right-3 !bg-[#F6D0D0] !text-[#7A2727] !border-[#E4AAAA]`}
+        onClick={onRemove}
+        aria-label={`${text.remove}: ${item.label}`}
+        title={text.remove}
+      >
+        <X size={15} strokeWidth={2.5} />
+      </button>
 
       {!item.fixed &&
         HANDLES.map(({ edge, box, knob }) => {
@@ -166,11 +214,15 @@ interface Gesture {
   startX: number;
   startY: number;
   startScroll: number;
+  /** Where inside the field it was grabbed (px from its top-left corner). */
   grabX: number;
+  grabY: number;
+  /** Size (px) and place of the field when the gesture started. */
   width: number;
   height: number;
-  cell: Cell;
-  bounds: { min: number; max: number };
+  from: FreeCell;
+  /** Every field's place when the gesture started (for the magnetic snapping). */
+  base: Record<string, FreeCell>;
   minCols: number;
   minHeight: number;
   active: boolean;
@@ -178,29 +230,41 @@ interface Gesture {
 }
 
 interface Preview {
-  /** The lifted field follows the pointer by this offset. */
-  move?: { id: string; dx: number; dy: number };
-  /** Where the field lands if it is dropped now (px inside the grid); `line` = a row is inserted there. */
-  drop?: { left: number; top: number; width: number; height: number; line: boolean };
-  /** Size / position of the field that is being resized (`undefined` = unchanged). */
-  size?: { id: string; col: number; cols: number; height?: number };
+  /** The lifted field follows the pointer by `dx` / `dy`; `to` is the place where it lands if dropped now. */
+  move?: { id: string; dx: number; dy: number; from: FreeCell; to: { col: number; top: number } };
+  /** Place / size of the field that is being resized (`height` undefined = unchanged). */
+  size?: { id: string; col: number; cols: number; top: number; height?: number };
+}
+
+/** A field that is being dragged or resized is held at this place / size; the other fields make room around it. */
+interface Override {
+  id: string;
+  col?: number;
+  top?: number;
+  cols?: number;
+  height?: number;
 }
 
 /** Press time before a field can be moved (touch), movement that cancels it, and mouse drag threshold. */
 const LONG_PRESS_MS = 380;
 const PRESS_SLOP = 8;
 const DRAG_THRESHOLD = 4;
-/** Height of a row that holds no field (blank space) and number of such rows offered below the last field. */
-const BLANK_ROW = 40;
-const TRAILING_ROWS = 2;
+/** Height guessed for a field before it has been measured (replaced before the first paint). */
+const GUESS_HEIGHT = 80;
+/** Free room kept below the last field while editing, so a field can be dropped lower than all the others. */
+const EDIT_TAIL = 160;
+/** Keyboard move: px per arrow key press. */
+const KEY_STEP = 16;
+
+const clampN = (v: number, min: number, max: number) => Math.max(min, Math.min(max, v));
 
 /**
- * A page body laid out on a 6-column grid with free placement. With Settings > Advanced > Advanced layout on, the place
- * (column + row), width and height of each field and the removed fields come from the layout store. While the pencil
- * is active, touching a field selects it (highlighted border, resize knobs, remove button); holding it for a moment
- * lifts it so it can be dropped on any free place, also leaving blank space between fields; touching blank space or
- * another field selects nothing / the other one. A page that was never personalised is plain flow in the original
- * order and looks exactly like the original page.
+ * A page body laid out on a 6-column canvas with free placement. With Settings > Advanced > Advanced layout on, the
+ * place (column + distance from the top), width and height of each field and the removed fields come from the layout
+ * store. While the pencil is active every field gets a dashed outline; touching a field selects it (uniform solid
+ * border, resize knobs, remove button in the corner); holding it for a moment lifts it so it can be dropped at any
+ * height, beside or between other fields (a field that would overlap another one pushes it down). A page that was
+ * never edited is plain flow in the original order and looks exactly like the original page.
  */
 export const EditableGrid: React.FC<{
   page: LayoutPageId;
@@ -214,89 +278,201 @@ export const EditableGrid: React.FC<{
 
   const [selected, setSelected] = useState<string | null>(null);
   const [preview, setPreview] = useState<Preview>({});
+  const [heights, setHeights] = useState<Record<string, number>>({});
+  const [gap, setGap] = useState(12);
+  const [animate, setAnimate] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const gesture = useRef<Gesture | null>(null);
   const pointer = useRef({ x: 0, y: 0 });
-  const dropRef = useRef<ReturnType<typeof planMove> | null>(null);
+  const dropRef = useRef<{ id: string; col: number; top: number } | null>(null);
   const sizeRef = useRef<Preview['size']>(undefined);
   const raf = useRef(0);
   const liftRef = useRef<() => void>(() => {});
 
-  // ---- Where every field is ----
+  // ---- Which way the page is drawn ----
+  // flow   = the original page (never edited)
+  // legacy = saved by the previous (row based) editor: drawn once on the old row grid, measured and converted
+  // free   = every field has a column and a distance from the top (px)
   const minColsOf = (item: LayoutItem) => Math.max(MIN_COLS, item.minCols ?? MIN_COLS);
-  const explicit = enabled && shown.some((item) => prefs.items[item.id]?.row !== undefined);
-  const cells = explicit
-    ? resolvePlacements(
-        shown.map((item) => {
-          const own = prefs.items[item.id];
-          const cols = Math.min(GRID_COLS, Math.max(minColsOf(item), own?.cols ?? spanCols(item.span, wide)));
-          return { id: item.id, cols, col: own?.col, row: own?.row };
-        }),
-      )
-    : null;
-  const needsPlaces = enabled && shown.some((item) => prefs.items[item.id]?.row === undefined);
+  const anyPlaced = enabled && shown.some((item) => prefs.items[item.id]?.top !== undefined);
+  const anyLegacy = enabled && shown.some((item) => prefs.items[item.id]?.row !== undefined && prefs.items[item.id]?.top === undefined);
+  const mode: 'flow' | 'legacy' | 'free' = !enabled ? 'flow' : anyLegacy ? 'legacy' : anyPlaced ? 'free' : 'flow';
+  const needsMigration = enabled && shown.length > 0 && (anyLegacy || (isEditing && !anyPlaced));
 
-  const latest = useRef({ page, ids, shown, cells, prefs, needsPlaces });
-  latest.current = { page, ids, shown, cells, prefs, needsPlaces };
+  // ---- Where every field is (free mode) ----
+  const inputs = (): FreeInput[] =>
+    shown.map((item) => {
+      const own = enabled ? prefs.items[item.id] : undefined;
+      // An expanded field (open meal) is shown in its classic form; its chosen shape is kept for when it is collapsed.
+      const natural = !isEditing && item.expanded === true;
+      const cols = natural
+        ? Math.min(GRID_COLS, Math.max(minColsOf(item), spanCols(item.span, wide)))
+        : Math.min(GRID_COLS, Math.max(minColsOf(item), own?.cols ?? spanCols(item.span, wide)));
+      const stored = natural ? undefined : own?.height;
+      const height = stored ? Math.max(stored, item.minHeight ?? 0) : heights[item.id] ?? GUESS_HEIGHT;
+      return { id: item.id, cols, height, col: own?.top !== undefined ? own.col : undefined, top: own?.top };
+    });
+
+  const compute = (override?: Override) =>
+    resolveFree(
+      inputs().map((input) => {
+        if (!override || override.id !== input.id) return input;
+        const next = { ...input };
+        if (override.col !== undefined) next.col = override.col;
+        if (override.top !== undefined) next.top = override.top;
+        if (override.cols !== undefined) next.cols = override.cols;
+        if (override.height !== undefined) next.height = override.height;
+        return next;
+      }),
+      gap,
+      override?.id,
+    );
+
+  const override: Override | undefined = !isEditing
+    ? undefined
+    : preview.move
+      ? { id: preview.move.id, col: preview.move.to.col, top: preview.move.to.top }
+      : preview.size
+        ? { ...preview.size }
+        : undefined;
+  const free = mode === 'free' ? compute(override) : null;
+  const legacyCells =
+    mode === 'legacy'
+      ? resolvePlacements(
+          shown.map((item) => {
+            const own = prefs.items[item.id];
+            const cols = Math.min(GRID_COLS, Math.max(minColsOf(item), own?.cols ?? spanCols(item.span, wide)));
+            return { id: item.id, cols, col: own?.col, row: own?.row };
+          }),
+        )
+      : null;
+
+  const latest = useRef({ page, ids, shown, prefs, free, compute, mode });
+  latest.current = { page, ids, shown, prefs, free, compute, mode };
 
   const find = (id: string) => gridRef.current?.querySelector<HTMLElement>(`[data-layout-item="${id.replace(/"/g, '\\"')}"]`) ?? null;
 
   const columnMetrics = () => {
     const grid = gridRef.current!;
-    const gap = parseFloat(getComputedStyle(grid).columnGap) || 0;
-    return { gap, unit: (grid.clientWidth + gap) / GRID_COLS };
+    const g = parseFloat(getComputedStyle(grid).columnGap) || 0;
+    return { gap: g, unit: (grid.clientWidth + g) / GRID_COLS };
   };
 
-  /** Row tracks as laid out by the browser (px from the top of the grid). */
-  const rowTracks = () => {
-    const style = getComputedStyle(gridRef.current!);
-    const gap = parseFloat(style.rowGap) || 0;
-    let top = 0;
-    return style.gridTemplateRows
-      .split(' ')
-      .map(parseFloat)
-      .filter((h) => Number.isFinite(h))
-      .map((h) => {
-        const track = { top, h };
-        top += h + gap;
-        return track;
-      });
-  };
-
-  // ---- The first time a page is personalised every field gets a place (measured from what is on screen) ----
-  useEffect(() => {
-    if (!isEditing || !needsPlaces || !gridRef.current) return;
-    const { page: p, shown: list, cells: resolved, prefs: stored } = latest.current;
-    const changes: Record<string, { col: number; row: number }> = {};
-    if (resolved) {
-      for (const item of list) if (stored.items[item.id]?.row === undefined) changes[item.id] = { col: resolved[item.id].col, row: resolved[item.id].row };
-    } else {
-      const grid = gridRef.current.getBoundingClientRect();
-      const { gap, unit } = columnMetrics();
-      const rects = list.flatMap((item) => {
-        const el = find(item.id);
-        return el ? [{ id: item.id, r: el.getBoundingClientRect() }] : [];
-      });
-      const tops = [...new Set(rects.map(({ r }) => Math.round(r.top - grid.top)))].sort((a, b) => a - b);
-      const rowOf = (top: number) => tops.findIndex((t) => Math.abs(t - top) <= 3);
-      for (const { id, r } of rects) {
-        const cols = Math.min(GRID_COLS, Math.max(1, Math.round((r.width + gap) / unit)));
-        changes[id] = {
-          col: Math.min(GRID_COLS - cols, Math.max(0, Math.round((r.left - grid.left) / unit))),
-          row: Math.max(0, rowOf(Math.round(r.top - grid.top))),
-        };
+  /** Writes every field's resolved place (and the given size changes) to the store in one go. */
+  const commitCells = (cells: Record<string, FreeCell>, extra: Record<string, Partial<LayoutItemPrefs>>) => {
+    const { page: p, shown: list, prefs: stored } = latest.current;
+    const changes: Record<string, Partial<LayoutItemPrefs>> = {};
+    for (const item of list) {
+      const cell = cells[item.id];
+      if (!cell) continue;
+      const own = stored.items[item.id];
+      if (own?.col !== cell.col || own?.top !== cell.top || extra[item.id]) {
+        changes[item.id] = { ...extra[item.id], col: cell.col, top: cell.top };
       }
     }
     if (Object.keys(changes).length) applyItemChanges(p, changes);
-  }, [isEditing, needsPlaces, shown.map((item) => item.id).join('|')]);
+  };
+
+  // ---- Heights of the fields (free mode): measured before every paint and whenever a field changes size ----
+  const measure = () => {
+    const grid = gridRef.current;
+    if (!grid || grid.clientWidth === 0 || latest.current.mode !== 'free') return;
+    const g = parseFloat(getComputedStyle(grid).columnGap) || 0;
+    const next: Record<string, number> = {};
+    for (const item of latest.current.shown) {
+      const el = find(item.id);
+      if (el) next[item.id] = el.offsetHeight;
+    }
+    setHeights((prev) => {
+      const keys = Object.keys(next);
+      return keys.length === Object.keys(prev).length && keys.every((k) => prev[k] !== undefined && Math.abs(prev[k] - next[k]) < 0.5) ? prev : next;
+    });
+    setGap((prev) => (Math.abs(prev - g) < 0.01 ? prev : g));
+  };
+  useLayoutEffect(measure);
+
+  const idsKey = shown.map((item) => item.id).join('|');
+  useEffect(() => {
+    const grid = gridRef.current;
+    if (mode !== 'free' || !grid) return;
+    let frame = 0;
+    const run = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(measure);
+    };
+    const observer = new ResizeObserver(run);
+    observer.observe(grid);
+    grid.querySelectorAll('[data-layout-item]').forEach((el) => observer.observe(el));
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, [mode, idsKey]);
+
+  // Moves animate (a field that grows pushes the ones below it down smoothly), but not the very first layout.
+  useEffect(() => {
+    let frame = requestAnimationFrame(() => {
+      frame = requestAnimationFrame(() => setAnimate(true));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
+  // ---- The first time a page is edited (or an old row layout is opened) every field gets a place measured from the screen ----
+  useLayoutEffect(() => {
+    const grid = gridRef.current;
+    if (!needsMigration || !grid) return;
+    const migrate = () => {
+      const { shown: list, prefs: stored } = latest.current;
+      const box = grid.getBoundingClientRect();
+      const { gap: g, unit } = columnMetrics();
+      const rows = list.flatMap((item) => {
+        const el = find(item.id);
+        return el ? [{ item, el, r: el.getBoundingClientRect() }] : [];
+      });
+      // Natural heights: a field that only stretched to the field next to it keeps that height.
+      const saved = rows.map(({ el }) => [el.style.alignSelf, el.style.height] as const);
+      rows.forEach(({ el, item }) => {
+        el.style.alignSelf = 'start';
+        if (!stored.items[item.id]?.height) el.style.height = 'auto';
+      });
+      const natural = rows.map(({ el }) => el.offsetHeight);
+      rows.forEach(({ el }, i) => {
+        el.style.alignSelf = saved[i][0];
+        el.style.height = saved[i][1];
+      });
+      const changes: Record<string, Partial<LayoutItemPrefs>> = {};
+      rows.forEach(({ item, r }, i) => {
+        const own = stored.items[item.id];
+        const cols = clampN(Math.round((r.width + g) / unit), 1, GRID_COLS);
+        const patch: Partial<LayoutItemPrefs> = {
+          col: clampN(Math.round((r.left - box.left) / unit), 0, GRID_COLS - cols),
+          top: Math.max(0, Math.round(r.top - box.top)),
+          row: undefined,
+        };
+        if (!own?.cols && cols !== spanCols(item.span, wide)) patch.cols = clampCols(cols);
+        if (!own?.height && !item.fixed && !item.selfStart && r.height - natural[i] > 3) patch.height = clampHeight(r.height);
+        changes[item.id] = patch;
+      });
+      if (Object.keys(changes).length) applyItemChanges(latest.current.page, changes);
+    };
+    if (grid.clientWidth > 0) {
+      migrate();
+      return;
+    }
+    // The page is not visible yet (zero width): convert it as soon as it gets a size.
+    const observer = new ResizeObserver(() => {
+      if (grid.clientWidth > 0) {
+        observer.disconnect();
+        migrate();
+      }
+    });
+    observer.observe(grid);
+    return () => observer.disconnect();
+  }, [needsMigration, idsKey]);
 
   // ---- Gesture engine (one set of window listeners) ----
   useEffect(() => {
     const grid = () => gridRef.current;
-
-    const finishPress = (g: Gesture) => {
-      window.clearTimeout(g.timer);
-    };
 
     const update = () => {
       const g = gesture.current;
@@ -304,30 +480,19 @@ export const EditableGrid: React.FC<{
       if (!g || !g.active || !el) return;
       const { x, y } = pointer.current;
       const rect = el.getBoundingClientRect();
-      const { gap, unit } = columnMetrics();
+      const { gap: gapNow, unit } = columnMetrics();
 
       if (g.kind === 'move') {
-        const cellsNow = latest.current.cells;
-        const dx = x - g.startX;
-        const dy = y - g.startY + (window.scrollY - g.startScroll);
-        let drop: Preview['drop'];
-        dropRef.current = null;
-        if (cellsNow) {
-          const tracks = rowTracks();
-          const yRel = y - rect.top;
-          const row = rowAt(tracks, yRel);
-          const col = Math.round((x - g.grabX - rect.left) / unit);
-          const track = tracks[row] ?? { top: 0, h: BLANK_ROW };
-          const below = yRel > track.top + track.h / 2;
-          const plan = planMove(cellsNow, g.id, col, row, below);
-          dropRef.current = plan;
-          if (plan.inserted) {
-            drop = { left: 0, width: rect.width, height: 4, top: (below ? track.top + track.h + gap / 2 : track.top - gap / 2) - 2, line: true };
-          } else {
-            drop = { left: plan.col * unit, width: g.cell.cols * unit - gap, top: track.top, height: track.h, line: false };
-          }
-        }
-        setPreview((p) => ({ ...p, move: { id: g.id, dx, dy }, drop }));
+        const col = clampN(Math.round((x - g.grabX - rect.left) / unit), 0, GRID_COLS - g.from.cols);
+        const raw = Math.max(0, y - g.grabY - rect.top);
+        const others = Object.entries(g.base)
+          .filter(([id]) => id !== g.id)
+          .map(([, cell]) => cell);
+        const top = snapTop(raw, col, g.from.cols, g.height, others, gapNow);
+        dropRef.current = { id: g.id, col, top };
+        setPreview({
+          move: { id: g.id, dx: x - g.startX, dy: y - g.startY + (window.scrollY - g.startScroll), from: g.from, to: { col, top } },
+        });
         return;
       }
 
@@ -335,23 +500,31 @@ export const EditableGrid: React.FC<{
       const edge = g.edge!;
       const dx = x - g.startX;
       const dy = y - g.startY;
-      let col = g.cell.col;
-      let cols = g.cell.cols;
+      let col = g.from.col;
+      let cols = g.from.cols;
+      let top = g.from.top;
       let height: number | undefined;
       if (edge.includes('e')) {
-        const raw = Math.round((g.width + dx + gap) / unit);
-        cols = Math.max(g.minCols, Math.min(g.bounds.max - g.cell.col, raw));
+        cols = Math.max(g.minCols, Math.min(GRID_COLS - g.from.col, Math.round((g.width + dx + gapNow) / unit)));
       } else if (edge.includes('w')) {
-        const raw = Math.round((g.width - dx + gap) / unit);
-        cols = Math.max(g.minCols, Math.min(g.cell.col + g.cell.cols - g.bounds.min, raw));
-        col = g.cell.col + g.cell.cols - cols;
+        cols = Math.max(g.minCols, Math.min(g.from.col + g.from.cols, Math.round((g.width - dx + gapNow) / unit)));
+        col = g.from.col + g.from.cols - cols;
       }
-      if (edge.includes('s') || edge.includes('n')) {
-        const next = Math.max(g.minHeight, clampHeight(g.height + (edge.includes('s') ? dy : -dy)));
+      if (edge.includes('s')) {
+        const next = Math.max(g.minHeight, clampHeight(g.height + dy));
         height = Math.abs(next - g.height) < HEIGHT_STEP ? undefined : next;
+      } else if (edge === 'n') {
+        let next = Math.max(g.minHeight, clampHeight(g.height - dy));
+        top = g.from.top + g.height - next;
+        if (top < 0) {
+          next = Math.max(g.minHeight, clampHeight(g.from.top + g.height));
+          top = Math.max(0, g.from.top + g.height - next);
+        }
+        if (Math.abs(next - g.height) < HEIGHT_STEP) top = g.from.top;
+        else height = next;
       }
-      sizeRef.current = { id: g.id, col, cols, height };
-      setPreview((p) => ({ ...p, size: sizeRef.current }));
+      sizeRef.current = { id: g.id, col, cols, top, height };
+      setPreview({ size: sizeRef.current });
     };
 
     const autoScroll = () => {
@@ -381,18 +554,20 @@ export const EditableGrid: React.FC<{
     const finish = (commit: boolean) => {
       const g = gesture.current;
       gesture.current = null;
-      if (g) finishPress(g);
+      if (g) window.clearTimeout(g.timer);
       if (g?.active && commit) {
-        const { page: p, cells: current } = latest.current;
-        if (g.kind === 'move' && dropRef.current && Object.keys(dropRef.current.changes).length) {
-          applyItemChanges(p, dropRef.current.changes);
+        const { compute: resolve } = latest.current;
+        const drop = dropRef.current;
+        if (g.kind === 'move' && drop && (drop.col !== g.from.col || drop.top !== g.from.top)) {
+          commitCells(resolve({ id: drop.id, col: drop.col, top: drop.top }).cells, {});
         }
         const size = sizeRef.current;
-        if (g.kind === 'resize' && size && current) {
-          const patch: { col: number; row: number; cols?: number; height?: number } = { col: size.col, row: g.cell.row };
-          if (size.cols !== g.cell.cols) patch.cols = size.cols;
+        if (g.kind === 'resize' && size) {
+          const patch: Partial<LayoutItemPrefs> = {};
+          if (size.cols !== g.from.cols) patch.cols = size.cols;
           if (size.height !== undefined) patch.height = size.height;
-          if (patch.cols !== undefined || patch.height !== undefined || size.col !== g.cell.col) applyItemChanges(p, { [g.id]: patch });
+          const changed = size.cols !== g.from.cols || size.height !== undefined || size.col !== g.from.col || size.top !== g.from.top;
+          if (changed) commitCells(resolve({ ...size }).cells, { [g.id]: patch });
         }
       }
       dropRef.current = null;
@@ -410,7 +585,7 @@ export const EditableGrid: React.FC<{
       if (g.kind === 'press') {
         if (dist < PRESS_SLOP) return;
         // A finger that moves before the long press is done is scrolling the page; a mouse drags right away.
-        if (g.pointerType === 'touch') { finishPress(g); gesture.current = null; return; }
+        if (g.pointerType === 'touch') { window.clearTimeout(g.timer); gesture.current = null; return; }
         lift();
         return;
       }
@@ -483,7 +658,7 @@ export const EditableGrid: React.FC<{
   const begin = (e: React.PointerEvent, kind: Gesture['kind'], item: LayoutItem, edge?: Edge) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     const el = find(item.id);
-    const cell = latest.current.cells?.[item.id];
+    const cell = latest.current.free?.cells[item.id];
     if (!el || !gridRef.current || !cell) return;
     const r = el.getBoundingClientRect();
     pointer.current = { x: e.clientX, y: e.clientY };
@@ -498,10 +673,11 @@ export const EditableGrid: React.FC<{
       startY: e.clientY,
       startScroll: window.scrollY,
       grabX: e.clientX - r.left,
-      width: r.width,
-      height: r.height,
-      cell,
-      bounds: freeRange(latest.current.cells!, item.id),
+      grabY: e.clientY - r.top,
+      width: el.offsetWidth,
+      height: el.offsetHeight,
+      from: { ...cell, height: el.offsetHeight },
+      base: latest.current.free!.cells,
       minCols: minColsOf(item),
       minHeight: Math.max(item.minHeight ?? 0, 0),
       active: false,
@@ -514,63 +690,81 @@ export const EditableGrid: React.FC<{
 
   /** Keyboard resize (arrow keys on a side knob). */
   const nudge = (item: LayoutItem, dCols: number, dHeight: number) => {
-    const cell = latest.current.cells?.[item.id];
+    const cell = latest.current.free?.cells[item.id];
     const el = find(item.id);
     if (!cell || !el) return;
     const own = prefs.items[item.id];
-    const range = freeRange(latest.current.cells!, item.id);
-    const patch: { col: number; row: number; cols?: number; height?: number } = { col: cell.col, row: cell.row };
-    if (dCols) patch.cols = Math.max(minColsOf(item), Math.min(range.max - cell.col, cell.cols + dCols));
-    if (dHeight) patch.height = Math.max(item.minHeight ?? 0, clampHeight((own?.height ?? el.getBoundingClientRect().height) + dHeight));
-    applyItemChanges(page, { [item.id]: patch });
+    const cols = dCols ? clampN(cell.cols + dCols, minColsOf(item), GRID_COLS - cell.col) : cell.cols;
+    const height = dHeight ? Math.max(item.minHeight ?? 0, clampHeight((own?.height ?? el.offsetHeight) + dHeight)) : undefined;
+    const patch: Partial<LayoutItemPrefs> = {};
+    if (dCols) patch.cols = cols;
+    if (height !== undefined) patch.height = height;
+    commitCells(latest.current.compute({ id: item.id, col: cell.col, top: cell.top, cols, height }).cells, { [item.id]: patch });
   };
 
-  /** Keyboard move of the selected field (arrow keys on the field): one column or one row at a time. */
-  const stepMove = (item: LayoutItem, dCol: number, dRow: number) => {
-    const current = latest.current.cells;
-    const cell = current?.[item.id];
-    if (!current || !cell) return;
-    const plan = planMove(current, item.id, cell.col + dCol, Math.max(0, cell.row + dRow), dRow > 0);
-    if (Object.keys(plan.changes).length) applyItemChanges(page, plan.changes);
+  /** Keyboard move of the selected field (arrow keys on the field): one column or 16 px at a time. */
+  const stepMove = (item: LayoutItem, dCol: number, dTop: number) => {
+    const cell = latest.current.free?.cells[item.id];
+    if (!cell) return;
+    const col = clampN(cell.col + dCol, 0, GRID_COLS - cell.cols);
+    const top = Math.max(0, cell.top + dTop);
+    commitCells(latest.current.compute({ id: item.id, col, top }).cells, {});
   };
 
   const remove = (item: LayoutItem) => {
-    const current = latest.current.cells;
-    hideItem(page, item.id, current ? planRemove(current, item.id) : {});
+    hideItem(page, item.id);
     setSelected(null);
   };
 
   // ---- Render ----
-  const rowCount = cells ? Math.max(-1, ...Object.values(cells).map((c) => c.row)) + 1 : 0;
-  const usedRows = new Set(cells ? Object.values(cells).map((c) => c.row) : []);
-  const templateRows = cells
-    ? Array.from({ length: rowCount + (isEditing ? TRAILING_ROWS : 0) }, (_, r) => (usedRows.has(r) ? 'auto' : `${BLANK_ROW}px`)).join(' ')
-    : undefined;
   const lifted = isEditing && preview.move ? preview.move : undefined;
+  const unitStyle = (n: number) => `calc((100% + ${gap}px) * ${n} / ${GRID_COLS})`;
+  const rowCount = legacyCells ? Math.max(-1, ...Object.values(legacyCells).map((c) => c.row)) + 1 : 0;
+  const usedRows = new Set(legacyCells ? Object.values(legacyCells).map((c) => c.row) : []);
+  const legacyRows = legacyCells ? Array.from({ length: rowCount }, (_, r) => (usedRows.has(r) ? 'auto' : '40px')).join(' ') : undefined;
+  const gridStyle: React.CSSProperties | undefined = free
+    ? { height: free.bottom + (isEditing ? EDIT_TAIL : 0) }
+    : legacyRows
+      ? { gridTemplateRows: legacyRows }
+      : undefined;
+  const landing = lifted && free ? free.cells[lifted.id] : undefined;
 
   return (
     <div
       ref={gridRef}
       className={`relative grid grid-cols-6 ${className} ${isEditing ? 'select-none [-webkit-touch-callout:none]' : ''}`}
-      style={templateRows ? { gridTemplateRows: templateRows } : undefined}
+      style={gridStyle}
       {...(isEditing ? { 'data-no-swipe': '' } : {})}
     >
       {shown.map((item) => {
         const own = enabled ? prefs.items[item.id] : undefined;
-        const cell = cells?.[item.id];
+        const natural = !isEditing && item.expanded === true;
+        const cell = free?.cells[item.id];
+        const legacy = legacyCells?.[item.id];
         const live = isEditing && preview.size?.id === item.id ? preview.size : undefined;
-        const cols = live?.cols ?? cell?.cols;
-        const col = live?.col ?? cell?.col;
-        const height = live ? live.height ?? own?.height : own?.height;
-        const minHeight = item.minHeight ?? 0;
+        const stored = natural ? undefined : live ? live.height ?? own?.height : own?.height;
+        const height = stored ? Math.max(stored, item.minHeight ?? 0) : undefined;
         const isSelected = isEditing && selected === item.id;
         const isLifted = lifted?.id === item.id;
-        const style: React.CSSProperties = {
-          ...(cell && col !== undefined && cols ? { gridColumn: `${col + 1} / span ${cols}`, gridRow: cell.row + 1 } : {}),
-          ...(height ? { height: Math.max(height, minHeight) } : {}),
-          ...(isLifted && lifted ? { transform: `translate(${lifted.dx}px, ${lifted.dy}px)`, zIndex: 30 } : {}),
-        };
-        const flowClass = cell ? '' : item.span;
+        const style: React.CSSProperties = {};
+        if (cell) {
+          // The lifted field is drawn where it was picked up (plus the pointer offset); the others make room for it.
+          const at = isLifted && lifted ? lifted.from : cell;
+          style.position = 'absolute';
+          style.left = unitStyle(at.col);
+          style.width = `calc(${unitStyle(at.cols)} - ${gap}px)`;
+          style.top = at.top;
+        } else if (legacy) {
+          style.gridColumn = `${legacy.col + 1} / span ${legacy.cols}`;
+          style.gridRow = legacy.row + 1;
+        }
+        if (height) style.height = height;
+        if (isLifted && lifted) {
+          style.transform = `translate(${lifted.dx}px, ${lifted.dy}px)`;
+          style.zIndex = 30;
+        }
+        const flowClass = cell || legacy ? '' : item.span;
+        const moving = isLifted || live !== undefined;
         return (
           <div
             key={item.id}
@@ -589,16 +783,19 @@ export const EditableGrid: React.FC<{
               else if (e.key === 'Escape') setSelected(null);
               else if (isSelected && e.key.startsWith('Arrow')) {
                 e.preventDefault();
-                stepMove(item, e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0, e.key === 'ArrowDown' ? 1 : e.key === 'ArrowUp' ? -1 : 0);
+                const step = e.shiftKey ? 4 : 1;
+                stepMove(item, e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0, (e.key === 'ArrowDown' ? KEY_STEP : e.key === 'ArrowUp' ? -KEY_STEP : 0) * step);
               } else if (isSelected && (e.key === 'Delete' || e.key === 'Backspace')) { e.preventDefault(); remove(item); }
             } : undefined}
             aria-label={isEditing ? item.label : undefined}
             role={isEditing ? 'group' : undefined}
             className={`relative grid min-w-0 ${flowClass} ${item.selfStart ? 'self-start' : ''} ${
+              animate && cell && !moving ? 'transition-[top,left,width] duration-200 ease-out' : ''
+            } ${
               isEditing
-                ? `${height || item.selfStart ? '' : 'min-h-[64px]'} touch-pan-y rounded-3xl outline-offset-2 focus-visible:outline-2 focus-visible:outline-[var(--muted)] ${
-                    isSelected ? 'outline outline-[3px] outline-[color:var(--text)] z-20' : ''
-                  } ${isLifted ? 'cursor-grabbing shadow-2xl will-change-transform scale-[1.02] opacity-95 !outline !outline-[3px] !outline-[color:var(--text)]' : 'cursor-pointer'}`
+                ? `${height || item.selfStart || cell ? '' : 'min-h-[64px]'} touch-pan-y rounded-3xl outline-none ${isSelected ? 'z-20' : ''} ${
+                    isLifted ? 'cursor-grabbing shadow-2xl will-change-transform scale-[1.02] opacity-95' : 'cursor-pointer'
+                  }`
                 : ''
             }`}
             style={style}
@@ -609,6 +806,7 @@ export const EditableGrid: React.FC<{
             >
               {item.node}
             </div>
+            {isEditing && <Outline solid={isSelected || isLifted} />}
             {isSelected && !isLifted && (
               <Controls
                 item={item}
@@ -628,15 +826,13 @@ export const EditableGrid: React.FC<{
         );
       })}
 
-      {/* Where the lifted field lands (a bar = a new row is inserted there, a frame = that free place). */}
-      {isEditing && preview.drop && lifted && (
+      {/* Where the lifted field lands if it is dropped now (the other fields have already made room for it). */}
+      {landing && (
         <div
           aria-hidden="true"
           data-layout-drop
-          className={`pointer-events-none absolute z-20 ${
-            preview.drop.line ? 'rounded-full bg-[var(--text)]' : 'rounded-3xl bg-[var(--text)]/10 outline-2 -outline-offset-2 outline-dashed outline-[var(--text)]/60'
-          }`}
-          style={{ left: preview.drop.left, top: preview.drop.top, width: preview.drop.width, height: preview.drop.height }}
+          className="pointer-events-none absolute z-[1] rounded-3xl bg-[var(--text)]/10 outline-2 -outline-offset-2 outline-dashed outline-[var(--text)]/60"
+          style={{ left: unitStyle(landing.col), width: `calc(${unitStyle(landing.cols)} - ${gap}px)`, top: landing.top, height: landing.height }}
         />
       )}
     </div>

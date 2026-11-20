@@ -12,7 +12,7 @@ import type {
  *
  * Like `advancedStore.ts` it is a tiny module-level store (`useSyncExternalStore`) with its own
  * localStorage key. It keeps, per page (Today / Statistics / Body): the order of the fields, the removed
- * fields and the width / size chosen for each field, plus the meal types added by the user.
+ * fields and the place / width / height chosen for each field, plus the meal types added by the user.
  * Everything is off by default; the originals are the defaults of every page.
  */
 
@@ -26,8 +26,10 @@ export const MAX_COLS = 6;
 export const MIN_HEIGHT = 44;
 export const MAX_HEIGHT = 900;
 export const HEIGHT_STEP = 4;
-/** Highest row index a field can be placed on (free placement). */
+/** Highest legacy row index (only used to migrate layouts saved by the previous row-based editor). */
 export const MAX_ROW = 200;
+/** Highest distance from the top of the page (px) a field can be placed at (free placement). */
+export const MAX_TOP = 20000;
 
 /** Widths stored by the first version of the advanced layout (1/3, 1/2, 2/3, full) as columns. */
 const LEGACY_WIDTH_COLS: Record<string, number> = { third: 2, half: 3, twothirds: 4, full: 6 };
@@ -81,6 +83,10 @@ export function clampCols(cols: number): number {
   return Math.min(MAX_COLS, Math.max(MIN_COLS, Math.round(cols)));
 }
 
+export function clampTop(top: number): number {
+  return Math.min(MAX_TOP, Math.max(0, Math.round(top)));
+}
+
 export function clampHeight(height: number): number {
   const snapped = Math.round(height / HEIGHT_STEP) * HEIGHT_STEP;
   return Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, snapped));
@@ -96,11 +102,17 @@ function normalizePage(raw: unknown): PageLayout {
       if (typeof value.cols === 'number' && Number.isFinite(value.cols)) prefs.cols = clampCols(value.cols);
       else if (typeof value.width === 'string' && value.width in LEGACY_WIDTH_COLS) prefs.cols = LEGACY_WIDTH_COLS[value.width];
       if (typeof value.height === 'number' && Number.isFinite(value.height)) prefs.height = clampHeight(value.height);
-      if (typeof value.col === 'number' && typeof value.row === 'number' && Number.isInteger(value.col) && Number.isInteger(value.row)) {
-        prefs.col = Math.min(MAX_COLS - 1, Math.max(0, value.col));
-        prefs.row = Math.min(MAX_ROW, Math.max(0, value.row));
+      if (typeof value.col === 'number' && Number.isInteger(value.col)) {
+        if (typeof value.top === 'number' && Number.isFinite(value.top)) {
+          prefs.col = Math.min(MAX_COLS - 1, Math.max(0, value.col));
+          prefs.top = clampTop(value.top);
+        } else if (typeof value.row === 'number' && Number.isInteger(value.row)) {
+          // Saved by the previous (row based) editor: kept until the page has been measured and converted to `top`.
+          prefs.col = Math.min(MAX_COLS - 1, Math.max(0, value.col));
+          prefs.row = Math.min(MAX_ROW, Math.max(0, value.row));
+        }
       }
-      if (prefs.cols || prefs.height || prefs.row !== undefined) items[id] = prefs;
+      if (prefs.cols || prefs.height || prefs.top !== undefined || prefs.row !== undefined) items[id] = prefs;
     }
   }
   return { order: strings(expandLegacyIds(src.order)), hidden: strings(expandLegacyIds(src.hidden)), items };
@@ -225,11 +237,15 @@ function patchItem(layout: PageLayout, id: string, patch: Partial<LayoutItemPref
   const clean: LayoutItemPrefs = {};
   if (merged.cols) clean.cols = clampCols(merged.cols);
   if (merged.height) clean.height = clampHeight(merged.height);
-  if (merged.col !== undefined && merged.row !== undefined) {
+  if (merged.col !== undefined && merged.top !== undefined) {
+    // `top` wins over a legacy `row`: the row is dropped as soon as the field has a pixel position.
+    clean.col = Math.min(MAX_COLS - 1, Math.max(0, Math.round(merged.col)));
+    clean.top = clampTop(merged.top);
+  } else if (merged.col !== undefined && merged.row !== undefined) {
     clean.col = Math.min(MAX_COLS - 1, Math.max(0, Math.round(merged.col)));
     clean.row = Math.min(MAX_ROW, Math.max(0, Math.round(merged.row)));
   }
-  return { ...layout, items: clean.cols || clean.height || clean.row !== undefined ? { ...rest, [id]: clean } : rest };
+  return { ...layout, items: clean.cols || clean.height || clean.top !== undefined || clean.row !== undefined ? { ...rest, [id]: clean } : rest };
 }
 
 /** Sets the width (columns) and / or height (px) of a field. A key set to `undefined` goes back to the original. */
@@ -238,9 +254,8 @@ export function setItemSize(page: LayoutPageId, id: string, size: Partial<Layout
 }
 
 /**
- * Applies several changes at once (one write): a drop moves one field and may shift or collapse rows of others; a
- * resize changes `col`, `cols` and `height`. A key set to `undefined` goes back to the original. Pass `col` and `row`
- * together.
+ * Applies several changes at once (one write): a drop moves one field and may push others down; a resize changes
+ * `col`, `top`, `cols` and `height`. A key set to `undefined` goes back to the original. Pass `col` and `top` together.
  */
 export function applyItemChanges(page: LayoutPageId, changes: Record<string, Partial<LayoutItemPrefs>>) {
   updatePage(page, (layout) => {
@@ -251,20 +266,19 @@ export function applyItemChanges(page: LayoutPageId, changes: Record<string, Par
 }
 
 /**
- * Removes a field. `others` can move the remaining fields at the same time (the grid closes the row the field leaves).
- * A removed field forgets its place.
+ * Removes a field. `others` can change the remaining fields at the same time. A removed field forgets its place.
  */
 export function hideItem(page: LayoutPageId, id: string, others: Record<string, Partial<LayoutItemPrefs>> = {}) {
   updatePage(page, (layout) => {
     let next = layout.hidden.includes(id) ? layout : { ...layout, hidden: [...layout.hidden, id] };
     for (const [other, patch] of Object.entries(others)) next = patchItem(next, other, patch);
-    return patchItem(next, id, { col: undefined, row: undefined });
+    return patchItem(next, id, { col: undefined, top: undefined, row: undefined });
   });
 }
 
 /** Brings a removed field back. It has no place any more, so it appears after the placed fields. */
 export function showItem(page: LayoutPageId, id: string) {
-  updatePage(page, (layout) => patchItem({ ...layout, hidden: layout.hidden.filter((x) => x !== id) }, id, { col: undefined, row: undefined }));
+  updatePage(page, (layout) => patchItem({ ...layout, hidden: layout.hidden.filter((x) => x !== id) }, id, { col: undefined, top: undefined, row: undefined }));
 }
 
 // ----- Meal types -----

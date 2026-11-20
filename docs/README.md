@@ -24,7 +24,7 @@
 | Add or rename a stored key, backup, network behaviour | [storage-and-privacy.md](storage-and-privacy.md) |
 | Calorie maths, colours | [calculations-colors.md](calculations-colors.md) |
 | Goals / limits icons, Body measurements page, body-part icons (Settings > Advanced) | [advanced-personalisation.md](advanced-personalisation.md) |
-| Advanced layout: pencil icon, move / resize / remove fields, added meal types, restore layout | [advanced-layout.md](advanced-layout.md) |
+| Advanced layout: pencil (edit) icon, dashed outlines, free placement at any height, resize / remove fields, expanded meals vs chosen shape, added meal types, restore layout | [advanced-layout.md](advanced-layout.md) |
 | Icon, wordmark, launcher art | [brand.md](brand.md) |
 | Activities / METs | [data-activities.md](data-activities.md) |
 | Bundled foods (USDA, curated) | [data-nutrition.md](data-nutrition.md) |

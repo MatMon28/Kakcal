@@ -22,8 +22,8 @@ const input =
 export type LayoutExtra = 'meal' | 'measure';
 
 /**
- * The top of a personalisable page. With Settings > Advanced > Advanced layout on it shows a small pencil icon;
- * while editing it shows Add / Reset / Done. "Add" lists the removed fields and, on Today, creates a new meal
+ * The top of an editable page. With Settings > Advanced > Advanced layout on it shows a small pencil icon;
+ * while editing it shows Add / Reset page / Done. "Add" lists the removed fields and, on Today, creates a new meal
  * type (on Body, a new measure).
  */
 export const LayoutToolbar: React.FC<{

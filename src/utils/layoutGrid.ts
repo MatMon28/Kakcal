@@ -1,12 +1,131 @@
 /**
- * Pure geometry helpers of the advanced layout's free-placement grid (no React, no DOM, no storage), used by
+ * Pure geometry helpers of the advanced layout's free-placement canvas (no React, no DOM, no storage), used by
  * `components/layout/EditableGrid.tsx`.
  *
- * The page is a grid of 6 columns and as many rows as needed. A field sits on one row and covers `cols` columns from
- * `col`. A row that holds no field is blank space. Every function here works on `Cell`s (`col`, `row`, `cols`).
+ * The page is 6 columns wide. A field covers `cols` columns from `col` and sits at ANY height (`top`, in pixels), so a
+ * tall field can have two small fields stacked beside it, fields can be staggered like a pyramid, and so on. Fields
+ * never overlap: when one would, it is pushed down below the field that is in the way.
  */
 
 export const GRID_COLS = 6;
+
+/** Snap distance (px) to the edges of neighbouring fields, and the step of a free drop (px). */
+export const SNAP_PX = 12;
+export const TOP_STEP = 4;
+
+/** A field on the canvas (`top` and `height` in px). */
+export interface FreeCell {
+  col: number;
+  cols: number;
+  top: number;
+  height: number;
+}
+
+export interface FreeInput {
+  id: string;
+  cols: number;
+  /** Real height in px (the stored height, or the measured natural height of the content). */
+  height: number;
+  /** Stored place; both missing = the field has no place yet and flows after the placed ones. */
+  col?: number;
+  top?: number;
+}
+
+const clampCol = (col: number, cols: number) => Math.max(0, Math.min(Math.round(col), GRID_COLS - cols));
+
+/** Do two fields collide (share columns and are closer than `gap` vertically)? */
+const hit = (a: FreeCell, b: FreeCell, gap: number) =>
+  a.col < b.col + b.cols &&
+  b.col < a.col + a.cols &&
+  a.top < b.top + b.height + gap - 0.5 &&
+  b.top < a.top + a.height + gap - 0.5;
+
+/**
+ * Turns the stored places into the real place of every field.
+ * - `pinned` (the field being dragged / resized) keeps exactly its place; every other field is pushed down below it if
+ *   it is in the way.
+ * - Placed fields are handled from top to bottom (then left to right); a field that collides with an earlier one is
+ *   pushed down below it, so a field that grows (an expanded meal) moves the fields under it down.
+ * - Fields without a place flow below everything else, left to right, wrapping to a new line.
+ */
+export function resolveFree(inputs: FreeInput[], gap: number, pinned?: string): { cells: Record<string, FreeCell>; bottom: number } {
+  const cells: Record<string, FreeCell> = {};
+  const done: FreeCell[] = [];
+
+  const placed = inputs
+    .map((input, index) => ({ input, index }))
+    .filter(({ input }) => input.col !== undefined && input.top !== undefined)
+    .sort(
+      (a, b) =>
+        Number(b.input.id === pinned) - Number(a.input.id === pinned) ||
+        (a.input.top as number) - (b.input.top as number) ||
+        (a.input.col as number) - (b.input.col as number) ||
+        a.index - b.index,
+    );
+
+  for (const { input } of placed) {
+    const cell: FreeCell = {
+      col: clampCol(input.col as number, input.cols),
+      cols: input.cols,
+      top: Math.max(0, input.top as number),
+      height: input.height,
+    };
+    if (input.id !== pinned) {
+      let blocker = done.find((other) => hit(cell, other, gap));
+      while (blocker) {
+        cell.top = blocker.top + blocker.height + gap;
+        blocker = done.find((other) => hit(cell, other, gap));
+      }
+    }
+    cells[input.id] = cell;
+    done.push(cell);
+  }
+
+  let bottom = done.reduce((max, c) => Math.max(max, c.top + c.height), 0);
+  let y = done.length ? bottom + gap : 0;
+  let x = 0;
+  let lineHeight = 0;
+  for (const input of inputs) {
+    if (cells[input.id]) continue;
+    if (x + input.cols > GRID_COLS) {
+      y += lineHeight + gap;
+      x = 0;
+      lineHeight = 0;
+    }
+    const cell: FreeCell = { col: x, cols: input.cols, top: y, height: input.height };
+    cells[input.id] = cell;
+    x += input.cols;
+    lineHeight = Math.max(lineHeight, input.height);
+    bottom = Math.max(bottom, y + input.height);
+  }
+  return { cells, bottom };
+}
+
+/**
+ * Where to put the top of a field being dropped: `raw` px from the top of the page, but "magnetic": it snaps (within
+ * `SNAP_PX`) to sit right below / above a field it shares columns with, or to line up with the top or bottom of any
+ * other field; otherwise it moves in `TOP_STEP` px steps.
+ */
+export function snapTop(raw: number, col: number, cols: number, height: number, others: FreeCell[], gap: number): number {
+  const candidates = [0];
+  for (const o of others) {
+    if (col < o.col + o.cols && o.col < col + cols) {
+      candidates.push(o.top + o.height + gap, o.top - height - gap);
+    }
+    candidates.push(o.top, o.top + o.height - height);
+  }
+  let best: number | null = null;
+  for (const c of candidates) {
+    if (c < 0) continue;
+    if (Math.abs(c - raw) <= SNAP_PX && (best === null || Math.abs(c - raw) < Math.abs(best - raw))) best = c;
+  }
+  return Math.max(0, best ?? Math.round(raw / TOP_STEP) * TOP_STEP);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Legacy: the row grid of the previous editor. Only used to show an old layout once so that it can be measured and
+// converted to pixel places (`top`).
+// ---------------------------------------------------------------------------------------------
 
 export interface Cell {
   col: number;
@@ -22,9 +141,6 @@ export interface PlaceInput {
   row?: number;
 }
 
-/** Position change of a field. */
-export type Move = { col: number; row: number };
-
 const overlaps = (aCol: number, aCols: number, bCol: number, bCols: number) => aCol < bCol + bCols && bCol < aCol + aCols;
 
 /** Columns covered by Tailwind `col-span-*` classes (`col-span-6 md:col-span-3`); `wide` = the md breakpoint is active. */
@@ -36,8 +152,8 @@ export function spanCols(span: string, wide: boolean): number {
 }
 
 /**
- * Turns the stored places into a place for every field. Placed fields keep their cell; a field that would overlap
- * another one is pushed to the next free row. Fields without a place flow after the placed ones, left to right.
+ * Legacy row grid: placed fields keep their cell; a field that would overlap another one is pushed to the next free
+ * row. Fields without a place flow after the placed ones, left to right.
  */
 export function resolvePlacements(inputs: PlaceInput[]): Record<string, Cell> {
   const out: Record<string, Cell> = {};
@@ -70,81 +186,4 @@ export function resolvePlacements(inputs: PlaceInput[]): Record<string, Cell> {
     col += i.cols;
   }
   return out;
-}
-
-/** Row whose track contains `y` (pixels from the top of the grid); above = first row, below = last row. */
-export function rowAt(tracks: { top: number; h: number }[], y: number): number {
-  if (!tracks.length) return 0;
-  for (let i = 0; i < tracks.length; i++) {
-    const next = tracks[i + 1];
-    const end = next ? (tracks[i].top + tracks[i].h + next.top) / 2 : Infinity;
-    if (y < end) return i;
-  }
-  return tracks.length - 1;
-}
-
-/** Closes row `v` (every row below moves up) when no field uses it any more. Mutates `rows`. */
-function closeIfEmpty(rows: Record<string, number>, v: number) {
-  if (Object.values(rows).some((r) => r === v)) return;
-  for (const id of Object.keys(rows)) if (rows[id] > v) rows[id] -= 1;
-}
-
-/**
- * What happens when field `id` is dropped with its left edge at `col` on `row`.
- * - The cells are free: the field goes exactly there (the cell it leaves stays blank).
- * - Another field is in the way: a new row is inserted above (`after` false) or below (`after` true) that row, the
- *   rows below move down and the field takes the new row; the row it left is closed if it is empty now.
- * Returns the fields whose place changed and whether a row was inserted.
- */
-export function planMove(
-  cells: Record<string, Cell>,
-  id: string,
-  col: number,
-  row: number,
-  after: boolean,
-): { changes: Record<string, Move>; inserted: boolean; col: number; row: number } {
-  const me = cells[id];
-  if (!me) return { changes: {}, inserted: false, col, row };
-  const left = Math.max(0, Math.min(col, GRID_COLS - me.cols));
-  const others = Object.entries(cells).filter(([other]) => other !== id);
-  const blocked = others.some(([, c]) => c.row === row && overlaps(left, me.cols, c.col, c.cols));
-  const target = blocked ? (after ? row + 1 : row) : row;
-
-  const rows: Record<string, number> = {};
-  for (const [other, c] of others) rows[other] = blocked && c.row >= target ? c.row + 1 : c.row;
-  rows[id] = target;
-  if (blocked) closeIfEmpty(rows, me.row >= target ? me.row + 1 : me.row);
-
-  const changes: Record<string, Move> = {};
-  for (const [other, c] of Object.entries(cells)) {
-    const next = other === id ? { col: left, row: rows[other] } : { col: c.col, row: rows[other] };
-    if (next.col !== c.col || next.row !== c.row) changes[other] = next;
-  }
-  return { changes, inserted: blocked, col: left, row: rows[id] };
-}
-
-/** Rows to change when field `id` is removed: the row it leaves is closed if nothing else is on it. */
-export function planRemove(cells: Record<string, Cell>, id: string): Record<string, Move> {
-  const me = cells[id];
-  if (!me) return {};
-  const rows: Record<string, number> = {};
-  for (const [other, c] of Object.entries(cells)) if (other !== id) rows[other] = c.row;
-  closeIfEmpty(rows, me.row);
-  const changes: Record<string, Move> = {};
-  for (const [other, row] of Object.entries(rows)) if (row !== cells[other].row) changes[other] = { col: cells[other].col, row };
-  return changes;
-}
-
-/** Free columns around field `id` on its row: it can grow from `min` up to (not including) `max`. */
-export function freeRange(cells: Record<string, Cell>, id: string): { min: number; max: number } {
-  const me = cells[id];
-  let min = 0;
-  let max = GRID_COLS;
-  if (!me) return { min, max };
-  for (const [other, c] of Object.entries(cells)) {
-    if (other === id || c.row !== me.row) continue;
-    if (c.col + c.cols <= me.col) min = Math.max(min, c.col + c.cols);
-    else if (c.col >= me.col + me.cols) max = Math.min(max, c.col);
-  }
-  return { min, max };
 }

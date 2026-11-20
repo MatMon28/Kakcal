@@ -14,7 +14,7 @@ import { useApp } from '../../context/AppContext';
 import { useLayoutText } from '../../i18n/layout';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { slideIn } from '../../utils/motion';
-import { mealItemId, setItemSize, useLayout } from '../../utils/layoutStore';
+import { mealItemId, useEditingPage, useLayout } from '../../utils/layoutStore';
 import { BUILT_IN_MEAL_SLOTS } from '../../utils/mealItems';
 import { useMealSlots } from '../../utils/mealSlots';
 import { MealSlotId } from '../../types';
@@ -27,6 +27,7 @@ const TRACKERS: TrackerId[] = ['activity', 'water', 'poop', 'custom'];
 export const TodayView: React.FC = () => {
   const { settings, t, selectedDate } = useApp();
   const layoutState = useLayout();
+  const editingToday = useEditingPage() === 'today';
   const layoutText = useLayoutText();
   const { label: slotLabel } = useMealSlots();
   // Built-in meals followed by the meal types the user added (Settings > Advanced > Advanced layout).
@@ -128,30 +129,29 @@ export const TodayView: React.FC = () => {
     </div>
   ) : null;
 
+  // A field the user gave a shape (width / height) is drawn collapsed while the page is being edited, so the shape is
+  // what is shown and edited. Outside the edit mode, an open field is drawn in its classic form (`expanded` on the
+  // LayoutItem) and goes back to the chosen shape when it is collapsed again; the shape itself is never discarded.
+  const hasShape = (itemId: string) => {
+    const own = layoutState.enabled ? layoutState.pages.today.items[itemId] : undefined;
+    return Boolean(own?.cols || own?.height);
+  };
+
   const mealCard = (slotId: MealSlotId) => {
-    const open = displayLayout === 'expanded' || openSlots.includes(slotId);
-    const own = layoutState.enabled ? layoutState.pages.today.items[mealItemId(slotId)] : undefined;
+    const open = (displayLayout === 'expanded' || openSlots.includes(slotId)) && !(editingToday && hasShape(mealItemId(slotId)));
     return (
       <MealSlotCard
         slotId={slotId}
         compact={displayLayout === 'compact'}
         ultraMinimal={ultraMinimal}
         open={open}
-        onToggle={() => {
-          // A meal field that was made smaller goes back to its classic size when its arrow is pressed (a closed one
-          // also opens, an open one stays open).
-          if (own?.cols || own?.height) {
-            setItemSize('today', mealItemId(slotId), { cols: undefined, height: undefined });
-            if (open) return;
-          }
-          toggleSlot(slotId);
-        }}
+        onToggle={() => toggleSlot(slotId)}
       />
     );
   };
 
   const trackerCard = (id: TrackerId) => {
-    const open = displayLayout === 'expanded' || openTrackers.includes(id);
+    const open = (displayLayout === 'expanded' || openTrackers.includes(id)) && !(editingToday && hasShape(`tracker:${id}`));
     const props = { compact: displayLayout === 'compact', open, onToggle: () => toggleTracker(id) };
     const Card =
       id === 'activity' ? ActivityCardSummary : id === 'water' ? WaterCard : id === 'poop' ? PoopCard : CustomButtonsCard;
@@ -188,6 +188,7 @@ export const TodayView: React.FC = () => {
       node: mealCard(slotId),
       span: cardSpan(displayLayout === 'expanded' || openSlots.includes(slotId)),
       selfStart: true,
+      expanded: displayLayout === 'expanded' || openSlots.includes(slotId),
       // Smallest meal field: icon, expand arrow and + stay visible (meal name and numbers may be cut off).
       minCols: compact ? 2 : 3,
       minHeight: compact ? 52 : 56,
@@ -198,6 +199,7 @@ export const TodayView: React.FC = () => {
       node: trackerCard(id),
       span: cardSpan(displayLayout === 'expanded' || openTrackers.includes(id)),
       selfStart: true,
+      expanded: displayLayout === 'expanded' || openTrackers.includes(id),
       show: id !== 'poop' || !settings.hidePoop,
     })),
   ];
