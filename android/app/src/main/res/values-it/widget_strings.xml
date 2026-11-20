@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_small_name">Kakcalculator: piccolo</string>
-    <string name="widget_essential_name">Kakcalculator: extra-piccolo</string>
-    <string name="widget_large_name">Kakcalculator: grande</string>
+    <string name="widget_small_name">Kakcal: piccolo</string>
+    <string name="widget_essential_name">Kakcal: extra-piccolo</string>
+    <string name="widget_large_name">Kakcal: grande</string>
     <string name="widget_small_description">Cinque azioni per il diario.</string>
     <string name="widget_essential_description">Scorciatoie per cibo, acqua e cacca.</string>
     <string name="widget_large_description">Assunte, bruciate, macro e cinque azioni.</string>
@@ -12,7 +12,7 @@
     <string name="widget_poop">Cacca</string>
     <string name="widget_weight">Peso</string>
     <string name="widget_custom">Personalizzato</string>
-    <string name="widget_medium_name">Kakcalculator: Medio</string>
+    <string name="widget_medium_name">Kakcal: Medio</string>
     <string name="widget_medium_description">Calorie, macro e scorciatoie, in una versione compatta.</string>
     <string name="widget_letter_carbs">C</string>
     <string name="widget_letter_protein">P</string>

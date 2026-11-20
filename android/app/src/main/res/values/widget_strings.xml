@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="widget_small_name">Kakcalculator: Small</string>
-    <string name="widget_essential_name">Kakcalculator: Extra-small</string>
-    <string name="widget_large_name">Kakcalculator: Large</string>
+    <string name="widget_small_name">Kakcal: Small</string>
+    <string name="widget_essential_name">Kakcal: Extra-small</string>
+    <string name="widget_large_name">Kakcal: Large</string>
     <string name="widget_small_description">Five shortcuts (six with the custom button) to your daily journal.</string>
     <string name="widget_essential_description">Food, water and poop shortcuts.</string>
     <string name="widget_large_description">Intake, burned energy, macros and the shortcuts.</string>
@@ -12,7 +12,7 @@
     <string name="widget_poop">Poop</string>
     <string name="widget_weight">Weight</string>
     <string name="widget_custom">Custom</string>
-    <string name="widget_medium_name">Kakcalculator: Medium</string>
+    <string name="widget_medium_name">Kakcal: Medium</string>
     <string name="widget_medium_description">Intake, burned energy, macros and shortcuts, in a compact layout.</string>
     <string name="widget_letter_carbs">C</string>
     <string name="widget_letter_protein">P</string>

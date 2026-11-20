@@ -1,6 +1,6 @@
-# Kakcalculator — Launch Animation System
+# Kakcal — Launch Animation System
 
-A set of **six bespoke app-load animations** for the Kakcalculator icon, each one written to
+A set of **six bespoke app-load animations** for the Kakcal icon, each one written to
 do a single job: fill the dead second between tapping the app and seeing the calculator,
 then land **pixel-perfect on the brand mark** so the transition into the app UI is invisible.
 

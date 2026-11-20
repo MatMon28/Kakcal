@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Kakcalculator — Daily Nutrition & Wellness",
-  "short_name": "Kakcalculator",
+  "name": "Kakcal — Daily Nutrition & Wellness",
+  "short_name": "Kakcal",
   "description": "A local-first nutrition, activity and wellness journal. No account, no backend; your data stays on this device.",
   "start_url": "./?view=app&source=pwa",
   "scope": "./",

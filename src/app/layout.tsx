@@ -4,7 +4,7 @@ import "@fontsource-variable/plus-jakarta-sans";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Kakcalculator",
+  title: "Kakcal",
   description: "Mobile-first daily nutrition, energy, activity and wellness journal.",
 };
 

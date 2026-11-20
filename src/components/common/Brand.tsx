@@ -2,7 +2,8 @@ import wordmarkSvg from '../../assets/brand/kakcalculator-wordmark.svg?raw';
 import iconSvg from '../../assets/brand/kakcalculator-icon.svg?raw';
 
 const INK = '#232325';
-const CREAM_PLATE = '<rect width="820" height="260" fill="#FBF3E3" />';
+// The plate width follows the wordmark width (500 for "Kakcal"), so it is matched by pattern.
+const CREAM_PLATE = /<rect width="\d+" height="260" fill="#FBF3E3" \/>/;
 // Verified at build time by scripts/smoke.mjs: the plate must be found and removed.
 
 /*
@@ -27,7 +28,7 @@ export function Wordmark({ className = '' }: BrandProps) {
   return (
     <span
       role="img"
-      aria-label="Kakcalculator"
+      aria-label="Kakcal"
       className={`kc-wordmark inline-flex items-center text-[var(--text)] [&>svg]:block [&>svg]:h-full [&>svg]:w-auto ${className}`}
       dangerouslySetInnerHTML={{ __html: WORDMARK_MARKUP }}
     />

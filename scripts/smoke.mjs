@@ -50,7 +50,7 @@ try {
 
   // 1. The tour opens by default, with the transparent wordmark and the kept links.
   await page.goto(base + '/');
-  await page.getByRole('heading', { level: 1, name: 'See how Kakcalculator works' }).waitFor();
+  await page.getByRole('heading', { level: 1, name: 'See how Kakcal works' }).waitFor();
   assert.equal(await page.locator('header svg rect[fill="#FBF3E3"]').count(), 0, 'Wordmark still has its cream plate');
   assert.equal(await page.locator('header svg text').count(), 1, 'Wordmark text missing');
   assert.equal(await page.locator('header svg text').first().evaluate((el) => el.closest('svg').querySelector('path') !== null), true);
@@ -62,7 +62,7 @@ try {
   console.log('PASS: the tour opens on the welcome page, with a transparent wordmark, Open full app and the Android project link.');
 
   // 2. Every page is explained, in the order of the step list.
-  const titles = ['How Kakcalculator works', 'Today', 'Meals', 'Add food', 'Activity', 'Water', 'Poop', 'Weight',
+  const titles = ['How Kakcal works', 'Today', 'Meals', 'Add food', 'Activity', 'Water', 'Poop', 'Weight',
     'Day overview', 'Custom', 'Period', 'Statistics', 'Profile', 'Settings', 'Notifications', 'Home-screen widgets'];
   const chips = page.getByRole('navigation', { name: 'Pages' }).getByRole('button');
   assert.equal(await chips.count(), titles.length);
@@ -113,7 +113,7 @@ try {
   // 5. The Large widget has no brand, no "today" tag, and shows the Ultra minimal arrangement.
   const large = page.getByRole('group', { name: 'Large widget', exact: true });
   const largeText = await large.innerText();
-  assert.doesNotMatch(largeText, /today|kakcalculator/i, 'Large widget still shows a brand or "today"');
+  assert.doesNotMatch(largeText, /today|kakcal/i, 'Large widget still shows a brand or "today"');
   assert.equal((largeText.match(/%/g) ?? []).length, 3, 'Carbs, protein and fat percentages expected');
   assert.equal(await large.getByRole('img', { name: /^Intake: .* kcal$/ }).count(), 1);
   assert.equal(await large.getByRole('img', { name: /^Burned: .* kcal$/ }).count(), 1);
@@ -121,9 +121,9 @@ try {
 
   // 6. The journal and the tour both follow the chosen language.
   await page.getByRole('button', { name: 'it', exact: true }).click();
-  await page.getByRole('heading', { level: 1, name: 'Scopri come funziona Kakcalculator' }).waitFor();
+  await page.getByRole('heading', { level: 1, name: 'Scopri come funziona Kakcal' }).waitFor();
   await page.getByRole('button', { name: 'en', exact: true }).click();
-  await page.getByRole('heading', { level: 1, name: 'See how Kakcalculator works' }).waitFor();
+  await page.getByRole('heading', { level: 1, name: 'See how Kakcal works' }).waitFor();
   console.log('PASS: the language switch reloads the tour in Italian and back.');
 
   // 7. Offline: the cached shell still opens the tour and widget actions still work.
@@ -143,7 +143,7 @@ try {
   // 8. The journal's own Ultra minimal view keeps the supplied salt drawing.
   const paths = ['M12 3l9 9-9 9-9-9z', 'M12 8l4 4-4 4-4-4z', 'M12 3v5M21 12h-5M12 21v-5M3 12h5'];
   await page.goto(base + '/?view=app');
-  await page.getByRole('button', { name: 'Kakcalculator', exact: true }).waitFor();
+  await page.getByRole('button', { name: 'Kakcal', exact: true }).waitFor();
   await page.evaluate(() => {
     const s = JSON.parse(localStorage.getItem('kcalsync_settings') ?? '{}');
     localStorage.setItem('kcalsync_settings', JSON.stringify({ ...s, ultraMinimal: true }));

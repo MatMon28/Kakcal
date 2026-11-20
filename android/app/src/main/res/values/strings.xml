@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Kakcalculator</string>
-    <string name="title_activity_main">Kakcalculator</string>
+    <string name="app_name">Kakcal</string>
+    <string name="title_activity_main">Kakcal</string>
     <string name="package_name">com.kcalsync.app</string>
     <string name="custom_url_scheme">com.kcalsync.app</string>
 </resources>

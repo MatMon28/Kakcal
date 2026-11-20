@@ -1,4 +1,4 @@
-# Kakcalculator documentation index
+# Kakcal (formerly Kakcalculator) documentation index
 
 **How to use this documentation (humans and LLMs):** read *only this file*, pick the single row that matches your task, open that one file, and stop. Every document starts with a *Scope / Read when / Related* box so you can tell in three lines whether it is the right one. Never read the whole set. To find the file that implements something, open [file-map/README.md](file-map/README.md) and then one area file.
 
@@ -90,3 +90,7 @@ More sensitive page/popup swipes, one exit animation for every popup close (suck
 ## Transparent icon / Medium widget round (on top of `d022963`, "Fixed animations and others")
 
 **1.** The reminder notification icon `ic_stat_kak.xml` no longer has a disc behind the logo: it is the K + poop glyph alone on a transparent background (a thin gap separates the poop from the K's leg; the glyph fills 88% of the viewport), so it sits cleanly in the circle Android/Samsung draws (`scripts/generate-notification-icon.mjs`, [brand.md](brand.md), [notifications.md](notifications.md)). **2.** Medium widget: the sizes are inverted, so intake / burned are now the prominent cards (icon 16 -> 24 dp, value 19 -> 22 sp, card padding 5 -> 4 dp) and the macro values are smaller (15 -> 12 sp) (`widget_medium.xml`, `widget_medium_dark.xml`, `widget_styles.xml`, [widgets.md](widgets.md)). Verified by rendering the new icon to PNG and by XML diff only; the Android project was **not** compiled and nothing was run on a device (check the Medium widget at 4x2 on a launcher with short rows).
+
+## Rename round: Kakcalculator -> Kakcal
+
+User-visible name changed to **Kakcal**; code identifiers keep the old name. Details and the exact list of what was kept: [brand.md](brand.md#rename-kakcalculator--kakcal). Docs updated: root README, this index, `brand.md`, `changes-patch.md`, `android/BUILD_APK.md`. No files were added, renamed or deleted, so the file maps are unchanged. Verified with `npm run build` and a rendered preview of the new wordmark; the Android project was **not** compiled and the browser smoke test (`scripts/smoke.mjs`, expectations updated) was **not** re-run.

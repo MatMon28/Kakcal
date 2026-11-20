@@ -1,6 +1,6 @@
 {
   "appId": "com.kcalsync.app",
-  "appName": "Kakcalculator",
+  "appName": "Kakcal",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"

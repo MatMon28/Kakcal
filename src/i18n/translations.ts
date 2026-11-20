@@ -1,11 +1,11 @@
 export const translations = {
   en: {
-    appName: 'Kakcalculator',
+    appName: 'Kakcal',
     pwa: {
       title: 'Install app',
       installBtn: 'Install',
-      installDesc: 'Add Kakcalculator to your home screen or desktop. It opens full screen and works offline.',
-      installed: 'Installed. Kakcalculator runs as an app on this device.',
+      installDesc: 'Add Kakcal to your home screen or desktop. It opens full screen and works offline.',
+      installed: 'Installed. Kakcal runs as an app on this device.',
       iosDesc: 'In Safari tap Share, then Add to Home Screen.',
       accepted: 'Installing…',
       dismissed: 'Installation cancelled. You can try again any time.',
@@ -97,7 +97,7 @@ export const translations = {
       unsupported: 'Notifications are not available here.',
       allow: 'Allow notifications',
       test: 'Send a test notification',
-      testTitle: 'Kakcalculator',
+      testTitle: 'Kakcal',
       testBody: 'Notifications are working.',
       waterTitle: 'Water',
       waterDesc: 'Drink reminders through the day',
@@ -668,12 +668,12 @@ export const translations = {
     },
   },
   it: {
-    appName: 'Kakcalculator',
+    appName: 'Kakcal',
     pwa: {
       title: 'Installa app',
       installBtn: 'Installa',
-      installDesc: 'Aggiungi Kakcalculator alla schermata Home o al desktop. Si apre a schermo intero e funziona offline.',
-      installed: 'Installata. Kakcalculator funziona come app su questo dispositivo.',
+      installDesc: 'Aggiungi Kakcal alla schermata Home o al desktop. Si apre a schermo intero e funziona offline.',
+      installed: 'Installata. Kakcal funziona come app su questo dispositivo.',
       iosDesc: 'In Safari tocca Condividi, poi Aggiungi alla schermata Home.',
       accepted: 'Installazione in corso…',
       dismissed: 'Installazione annullata. Puoi riprovare quando vuoi.',
@@ -765,7 +765,7 @@ export const translations = {
       unsupported: 'Le notifiche non sono disponibili qui.',
       allow: 'Consenti le notifiche',
       test: 'Invia una notifica di prova',
-      testTitle: 'Kakcalculator',
+      testTitle: 'Kakcal',
       testBody: 'Le notifiche funzionano.',
       waterTitle: 'Acqua',
       waterDesc: 'Promemoria per bere durante la giornata',

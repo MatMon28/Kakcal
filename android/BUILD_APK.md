@@ -1,4 +1,4 @@
-# Build the Kakcalculator APK
+# Build the Kakcal APK
 
 This project contains the offline journal, four native Android home-screen widgets (Small, Extra-small, Medium, Large) and optional reminder notifications. The launcher uses Android `RemoteViews`, not a web page. No backend, Firebase account, API keys or running development server are required.
 

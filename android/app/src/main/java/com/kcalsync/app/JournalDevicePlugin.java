@@ -110,7 +110,7 @@ public class JournalDevicePlugin extends Plugin {
         } catch (Exception error) { call.reject("Could not prepare backup"); return; }
         Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT)
             .addCategory(Intent.CATEGORY_OPENABLE).setType("application/json")
-            .putExtra(Intent.EXTRA_TITLE, "kakcalculator-" + JournalWidgetProvider.localDate() + ".json");
+            .putExtra(Intent.EXTRA_TITLE, "kakcal-" + JournalWidgetProvider.localDate() + ".json");
         startActivityForResult(call, save, "backupDestination");
     }
 

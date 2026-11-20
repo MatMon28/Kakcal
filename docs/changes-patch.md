@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`d022963` ("Fixed animations and others")**, the tip of `main` when the transparent-icon / medium-widget round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`d43fc0a` ("Fixed few bugs, update gradle")**, the tip of `main` when the rename round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run
@@ -25,7 +25,9 @@ git reset -q                     # leave the working tree as it was
 
 When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
 
-**Current patch contents (transparent notification icon / Medium widget sizes round, base `d022963`):** see the *Transparent icon / Medium widget round* paragraph in [README.md](README.md). Source: `ic_stat_kak.xml`, `scripts/generate-notification-icon.mjs`, `widget_medium.xml`, `widget_medium_dark.xml`, `widget_styles.xml`, plus docs. No new files, no `package.json` change.
+**Current patch contents (rename round Kakcalculator -> Kakcal, base `d43fc0a` "Fixed few bugs, update gradle"):** see [brand.md](brand.md#rename-kakcalculator--kakcal). Text-only changes plus wordmark SVGs, `Brand.tsx`, `scripts/outline-wordmark.mjs`, `scripts/smoke.mjs` expectations and docs. No new files, no `package.json` change.
+
+**Earlier patch (transparent notification icon / Medium widget sizes round, base `d022963`):** see the *Transparent icon / Medium widget round* paragraph in [README.md](README.md). Source: `ic_stat_kak.xml`, `scripts/generate-notification-icon.mjs`, `widget_medium.xml`, `widget_medium_dark.xml`, `widget_styles.xml`, plus docs. No new files, no `package.json` change.
 
 **Earlier patch (notification / popup / delete round, base `dfd1d51`):** see the *Notification / popup / delete round* paragraph in [README.md](README.md). Source: `Modal.tsx`, `ConfirmDialog.tsx`, `DeleteAllData.tsx`, `notifications.ts`, `ic_stat_kak.xml`, `keep.xml`, deleted `ic_notification_large.png` and `render-notification-icon.mjs`, new `scripts/generate-notification-icon.mjs`, plus docs. No `package.json` change.
 

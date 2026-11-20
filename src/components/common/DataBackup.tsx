@@ -21,7 +21,7 @@ export const DataBackup: React.FC = () => {
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
-    anchor.download = `kakcalculator_backup_${getTodayDateString()}.json`;
+    anchor.download = `kakcal_backup_${getTodayDateString()}.json`;
     document.body.appendChild(anchor);
     anchor.click();
     anchor.remove();
