@@ -9,7 +9,7 @@ import { PoopCard } from './PoopCard';
 import { CustomButtonsCard } from './CustomButtonsCard';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
-import { LayoutToolbar } from '../layout/LayoutToolbar';
+import { LayoutPencil, LayoutToolbar } from '../layout/LayoutToolbar';
 import { useApp } from '../../context/AppContext';
 import { useLayoutText } from '../../i18n/layout';
 import { usePersistentState } from '../../utils/usePersistentState';
@@ -200,16 +200,20 @@ export const TodayView: React.FC = () => {
       span: cardSpan(displayLayout === 'expanded' || openTrackers.includes(id)),
       selfStart: true,
       expanded: displayLayout === 'expanded' || openTrackers.includes(id),
-      show: id !== 'poop' || !settings.hidePoop,
+      // A tracker that cannot show anything right now (poop off, water shortcut off, no custom buttons) is not a field.
+      show:
+        (id !== 'poop' || !settings.hidePoop) &&
+        (id !== 'water' || settings.quickAdd.water) &&
+        (id !== 'custom' || settings.customButtons.length > 0),
     })),
   ];
 
   return (
     <>
       <div className={ultraMinimal ? 'space-y-2.5' : 'space-y-3.5'}>
-        {/* Settings > Advanced > Advanced layout: the pencil icon (and, while editing, the toolbar). */}
-        <LayoutToolbar page="today" items={items} extra="meal" />
-        <DayNavigator onInspectDay={setInspectedDay} />
+        {/* Settings > Advanced > Advanced layout: the pencil sits in the calendar row; while editing, the toolbar opens below it. */}
+        <DayNavigator onInspectDay={setInspectedDay} trailing={layoutState.enabled ? <LayoutPencil page="today" /> : undefined} />
+        <LayoutToolbar page="today" items={items} extra="meal" pencil={false} />
         <div ref={dayPanel} className={ultraMinimal ? 'space-y-2.5' : 'space-y-3.5'}>
         {layoutState.enabled ? (
           <>

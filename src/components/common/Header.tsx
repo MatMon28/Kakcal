@@ -46,6 +46,9 @@ export const Header: React.FC = () => {
     topRow.style.opacity = topP.toFixed(3);
     topRow.style.transform = `translate3d(0, ${((1 - topP) * -12).toFixed(2)}px, 0)`;
     topRow.style.pointerEvents = topP > 0.45 ? 'auto' : 'none';
+    // Fully shown: nothing is clipped, so the hard offset shadows of the profile / settings buttons (Pop style) stay whole.
+    // While the row collapses it clips, so the buttons do not spill over the page bar.
+    topRow.style.overflow = topP >= 0.999 ? 'visible' : 'hidden';
 
     // Keep full pill height so borders/shadows are never clipped; animate smoothly via opacity & transform.
     tabsRow.style.height = `${TABS_ROW_HEIGHT_PX}px`;
@@ -181,7 +184,7 @@ export const Header: React.FC = () => {
           {/* Profile (left) · app name (top center) · settings (right) */}
           <div
             ref={topRowRef}
-            className="grid grid-cols-[1fr_auto_1fr] items-center overflow-hidden will-change-[height,opacity,transform]"
+            className="grid grid-cols-[1fr_auto_1fr] items-center will-change-[height,opacity,transform]"
             style={{ height: `${TOP_ROW_HEIGHT_PX}px` }}
           >
             <div className="flex items-center">

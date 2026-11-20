@@ -78,9 +78,13 @@ export const BurnedCard: React.FC<{ compact?: boolean }> = ({ compact = false })
     <div role="group" aria-label={`${t.energy.expenditure}: ${formatKcal(currentExpenditure.totalExpenditure)} kcal`} className={`kc-hero-burned bg-activity rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'} flex flex-col justify-between`}>
       <div>
         <div className={`flex items-center justify-between gap-1 ${ultraMinimal ? 'min-h-5' : 'mb-1 min-h-[22px]'}`}>
-          <span className={`${ultraMinimal ? 'inline-flex items-center text-activity-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-activity-accent'}`} title={t.energy.expenditure}>
-            {ultraMinimal && <Flame size={15} aria-hidden="true" />}
-            <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.expenditure}</span>
+          <span className="inline-flex min-w-0 items-center gap-1.5">
+            <span className={`${ultraMinimal ? 'inline-flex items-center text-activity-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-activity-accent'}`} title={t.energy.expenditure}>
+              {ultraMinimal && <Flame size={15} aria-hidden="true" />}
+              <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.expenditure}</span>
+            </span>
+            {/* Settings > Advanced: goal / limit for the calories burned */}
+            <GoalBadge goal="burned" amount={currentExpenditure.totalExpenditure} />
           </span>
           {!netPositive && deficitPill}
         </div>

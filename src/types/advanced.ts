@@ -6,7 +6,7 @@
 /** An *objective* is reached when intake is at least the value; a *limit* is reached when intake gets to it. */
 export type GoalMode = 'objective' | 'limit';
 
-export type GoalKey = 'calories' | 'fiber' | 'carbs' | 'protein' | 'fat' | 'salt' | 'sugar';
+export type GoalKey = 'calories' | 'burned' | 'fiber' | 'carbs' | 'protein' | 'fat' | 'salt' | 'sugar' | 'water';
 
 export interface GoalSetting {
   /** Each goal is switched on independently. */

@@ -6,8 +6,8 @@
  * `extra` (optional) are more silhouettes drawn like `shape` but not transformed.
  *
  * Every icon shows the part with its joint / extremity where that helps recognition: a flexed arm (biceps, tape on the
- * muscle bulge), a fist on a forearm that widens to the elbow, a bent leg with knee and foot (thighs), a calf with the foot,
- * head + neck + narrow shoulders, a V-shaped chest with two pectorals. The biceps is the lucide `biceps-flexed` outline
+ * muscle bulge), an open hand on a forearm that widens to the elbow, a bent leg with knee and foot (thighs), a calf with the foot,
+ * head + a short neck + narrow shoulders, a V-shaped chest with two pectorals. The biceps is the lucide `biceps-flexed` outline
  * (ISC licence), the rest is drawn in the same language. Kept free of React so the artwork can be previewed outside the app.
  */
 export interface BodyIconArt {
@@ -25,11 +25,11 @@ export const BODY_ICON_ART = {
     detail: ['M12 16.4H12.01'],
     band: 'M4 12H20',
   },
-  // Collo: head, a clear neck and narrow, sloping shoulders; tape around the neck
+  // Collo: head sitting on a short neck and narrow, sloping shoulders; tape around the neck
   neck: {
-    shape: 'M10.2 9.6V12.6C10.2 13.7 7.6 14.2 6.4 15.8C5.7 16.8 5.6 18.4 5.6 20.5H18.4C18.4 18.4 18.3 16.8 17.6 15.8C16.4 14.2 13.8 13.7 13.8 12.6V9.6',
-    detail: ['M8.9 6a3.1 3.1 0 1 0 6.2 0a3.1 3.1 0 1 0-6.2 0'],
-    band: 'M8.4 11.6H15.6',
+    shape: 'M10.2 10.5V12.5C10.2 13.4 7.4 13.9 6.2 15.3C5.6 16.1 5.5 18 5.5 20.5H18.5C18.5 18 18.4 16.1 17.8 15.3C16.6 13.9 13.8 13.4 13.8 12.5V10.5',
+    detail: ['M8.7 7.3a3.3 3.3 0 1 0 6.6 0a3.3 3.3 0 1 0-6.6 0'],
+    band: 'M8.6 11.7H15.4',
   },
   // Fianchi: pelvis with the start of both legs, tape at the widest point
   hips: {
@@ -42,11 +42,12 @@ export const BODY_ICON_ART = {
     detail: ['M10.4 8.4C8.2 7.9 6.4 8.9 6.4 10.9C6.4 12.9 8.4 13.8 10.4 13', 'M13.6 8.4C15.8 7.9 17.6 8.9 17.6 10.9C17.6 12.9 15.6 13.8 13.6 13'],
     band: 'M4 16.6H20',
   },
-  // Avambracci: raised fist on top of the forearm, widening towards the elbow with the muscle swelling; tape around the thickest part
+  // Avambracci: an open hand (four fingers and a thumb) on a forearm that is narrow at the wrist and swells towards the elbow; tape around the thickest part
   forearms: {
-    shape: 'M8.6 2.5H15.4C16.5 2.5 17.2 3.2 17.2 4.3V8.6C17.2 9.4 16.7 9.9 16 10.2C16.7 12 18.1 14.5 18.2 17C18.3 19 17.5 20.5 16 21H8C6.5 20.5 5.7 19 5.8 17C5.9 14.5 7.3 12 8 10.2C7.3 9.9 6.8 9.4 6.8 8.6V4.3C6.8 3.2 7.5 2.5 8.6 2.5Z',
-    detail: ['M9.5 2.8V6.2', 'M12 2.8V6.2', 'M14.5 2.8V6.2', 'M6.9 6.4H17.1', 'M12.2 12.6C11.4 14.6 11.6 17 12.6 19'],
-    band: 'M4.2 14.6H19.8',
+    shape: 'M8.2 10.6V5.6C8.2 4.3 10 4.3 10 5.6V4.2C10 2.9 11.9 2.9 11.9 4.2V3.6C11.9 2.3 13.8 2.3 13.8 3.6V4.4C13.8 3.1 15.7 3.1 15.7 4.4V10.6C15.7 11.2 15.1 11.8 15 12.4C15.9 14.6 17.1 17.2 17 19.4C16.9 20.4 16.2 21 15.2 21H8.8C7.8 21 7.1 20.4 7 19.4C6.9 17.2 8.1 14.6 9 12.4C8.8 11.8 8.2 11.2 8.2 10.6Z',
+    extra: ['M8.2 9.8L5.9 7.9C5.3 7.4 5.4 6.5 6.1 6.4C6.6 6.3 7 6.6 7.4 7L8.2 7.9'],
+    detail: ['M10 5.8V8', 'M11.9 4.4V8', 'M13.8 4.6V8', 'M10.8 12.8C10.4 14.6 10.6 16.6 11.4 18.4'],
+    band: 'M5.6 16.2H18.4',
   },
   // Bicipiti: the flexed arm (lucide biceps-flexed), tape around the bulge of the muscle
   biceps: {
@@ -66,11 +67,11 @@ export const BODY_ICON_ART = {
     detail: ['M11.2 21.5C12.2 20.3 14.2 20.3 15.2 21.5'],
     band: 'M3.5 9.5H16.5',
   },
-  // Personalizzata: a tape measure
+  // Personalizzata: a tape measure (rounded case with its reel, the tape pulled out with ticks and an end hook)
   custom: {
-    shape: 'M3 12a7 7 0 1 0 14 0a7 7 0 1 0-14 0',
-    detail: ['M7.8 12a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0-4.4 0', 'M17 19H21.5', 'M18.5 19V17M21 19V17.5'],
-    band: 'M10 19H17',
+    shape: 'M3.5 8C3.5 6.3 4.8 5 6.5 5H14.5C16.2 5 17.5 6.3 17.5 8V15.5C17.5 17.2 16.2 18.5 14.5 18.5H6.5C4.8 18.5 3.5 17.2 3.5 15.5Z',
+    detail: ['M7.7 11.7a2.5 2.5 0 1 0 5 0a2.5 2.5 0 1 0-5 0', 'M19.1 16.6V15', 'M20.7 16.6V15.4', 'M21.8 16.6V19'],
+    band: 'M17.5 16.6H21.8',
   },
 } satisfies Record<string, BodyIconArt>;
 

@@ -54,3 +54,13 @@ Original widths are Tailwind spans on a 6-column grid (`LayoutItem.span`): Intak
 - Pages build a `LayoutItem[]` and render `<LayoutToolbar/>` + `<EditableGrid/>`: `TodayView.tsx`, `HistoryView.tsx`, `BodyView.tsx`. Today's cards were split into `IntakeCard`, `BurnedCard`, `MacroCard`, `NutrientCard` (one of fibre / salt / sugar; `NutrientsRow` still draws the three together for the original layout) so they can be placed independently. `FoodMacroGrid.tsx` exports `SecondaryNutrientCard`, which `SecondaryNutrientRow`, Today and Statistics share.
 - Types `types/layout.ts`; strings `i18n/layout.ts` (`useLayoutText()`); `MealSlotId` is now `BuiltInMealSlotId | \`custom_${string}\`` (`types/index.ts`).
 - Backup: the JSON export has a `layout` section; older backups without it leave the current layout untouched.
+
+## Settings / layout-editor round
+
+- **Pencil:** on Today it is the round button at the end of the calendar row (`LayoutPencil` in `LayoutToolbar.tsx`, passed to `DayNavigator` as `trailing`; an empty twin keeps the date centred). While editing it is filled and pressing it ends the editing; the toolbar opens below the row. Statistics and Body keep the pencil at the top.
+- **Selection:** the solid outline copies the real corner radius of the card (measured, so Pop / Angular / Minimal outlines match their cards and a small field is never a pill); the resize handles are small round dots, identical on every side.
+- **Scrollbar:** a resized field clips its content (`overflow-clip` with a 12 px margin so Pop shadows stay whole) instead of scrolling, which removes the slider that appeared in the Carbs field; macro cards fill and centre their content.
+- **Second finger:** while a field is held or resized the page does not scroll natively, but a second finger scrolls it (tracked as `scroller` in `EditableGrid.tsx`; the second finger never selects, clears or starts a gesture; `touch-action: none` is set on `<html>` for the duration).
+- **Meals:** the calorie text of a meal hides (`invisible absolute`, still measured) when its room is smaller than the text plus, in the Normal layout, the room of the three macro pills (`useCramped` in `MealSlotCard.tsx`); it returns when the field is widened.
+- **Fields that cannot show anything** (water shortcut off, no custom buttons, poop not tracked) are not listed as fields.
+- **Header:** the top row of the page header is only clipped while it collapses; fully shown it is not, so the Pop shadows of Profile / Settings are whole (`Header.tsx`).

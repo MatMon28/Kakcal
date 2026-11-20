@@ -76,36 +76,57 @@ const useWide = () => useSyncExternalStore(subscribeWide, () => window.matchMedi
 // Outline: dashed (this field can be edited) or solid and uniform (this field is selected)
 // ---------------------------------------------------------------------------------------------
 
-/** Corner radius of the field outline (matches the `rounded-3xl` cards). */
-const OUTLINE_RADIUS = 24;
+/** Corner radius used when the field's own card has none to copy. */
+const OUTLINE_FALLBACK_RADIUS = 12;
+
+/** The corner radius (px) of the card inside a field: the first element down the first-child chain that has one. */
+function cardRadius(box: HTMLElement | null): number {
+  let el = box?.firstElementChild?.firstElementChild ?? null;
+  for (let depth = 0; el && depth < 3; depth += 1) {
+    const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius);
+    if (Number.isFinite(radius) && radius > 0) return radius;
+    el = el.firstElementChild;
+  }
+  return OUTLINE_FALLBACK_RADIUS;
+}
 
 /**
  * One SVG rectangle that follows the field's box exactly, so the line has the same thickness on all four sides and
- * the same dash pattern all the way round (dashed = editable, solid = selected / lifted).
+ * the same dash pattern all the way round (dashed = editable, solid = selected / lifted). Its corners copy the card's own
+ * corner radius (it changes with the style: round, square, chamfered...), so a small field is never outlined as a pill.
  */
-const Outline: React.FC<{ solid: boolean }> = ({ solid }) => (
-  <svg
-    aria-hidden="true"
-    data-layout-outline={solid ? 'solid' : 'dashed'}
-    className={`pointer-events-none absolute inset-0 z-[5] size-full overflow-visible ${
-      solid ? 'text-[color:var(--text)]' : 'text-[color:var(--muted)] opacity-80'
-    }`}
-  >
-    <rect
-      x="0"
-      y="0"
-      width="100%"
-      height="100%"
-      rx={OUTLINE_RADIUS}
-      ry={OUTLINE_RADIUS}
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={solid ? 3 : 2}
-      strokeDasharray={solid ? undefined : '10 7'}
-      strokeLinecap="round"
-    />
-  </svg>
-);
+const Outline: React.FC<{ solid: boolean }> = ({ solid }) => {
+  const ref = useRef<SVGSVGElement>(null);
+  const [radius, setRadius] = useState(OUTLINE_FALLBACK_RADIUS);
+  useLayoutEffect(() => {
+    const next = cardRadius(ref.current?.parentElement ?? null);
+    setRadius((current) => (current === next ? current : next));
+  });
+  return (
+    <svg
+      ref={ref}
+      aria-hidden="true"
+      data-layout-outline={solid ? 'solid' : 'dashed'}
+      className={`pointer-events-none absolute inset-0 z-[5] size-full overflow-visible ${
+        solid ? 'text-[color:var(--text)]' : 'text-[color:var(--muted)] opacity-80'
+      }`}
+    >
+      <rect
+        x="0"
+        y="0"
+        width="100%"
+        height="100%"
+        rx={radius}
+        ry={radius}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={solid ? 3 : 2}
+        strokeDasharray={solid ? undefined : '10 7'}
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+};
 
 // ---------------------------------------------------------------------------------------------
 // Resize handles: the four sides and the two bottom corners of the selected field
@@ -113,15 +134,15 @@ const Outline: React.FC<{ solid: boolean }> = ({ solid }) => (
 
 type Edge = 'n' | 's' | 'e' | 'w' | 'sw' | 'se';
 
-// Literal class names so that Tailwind finds them. Hit areas are 24 px wide, the visible knob is smaller. The top
+// Literal class names so that Tailwind finds them. Hit areas are 24 px wide, the visible knob is one small round dot, the same on every side. The top
 // corners are left free for the reset and remove buttons.
 const HANDLES: { edge: Edge; box: string; knob: string }[] = [
-  { edge: 'n', box: 'left-7 right-7 -top-2 h-6 cursor-ns-resize', knob: 'h-1.5 w-9' },
-  { edge: 's', box: 'left-7 right-7 -bottom-2 h-6 cursor-ns-resize', knob: 'h-1.5 w-9' },
-  { edge: 'w', box: 'top-7 bottom-7 -left-2 w-6 cursor-ew-resize', knob: 'w-1.5 h-9' },
-  { edge: 'e', box: 'top-7 bottom-7 -right-2 w-6 cursor-ew-resize', knob: 'w-1.5 h-9' },
-  { edge: 'sw', box: '-bottom-2 -left-2 size-7 cursor-nesw-resize', knob: 'size-3' },
-  { edge: 'se', box: '-bottom-2 -right-2 size-7 cursor-nwse-resize', knob: 'size-3' },
+  { edge: 'n', box: 'left-7 right-7 -top-2 h-6 cursor-ns-resize', knob: 'size-3.5' },
+  { edge: 's', box: 'left-7 right-7 -bottom-2 h-6 cursor-ns-resize', knob: 'size-3.5' },
+  { edge: 'w', box: 'top-7 bottom-7 -left-2 w-6 cursor-ew-resize', knob: 'size-3.5' },
+  { edge: 'e', box: 'top-7 bottom-7 -right-2 w-6 cursor-ew-resize', knob: 'size-3.5' },
+  { edge: 'sw', box: '-bottom-2 -left-2 size-7 cursor-nesw-resize', knob: 'size-3.5' },
+  { edge: 'se', box: '-bottom-2 -right-2 size-7 cursor-nwse-resize', knob: 'size-3.5' },
 ];
 
 const ctl =
@@ -287,7 +308,10 @@ export const EditableGrid: React.FC<{
   const dropRef = useRef<{ id: string; col: number; top: number } | null>(null);
   const sizeRef = useRef<Preview['size']>(undefined);
   const raf = useRef(0);
+  /** A second finger that scrolls the page while a field is held / resized by the first one. */
+  const scroller = useRef<{ id: number; y: number } | null>(null);
   const liftRef = useRef<() => void>(() => {});
+  const holdRef = useRef<(on: boolean) => void>(() => {});
 
   // ---- Which way the page is drawn ----
   // flow   = the original page (never edited)
@@ -474,6 +498,12 @@ export const EditableGrid: React.FC<{
   useEffect(() => {
     const grid = () => gridRef.current;
 
+    /** While a field is held no new finger may start a native scroll (the second finger scrolls through `scroller`). */
+    const holdTouch = (on: boolean) => {
+      document.documentElement.style.touchAction = on ? 'none' : '';
+    };
+    holdRef.current = holdTouch;
+
     const update = () => {
       const g = gesture.current;
       const el = grid();
@@ -544,6 +574,7 @@ export const EditableGrid: React.FC<{
       window.clearTimeout(g.timer);
       g.kind = 'move';
       g.active = true;
+      holdTouch(true);
       setSelected(g.id);
       try { navigator.vibrate?.(12); } catch { /* not supported */ }
       if (!raf.current) raf.current = requestAnimationFrame(autoScroll);
@@ -554,6 +585,8 @@ export const EditableGrid: React.FC<{
     const finish = (commit: boolean) => {
       const g = gesture.current;
       gesture.current = null;
+      scroller.current = null;
+      holdTouch(false);
       if (g) window.clearTimeout(g.timer);
       if (g?.active && commit) {
         const { compute: resolve } = latest.current;
@@ -579,6 +612,13 @@ export const EditableGrid: React.FC<{
 
     const onMove = (e: PointerEvent) => {
       const g = gesture.current;
+      // Another finger moves while a field is lifted / resized: it scrolls the page (the native scroll is blocked then).
+      if (g && g.kind !== 'press' && e.pointerType === 'touch' && e.pointerId !== g.pointerId) {
+        const last = scroller.current;
+        if (last && last.id === e.pointerId) window.scrollBy(0, last.y - e.clientY);
+        scroller.current = { id: e.pointerId, y: e.clientY };
+        return;
+      }
       if (!g || e.pointerId !== g.pointerId) return;
       pointer.current = { x: e.clientX, y: e.clientY };
       const dist = Math.hypot(e.clientX - g.startX, e.clientY - g.startY);
@@ -596,11 +636,13 @@ export const EditableGrid: React.FC<{
       update();
     };
     const onUp = (e: PointerEvent) => {
+      if (scroller.current?.id === e.pointerId) scroller.current = null;
       const g = gesture.current;
       if (!g || e.pointerId !== g.pointerId) return;
       finish(g.kind !== 'press');
     };
     const onCancel = (e: PointerEvent) => {
+      if (scroller.current?.id === e.pointerId) scroller.current = null;
       if (gesture.current && e.pointerId === gesture.current.pointerId) finish(false);
     };
     const onKey = (e: KeyboardEvent) => {
@@ -613,6 +655,12 @@ export const EditableGrid: React.FC<{
     };
     // Touching blank space (anything that is not a field) clears the selection.
     const onDown = (e: PointerEvent) => {
+      const g = gesture.current;
+      if (g && g.kind !== 'press' && e.pointerType === 'touch' && e.pointerId !== g.pointerId) {
+        // The second finger only scrolls: it neither selects nor clears anything.
+        scroller.current = { id: e.pointerId, y: e.clientY };
+        return;
+      }
       if (!(e.target as Element | null)?.closest?.('[data-layout-item]')) setSelected(null);
     };
     const onScroll = () => update();
@@ -635,6 +683,7 @@ export const EditableGrid: React.FC<{
       cancelAnimationFrame(raf.current);
       if (gesture.current) window.clearTimeout(gesture.current.timer);
       gesture.current = null;
+      holdTouch(false);
     };
   }, []);
 
@@ -643,6 +692,8 @@ export const EditableGrid: React.FC<{
     if (!isEditing) {
       if (gesture.current) window.clearTimeout(gesture.current.timer);
       gesture.current = null;
+      scroller.current = null;
+      holdRef.current(false);
       dropRef.current = null;
       sizeRef.current = undefined;
       setPreview({});
@@ -657,6 +708,9 @@ export const EditableGrid: React.FC<{
 
   const begin = (e: React.PointerEvent, kind: Gesture['kind'], item: LayoutItem, edge?: Edge) => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
+    // A second finger never starts a gesture of its own while the first one holds a field (it scrolls the page).
+    const running = gesture.current;
+    if (running && e.pointerType === 'touch' && running.pointerType === 'touch' && running.pointerId !== e.pointerId) return;
     const el = find(item.id);
     const cell = latest.current.free?.cells[item.id];
     if (!el || !gridRef.current || !cell) return;
@@ -684,6 +738,7 @@ export const EditableGrid: React.FC<{
       timer: 0,
     };
     if (kind === 'press') g.timer = window.setTimeout(() => liftRef.current(), LONG_PRESS_MS);
+    else holdRef.current(true);
     gesture.current = g;
     setSelected(item.id);
   };
@@ -801,7 +856,7 @@ export const EditableGrid: React.FC<{
             style={style}
           >
             <div
-              className={`grid min-w-0 min-h-0 ${height ? 'overflow-y-auto' : ''} ${isEditing ? 'pointer-events-none select-none' : ''}`}
+              className={`grid min-w-0 min-h-0 ${height ? 'overflow-clip [overflow-clip-margin:12px]' : ''} ${isEditing ? 'pointer-events-none select-none' : ''}`}
               inert={isEditing}
             >
               {item.node}

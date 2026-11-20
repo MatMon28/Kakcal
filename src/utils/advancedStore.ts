@@ -26,30 +26,61 @@ export const BODY_STORAGE_KEY = 'kcalsync_body';
 // Goals and limits
 // ---------------------------------------------------------------------------------------------
 
-export const GOAL_KEYS: GoalKey[] = ['calories', 'fiber', 'carbs', 'protein', 'fat', 'salt', 'sugar'];
+export const GOAL_KEYS: GoalKey[] = ['calories', 'burned', 'fiber', 'carbs', 'protein', 'fat', 'salt', 'sugar', 'water'];
+
+/** Unit of each item's value. */
+export const GOAL_UNITS: Record<GoalKey, string> = {
+  calories: 'kcal',
+  burned: 'kcal',
+  fiber: 'g',
+  carbs: 'g',
+  protein: 'g',
+  fat: 'g',
+  salt: 'g',
+  sugar: 'g',
+  water: 'ml',
+};
+
+/** Largest value that can be typed for each item. */
+export const GOAL_MAX: Record<GoalKey, number> = {
+  calories: 20000,
+  burned: 20000,
+  fiber: 2000,
+  carbs: 2000,
+  protein: 2000,
+  fat: 2000,
+  salt: 2000,
+  sugar: 2000,
+  water: 20000,
+};
 
 /**
- * Which modes the user can choose per item. Calories and fibre can be an objective *or* a limit;
- * macros, salt and sugar are limits. Add 'objective' to a list here to offer it for that item.
+ * Which modes the user can choose per item. Every item can be a goal *or* a limit.
+ * (The stored mode is still called 'objective' so saved settings and backups keep working; the user sees "Goal".)
  */
+const BOTH_MODES: GoalMode[] = ['objective', 'limit'];
 export const GOAL_MODE_CHOICES: Record<GoalKey, GoalMode[]> = {
-  calories: ['objective', 'limit'],
-  fiber: ['objective', 'limit'],
-  carbs: ['limit'],
-  protein: ['limit'],
-  fat: ['limit'],
-  salt: ['limit'],
-  sugar: ['limit'],
+  calories: BOTH_MODES,
+  burned: BOTH_MODES,
+  fiber: BOTH_MODES,
+  carbs: BOTH_MODES,
+  protein: BOTH_MODES,
+  fat: BOTH_MODES,
+  salt: BOTH_MODES,
+  sugar: BOTH_MODES,
+  water: BOTH_MODES,
 };
 
 const DEFAULT_GOALS: GoalsConfig = {
   calories: { enabled: false, mode: 'limit', value: 2000 },
+  burned: { enabled: false, mode: 'objective', value: 500 },
   fiber: { enabled: false, mode: 'objective', value: 25 },
   carbs: { enabled: false, mode: 'limit', value: 250 },
   protein: { enabled: false, mode: 'limit', value: 120 },
   fat: { enabled: false, mode: 'limit', value: 70 },
   salt: { enabled: false, mode: 'limit', value: 5 },
   sugar: { enabled: false, mode: 'limit', value: 50 },
+  water: { enabled: false, mode: 'objective', value: 2000 },
 };
 
 // ---------------------------------------------------------------------------------------------

@@ -18,3 +18,5 @@
 | `src/components/modals/AdvancedSettings.tsx` | Settings > Advanced group: goals/limits switches (per item, objective/limit, value) and the Body measurements switch, plus the **Advanced layout** switch with the *Restore original layout* button (confirmation dialog). |
 | `src/components/modals/BodyMeasuresProfile.tsx` | Profile section (only when Body measurements is on): choose tracked measures, add/remove custom ones. |
 | (Save before closing) `src/components/modals/AddFoodModal.tsx` | `requestClose` asks through `SaveBeforeCloseDialog` when the batch has foods or a food is picked but not added; `handleLogNow` is the Save action. |
+
+| (Round: Settings coherence) `SettingsModal.tsx`, `AdvancedSettings.tsx` | Track poop / period / sugar switches, collapsible Quick add, greyed-out unavailable shortcuts, widget switch below custom buttons; Goal / Limit for nine items with a collapsible list. |

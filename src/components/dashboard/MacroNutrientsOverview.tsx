@@ -22,7 +22,7 @@ export const MacroCard: React.FC<{ macro: MacroKey }> = ({ macro }) => {
   const percent = currentMacros[`${macro}Percent`];
 
   return (
-    <div role="group" aria-label={`${t.macros[macro]}: ${grams} g`} className={`${tone.card} rounded-3xl ${macroPadding} relative text-center`}>
+    <div role="group" aria-label={`${t.macros[macro]}: ${grams} g`} className={`${tone.card} rounded-3xl ${macroPadding} relative text-center h-full min-w-0 flex flex-col justify-center`}>
       <GoalBadge goal={macro} amount={grams} className="absolute top-1.5 right-1.5" />
       <span className={`${ultraMinimal ? 'sr-only' : `text-[11px] font-bold uppercase tracking-wider ${tone.label} block truncate`}`}>
         {t.macros[macro]}

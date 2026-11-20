@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { MealSlotId, LoggedFoodItem } from '../../types';
 import { calculateMacros, calculateTotalCalories } from '../../utils/calculations';
@@ -22,6 +22,30 @@ import {
   Check,
   ChevronDown,
 } from 'lucide-react';
+
+/** Room (px) the three macro pills need next to the calories in the Normal layout: 3 pills of ~34 px, 2 gaps of 6 px, 12 px gap. */
+const PILLS_RESERVE = 3 * 34 + 2 * 6 + 12;
+
+/**
+ * True while `target` (the calories) does not fit in `room` plus the space that has to stay free (`reserve`). Used to make
+ * the calorie text disappear when a meal field is resized so narrow that it would be cut off or squeeze the macro pills.
+ * The target is hidden with `invisible absolute`, not removed, so it can still be measured and comes back when there is room.
+ */
+function useCramped(room: React.RefObject<HTMLElement | null>, target: React.RefObject<HTMLElement | null>, reserve: number, watch: unknown) {
+  const [cramped, setCramped] = useState(false);
+  useLayoutEffect(() => {
+    const roomEl = room.current;
+    const targetEl = target.current;
+    if (!roomEl || !targetEl) return undefined;
+    const check = () => setCramped(roomEl.clientWidth < targetEl.offsetWidth + reserve);
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(roomEl);
+    observer.observe(targetEl);
+    return () => observer.disconnect();
+  }, [room, target, reserve, watch]);
+  return cramped;
+}
 
 interface MealSlotCardProps {
   slotId: MealSlotId;
@@ -75,6 +99,11 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   const items: LoggedFoodItem[] = dayLog.meals[slotId] || [];
   const slotCalories = calculateTotalCalories(items);
   const slotMacros = calculateMacros(items);
+
+  // The calories disappear when the card is too narrow for them (a meal field resized in the advanced layout).
+  const kcalRoom = useRef<HTMLDivElement>(null);
+  const kcalRef = useRef<HTMLSpanElement>(null);
+  const kcalCramped = useCramped(kcalRoom, kcalRef, compact ? 0 : PILLS_RESERVE, `${compact}:${formatKcal(slotCalories)}:${items.length}`);
 
   // Circle rule: the icon circle is transparent (same colour as the card, no border, no shadow),
   // so the macro pills stay the only coloured elements on a meal card. Size and round shape are kept.
@@ -137,8 +166,10 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
 
   const kcalLabel = (
     <span
+      ref={kcalRef}
       data-calories
-      className="inline-flex shrink-0 items-baseline gap-1 tabular-nums whitespace-nowrap"
+      data-cramped={kcalCramped ? '' : undefined}
+      className={`inline-flex shrink-0 items-baseline gap-1 tabular-nums whitespace-nowrap ${kcalCramped ? 'invisible absolute left-0 top-0 pointer-events-none' : ''}`}
       aria-label={`${formatKcal(slotCalories)} kcal`}
       title={`${formatKcal(slotCalories)} kcal`}
     >
@@ -190,7 +221,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
           {/* Row 1: icon · kcal · add · chevron (meal name hidden in compact) */}
           <div className="flex items-center gap-2 max-[359px]:gap-1 w-full">
             {slotBadge('size-8 max-[359px]:size-7', 15)}
-            <div className="min-w-0 flex-1">{kcalLabel}</div>
+            <div ref={kcalRoom} className="relative min-w-0 flex-1 self-stretch flex items-center">{kcalLabel}</div>
             {addButton('size-7 max-[359px]:size-6', 14)}
             <ChevronDown
               size={14}
@@ -217,7 +248,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
               className={`${compact ? 'max-[359px]:size-3' : ''} shrink-0 text-[var(--muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
             />
           </div>
-          <div data-nutrition-row className="flex items-center gap-3 w-full min-w-0">
+          <div ref={kcalRoom} data-nutrition-row className="relative flex items-center gap-3 w-full min-w-0">
             {kcalLabel}
             {items.length > 0 ? macroPills : (
               <span className="text-xs font-medium text-[var(--muted)]">{t.mealSlots.emptySlot}</span>

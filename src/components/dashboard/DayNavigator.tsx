@@ -6,10 +6,12 @@ import { ChevronLeft, ChevronRight, ChevronDown, Calendar, CornerUpLeft } from '
 
 interface DayNavigatorProps {
   onInspectDay?: (date: string) => void;
+  /** Extra control at the end of the calendar row (the advanced-layout pencil). The date stays centred. */
+  trailing?: React.ReactNode;
 }
 
 // Day changer for the Today view: prev/next arrows + date pill with calendar popover + back-to-today
-export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
+export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, trailing }) => {
   const { language, t, settings, selectedDate, setSelectedDate, allDayLogs } = useApp();
 
   const todayStr = getTodayDateString();
@@ -152,8 +154,8 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
   ];
 
-  return (
-    <div className="flex items-center justify-center gap-1.5 flex-wrap touch-pan-y select-none" data-no-swipe data-day-swipe {...swipeHandlers}>
+  const row = (
+    <div className="flex items-center justify-center gap-1.5 flex-wrap touch-pan-y select-none min-w-0 flex-1" data-no-swipe data-day-swipe {...swipeHandlers}>
       <button
         type="button"
         onClick={() => setSelectedDate(addDaysToDateString(selectedDate, -1))}
@@ -305,6 +307,16 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
           <span className={settings.ultraMinimal ? 'sr-only' : ''}>{t.header.today}</span>
         </button>
       )}
+    </div>
+  );
+
+  if (!trailing) return row;
+  // The control sits in the same row; an empty twin on the left keeps the day buttons centred.
+  return (
+    <div className="flex items-start gap-1.5">
+      <span className="w-9 shrink-0" aria-hidden="true" />
+      {row}
+      <span className="shrink-0 flex items-center h-9">{trailing}</span>
     </div>
   );
 };

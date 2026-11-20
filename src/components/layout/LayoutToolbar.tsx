@@ -22,6 +22,34 @@ const input =
 export type LayoutExtra = 'meal' | 'measure';
 
 /**
+ * The pencil button of an editable page (nothing when Advanced layout is off). It is drawn like the round day arrows so it
+ * can sit in the calendar row of Today; while the page is being edited it is filled and pressing it ends the editing.
+ */
+export const LayoutPencil: React.FC<{ page: LayoutPageId }> = ({ page }) => {
+  const { enabled } = useLayout();
+  const editing = useEditingPage() === page;
+  const text = useLayoutText().toolbar;
+  if (!enabled) return null;
+  return (
+    <button
+      type="button"
+      onClick={() => setEditingPage(editing ? null : page)}
+      aria-label={editing ? text.done : text.edit}
+      aria-pressed={editing}
+      title={editing ? text.done : text.edit}
+      data-layout-pencil={page}
+      className={`pressable size-9 rounded-full border flex items-center justify-center ${
+        editing
+          ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
+          : 'bg-[var(--surface)] hover:bg-[var(--hover)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]'
+      }`}
+    >
+      <Pencil size={15} />
+    </button>
+  );
+};
+
+/**
  * The top of an editable page. With Settings > Advanced > Advanced layout on it shows a small pencil icon;
  * while editing it shows Add / Reset page / Done. "Add" lists the removed fields and, on Today, creates a new meal
  * type (on Body, a new measure).
@@ -30,7 +58,9 @@ export const LayoutToolbar: React.FC<{
   page: LayoutPageId;
   items: LayoutItem[];
   extra?: LayoutExtra;
-}> = ({ page, items, extra }) => {
+  /** Draw the pencil here (default). Today puts it in the calendar row instead (`<LayoutPencil>`), so it passes `false`. */
+  pencil?: boolean;
+}> = ({ page, items, extra, pencil = true }) => {
   const { enabled } = useLayout();
   const editing = useEditingPage() === page;
   const text = useLayoutText().toolbar;
@@ -44,18 +74,10 @@ export const LayoutToolbar: React.FC<{
   if (!enabled) return null;
 
   if (!editing) {
+    if (!pencil) return null;
     return (
       <div className="flex justify-end -mb-1">
-        <button
-          type="button"
-          onClick={() => setEditingPage(page)}
-          aria-label={text.edit}
-          title={text.edit}
-          data-layout-pencil={page}
-          className="pressable size-7 rounded-full flex items-center justify-center text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]"
-        >
-          <Pencil size={14} />
-        </button>
+        <LayoutPencil page={page} />
       </div>
     );
   }

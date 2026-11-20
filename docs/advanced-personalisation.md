@@ -34,3 +34,11 @@ Everything is **off by default** and is switched on in **Settings > Advanced** (
 Keys `kcalsync_advanced` (switches, goals, tracked ids, custom measures), `kcalsync_body` (`{ measureId: [{ date, value }] }`) and `kcalsync_body_range`. The JSON backup has an `advanced` section (`exportAdvanced` / `importAdvanced`, called from `AppContext`); older backups without it leave the current data untouched. Strings: `src/i18n/advanced.ts` (EN/IT, `useAdvancedText()`); only the tab label `nav.body` is in `translations.ts`.
 
 See also [advanced-layout.md](advanced-layout.md) for the *Advanced layout* switch (same Settings > Advanced group).
+
+## Settings / layout-editor round (goals for everything, tracking toggles)
+
+- **Goal, not objective:** the label is *Goal* (Italian *Obiettivo*); the stored mode is still `'objective'` so saved settings and backups keep working. Every item offers both *Goal* and *Limit* (`GOAL_MODE_CHOICES`).
+- **New items:** `burned` (calories burned, kcal; badge beside the Burned label) and `water` (ml; badge in the Water card headline). Units and maximums live in `GOAL_UNITS` / `GOAL_MAX` in `advancedStore.ts`. Older saved data without them gets the defaults (500 kcal goal, 2000 ml goal).
+- **Settings text:** no description under *Goals & limits*, *Body measurements* or *Advanced layout*, and no "choose which ones" line. *Goals & limits* has a collapse arrow (`CollapseBody` / `CollapseArrow` from `common/InlineCollapse.tsx`) that hides the list of items.
+- **Coherence checks (Settings):** the sugar goal notes that it needs *Track sugar*; the Quick add rows for poop (when *Track poop* is off) and Custom (no custom buttons) are greyed out; Today no longer offers an empty field for a Water tracker (shortcut off), a Custom tracker (no custom buttons) or Poop (not tracked).
+- **Icons:** `neck` has a shorter neck; `forearms` is an open hand on a forearm that widens to the elbow; `custom` is a tape measure (case with reel, pulled-out tape with ticks and hook).

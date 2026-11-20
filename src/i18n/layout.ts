@@ -9,7 +9,6 @@ const layoutText = {
   en: {
     settings: {
       title: 'Advanced layout',
-      desc: 'A pencil on Today, Statistics and Body lets you edit the page: move (hold a field), resize, remove and add fields',
       restore: 'Restore original layout',
       restoreTitle: 'Restore the original layout?',
       restoreText: 'Order, sizes and removed fields of Today, Statistics and Body go back to the original. Your data and the meal types you added are kept.',
@@ -69,7 +68,6 @@ const layoutText = {
   it: {
     settings: {
       title: 'Layout avanzato',
-      desc: 'Una matita in Oggi, Statistiche e Corpo permette di modificare la pagina: spostare (tieni premuto un campo), ridimensionare, rimuovere e aggiungere campi',
       restore: 'Ripristina layout originale',
       restoreTitle: 'Ripristinare il layout originale?',
       restoreText: 'Ordine, dimensioni e campi rimossi di Oggi, Statistiche e Corpo tornano all’originale. I tuoi dati e i tipi di pasto aggiunti restano.',

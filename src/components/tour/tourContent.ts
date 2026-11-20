@@ -398,13 +398,13 @@ export const TOUR_STEPS: TourStep[] = [
     points: {
       en: [
         'Ultra minimal replaces most labels with icons and numbers.',
-        'Hide the trackers or the Period page you do not use.',
+        'Choose whether to track poop, sugar and the Period page.',
         'Choose which reminder notifications you receive, and when.',
         'Export or import a JSON backup. Backups are not encrypted, so keep them private.',
       ],
       it: [
         'Ultra minimale sostituisce molte etichette con icone e numeri.',
-        'Nascondi i tracker o la pagina Ciclo che non usi.',
+        'Scegli se tracciare cacca, zuccheri e la pagina Ciclo.',
         'Scegli quali notifiche di promemoria ricevere e quando.',
         'Esporta o importa un backup JSON. I backup non sono cifrati: conservali in modo privato.',
       ],

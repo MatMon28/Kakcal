@@ -29,6 +29,7 @@ import { DataBackup } from '../common/DataBackup';
 import { InstallApp } from '../common/InstallApp';
 import { DeleteAllData } from '../common/DeleteAllData';
 import { Collapsible } from '../common/Collapsible';
+import { InlineCollapse } from '../common/InlineCollapse';
 import { NotificationSettings } from './NotificationSettings';
 import { AdvancedSettings } from './AdvancedSettings';
 import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
@@ -417,26 +418,26 @@ export const SettingsModal: React.FC = () => {
           </Collapsible>
 
           <Collapsible title={t.settings.todayAndPages}>
-          {/* Quick-add buttons */}
-          <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
-              {t.settings.quickAdd}
-            </span>
+          {/* Quick-add buttons (collapsible). A shortcut whose feature is off is greyed out, so every switch here matches the rest of the settings. */}
+          <InlineCollapse label={t.settings.quickAdd}>
             <div className="space-y-1.5">
               {quickRows.map((r) => {
                 const Icon = r.icon;
-                const isOn = settings.quickAdd[r.key];
+                const unavailable =
+                  (r.key === 'poop' && settings.hidePoop) || (r.key === 'custom' && settings.customButtons.length === 0);
+                const isOn = settings.quickAdd[r.key] && !unavailable;
                 return (
                   <button
                     key={r.key}
                     type="button"
                     aria-pressed={isOn}
+                    disabled={unavailable}
                     onClick={() =>
                       updateSettings({
-                        quickAdd: { ...settings.quickAdd, [r.key]: !isOn },
+                        quickAdd: { ...settings.quickAdd, [r.key]: !settings.quickAdd[r.key] },
                       })
                     }
-                    className="w-full min-h-[52px] flex flex-nowrap items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-3 py-2 transition-colors text-left"
+                    className="w-full min-h-[52px] flex flex-nowrap items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-3 py-2 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <span className="flex items-center gap-1.5 min-w-0 text-xs font-bold text-[var(--text)]">
                       <span className={`size-7 rounded-full flex items-center justify-center shrink-0 ${r.cls}`}>
@@ -451,7 +452,7 @@ export const SettingsModal: React.FC = () => {
                 );
               })}
             </div>
-          </div>
+          </InlineCollapse>
 
           {/* Sugar tracking */}
           <button
@@ -472,11 +473,11 @@ export const SettingsModal: React.FC = () => {
             <SwitchVisual on={settings.trackSugar} />
           </button>
 
-          {/* Visibility toggles (kept above food shortcuts) */}
+          {/* Tracking toggles (kept above food shortcuts). Stored as hidePoop / hidePeriod, shown inverted: on = tracked. */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
             <button
               type="button"
-              aria-pressed={settings.hidePoop}
+              aria-pressed={!settings.hidePoop}
               onClick={() => updateSettings({ hidePoop: !settings.hidePoop })}
               className="min-h-[54px] flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-xl px-3 py-2 transition-colors text-left"
             >
@@ -484,16 +485,16 @@ export const SettingsModal: React.FC = () => {
                 <span className="size-7 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center shrink-0">
                   <PoopIcon size={13} />
                 </span>
-                {t.settings.hidePoop}
+                {t.settings.trackPoop}
               </span>
               <span className="scale-[0.82] origin-right shrink-0">
-                <SwitchVisual on={settings.hidePoop} />
+                <SwitchVisual on={!settings.hidePoop} />
               </span>
             </button>
 
             <button
               type="button"
-              aria-pressed={settings.hidePeriod}
+              aria-pressed={!settings.hidePeriod}
               onClick={() => {
                 const next = !settings.hidePeriod;
                 updateSettings({ hidePeriod: next, hidePeriodCustomized: true });
@@ -505,20 +506,19 @@ export const SettingsModal: React.FC = () => {
                 <span className="size-7 rounded-full bg-[#F4C6D8] text-[#6E2440] flex items-center justify-center shrink-0">
                   <Droplet size={13} />
                 </span>
-                {t.settings.hidePeriod}
+                {t.settings.trackPeriod}
               </span>
               <span className="scale-[0.82] origin-right shrink-0">
-                <SwitchVisual on={settings.hidePeriod} />
+                <SwitchVisual on={!settings.hidePeriod} />
               </span>
             </button>
           </div>
 
           {/* Quick food shortcuts */}
           <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-1">
+            <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
               {t.settings.quickFoodsLabel}
             </span>
-            <p className="text-[11px] font-medium text-[var(--muted)] mb-2">{t.settings.quickFoodsHint}</p>
             <div className="space-y-1.5">
               {settings.quickFoods.map((id, i) => {
                 const f = foodById(id);
@@ -549,27 +549,6 @@ export const SettingsModal: React.FC = () => {
           </Collapsible>
 
           <Collapsible title={t.settings.customButtons}>
-          <div className="space-y-2">
-                <button
-                  type="button"
-                  aria-pressed={widgetShortcutEnabled}
-                  aria-label={t.settings.widgetCustomButton}
-                  disabled={settings.customButtons.length === 0}
-                  onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
-                  className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span className="flex items-center gap-2.5 min-w-0">
-                    <span className="kc-custom-icon-badge size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
-                      <Sparkles size={15} />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.widgetCustomButton}</span>
-                    </span>
-                  </span>
-                  <SwitchVisual on={widgetShortcutEnabled} />
-                </button>
-          </div>
-
           {/* Custom buttons */}
           <div>
             <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-1">
@@ -749,6 +728,28 @@ export const SettingsModal: React.FC = () => {
                 <span>{t.settings.newCustomBtn}</span>
               </button>
             </div>
+          </div>
+
+          {/* Widget shortcut: below the list and the add button */}
+          <div className="space-y-2">
+                <button
+                  type="button"
+                  aria-pressed={widgetShortcutEnabled}
+                  aria-label={t.settings.widgetCustomButton}
+                  disabled={settings.customButtons.length === 0}
+                  onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
+                  className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span className="flex items-center gap-2.5 min-w-0">
+                    <span className="kc-custom-icon-badge size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+                      <Sparkles size={15} />
+                    </span>
+                    <span className="min-w-0">
+                      <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.widgetCustomButton}</span>
+                    </span>
+                  </span>
+                  <SwitchVisual on={widgetShortcutEnabled} />
+                </button>
           </div>
 
           </Collapsible>

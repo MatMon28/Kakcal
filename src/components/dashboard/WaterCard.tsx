@@ -2,6 +2,7 @@ import React from 'react';
 import { Droplets, Trash2, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { dailyWaterTargetMl } from '../../utils/waterTarget';
+import { GoalBadge } from '../common/GoalBadge';
 import { TrackerCard } from './TrackerCard';
 
 const BLOCK = 250; // one glass; the last block holds the remaining amount up to the goal
@@ -27,6 +28,8 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
   const headline = (
     <span title={`${totalMl} / ${targetMl} ml`} aria-label={`${totalMl} / ${targetMl} ml`}>
       {totalMl}
+      {/* Settings > Advanced: goal / limit for water (ml) */}
+      <GoalBadge goal="water" amount={totalMl} className="ml-1.5 align-middle" />
       {!compact && <span className="text-[11px] font-semibold text-[var(--muted)] ml-1">/ {targetMl} ml</span>}
     </span>
   );
