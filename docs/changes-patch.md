@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`c39b3c5` ("Fixed animation")**, the tip of `main` when the APK-download round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`38d15c3` ("things")**, the tip of `main` when the gesture round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run
@@ -25,6 +25,8 @@ git reset -q                     # leave the working tree as it was
 
 When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
 
-**Current patch contents (launch-animation round):** (1) new `src/components/intro/launchIntro.ts` (plain-DOM overlay controller: instant start, runs to the end, leaves when finished + app ready, tap to skip, `afterFirstPaint`) and `earlyStart.ts` (starts it before `./App` is evaluated); (2) `IntroSplash.tsx` is now a React bridge that renders nothing; (3) `introAnimations.ts` divides every SVG duration by `INTRO_SPEED` (1.35); (4) `main.tsx` imports `earlyStart` first and renders React after the first painted frame; (5) `intro.css` fade timings (200 / 120 ms); (6) README and docs (`launch-intro.md`, `startup-performance.md`, file maps, docs index). `App.tsx`, `index.html` and `package.json` are untouched.
+**Current patch contents (gesture round, base `38d15c3`):** see the *Gesture round* paragraph in [README.md](README.md). Source: `Modal.tsx`, `ActionDock.tsx`, `PageSwiper.tsx`, `DayNavigator.tsx`, `index.css`, `dockId` props on 11 modals, plus docs. No new files, no `package.json` change.
+
+**Earlier contents (launch-animation round):** (1) new `src/components/intro/launchIntro.ts` (plain-DOM overlay controller: instant start, runs to the end, leaves when finished + app ready, tap to skip, `afterFirstPaint`) and `earlyStart.ts` (starts it before `./App` is evaluated); (2) `IntroSplash.tsx` is now a React bridge that renders nothing; (3) `introAnimations.ts` divides every SVG duration by `INTRO_SPEED` (1.35); (4) `main.tsx` imports `earlyStart` first and renders React after the first painted frame; (5) `intro.css` fade timings (200 / 120 ms); (6) README and docs (`launch-intro.md`, `startup-performance.md`, file maps, docs index). `App.tsx`, `index.html` and `package.json` are untouched.
 
 **Current patch contents (APK-download round, replaces the list above):** documentation only: new `docs/apk-download.md` and small link/audit edits in `README.md`, `docs/README.md`, `docs/android-apk.md`, `docs/pwa-setup.md` and this file. No source, workflow, config or binary changes.

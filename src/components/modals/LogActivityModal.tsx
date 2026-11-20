@@ -146,6 +146,7 @@ export const LogActivityModal: React.FC = () => {
 
   return (
     <Modal
+      dockId="activity"
       isOpen={isLogActivityOpen}
       onClose={() => setIsLogActivityOpen(false)}
       title={t.activityModal.title}

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { formatDateDisplay, addDaysToDateString, getTodayDateString, dateFormatter } from '../../utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar, CornerUpLeft } from 'lucide-react';
@@ -18,6 +18,50 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
   const dateLabel = formatDateDisplay(selectedDate, language);
 
   const [calOpen, setCalOpen] = useState(false);
+
+  // Swiping the calendar row does exactly what the arrows beside it do: swipe left = next day,
+  // swipe right = previous day (like turning a page). One day per swipe, sensitive on purpose.
+  const swipe = useRef<{ id: number; x: number; y: number; time: number; done: boolean } | null>(null);
+  const swallowClick = useRef(false);
+  const shiftDay = (step: number) => setSelectedDate(addDaysToDateString(selectedDate, step));
+  const swipeHandlers = {
+    onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => {
+      swallowClick.current = false;
+      if (!event.isPrimary || event.button !== 0 || calOpen) { swipe.current = null; return; }
+      swipe.current = { id: event.pointerId, x: event.clientX, y: event.clientY, time: event.timeStamp, done: false };
+    },
+    onPointerMove: (event: React.PointerEvent<HTMLDivElement>) => {
+      const s = swipe.current;
+      if (!s || s.done || s.id !== event.pointerId) return;
+      const dx = event.clientX - s.x;
+      const dy = event.clientY - s.y;
+      if (Math.abs(dy) > 10 && Math.abs(dy) > Math.abs(dx)) { swipe.current = null; return; }
+      if (Math.abs(dx) < 20 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+      s.done = true;
+      swallowClick.current = true; // the drag must not also tap the calendar button
+      shiftDay(dx < 0 ? 1 : -1);
+    },
+    onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => {
+      const s = swipe.current;
+      swipe.current = null;
+      if (!s || s.done || s.id !== event.pointerId) return;
+      // A quick, short flick counts too.
+      const dx = event.clientX - s.x;
+      const dy = event.clientY - s.y;
+      const speed = Math.abs(dx) / Math.max(1, event.timeStamp - s.time);
+      if (Math.abs(dx) >= 12 && Math.abs(dx) > Math.abs(dy) * 1.5 && speed > 0.3) {
+        swallowClick.current = true;
+        shiftDay(dx < 0 ? 1 : -1);
+      }
+    },
+    onPointerCancel: () => { swipe.current = null; },
+    onClickCapture: (event: React.MouseEvent<HTMLDivElement>) => {
+      if (!swallowClick.current) return;
+      swallowClick.current = false;
+      event.preventDefault();
+      event.stopPropagation();
+    },
+  };
   useEffect(() => {
     if (!calOpen) return;
     document.dispatchEvent(new Event('kc:overlay-open'));
@@ -113,7 +157,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
   ];
 
   return (
-    <div className="flex items-center justify-center gap-1.5 flex-wrap" data-no-swipe>
+    <div className="flex items-center justify-center gap-1.5 flex-wrap touch-pan-y select-none" data-no-swipe data-day-swipe {...swipeHandlers}>
       <button
         type="button"
         onClick={() => setSelectedDate(addDaysToDateString(selectedDate, -1))}

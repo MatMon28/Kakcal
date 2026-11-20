@@ -345,6 +345,7 @@ export const AddFoodModal: React.FC = () => {
 
   return (
     <Modal
+      dockId="food"
       isOpen={isAddFoodOpen}
       onClose={close}
       title={activeFood ? nameOf(activeFood) : t.foodModal.title}

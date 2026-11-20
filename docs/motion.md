@@ -15,3 +15,15 @@ Motion follows the usual guidelines: it is quick, driven by physics, interruptib
 - **Settings groups** open with a 300 ms height animation (`src/components/common/Collapsible.tsx`); switches and chevrons use the bounce spring.
 - Values that change (intake, burned) and the Today day change use the soft spring (`src/utils/motion.ts`, `.anim-value`).
 - All of it, including the [launch intro](launch-intro.md), is disabled by `prefers-reduced-motion`.
+
+## Popup exit: sucked into the bottom bar
+
+Every way of closing a dialog (X, backdrop, Escape, Back, swipe down, or the parent closing it after Save) goes through the same exit in `Modal.tsx` (`playExit`):
+
+- The dialog is simply unmounted at once. `playExit` runs from the layout-effect cleanup: it clones the overlay (or re-attaches it when React already detached it), starts from the sheet's *painted* transform (so a swiped sheet continues from the finger's position and speed) and animates the clone on the compositor. The page behind is usable immediately; there is no waiting for `onfinish` and no unmount flash. A refused swipe-close (the parent did not unmount) springs back after 120 ms.
+- **Target:** `getDockTarget(dockId)` in `ActionDock.tsx`. If the dialog has a `dockId` (the id of a bar button that opens it: `food`, `activity`, `water`, `poop`, `weight`, `custom` on Today; `meal`, `recipe`, `food` on Meals; `cycle` on Period) and that button exists, the sheet shrinks (translate + scale, then fades) into the button, which gives a small pulse as it swallows it. Any other dialog (profile, settings, pickers...) shrinks into the **centre of the bar** (pulse on the bar). With no bar on screen, or when another dialog stays open below, the sheet leaves through the bottom edge.
+- Durations: 300 ms tap-close, 250 ms swipe-close into a button, 200-220 ms to the bottom. `prefers-reduced-motion` skips it.
+
+## Bottom bar hides on scroll
+
+`ActionDock.tsx` (`useHideOnScroll`): after 14 px of downward scroll (below 48 px from the top) the bar slides below the screen edge; 7 px of upward scroll brings it back; it is always visible near the top, and opening any dialog reveals it again (it is the dialog's exit target). CSS: `.kc-dock-wrap[data-hidden]` in `index.css` (transform on the wrapper, so it never fights `.anim-dock`).

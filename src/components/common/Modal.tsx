@@ -4,6 +4,7 @@ import { X } from 'lucide-react';
 import { SPRING } from '../../utils/spring';
 import { prefersReducedMotion } from '../../utils/motion';
 import { useApp } from '../../context/AppContext';
+import { getDockTarget } from './ActionDock';
 
 interface ModalProps {
   isOpen: boolean;
@@ -13,6 +14,8 @@ interface ModalProps {
   children: React.ReactNode;
   maxWidth?: string;
   footer?: React.ReactNode;
+  /** Id of the bottom-bar button that opens this dialog: on close the dialog is sucked into it. */
+  dockId?: string;
 }
 
 const openModalStack: Array<() => void> = [];
@@ -28,6 +31,96 @@ export function closeTopModal(): boolean {
   return true;
 }
 
+interface ExitOptions {
+  overlay: HTMLElement;
+  /** Another dialog stays open underneath: leave through the bottom instead of the dock. */
+  stacked: boolean;
+  swiped: boolean;
+  dockId?: string;
+}
+
+/**
+ * Plays the closing animation of a dialog that React is removing. The overlay is cloned (or, when
+ * React has already detached it, reused) and animated on its own, so the dialog never waits for the
+ * unmount and the page behind it is usable at once. With a bottom bar on screen the sheet shrinks
+ * into the bar's button (or the bar's centre), otherwise it leaves through the bottom edge.
+ */
+function playExit({ overlay, stacked, swiped, dockId }: ExitOptions) {
+  const livePanel = overlay.querySelector<HTMLElement>('[data-sheet-panel]');
+  const liveScrim = overlay.querySelector<HTMLElement>('[data-sheet-scrim]');
+  if (!livePanel || !liveScrim) return;
+  const attached = overlay.isConnected;
+  // Where the animation starts: the sheet exactly as painted (dragged, or still opening).
+  const startTransform = attached ? getComputedStyle(livePanel).transform : livePanel.style.transform || 'none';
+  const startOpacity = attached ? getComputedStyle(livePanel).opacity : '1';
+  const startScrim = attached ? getComputedStyle(liveScrim).opacity : liveScrim.style.opacity || '1';
+
+  const ghost = attached ? (overlay.cloneNode(true) as HTMLElement) : overlay;
+  const panel = ghost.querySelector<HTMLElement>('[data-sheet-panel]')!;
+  const scrim = ghost.querySelector<HTMLElement>('[data-sheet-scrim]')!;
+  ghost.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
+  ghost.removeAttribute('data-no-swipe');
+  ghost.setAttribute('aria-hidden', 'true');
+  ghost.setAttribute('inert', '');
+  ghost.style.pointerEvents = 'none';
+  panel.removeAttribute('role');
+  panel.style.animation = 'none';
+  panel.style.transform = 'none';
+  panel.style.opacity = '1';
+  scrim.style.animation = 'none';
+  scrim.style.opacity = '1';
+  if (attached) {
+    // A clone starts from the markup: carry over what the user typed and how far they scrolled.
+    const from = overlay.querySelectorAll<HTMLInputElement>('input, textarea, select');
+    const to = ghost.querySelectorAll<HTMLInputElement>('input, textarea, select');
+    from.forEach((el, i) => { if (to[i]) { to[i].value = el.value; to[i].checked = el.checked; } });
+  }
+  document.body.appendChild(ghost);
+  if (attached) {
+    const from = overlay.querySelectorAll<HTMLElement>('[data-dialog-scroll]');
+    ghost.querySelectorAll<HTMLElement>('[data-dialog-scroll]').forEach((el, i) => { el.scrollTop = from[i]?.scrollTop ?? 0; });
+  }
+
+  const remove = () => ghost.remove();
+  if (!panel.animate) { remove(); return; }
+
+  const natural = panel.getBoundingClientRect();
+  const target = stacked ? null : getDockTarget(dockId);
+  const visualViewport = window.visualViewport;
+  const visibleBottom = (visualViewport?.offsetTop ?? 0) + (visualViewport?.height ?? window.innerHeight);
+  let end: string;
+  if (target) {
+    const dx = target.x - (natural.left + natural.width / 2);
+    const dy = target.y - (natural.top + natural.height / 2);
+    const sx = Math.max(0.04, target.width / natural.width);
+    const sy = Math.max(0.04, target.height / natural.height);
+    end = `translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;
+  } else {
+    end = `translate3d(0,${visibleBottom - natural.top + 8}px,0)`;
+  }
+  // Released with the finger already moving: start at speed. A tap accelerates into the button.
+  const duration = target ? (swiped ? 250 : 300) : swiped ? 200 : 220;
+  const easing = swiped ? 'cubic-bezier(.2,.25,.6,.5)' : target ? 'cubic-bezier(.45,.05,.7,.45)' : 'cubic-bezier(.4,0,.9,.6)';
+  const options: KeyframeAnimationOptions = { duration, easing, fill: 'forwards' };
+  const slide = panel.animate([
+    { transform: startTransform, opacity: startOpacity },
+    { opacity: startOpacity, offset: target ? 0.7 : 0.55 },
+    { transform: end, opacity: 0 },
+  ], options);
+  scrim.animate([{ opacity: startScrim }, { opacity: 0 }], { duration, easing: 'linear', fill: 'forwards' });
+  slide.onfinish = remove;
+  slide.oncancel = remove;
+
+  // The button (or bar) swallows the dialog with a small pulse.
+  if (target) {
+    const isBar = target.pulse.hasAttribute('data-dock');
+    target.pulse.animate(
+      [{ transform: 'scale(1)' }, { transform: `scale(${isBar ? 1.05 : 1.2})`, offset: 0.4 }, { transform: 'scale(1)' }],
+      { duration: 340, delay: duration * 0.8, easing: 'ease-out' },
+    );
+  }
+}
+
 const focusSelector = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])';
 
 export const Modal: React.FC<ModalProps> = ({
@@ -38,6 +131,7 @@ export const Modal: React.FC<ModalProps> = ({
   children,
   maxWidth = 'max-w-lg',
   footer,
+  dockId,
 }) => {
   const { t } = useApp();
   const titleId = useId();
@@ -45,6 +139,9 @@ export const Modal: React.FC<ModalProps> = ({
   const panelRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  const dockIdRef = useRef(dockId);
+  dockIdRef.current = dockId;
+  const swiped = useRef(false);
 
   useLayoutEffect(() => {
     const panel = panelRef.current;
@@ -52,6 +149,7 @@ export const Modal: React.FC<ModalProps> = ({
     if (!isOpen || !panel || !overlay) return;
 
     const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const openedAt = performance.now();
     const closeHandler = () => onCloseRef.current();
     if (!openModalStack.length) {
       previousBodyOverflow = document.body.style.overflow;
@@ -128,6 +226,12 @@ export const Modal: React.FC<ModalProps> = ({
       const wasTop = isTop();
       const idx = openModalStack.lastIndexOf(closeHandler);
       if (idx >= 0) openModalStack.splice(idx, 1);
+      // Closed for any reason (X, backdrop, swipe, Back, or the parent after saving): animate out.
+      // (The 150 ms guard skips React StrictMode's immediate mount/unmount probe in development.)
+      if (!prefersReducedMotion() && performance.now() - openedAt > 150) {
+        playExit({ overlay, stacked: openModalStack.length > 0, swiped: swiped.current, dockId: dockIdRef.current });
+      }
+      swiped.current = false;
       if (!openModalStack.length) {
         document.body.style.overflow = previousBodyOverflow;
         document.documentElement.classList.remove('kc-sheet-open');
@@ -143,55 +247,60 @@ export const Modal: React.FC<ModalProps> = ({
   const backdropRef = useRef<HTMLDivElement>(null);
   const sheetDrag = useRef<{ id: number; start: number; y: number; time: number; velocity: number; offset: number; active: boolean } | null>(null);
   const animations = useRef<Animation[]>([]);
-  const closing = useRef(false);
 
   useLayoutEffect(() => {
     if (!isOpen) return;
-    const panel = panelRef.current;
-    const backdrop = backdropRef.current;
-    closing.current = false;
+    swiped.current = false;
     return () => {
       sheetDrag.current = null;
       animations.current.forEach((a) => { a.onfinish = null; a.cancel(); });
       animations.current = [];
-      if (panel) panel.style.transform = '';
-      if (backdrop) backdrop.style.opacity = '';
     };
   }, [isOpen]);
 
-  const finishDrag = (event: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
-    const d = sheetDrag.current;
+  // A dismissal the parent refused (or that did not unmount the dialog): spring back to rest.
+  const settleBack = (from: number) => {
     const panel = panelRef.current;
     const scrim = backdropRef.current;
+    if (!panel || !scrim) return;
+    const opacity = scrim.style.opacity || '1';
+    panel.style.transform = '';
+    scrim.style.opacity = '';
+    if (prefersReducedMotion() || !panel.animate || from < 0.5) return;
+    const options = { duration: 220, easing: SPRING.soft.easing };
+    animations.current = [
+      panel.animate([{ transform: `translate3d(0,${from}px,0)` }, { transform: 'translate3d(0,0,0)' }], options),
+      scrim.animate([{ opacity }, { opacity: 1 }], options),
+    ];
+  };
+
+  // Sensitive on purpose: a short pull, or a quick flick, is enough to dismiss.
+  const DISMISS_DISTANCE = 56;
+  const DISMISS_FLICK_DISTANCE = 10;
+  const DISMISS_FLICK_SPEED = 0.3; // px/ms
+  const DRAG_START = 2; // px
+
+  const finishDrag = (event: React.PointerEvent<HTMLDivElement>, cancelled: boolean) => {
+    const d = sheetDrag.current;
     if (!d || d.id !== event.pointerId) return;
     sheetDrag.current = null;
-    if (!d.active || !panel || !scrim) return;
-    const dismiss = !cancelled && (d.offset > 96 || (d.offset > 16 && event.timeStamp - d.time < 100 && d.velocity > 0.6));
-    closing.current = dismiss;
-    const visibleBottom = (window.visualViewport?.offsetTop ?? 0) + (window.visualViewport?.height ?? innerHeight);
-    const end = dismiss ? d.offset + visibleBottom - panel.getBoundingClientRect().top + 8 : 0;
-    const opacity = scrim.style.opacity || '1';
-    // Set the final styles first: unmounting a dismissed sheet must never reveal its start frame.
-    panel.style.transform = end ? `translate3d(0,${end}px,0)` : '';
-    scrim.style.opacity = dismiss ? '0' : '';
-    if (prefersReducedMotion() || !panel.animate) {
-      if (dismiss) onCloseRef.current();
-      return;
-    }
-    const options = { duration: dismiss ? 180 : 220, easing: dismiss ? 'cubic-bezier(.3,0,.7,1)' : SPRING.soft.easing };
-    const slide = panel.animate([{ transform: `translate3d(0,${d.offset}px,0)` }, { transform: `translate3d(0,${end}px,0)` }], options);
-    const fade = scrim.animate([{ opacity }, { opacity: dismiss ? 0 : 1 }], options);
-    animations.current = [slide, fade];
-    slide.onfinish = () => {
-      if (animations.current[0] !== slide) return;
-      animations.current = [];
-      if (dismiss) onCloseRef.current();
-    };
+    if (!d.active) return;
+    const dismiss = !cancelled && (d.offset > DISMISS_DISTANCE ||
+      (d.offset > DISMISS_FLICK_DISTANCE && event.timeStamp - d.time < 120 && d.velocity > DISMISS_FLICK_SPEED));
+    if (!dismiss) { settleBack(d.offset); return; }
+    // Closing is just unmounting: playExit() continues from the painted position, with the finger's speed.
+    swiped.current = true;
+    onCloseRef.current();
+    window.setTimeout(() => {
+      if (!swiped.current || !panelRef.current?.isConnected) return;
+      swiped.current = false;
+      settleBack(d.offset);
+    }, 120);
   };
 
   const dragHandlers = {
     onPointerDown: (event: React.PointerEvent<HTMLDivElement>) => {
-      if (!event.isPrimary || event.button !== 0 || closing.current || (event.target as Element).closest('button')) return;
+      if (!event.isPrimary || event.button !== 0 || swiped.current || (event.target as Element).closest('button')) return;
       const panel = panelRef.current;
       const scrim = backdropRef.current;
       if (!panel || !scrim) return;
@@ -212,14 +321,16 @@ export const Modal: React.FC<ModalProps> = ({
       const d = sheetDrag.current;
       if (!d || event.pointerId !== d.id) return;
       d.offset = Math.max(0, event.clientY - d.start);
-      if (!d.active && d.offset < 5) return;
+      if (!d.active && d.offset < DRAG_START) return;
       d.active = true;
       event.preventDefault();
-      d.velocity = (event.clientY - d.y) / Math.max(1, event.timeStamp - d.time);
+      // Smoothed release speed, so one jittery last sample cannot cancel or fake a flick.
+      const instant = (event.clientY - d.y) / Math.max(1, event.timeStamp - d.time);
+      d.velocity = d.velocity * 0.35 + instant * 0.65;
       d.y = event.clientY;
       d.time = event.timeStamp;
       if (panelRef.current) panelRef.current.style.transform = `translate3d(0,${d.offset}px,0)`;
-      if (backdropRef.current) backdropRef.current.style.opacity = String(Math.max(0.1, 1 - d.offset / 360));
+      if (backdropRef.current) backdropRef.current.style.opacity = String(Math.max(0.1, 1 - d.offset / 300));
     },
     onPointerUp: (event: React.PointerEvent<HTMLDivElement>) => finishDrag(event, false),
     onPointerCancel: (event: React.PointerEvent<HTMLDivElement>) => finishDrag(event, true),
@@ -234,9 +345,10 @@ export const Modal: React.FC<ModalProps> = ({
   // keyboard). Wider screens: centred. The backdrop blur is desktop-only; it is costly on mobile GPUs.
   return createPortal(
     <div ref={viewportRef} className="dialog-viewport fixed z-50 flex items-end sm:items-center justify-center" data-no-swipe>
-      <div ref={backdropRef} className="absolute inset-0 bg-black/45 sm:backdrop-blur-xs anim-backdrop" aria-hidden="true" onClick={onClose} />
+      <div ref={backdropRef} data-sheet-scrim className="absolute inset-0 bg-black/45 sm:backdrop-blur-xs anim-backdrop" aria-hidden="true" onClick={onClose} />
       <div
         ref={panelRef}
+        data-sheet-panel
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -244,7 +356,7 @@ export const Modal: React.FC<ModalProps> = ({
         tabIndex={-1}
         className={`anim-dialog relative w-full ${maxWidth} max-h-full min-h-0 flex flex-col bg-[var(--surface)] border border-[var(--border)] rounded-3xl shadow-2xl shadow-black/20 overflow-hidden`}
       >
-        <div className="shrink-0 touch-none flex justify-center pt-2" aria-hidden="true" data-sheet-handle {...dragHandlers}>
+        <div className="shrink-0 touch-none flex justify-center pt-2.5 pb-1.5" aria-hidden="true" data-sheet-handle {...dragHandlers}>
           <span className="h-1.5 w-11 rounded-full bg-[var(--border)]" />
         </div>
         <div className="px-5 py-3.5 sm:py-4 border-b border-[var(--border)] flex items-center justify-between gap-3 shrink-0 touch-none" {...dragHandlers}>

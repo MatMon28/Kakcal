@@ -2,6 +2,8 @@
 
 A local-first nutrition, activity and wellness journal built with React 19, TypeScript, Vite and Tailwind CSS v4. The browser opens a guided tour of every page, with the widgets last; Android has a bundled Capacitor app, four native home-screen widgets and optional reminder [notifications](docs/notifications.md). There is no account or application backend. The browser build is also an installable, offline-capable [PWA](docs/pwa.md) ([setup instructions](docs/pwa-setup.md)); the landing page opens an install guide for iPhone/iPad, Android (web app **and** APK, including the “unknown source / could be dangerous” warning) and desktop. Installed copies always open the journal itself, never the tour. Browser builds are in normal-use mode: they start with the visitor's own empty journal, and demo seeding has to be requested with `VITE_DEMO_DATA=true`. On Android the first thing drawn is the launch animation: the system launch screen, the window, the WebView and the web boot layer are all plain background colour in the colour of your saved theme (no logo, no cream or white flash) and the [animated intro](docs/launch-intro.md) plays straight on top: it starts before the app is even evaluated, runs about 1.35× faster than the supplied SVGs (about 0.8-0.95 s) and always plays to its last frame.
 
+**Gestures:** page and popup swipes are tuned to be sensitive; closing a popup sucks it into the bottom-bar button that opens it; the bottom bar hides on scroll down and returns on a small scroll up; swiping the Today calendar changes the day ([gestures](docs/gestures.md), [motion](docs/motion.md)).
+
 ## Quick start
 
 ```sh

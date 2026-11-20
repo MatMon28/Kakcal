@@ -1033,6 +1033,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
       {/* ============ Create / Edit meal modal ============ */}
       <Modal
+        dockId="meal"
         isOpen={isCreateOpen}
         onClose={() => {
           setIsCreateOpen(false);
@@ -1222,6 +1223,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
       {/* ============ Create / Edit recipe modal ============ */}
       <Modal
+        dockId="recipe"
         isOpen={isRecipeOpen}
         onClose={closeRecipeModal}
         title={

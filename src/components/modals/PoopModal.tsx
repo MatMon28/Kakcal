@@ -43,6 +43,7 @@ export const PoopModal: React.FC = () => {
 
   return (
     <Modal
+      dockId="poop"
       isOpen={isPoopOpen}
       onClose={() => setIsPoopOpen(false)}
       title={t.poop.title}

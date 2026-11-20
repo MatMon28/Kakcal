@@ -32,7 +32,7 @@ export function CustomButtonModal() {
     .filter((day) => day.value !== undefined);
 
   return (
-    <Modal isOpen onClose={close} title={def.name} subtitle={formatDateDisplay(selectedDate, language)} maxWidth="max-w-md">
+    <Modal dockId="custom" isOpen onClose={close} title={def.name} subtitle={formatDateDisplay(selectedDate, language)} maxWidth="max-w-md">
       <form
         className="space-y-4"
         onSubmit={(event) => {

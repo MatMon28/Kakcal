@@ -90,6 +90,7 @@ export const WeightModal: React.FC = () => {
 
   return (
     <Modal
+      dockId="weight"
       isOpen={isWeightOpen}
       onClose={() => setIsWeightOpen(false)}
       title={t.weight.title}

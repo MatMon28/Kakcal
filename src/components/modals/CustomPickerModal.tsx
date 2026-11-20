@@ -21,7 +21,7 @@ export const CustomPickerModal: React.FC = () => {
   const close = () => setIsCustomPickerOpen(false);
 
   return (
-    <Modal isOpen={isCustomPickerOpen} onClose={close} title={t.settings.customPickerTitle} maxWidth="max-w-sm">
+    <Modal dockId="custom" isOpen={isCustomPickerOpen} onClose={close} title={t.settings.customPickerTitle} maxWidth="max-w-sm">
       <div className="space-y-2">
         <p className="text-xs font-medium text-[var(--muted)]">{t.settings.customPickerHint}</p>
         {settings.customButtons.map((b) => {

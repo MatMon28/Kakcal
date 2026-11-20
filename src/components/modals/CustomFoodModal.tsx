@@ -135,6 +135,7 @@ export const CustomFoodModal: React.FC = () => {
 
   return (
     <Modal
+      dockId="food"
       isOpen={isCustomFoodOpen}
       onClose={() => setIsCustomFoodOpen(false)}
       title={t.database.createCustom}

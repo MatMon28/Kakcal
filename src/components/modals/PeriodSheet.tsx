@@ -26,7 +26,7 @@ export function PeriodSheet() {
     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'}`;
 
   return (
-    <Modal isOpen={isPeriodSheetOpen} onClose={close} title={t.period.quickLog} subtitle={formatFullDate(date, language)} maxWidth="max-w-md">
+    <Modal dockId="cycle" isOpen={isPeriodSheetOpen} onClose={close} title={t.period.quickLog} subtitle={formatFullDate(date, language)} maxWidth="max-w-md">
       <div className="space-y-4">
         <button
           type="button"

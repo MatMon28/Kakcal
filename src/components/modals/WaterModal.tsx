@@ -38,6 +38,7 @@ export const WaterModal: React.FC = () => {
 
   return (
     <Modal
+      dockId="water"
       isOpen={isWaterOpen}
       onClose={() => setIsWaterOpen(false)}
       title={t.water.title}
