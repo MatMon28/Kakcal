@@ -222,6 +222,8 @@ export function getMonoVariables(baseHex: string, mode: Theme): Record<string, s
     '--intake-label': intakeText,
     '--intake-track': intakeTrack,
     '--intake-fill': intakeText,
+    '--intake-badge-bg': intakeText,
+    '--intake-badge-text': intakeBg,
     '--burned-bg': burnedBg,
     '--burned-text': burnedText,
     '--burned-label': burnedText,

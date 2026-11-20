@@ -14,6 +14,7 @@ import { addDaysToDateString, formatDateDisplay } from '../../utils/formatters';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
+import { SaveBeforeCloseDialog } from '../common/SaveBeforeCloseDialog';
 import {
   Search,
   ScanBarcode,
@@ -59,6 +60,7 @@ export const AddFoodModal: React.FC = () => {
   const [currentAmount, setCurrentAmount] = useState<number>(100);
   const [queuedItems, setQueuedItems] = useState<QueuedEntry[]>([]);
   const [searchFocused, setSearchFocused] = useState(false);
+  const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const activeSlotRef = useRef<HTMLButtonElement | null>(null);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
@@ -188,12 +190,25 @@ export const AddFoodModal: React.FC = () => {
   }, [allDayLogs, selectedDate, targetMealSlot]);
 
   const close = () => {
+    setConfirmCloseOpen(false);
     setIsAddFoodOpen(false);
     setActiveFood(null);
     setQueuedItems([]);
     setSearchTerm('');
     setSearchFocused(false);
     if (blurTimer.current) window.clearTimeout(blurTimer.current);
+  };
+
+  /** Foods waiting in the batch, or a food picked with a weight but not added yet: closing would lose them. */
+  const hasUnsaved = queuedItems.length > 0 || (activeFood !== null && currentAmount > 0);
+
+  /**
+   * Every dismissal of the dialog (tap outside, swipe down, X, Back) comes through here: with unsaved items it asks
+   * first (Save / Don't save / Keep editing) instead of silently dropping them. The dialog stays open meanwhile.
+   */
+  const requestClose = () => {
+    if (hasUnsaved) setConfirmCloseOpen(true);
+    else close();
   };
 
   const handlePickFood = (food: FoodItem) => {
@@ -337,10 +352,11 @@ export const AddFoodModal: React.FC = () => {
     }`;
 
   return (
+    <>
     <Modal
       dockId="food"
       isOpen={isAddFoodOpen}
-      onClose={close}
+      onClose={requestClose}
       title={activeFood ? nameOf(activeFood) : t.foodModal.title}
       subtitle={slotLabel(targetMealSlot)}
       maxWidth="max-w-xl"
@@ -758,5 +774,13 @@ export const AddFoodModal: React.FC = () => {
         </div>
       )}
     </Modal>
+    <SaveBeforeCloseDialog
+      open={confirmCloseOpen && isAddFoodOpen}
+      onSave={handleLogNow}
+      onDiscard={close}
+      onKeepEditing={() => setConfirmCloseOpen(false)}
+      detail={`${queuedItems.length + (activeFood && currentAmount > 0 ? 1 : 0)} ${language === 'it' ? 'alimenti' : 'foods'}`}
+    />
+    </>
   );
 };

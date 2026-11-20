@@ -14,8 +14,10 @@ type Nutrients = Pick<FoodItem, keyof typeof tones>;
 const keys = ['carbs', 'protein', 'fat', 'fiber', 'salt', 'sugar'] as const;
 
 /** All values describe the same portion. Unknown values are not treated as zero. */
-export function FoodMacroGrid({ food, amount, mode = 'portion' }: {
+export function FoodMacroGrid({ food, amount, mode = 'portion', dense = false }: {
   food: Nutrients; amount: number; mode?: 'portion' | 'facts' | 'minimal';
+  /** Smaller fields, used for the items listed inside an expanded meal. */
+  dense?: boolean;
 }) {
   const { t, settings } = useApp();
   return (
@@ -28,7 +30,7 @@ export function FoodMacroGrid({ food, amount, mode = 'portion' }: {
         const name = t.macros[key];
         return (
           <div key={key} data-nutrient={key} role="group" aria-label={`${name}: ${value == null ? '-' : `${value} g`}`} title={name}
-            className={`${tones[key]} min-w-0 rounded-2xl px-0.5 py-2 flex flex-col items-center justify-center gap-1`}>
+            className={`${tones[key]} min-w-0 ${dense ? 'rounded-xl py-1.5' : 'rounded-2xl py-2'} px-0.5 flex flex-col items-center justify-center gap-1`}>
             {Icon && mode !== 'facts' ? <Icon size={15} aria-hidden="true" /> : (
               <span className={mode === 'minimal' ? 'sr-only' : 'text-[10px] font-bold leading-[15px]'}>
                 {Icon ? name : key[0].toUpperCase()}
@@ -56,13 +58,14 @@ export function SecondaryNutrientCard({ nutrient, value, average = false }: {
   const Icon = extraIcons[nutrient];
   return (
     <div data-nutrient={nutrient} role="group" title={labels[nutrient]} aria-label={`${labels[nutrient]}: ${value} g`}
-      className={`bg-nutrient text-nutrient-ink rounded-2xl flex flex-wrap items-center justify-between gap-x-1.5 ${settings.ultraMinimal ? 'px-3 py-2.5' : 'px-3 py-3 sm:px-4'}`}>
-      <span className="inline-flex items-center gap-1.5">
-        {settings.ultraMinimal ? <Icon size={16} aria-hidden="true" /> : <span className="text-xs sm:text-sm font-semibold">{labels[nutrient]}</span>}
-        {/* Settings > Advanced: objective / limit reached (daily totals only, not the period averages) */}
-        {!average && <GoalBadge goal={nutrient} amount={value} />}
-      </span>
-      <span className="whitespace-nowrap text-base sm:text-lg font-extrabold">{value}
+      className={`bg-nutrient text-nutrient-ink rounded-2xl relative flex flex-col items-center justify-center gap-0.5 text-center ${settings.ultraMinimal ? 'px-2 py-2.5' : 'px-2 py-3 sm:px-3'}`}>
+      {/* Settings > Advanced: objective / limit reached (daily totals only, not the period averages). Corner placement like the macro cards. */}
+      {!average && <GoalBadge goal={nutrient} amount={value} className="absolute top-1.5 right-1.5" />}
+      {/* The name (or its icon in Ultra minimal) always sits above the number, both centred like the macro cards. */}
+      {settings.ultraMinimal
+        ? <Icon size={16} aria-hidden="true" />
+        : <span className="block max-w-full text-[11px] font-bold uppercase leading-tight tracking-wider">{labels[nutrient]}</span>}
+      <span className="whitespace-nowrap text-base sm:text-lg font-extrabold leading-tight">{value}
         {(!settings.ultraMinimal || average) && <small className="ml-0.5 text-xs font-semibold">{settings.ultraMinimal ? '/day' : 'g'}</small>}
       </span>
     </div>

@@ -117,7 +117,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
                 {t.energy.intake}
               </span>
               {netPos && (
-                <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-intake-accent text-intake-soft">
+                <span className="kc-balance-badge kc-balance-badge-intake px-2 py-0.5 rounded-full text-[10px] font-bold tabular-nums bg-intake-accent text-intake-soft">
                   +{formatKcal(net)}
                 </span>
               )}

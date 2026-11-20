@@ -1,45 +1,98 @@
 import { useAdvancedText } from '../../i18n/advanced';
 import { goalState, useAdvanced } from '../../utils/advancedStore';
+import { useApp } from '../../context/AppContext';
 import type { GoalKey } from '../../types/advanced';
+import type { ThemeStyle } from '../../types';
 
 /**
  * Small badge shown inside a Today field when its goal is reached:
- *  - objective reached: a solid green circle with a white check,
- *  - limit reached / exceeded: a solid red warning triangle with a white exclamation mark.
+ *  - objective reached: a check inside the style's own container shape,
+ *  - limit reached / exceeded: a warning triangle with an exclamation mark.
  *
- * Both are one inline SVG with fixed colours, a white ring and a thin dark halo, so they stay clearly visible
- * on every theme (light, dark, pastel, the style themes that force `color: inherit` inside the nutrient cards).
- * The two shapes differ as well as the colours, so they can be told apart without seeing colours. Renders nothing
- * when goals are off, the goal is off or it is not reached yet, so it takes no space.
+ * The badge belongs to the style and theme it is drawn in instead of using fixed colours:
+ *  - the outline and glyph are the ink of the card the badge sits on (`currentColor`), tinted a little towards
+ *    green (objective) or red (limit) with `color-mix`, so contrast is always the card's own contrast on every
+ *    theme, on pastel, gradient, glass, dark and single-hue (Mono) cards alike;
+ *  - the container shape follows the style: circle (classic, aurora, playful, mono), chamfered octagon (angular),
+ *    hard square with a heavier line (pop) and hairline rounded square (minimal); line joins are mitred in the
+ *    angular and pop styles.
+ * The two shapes differ as well as the tints, so they can be told apart without colours. Renders nothing when goals
+ * are off, the goal is off or it is not reached yet, so it takes no space.
  */
+
+type Shape = 'circle' | 'octagon' | 'square' | 'rounded';
+
+const STYLE_LOOK: Record<ThemeStyle, { shape: Shape; width: number; join: 'round' | 'miter' }> = {
+  classic: { shape: 'circle', width: 2.2, join: 'round' },
+  aurora: { shape: 'circle', width: 2.2, join: 'round' },
+  playful: { shape: 'circle', width: 2.4, join: 'round' },
+  mono: { shape: 'circle', width: 2.2, join: 'round' },
+  angular: { shape: 'octagon', width: 2.2, join: 'miter' },
+  pop: { shape: 'square', width: 2.8, join: 'miter' },
+  minimal: { shape: 'rounded', width: 1.7, join: 'round' },
+};
+
+const GOOD = '#16a34a';
+const BAD = '#dc2626';
+const tint = (c: string) => `color-mix(in srgb, ${c} 62%, currentColor)`;
+const wash = (c: string) => `color-mix(in srgb, ${c} 26%, transparent)`;
+
+function Container({ shape }: { shape: Shape }) {
+  switch (shape) {
+    case 'octagon':
+      return <path d="M8.2 2.8H15.8L21.2 8.2V15.8L15.8 21.2H8.2L2.8 15.8V8.2Z" />;
+    case 'square':
+      return <rect x="3" y="3" width="18" height="18" />;
+    case 'rounded':
+      return <rect x="3" y="3" width="18" height="18" rx="5" />;
+    default:
+      return <circle cx="12" cy="12" r="9.2" />;
+  }
+}
+
 export function GoalBadge({ goal, amount, className = '' }: { goal: GoalKey; amount: number; className?: string }) {
   const config = useAdvanced();
   const text = useAdvancedText();
+  const { settings } = useApp();
   const state = goalState(config, goal, amount);
   if (!state || !state.reached) return null;
 
+  const look = STYLE_LOOK[settings.themeStyle] ?? STYLE_LOOK.classic;
   const objective = state.mode === 'objective';
   const label = objective ? text.goal.objectiveReached : state.exceeded ? text.goal.limitExceeded : text.goal.limitReached;
+  const color = objective ? GOOD : BAD;
   return (
     <span
       role="img"
       aria-label={label}
       title={label}
       data-goal-badge={objective ? 'objective' : 'limit'}
-      className={`inline-flex size-5 shrink-0 items-center justify-center anim-value ${className}`}
-      style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.55)) drop-shadow(0 1px 1.5px rgba(0,0,0,0.25))' }}
+      className={`inline-flex size-[18px] shrink-0 items-center justify-center anim-value ${className}`}
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        aria-hidden="true"
+        focusable="false"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={look.width}
+        strokeLinecap="round"
+        strokeLinejoin={look.join}
+        // currentColor is the ink of the card the badge sits on; the tints are applied on top of it.
+        style={{ stroke: tint(color), fill: wash(color), overflow: 'visible' }}
+      >
         {objective ? (
           <>
-            <circle cx="12" cy="12" r="10" fill="#15A04A" stroke="#FFFFFF" strokeWidth="2" />
-            <path d="M7 12.4L10.6 16L17.2 8.6" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+            <Container shape={look.shape} />
+            <path d="M7.6 12.3L10.7 15.3L16.4 9" fill="none" strokeWidth={look.width + 0.4} />
           </>
         ) : (
           <>
-            <path d="M12 2.8L22 20.2H2Z" fill="#DC2626" stroke="#FFFFFF" strokeWidth="2.2" strokeLinejoin="round" />
-            <path d="M12 9V14.2" fill="none" stroke="#FFFFFF" strokeWidth="2.8" strokeLinecap="round" />
-            <circle cx="12" cy="17.2" r="1.5" fill="#FFFFFF" />
+            <path d="M12 3.2L21.6 20H2.4Z" />
+            <path d="M12 9.6V14" fill="none" strokeWidth={look.width + 0.4} />
+            <path d="M12 17.1H12.01" fill="none" strokeWidth={look.width + 0.8} />
           </>
         )}
       </svg>

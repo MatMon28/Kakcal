@@ -6,6 +6,7 @@ import { formatKcal } from '../../utils/formatters';
 import { setLastAmount } from '../../utils/amountMemory';
 import { AmountSelector } from '../common/AmountSelector';
 import { MacroPills } from '../common/MacroPills';
+import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { useMealSlots } from '../../utils/mealSlots';
 import {
   Coffee,
@@ -313,6 +314,11 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
                           <Trash2 size={13} />
                         </button>
                       </div>
+                    </div>
+
+                    {/* Every logged item shows its own carbs, protein, fat, fibre, salt (and sugar) for the portion eaten. */}
+                    <div data-item-nutrition>
+                      <FoodMacroGrid food={item} amount={displayAmt} dense />
                     </div>
 
                     {isEditing && (

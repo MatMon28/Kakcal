@@ -26,7 +26,7 @@ export const IntakeCard: React.FC<{ compact?: boolean }> = ({ compact = false })
 
   // The badge follows the dominant side; its sign and value are unchanged.
   const surplusPill = (
-    <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
+    <span className="kc-balance-badge kc-balance-badge-intake px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
       +{formatKcal(netBalance)}
     </span>
   );

@@ -254,7 +254,7 @@ export const HistoryView: React.FC = () => {
                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.history.avgIntake}</span>
               </span>
               {avgNetPos && (
-                <span className="kc-balance-badge px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
+                <span className="kc-balance-badge kc-balance-badge-intake px-2 py-0.5 rounded-full text-[11px] font-bold tabular-nums bg-intake-accent text-intake-soft">
                   +{formatKcal(period.avgNet)}
                 </span>
               )}

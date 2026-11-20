@@ -5,10 +5,10 @@
  * (drawn bolder). `transform` (optional) is an SVG transform applied to `shape` and `detail` only, and
  * `extra` (optional) are more silhouettes drawn like `shape` but not transformed.
  *
- * Every icon shows the part together with the joint / extremity next to it so that it is recognisable at
- * 22 px: a flexed arm (biceps), a forearm with its hand, a bent leg with the knee and foot (thighs), a calf
- * with the foot. The biceps and the hand are the lucide `biceps-flexed` and `hand` outlines (ISC licence),
- * the rest is drawn in the same language. Kept free of React so the artwork can be previewed outside the app.
+ * Every icon shows the part with its joint / extremity where that helps recognition: a flexed arm (biceps, tape on the
+ * muscle bulge), a fist on a forearm that widens to the elbow, a bent leg with knee and foot (thighs), a calf with the foot,
+ * head + neck + narrow shoulders, a V-shaped chest with two pectorals. The biceps is the lucide `biceps-flexed` outline
+ * (ISC licence), the rest is drawn in the same language. Kept free of React so the artwork can be previewed outside the app.
  */
 export interface BodyIconArt {
   shape: string;
@@ -25,36 +25,34 @@ export const BODY_ICON_ART = {
     detail: ['M12 16.4H12.01'],
     band: 'M4 12H20',
   },
-  // Collo (simplified): head, a clear neck and the shoulders, tape around the neck
+  // Collo: head, a clear neck and narrow, sloping shoulders; tape around the neck
   neck: {
-    shape: 'M10.3 9.2V11C10.3 12.6 5 12.6 3.5 17.5V20.5H20.5V17.5C19 12.6 13.7 12.6 13.7 11V9.2',
-    detail: ['M8.8 5.6a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0-6.4 0'],
-    band: 'M8 10.8H16',
+    shape: 'M10.2 9.6V12.6C10.2 13.7 7.6 14.2 6.4 15.8C5.7 16.8 5.6 18.4 5.6 20.5H18.4C18.4 18.4 18.3 16.8 17.6 15.8C16.4 14.2 13.8 13.7 13.8 12.6V9.6',
+    detail: ['M8.9 6a3.1 3.1 0 1 0 6.2 0a3.1 3.1 0 1 0-6.2 0'],
+    band: 'M8.4 11.6H15.6',
   },
   // Fianchi: pelvis with the start of both legs, tape at the widest point
   hips: {
     shape: 'M7.5 3.5H16.5C17 7 19.5 9 19.5 12.5C19.5 15.5 18.2 18 17.8 20.5H13.4L12 14.8L10.6 20.5H6.2C5.8 18 4.5 15.5 4.5 12.5C4.5 9 7 7 7.5 3.5Z',
     band: 'M3 11.5H21',
   },
-  // Petto: torso with the shoulders and the two pectoral muscles
+  // Petto: V-shaped upper body with a collar and two separate pectoral muscles; tape under the pecs
   chest: {
-    shape: 'M5 3.5H19L20.5 8C20 12 18.8 16 18.3 20.5H5.7C5.2 16 4 12 3.5 8Z',
-    detail: ['M7.2 12.5C7.5 15.5 11.3 15.9 11.8 13.1', 'M16.8 12.5C16.5 15.5 12.7 15.9 12.2 13.1'],
-    band: 'M3 9.5H21',
+    shape: 'M9 3.5C9.8 5 14.2 5 15 3.5L19 4.8C20.3 5.3 21 6.4 20.8 7.7L18.5 12.5C17.7 15 17.2 17.5 17.4 20.5H6.6C6.8 17.5 6.3 15 5.5 12.5L3.2 7.7C3 6.4 3.7 5.3 5 4.8Z',
+    detail: ['M10.4 8.4C8.2 7.9 6.4 8.9 6.4 10.9C6.4 12.9 8.4 13.8 10.4 13', 'M13.6 8.4C15.8 7.9 17.6 8.9 17.6 10.9C17.6 12.9 15.6 13.8 13.6 13'],
+    band: 'M4 16.6H20',
   },
-  // Avambracci: forearm (left) with the hand (the lucide hand turned to the right, fingers pointing right)
+  // Avambracci: raised fist on top of the forearm, widening towards the elbow with the muscle swelling; tape around the thickest part
   forearms: {
-    shape: 'M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15',
-    detail: ['M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2', 'M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2', 'M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8'],
-    transform: 'translate(6.2 3.4) scale(0.72) rotate(90 12 12)',
-    extra: ['M8.4 8.9L3.7 8.1C2.7 7.9 2 8.7 2 9.7V14.3C2 15.3 2.7 16.1 3.7 15.9L8.4 15.1'],
-    band: 'M5.2 5.6V18.4',
+    shape: 'M8.6 2.5H15.4C16.5 2.5 17.2 3.2 17.2 4.3V8.6C17.2 9.4 16.7 9.9 16 10.2C16.7 12 18.1 14.5 18.2 17C18.3 19 17.5 20.5 16 21H8C6.5 20.5 5.7 19 5.8 17C5.9 14.5 7.3 12 8 10.2C7.3 9.9 6.8 9.4 6.8 8.6V4.3C6.8 3.2 7.5 2.5 8.6 2.5Z',
+    detail: ['M9.5 2.8V6.2', 'M12 2.8V6.2', 'M14.5 2.8V6.2', 'M6.9 6.4H17.1', 'M12.2 12.6C11.4 14.6 11.6 17 12.6 19'],
+    band: 'M4.2 14.6H19.8',
   },
-  // Bicipiti: the flexed arm (lucide biceps-flexed), tape around the muscle
+  // Bicipiti: the flexed arm (lucide biceps-flexed), tape around the bulge of the muscle
   biceps: {
     shape: 'M12.409 13.017A5 5 0 0 1 22 15c0 3.866-4 7-9 7-4.077 0-8.153-.82-10.371-2.462-.426-.316-.631-.832-.62-1.362C2.118 12.723 2.627 2 10 2a3 3 0 0 1 3 3 2 2 0 0 1-2 2c-1.105 0-1.64-.444-2-1',
     detail: ['M15 14a5 5 0 0 0-7.584 2', 'M9.964 6.825C8.019 7.977 9.5 13 8 15'],
-    band: 'M5.8 8.6L11.4 12.6',
+    band: 'M17.2 9.4V21',
   },
   // Cosce: seated leg: the thigh (tape), the knee, the shin and the foot
   thighs: {

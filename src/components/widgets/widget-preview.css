@@ -30,7 +30,14 @@
  * The pill follows the shape of its buttons (same rule as the native tray): concentric, i.e. the
  * button radius / chamfer plus the 8 px vertical padding. Round styles keep the full pill.
  */
-html[data-style='minimal'] .quick-widget { --widget-pill-radius: 19px; } /* 11px buttons + 8px */
+/* Minimal: a crisp slate tray with a hairline border (the style's dock: 16px radius, no shadow, no blur), not a soft glass pill. */
+html[data-style='minimal'] .quick-widget {
+  --widget-pill-radius: 16px;
+  background: color-mix(in srgb, var(--surface) 95%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: none;
+  backdrop-filter: none;
+}
 html[data-style='mono'] .quick-widget { --widget-pill-radius: 20px; } /* 12px buttons + 8px */
 html[data-style='angular'] .quick-widget {
   --widget-pill-radius: 0;

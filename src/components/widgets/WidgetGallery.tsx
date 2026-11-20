@@ -93,7 +93,7 @@ function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
       <div role="img" aria-label={label} className={`${heroCls} ${style.card} flex min-h-[64px] items-center gap-2 rounded-2xl px-2.5 py-2`}>
         <div className={`min-w-0 flex-1 text-center text-[26px] font-extrabold leading-none tabular-nums tracking-tight ${style.ink}`}>{value}</div>
         {pill && (
-          <span className={`kc-balance-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
+          <span className={`kc-balance-badge ${tone === 'intake' ? 'kc-balance-badge-intake' : ''} shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
         )}
       </div>
     );
@@ -105,7 +105,7 @@ function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
           <Icon size={16} />
         </span>
         {pill && (
-          <span className={`kc-balance-badge rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
+          <span className={`kc-balance-badge ${tone === 'intake' ? 'kc-balance-badge-intake' : ''} rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
         )}
       </div>
       <div className={`text-center text-[22px] font-extrabold tabular-nums tracking-tight ${style.ink}`}>{value}</div>
