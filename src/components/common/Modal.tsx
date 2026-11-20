@@ -31,6 +31,58 @@ export function closeTopModal(): boolean {
   return true;
 }
 
+/** Exit animations still on screen. Each entry ends its animation and removes its ghost at once. */
+const activeExits = new Set<() => void>();
+let inputGuardsInstalled = false;
+
+/** Ends every closing animation immediately (any press, key, scroll or new dialog skips what is left of it). */
+export function finishExitAnimations() {
+  Array.from(activeExits).forEach((end) => end());
+}
+
+/** After a swipe-dismiss, a tap that the browser drops (see below) is re-sent as a click until this time. */
+let tapRescueUntil = 0;
+const TAP_RESCUE_MS = 900;
+
+/**
+ * Two document-level guards, installed once:
+ * 1. *Skip the exit*: any new press, key, wheel or dialog opening finishes the closing animations at once, so
+ *    the animation can never be in the way of the next action.
+ * 2. *Tap rescue*: Chromium can swallow the click of the first taps that follow a drag on a `touch-action: none`
+ *    handle (pointer events still arrive, the `click` never does), which felt like a "refractory period" after a
+ *    swipe-down. For a short while after a swipe-dismiss, a quick tap whose `click` does not arrive within
+ *    80 ms is re-sent as a click on the same element.
+ */
+function installInputGuards() {
+  if (inputGuardsInstalled || typeof document === 'undefined') return;
+  inputGuardsInstalled = true;
+  const skip = () => { if (activeExits.size) finishExitAnimations(); };
+  (['pointerdown', 'touchstart', 'keydown', 'wheel'] as const).forEach((type) =>
+    document.addEventListener(type, skip, { capture: true, passive: true }));
+  document.addEventListener('kc:overlay-open', skip);
+
+  let down: { target: EventTarget | null; x: number; y: number; time: number } | null = null;
+  document.addEventListener('pointerdown', (e) => {
+    down = { target: e.target, x: e.clientX, y: e.clientY, time: performance.now() };
+  }, true);
+  document.addEventListener('pointerup', (e) => {
+    const d = down;
+    down = null;
+    const now = performance.now();
+    if (!d || now > tapRescueUntil || e.pointerType === 'mouse' || d.target !== e.target) return;
+    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12 || now - d.time > 700) return;
+    const target = e.target as Element;
+    let clicked = false;
+    const sawClick = () => { clicked = true; };
+    document.addEventListener('click', sawClick, true);
+    window.setTimeout(() => {
+      document.removeEventListener('click', sawClick, true);
+      if (clicked || !target.isConnected || target.closest('[inert], :disabled')) return;
+      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true, clientX: e.clientX, clientY: e.clientY, view: window }));
+    }, 80);
+  }, true);
+}
+
 interface ExitOptions {
   overlay: HTMLElement;
   /** Another dialog stays open underneath: leave through the bottom instead of the dock. */
@@ -81,8 +133,18 @@ function playExit({ overlay, stacked, swiped, dockId }: ExitOptions) {
     ghost.querySelectorAll<HTMLElement>('[data-dialog-scroll]').forEach((el, i) => { el.scrollTop = from[i]?.scrollTop ?? 0; });
   }
 
-  const remove = () => ghost.remove();
+  const running: Animation[] = [];
+  let finished = false;
+  const remove = () => {
+    if (finished) return;
+    finished = true;
+    activeExits.delete(remove);
+    running.forEach((a) => { a.onfinish = null; a.oncancel = null; a.cancel(); });
+    ghost.remove();
+  };
   if (!panel.animate) { remove(); return; }
+  installInputGuards();
+  activeExits.add(remove);
 
   const natural = panel.getBoundingClientRect();
   const target = stacked ? null : getDockTarget(dockId);
@@ -108,17 +170,18 @@ function playExit({ overlay, stacked, swiped, dockId }: ExitOptions) {
     { opacity: startOpacity, offset: target ? 0.7 : 0.55 },
     { transform: end, opacity: 0 },
   ], options);
-  scrim.animate([{ opacity: startScrim }, { opacity: 0 }], { duration, easing: 'linear', fill: 'forwards' });
+  const fade = scrim.animate([{ opacity: startScrim }, { opacity: 0 }], { duration, easing: 'linear', fill: 'forwards' });
+  running.push(slide, fade);
   slide.onfinish = remove;
   slide.oncancel = remove;
 
   // The button (or bar) swallows the dialog with a small pulse.
   if (target) {
     const isBar = target.pulse.hasAttribute('data-dock');
-    target.pulse.animate(
+    running.push(target.pulse.animate(
       [{ transform: 'scale(1)' }, { transform: `scale(${isBar ? 1.05 : 1.2})`, offset: 0.4 }, { transform: 'scale(1)' }],
       { duration: 110, delay: duration * 0.7, easing: 'ease-out' },
-    );
+    ));
   }
 }
 
@@ -291,6 +354,8 @@ export const Modal: React.FC<ModalProps> = ({
     if (!dismiss) { settleBack(d.offset); return; }
     // Closing is just unmounting: playExit() continues from the painted position, with the finger's speed.
     swiped.current = true;
+    installInputGuards();
+    tapRescueUntil = performance.now() + TAP_RESCUE_MS;
     onCloseRef.current();
     window.setTimeout(() => {
       if (!swiped.current || !panelRef.current?.isConnected) return;

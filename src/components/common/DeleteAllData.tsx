@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { deleteAllData } from '../../utils/deleteAllData';
 import { ConfirmDialog } from './ConfirmDialog';
 
-/** Settings card that erases every local record after two separate confirmations. */
+/** Last item of Settings: a plain red button (no title, no description) that erases every local record after two confirmations. */
 export const DeleteAllData: React.FC = () => {
   const { t } = useApp();
   const copy = t.settings.deleteAll;
@@ -20,15 +20,13 @@ export const DeleteAllData: React.FC = () => {
   };
 
   return (
-    <section aria-label={copy.title} className="bg-[#F6D0D0]/40 border border-[#E9A9A9]/60 rounded-2xl p-3 space-y-2.5">
-      <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">{copy.title}</h3>
-      <p className="text-[11px] font-medium text-[var(--muted)]">{copy.desc}</p>
+    <div>
       <button
         type="button"
         onClick={() => setStep(1)}
-        className="pressable w-full py-2.5 px-3 rounded-xl bg-[#F6D0D0] hover:bg-[#F0BDBD] text-[#7A2727] font-extrabold text-xs flex items-center justify-center gap-1.5"
+        className="pressable w-full py-3 px-4 rounded-2xl bg-[#D93636] hover:bg-[#C42B2B] text-white font-extrabold text-sm flex items-center justify-center gap-2"
       >
-        <Trash2 size={15} />
+        <Trash2 size={16} className="shrink-0" />
         <span>{copy.button}</span>
       </button>
 
@@ -48,6 +46,6 @@ export const DeleteAllData: React.FC = () => {
         onCancel={() => setStep(0)}
         onConfirm={() => void erase()}
       />
-    </section>
+    </div>
   );
 };

@@ -3,7 +3,7 @@
   Resource shrinking (shrinkResources true) removes every resource that no code or XML references by id.
   These are only looked up BY NAME at run time, so they must be kept:
     - Splash_<hex>: LaunchBackground.applySplashTheme() uses getResources().getIdentifier("Splash_...", "style").
-    - ic_stat_kak / ic_notification_large: the Local Notifications plugin resolves smallIcon / largeIcon by name.
+    - ic_stat_kak: the Local Notifications plugin resolves smallIcon by name (there is no large icon).
 -->
 <resources xmlns:tools="http://schemas.android.com/tools"
-    tools:keep="@style/Splash_*,@drawable/ic_stat_kak,@drawable/ic_notification_large" />
+    tools:keep="@style/Splash_*,@drawable/ic_stat_kak" />

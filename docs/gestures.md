@@ -8,6 +8,8 @@
 
 Horizontal swipes on main content follow the finger and switch visible tabs, even on blank areas and ordinary fields (see [Motion](motion.md)); animations are interrupted by the next touch. Text areas, contenteditable areas, sliders, open dialogs, horizontal scrollers that can still move in the swipe direction, and marked controls keep their gestures. The Statistics weight trend accepts swipes. Dialogs close by swiping their handle or title bar down. The outer 8 CSS pixels are reserved for system-edge navigation; multi-touch, canceled gestures and predominantly vertical movement do not navigate. On Android, Back dismisses the top dialog or Today calendar, returns from the catalog, then returns to Today. At the root, it backgrounds the app. The keyboard and launcher-level long-press/resize are handled by Android.
 
+**After a swipe-down close:** the next press or key ends the closing animation at once, and a tap in the next 0.9 s can never be lost (see *Ending the exit early* and *Tap rescue* in [motion.md](motion.md)).
+
 ## Sensitivity (gesture round)
 
 All numbers are named constants at the top of `PageSwiper.tsx` / inside `Modal.tsx`:

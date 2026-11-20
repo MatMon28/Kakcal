@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`7a5ad44` ("Better animations")**, the tip of `main` when the polish round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`dfd1d51` ("Various fixes")**, the tip of `main` when the notification / popup / delete round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run
@@ -25,7 +25,9 @@ git reset -q                     # leave the working tree as it was
 
 When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
 
-**Current patch contents (polish round, base `7a5ad44` "Better animations"):** see the *Polish round* paragraph in [README.md](README.md). Source: `Modal.tsx`, `ActivityCardSummary.tsx`, `index.css`, `translations.ts`, `tourContent.ts`, `SettingsModal.tsx`, new `DeleteAllData.tsx` and `deleteAllData.ts`, Android `widget_medium*.xml`, `widget_medium_info.xml`, `widget_styles.xml`, new `widget_actions_five_compact.xml`, plus docs. No `package.json` change.
+**Current patch contents (notification / popup / delete round, base `dfd1d51`):** see the *Notification / popup / delete round* paragraph in [README.md](README.md). Source: `Modal.tsx`, `ConfirmDialog.tsx`, `DeleteAllData.tsx`, `notifications.ts`, `ic_stat_kak.xml`, `keep.xml`, deleted `ic_notification_large.png` and `render-notification-icon.mjs`, new `scripts/generate-notification-icon.mjs`, plus docs. No `package.json` change.
+
+**Earlier patch (polish round, base `7a5ad44` "Better animations"):** see the *Polish round* paragraph in [README.md](README.md). Source: `Modal.tsx`, `ActivityCardSummary.tsx`, `index.css`, `translations.ts`, `tourContent.ts`, `SettingsModal.tsx`, new `DeleteAllData.tsx` and `deleteAllData.ts`, Android `widget_medium*.xml`, `widget_medium_info.xml`, `widget_styles.xml`, new `widget_actions_five_compact.xml`, plus docs. No `package.json` change.
 
 **Earlier patch (gesture round, base `38d15c3`):** see the *Gesture round* paragraph in [README.md](README.md). Source: `Modal.tsx`, `ActionDock.tsx`, `PageSwiper.tsx`, `DayNavigator.tsx`, `index.css`, `dockId` props on 11 modals, plus docs. No new files, no `package.json` change.
 

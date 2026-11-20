@@ -38,10 +38,13 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             onClick={onConfirm}
             autoFocus
-            className="pressable py-2.5 rounded-2xl bg-[#F6D0D0] hover:bg-[#F0BDBD] text-[#7A2727] text-sm font-extrabold inline-flex items-center justify-center gap-1.5"
+            className="pressable min-h-11 px-2 py-2.5 rounded-2xl bg-[#F6D0D0] hover:bg-[#F0BDBD] text-[#7A2727] text-sm font-extrabold flex items-center justify-center"
           >
-            <Trash2 size={15} />
-            {confirmLabel ?? t.common.delete}
+            {/* The icon sits inline at the start of the text, so a long label that wraps stays centred with it. */}
+            <span className="text-center leading-tight">
+              <Trash2 size={15} className="inline-block align-[-2px] mr-1.5" aria-hidden="true" />
+              {confirmLabel ?? t.common.delete}
+            </span>
           </button>
         </div>
       </div>
