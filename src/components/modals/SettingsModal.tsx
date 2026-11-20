@@ -27,6 +27,7 @@ import { PoopIcon } from '../common/PoopIcon';
 import { TrackerIcon, TRACKER_ICONS } from '../common/TrackerIcon';
 import { DataBackup } from '../common/DataBackup';
 import { InstallApp } from '../common/InstallApp';
+import { DeleteAllData } from '../common/DeleteAllData';
 import { Collapsible } from '../common/Collapsible';
 import { NotificationSettings } from './NotificationSettings';
 import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
@@ -780,6 +781,9 @@ export const SettingsModal: React.FC = () => {
 
           {/* PWA: shown only when the browser can install the app */}
           <InstallApp />
+
+          {/* Danger zone: erase everything (two confirmations) */}
+          <DeleteAllData />
         </div>
       )}
     </Modal>

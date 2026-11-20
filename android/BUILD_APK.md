@@ -57,7 +57,7 @@ If those directories are missing, Gradle would normally create empty placeholder
 | --- | --- |
 | Small | Food, Movement, Water, Poop and Weight: five circular icon buttons. |
 | Extra-small | Food, Water and Poop: three circular icon buttons. |
-| Medium | Intake and burned cards (no progress bars), carbs, protein and fat in grams only, and the five icon buttons. |
+| Medium | Default size **4x2** (`minHeight`/`minResizeHeight` 110 dp, `targetCellHeight` 2). Intake and burned cards on one line each (no progress bars), carbs, protein and fat in grams only, and the five icon buttons. |
 | Large | Intake and burned cards with their icons, badge and progress bar; carbs, protein and fat with grams and percentages; and five icon buttons. Same arrangement as Ultra minimal Today, with no logo, name or "today" label. |
 
 The translucent tray behind the Small and Extra-small buttons follows the buttons' shape in every theme style (pill, rounded rectangle or chamfered).
@@ -81,7 +81,7 @@ Camera access is optional and scanner support varies by WebView. `INTERNET` perm
 1. On a fresh install, enable airplane mode **before the first launch**. Verify that the journal is empty. Log food, water, activity, poop and weight, close and reopen, and check persistence.
 2. Add the four widgets (Small, Extra-small, Medium, Large). Test every shortcut with the app closed, backgrounded, on a previous date, and already in a dialog. Confirm cancel makes no entry and Save logs once, for today.
 3. Edit/remove a food and import a backup. Compare the large widget with Today. Check resizing, midnight, timezone changes, reboot, large font settings and TalkBack on your actual launcher.
-4. Turn on **Settings > Ultra minimal mode** and check the outlined diamond salt symbol. Swipe horizontally on content. Vertical scrolls, editable fields, horizontal lists, pinch gestures and system-edge Back should not change tabs. Check portrait/landscape, the keyboard and gesture/three-button navigation.
+4. Turn on **Settings > Ultra minimal** and check the outlined diamond salt symbol. Swipe horizontally on content. Vertical scrolls, editable fields, horizontal lists, pinch gestures and system-edge Back should not change tabs. Check portrait/landscape, the keyboard and gesture/three-button navigation.
 5. Use Back in nested dialogs, the Today calendar, Browse Foods, and a non-Today tab. It should dismiss the top overlay, return from the catalog, then return to Today. Back at the root backgrounds the app.
 6. Export to a local JSON document, cancel and repeat, then import the saved file. Deny camera permission and check manual barcode entry; try known and unknown codes while offline.
 7. With a device attached, run `./gradlew connectedDebugAndroidTest` from `android/` to check provider registration and accepted intent actions. Build and test your own signed release, including an update signed with the same key.

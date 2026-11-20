@@ -1312,9 +1312,11 @@ html[data-style]:not([data-style="classic"]) .kc-icon-btn {
   clip-path: var(--clip-sm, none);
 }
 
-/* Wordmark flame accent in the 6 new themes */
-html[data-style]:not([data-style="classic"]) .kc-wordmark svg g path:first-of-type {
-  fill: var(--brand-flame-color, currentColor);
+/* Wordmark: the poop (and the K) are outlines only. They must stay transparent in every theme, so no
+   theme may fill them (this used to colour the poop with --brand-flame-color in the non-classic themes). */
+.kc-wordmark svg g,
+.kc-wordmark svg g path {
+  fill: none !important;
 }
 
 /* Navigation pill & tabs */

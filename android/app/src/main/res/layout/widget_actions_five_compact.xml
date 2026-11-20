@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="40dp" android:orientation="horizontal" android:gravity="center">
+    <ImageButton android:id="@+id/widget_food" style="@style/WidgetActionCompact"
+        android:src="@drawable/widget_food_icon" android:contentDescription="@string/widget_food" />
+    <ImageButton android:id="@+id/widget_movement" style="@style/WidgetActionCompact"
+        android:src="@drawable/widget_movement_icon" android:contentDescription="@string/widget_movement" />
+    <ImageButton android:id="@+id/widget_water" style="@style/WidgetActionCompact"
+        android:src="@drawable/widget_water_icon" android:contentDescription="@string/widget_water" />
+    <ImageButton android:id="@+id/widget_poop" style="@style/WidgetActionCompact"
+        android:src="@drawable/widget_poop_icon" android:contentDescription="@string/widget_poop" />
+    <ImageButton android:id="@+id/widget_weight" style="@style/WidgetActionCompact"
+        android:src="@drawable/widget_weight_icon" android:contentDescription="@string/widget_weight" />
+    <ImageButton android:id="@+id/widget_custom" style="@style/WidgetActionCompact" android:visibility="gone"
+        android:src="@drawable/widget_custom_icon" android:contentDescription="@string/widget_custom" />
+</LinearLayout>

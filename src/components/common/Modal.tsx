@@ -98,8 +98,9 @@ function playExit({ overlay, stacked, swiped, dockId }: ExitOptions) {
   } else {
     end = `translate3d(0,${visibleBottom - natural.top + 8}px,0)`;
   }
-  // Released with the finger already moving: start at speed. A tap accelerates into the button.
-  const duration = target ? (swiped ? 250 : 300) : swiped ? 200 : 220;
+  // Released with the finger already moving: start at speed. The exit is deliberately barely perceivable
+  // (60-90 ms): the dialog is gone almost at once, with just a hint of being swallowed by the button.
+  const duration = target ? (swiped ? 70 : 90) : swiped ? 60 : 80;
   const easing = swiped ? 'cubic-bezier(.2,.25,.6,.5)' : target ? 'cubic-bezier(.45,.05,.7,.45)' : 'cubic-bezier(.4,0,.9,.6)';
   const options: KeyframeAnimationOptions = { duration, easing, fill: 'forwards' };
   const slide = panel.animate([
@@ -116,7 +117,7 @@ function playExit({ overlay, stacked, swiped, dockId }: ExitOptions) {
     const isBar = target.pulse.hasAttribute('data-dock');
     target.pulse.animate(
       [{ transform: 'scale(1)' }, { transform: `scale(${isBar ? 1.05 : 1.2})`, offset: 0.4 }, { transform: 'scale(1)' }],
-      { duration: 340, delay: duration * 0.8, easing: 'ease-out' },
+      { duration: 110, delay: duration * 0.7, easing: 'ease-out' },
     );
   }
 }

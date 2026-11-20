@@ -10,6 +10,11 @@
         <item name="android:focusable">true</item>
     </style>
 
+    <!-- Medium widget (4x2): shorter action buttons. -->
+    <style name="WidgetActionCompact" parent="WidgetAction">
+        <item name="android:layout_height">40dp</item>
+    </style>
+
     <style name="WidgetCard">
         <item name="android:layout_height">match_parent</item>
         <item name="android:orientation">vertical</item>
@@ -51,7 +56,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
         <item name="android:orientation">vertical</item>
-        <item name="android:padding">6dp</item>
+        <item name="android:padding">2dp</item>
     </style>
 
     <style name="WidgetMacroValue">
@@ -80,6 +85,29 @@
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">0</item>
         <item name="android:textSize">21sp</item>
+    </style>
+
+    <!-- Medium widget (4x2): icon, value and badge share one line, so the card is about 34 dp tall. -->
+    <style name="WidgetCardRow" parent="WidgetCard">
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:padding">5dp</item>
+    </style>
+
+    <style name="WidgetValueRow">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textSize">19sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="WidgetMacroValueCompact" parent="WidgetMacroValue">
+        <item name="android:textSize">15sp</item>
     </style>
 
     <!-- Large widget macro cards: a frame so the letter can sit in the top-left corner. -->

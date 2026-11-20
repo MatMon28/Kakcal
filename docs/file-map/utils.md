@@ -9,6 +9,7 @@
 | File or directory | Role |
 | --- | --- |
 | `src/utils/tourPreview.ts` | The `?tour=1` flag that shows the Period page inside the tour only. |
+| `src/utils/deleteAllData.ts` | `deleteAllData()`: cancels pending reminders (Android), clears local/session storage. Called by `DeleteAllData.tsx`. |
 | `src/utils/android.ts` | Typed local Capacitor plugin for launcher actions, nutrition and theme-style updates, native JSON export, and `syncLaunchBackground` (sends the current `--bg` to the native launch surfaces). |
 | `src/utils/notifications.ts` | Notification defaults and `normalizeNotificationSettings`, the pure `buildNotificationPlan` / `waterReminderMinutes`, permission helpers, the Android scheduler (`syncNativeNotifications`, tap listener, test notification via `@capacitor/local-notifications`) and the browser timer fallback. See [Notifications](../notifications.md). |
 | `src/utils/useNotificationScheduler.ts` | React hook that keeps the Android alarms / browser timers in step with Settings, language and custom buttons, and opens the right screen when a notification is tapped. |

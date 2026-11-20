@@ -103,7 +103,7 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
               return (
                 <div key={act.id} className="py-2 flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <span className={`block text-xs sm:text-sm font-bold text-[var(--text)] truncate ${ultraMinimal ? 'sr-only' : ''}`}>{name(act)}</span>
+                    <span className="block text-xs sm:text-sm font-bold text-[var(--text)] truncate">{name(act)}</span>
                     {!ultraMinimal && (detail || act.notes) && (
                       <span className="block text-[11px] font-medium tabular-nums text-[var(--muted)] truncate">
                         {detail}

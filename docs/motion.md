@@ -22,7 +22,7 @@ Every way of closing a dialog (X, backdrop, Escape, Back, swipe down, or the par
 
 - The dialog is simply unmounted at once. `playExit` runs from the layout-effect cleanup: it clones the overlay (or re-attaches it when React already detached it), starts from the sheet's *painted* transform (so a swiped sheet continues from the finger's position and speed) and animates the clone on the compositor. The page behind is usable immediately; there is no waiting for `onfinish` and no unmount flash. A refused swipe-close (the parent did not unmount) springs back after 120 ms.
 - **Target:** `getDockTarget(dockId)` in `ActionDock.tsx`. If the dialog has a `dockId` (the id of a bar button that opens it: `food`, `activity`, `water`, `poop`, `weight`, `custom` on Today; `meal`, `recipe`, `food` on Meals; `cycle` on Period) and that button exists, the sheet shrinks (translate + scale, then fades) into the button, which gives a small pulse as it swallows it. Any other dialog (profile, settings, pickers...) shrinks into the **centre of the bar** (pulse on the bar). With no bar on screen, or when another dialog stays open below, the sheet leaves through the bottom edge.
-- Durations: 300 ms tap-close, 250 ms swipe-close into a button, 200-220 ms to the bottom. `prefers-reduced-motion` skips it.
+- Durations: the exit is deliberately **barely perceivable**: 90 ms tap-close and 70 ms swipe-close into a button, 80 / 60 ms to the bottom, and a 110 ms pulse on the button (they used to be 300 / 250 / 220 / 200 ms and 340 ms). Constants live in `playExit` in `Modal.tsx`. `prefers-reduced-motion` skips it.
 
 ## Bottom bar hides on scroll
 
