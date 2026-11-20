@@ -57,7 +57,7 @@ If those directories are missing, Gradle would normally create empty placeholder
 | --- | --- |
 | Small | Food, Movement, Water, Poop and Weight: five circular icon buttons. |
 | Extra-small | Food, Water and Poop: three circular icon buttons. |
-| Medium | Default size **4x2** (`minHeight`/`minResizeHeight` 110 dp, `targetCellHeight` 2). Intake and burned cards on one line each (no progress bars), carbs, protein and fat in grams only, and the five icon buttons. |
+| Medium | Default size **4x2** (`minHeight`/`minResizeHeight` 110 dp, `targetCellHeight` 2). Carbs, protein and fat in grams on a row as tall as the buttons (40 dp), the five 40 dp icon buttons, and the intake and burned cards (one line each, no progress bars) filling all the remaining height. |
 | Large | Intake and burned cards with their icons, badge and progress bar; carbs, protein and fat with grams and percentages; and five icon buttons. Same arrangement as Ultra minimal Today, with no logo, name or "today" label. |
 
 The translucent tray behind the Small and Extra-small buttons follows the buttons' shape in every theme style (pill, rounded rectangle or chamfered).

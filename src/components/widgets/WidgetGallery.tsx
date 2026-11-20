@@ -86,8 +86,23 @@ function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
   const style = TONE[tone];
   const Icon = style.Icon;
   const heroCls = tone === 'intake' ? 'kc-hero-intake' : 'kc-hero-burned';
+  if (compact) {
+    // Medium (4x2): one line (icon, value, badge) in a card that is taller than the macro row below it and always the
+    // biggest item of the widget; the macro row is exactly as tall as the buttons.
+    return (
+      <div role="img" aria-label={label} className={`${heroCls} ${style.card} flex min-h-[64px] items-center gap-2 rounded-2xl px-2.5 py-2`}>
+        <span className={`inline-flex shrink-0 ${style.accent}`} aria-hidden="true">
+          <Icon size={28} />
+        </span>
+        <div className={`min-w-0 flex-1 text-center text-[26px] font-extrabold leading-none tabular-nums tracking-tight ${style.ink}`}>{value}</div>
+        {pill && (
+          <span className={`kc-balance-badge shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
+        )}
+      </div>
+    );
+  }
   return (
-    <div role="img" aria-label={label} className={`${heroCls} ${style.card} flex ${compact ? 'min-h-[74px] p-2' : 'min-h-[104px] p-2.5'} flex-col justify-between rounded-2xl`}>
+    <div role="img" aria-label={label} className={`${heroCls} ${style.card} flex min-h-[104px] p-2.5 flex-col justify-between rounded-2xl`}>
       <div className="flex min-h-5 items-center justify-between gap-1">
         <span className={`inline-flex ${style.accent}`} aria-hidden="true">
           <Icon size={16} />
@@ -96,7 +111,7 @@ function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
           <span className={`kc-balance-badge rounded-full px-2 py-0.5 text-[10px] font-bold tabular-nums ${style.pill}`}>{pill}</span>
         )}
       </div>
-      <div className={`text-center ${compact ? 'text-[19px]' : 'text-[22px]'} font-extrabold tabular-nums tracking-tight ${style.ink}`}>{value}</div>
+      <div className={`text-center text-[22px] font-extrabold tabular-nums tracking-tight ${style.ink}`}>{value}</div>
       {bar !== null && (
         <div className={`kc-hero-track h-1.5 w-full overflow-hidden rounded-full ${style.track}`}>
           <div className={`kc-hero-fill h-full rounded-full transition-[width] duration-500 ${style.fill}`} style={{ width: `${bar}%` }} />
@@ -106,7 +121,7 @@ function EnergyCard({ tone, label, value, pill, bar, compact = false }: {
   );
 }
 
-function MacroCard({ tone, label, grams, percent, letter }: {
+function MacroCard({ tone, label, grams, percent, letter, compact = false }: {
   tone: keyof typeof MACRO;
   label: string;
   grams: string;
@@ -114,20 +129,22 @@ function MacroCard({ tone, label, grams, percent, letter }: {
   percent: string | null;
   /** Macro letter in the top-left corner (the Large widget). */
   letter?: string;
+  /** Medium: exactly as tall as the 48 px buttons below it. */
+  compact?: boolean;
 }) {
   const style = MACRO[tone];
   return (
     <div
       role="img"
       aria-label={percent === null ? `${label}: ${grams} g` : `${label}: ${grams} g, ${percent}%`}
-      className={`kc-macro-${tone} ${style.card} relative rounded-2xl px-1.5 py-2 text-center`}
+      className={`kc-macro-${tone} ${style.card} relative rounded-2xl px-1.5 text-center ${compact ? 'flex h-12 items-center justify-center' : 'py-2'}`}
     >
       {letter && (
         <span aria-hidden="true" className={`absolute left-2 top-1.5 text-[10px] font-extrabold leading-none ${style.percent}`}>
           {letter}
         </span>
       )}
-      <div className={`text-base font-extrabold tabular-nums tracking-tight ${style.value}`}>{grams}</div>
+      <div className={`${compact ? 'text-sm' : 'text-base'} font-extrabold tabular-nums tracking-tight ${style.value}`}>{grams}</div>
       {percent !== null && <div className={`text-[11px] font-bold tabular-nums ${style.percent}`}>{percent}%</div>}
     </div>
   );
@@ -189,9 +206,9 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
         />
       </div>
       <div className="mt-2 grid grid-cols-3 gap-2">
-        <MacroCard tone="carbs" label={ui.carbs} grams={grams(snapshot?.carbsGrams ?? 0)} letter={compact ? undefined : letters[0]} percent={compact ? null : percent(snapshot?.carbsPercent ?? 0)} />
-        <MacroCard tone="protein" label={ui.protein} grams={grams(snapshot?.proteinGrams ?? 0)} letter={compact ? undefined : letters[1]} percent={compact ? null : percent(snapshot?.proteinPercent ?? 0)} />
-        <MacroCard tone="fat" label={ui.fat} grams={grams(snapshot?.fatGrams ?? 0)} letter={compact ? undefined : letters[2]} percent={compact ? null : percent(snapshot?.fatPercent ?? 0)} />
+        <MacroCard compact={compact} tone="carbs" label={ui.carbs} grams={grams(snapshot?.carbsGrams ?? 0)} letter={compact ? undefined : letters[0]} percent={compact ? null : percent(snapshot?.carbsPercent ?? 0)} />
+        <MacroCard compact={compact} tone="protein" label={ui.protein} grams={grams(snapshot?.proteinGrams ?? 0)} letter={compact ? undefined : letters[1]} percent={compact ? null : percent(snapshot?.proteinPercent ?? 0)} />
+        <MacroCard compact={compact} tone="fat" label={ui.fat} grams={grams(snapshot?.fatGrams ?? 0)} letter={compact ? undefined : letters[2]} percent={compact ? null : percent(snapshot?.fatPercent ?? 0)} />
       </div>
       <div className={`mt-2.5 border-t pt-2.5 ${look.style === 'dark' ? 'border-white/20' : 'border-[var(--border)]'}`}>
         <ActionRow

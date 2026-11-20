@@ -324,17 +324,10 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 borderWidth = 3f;
             } else if ("mono".equals(themeStyle)) {
                 int base = Color.parseColor(monoHue != null && monoHue.matches("^#[0-9a-fA-F]{6}$") ? monoHue : "#64748b");
-                if (dark) {
-                    int cardBg = mixColor(Color.parseColor("#1a2233"), base, 0.24f);
-                    int intakeBg = mixColor(base, Color.WHITE, 0.28f);
-                    int burnedBg = mixColor(base, Color.parseColor("#090d16"), 0.05f);
-                    fill = index == 0 ? intakeBg : (index == 1 ? burnedBg : cardBg);
-                } else {
-                    int cardBg = mixColor(Color.WHITE, base, 0.16f);
-                    int intakeBg = mixColor(base, Color.parseColor("#090e17"), 0.32f);
-                    int burnedBg = mixColor(base, Color.parseColor("#090e17"), 0.08f);
-                    fill = index == 0 ? intakeBg : (index == 1 ? burnedBg : cardBg);
-                }
+                // Every button (Food and Movement included) uses the same plate, like the app dock in Mono.
+                fill = dark
+                    ? mixColor(Color.parseColor("#1a2233"), base, 0.24f)
+                    : mixColor(Color.WHITE, base, 0.16f);
                 ink = contrastText(fill);
             }
 

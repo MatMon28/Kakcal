@@ -11,6 +11,7 @@ import { useOffCatalog } from '../../utils/useOffCatalog';
 import { catalogueScore } from '../../data/offCatalog';
 import { formatKcal } from '../../utils/formatters';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import {
   UtensilsCrossed,
   Plus,
@@ -180,6 +181,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     logPreBuiltMealToSlot,
     logFoodItem,
     allFoods,
+    favoriteFoods,
     rememberFood,
     language,
     selectedDate,
@@ -360,6 +362,8 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   // The offline Open Food Facts catalogue also feeds the ingredient searches (loaded on first use).
   const offCatalog = useOffCatalog(isCreateOpen || isRecipeOpen);
 
+  const favoriteIds = useMemo(() => favoriteFoods ?? [], [favoriteFoods]);
+
   const filteredFoodsForSearch = useMemo(() => {
     const q = ingredientSearch.trim();
     if (q.length < 2) return [];
@@ -379,8 +383,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
       .filter((f) => !seen.has(f.id))
       .map((f) => ({ f, score: catalogueScore(q) }));
-    return [...local, ...catalogue].sort((a, b) => a.score - b.score).slice(0, 40).map((x) => x.f);
-  }, [allFoods, ingredientSearch, offCatalog]);
+    const ranked = [...local, ...catalogue].sort((a, b) => a.score - b.score);
+    // Favourites that directly match the text come first (same rule as Add Food).
+    return pinCoherentFavorites(ranked, favoriteIds, (x) => x.f.id, (x) => x.score, q).slice(0, 40).map((x) => x.f);
+  }, [allFoods, ingredientSearch, offCatalog, favoriteIds]);
 
   const recipeResults = useMemo(() => {
     const q = recipeSearch.trim();
@@ -396,8 +402,18 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
       .filter((f) => !seen.has(f.id))
       .map((f) => ({ f, score: catalogueScore(q) }));
-    return [...local, ...catalogue].sort((a, b) => a.score - b.score).slice(0, 40).map((x) => x.f);
-  }, [allFoods, recipeSearch, offCatalog]);
+    const ranked = [...local, ...catalogue].sort((a, b) => a.score - b.score);
+    return pinCoherentFavorites(ranked, favoriteIds, (x) => x.f.id, (x) => x.score, q).slice(0, 40).map((x) => x.f);
+  }, [allFoods, recipeSearch, offCatalog, favoriteIds]);
+
+  // One typed character: the favourites starting with it (Add Food does the same), instead of only a hint.
+  const favoriteOneChar = (query: string) => {
+    const q = query.trim();
+    if (q.length !== 1) return [];
+    return favoriteIds
+      .map((id) => allFoods.find((f) => f.id === id))
+      .filter((f): f is FoodItem => Boolean(f) && matchesFirstChar(f as FoodItem, q));
+  };
 
   const recipeTotals = useMemo(() => {
     let g = 0, kcal = 0, c = 0, p = 0, f = 0, fib = 0, salt = 0, sugar = 0;
@@ -1125,6 +1141,37 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               ))}
             </div>
 
+            {/* Ingredient search — same behaviour as Add Food (fuzzy, favourites first and starred). Placed ABOVE the ingredients already in the meal. */}
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-[var(--muted)] block">
+                {t.prebuilt.pickIngredientPrompt}
+              </span>
+              {searchInput(ingredientSearch, setIngredientSearch, t.foodModal.searchPlaceholder)}
+              {ingredientSearch.trim().length === 1 && (
+                favoriteOneChar(ingredientSearch).length > 0 ? (
+                  <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                    {favoriteOneChar(ingredientSearch).map((food) => (
+                      <FoodResultRow key={food.id} food={food} onClick={() => handleSelectFood(food)} favorite />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
+                )
+              )}
+              {ingredientSearch.trim().length >= 2 && (
+                <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                  {filteredFoodsForSearch.length === 0 ? (
+                    <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
+                  ) : (
+                    filteredFoodsForSearch.map((food) => (
+                      <FoodResultRow key={food.id} food={food} onClick={() => handleSelectFood(food)} favorite />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+
             {newIngredients.length > 0 && (
               <div className="bg-[var(--inset)] rounded-2xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
@@ -1182,28 +1229,6 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 </div>
               </div>
             )}
-
-            {/* Ingredient search — same behaviour as Add Food (fuzzy, results only while typing) */}
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-[var(--muted)] block">
-                {t.prebuilt.pickIngredientPrompt}
-              </span>
-              {searchInput(ingredientSearch, setIngredientSearch, t.foodModal.searchPlaceholder)}
-              {ingredientSearch.trim().length === 1 && (
-                <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
-              )}
-              {ingredientSearch.trim().length >= 2 && (
-                <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
-                  {filteredFoodsForSearch.length === 0 ? (
-                    <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
-                  ) : (
-                    filteredFoodsForSearch.map((food) => (
-                      <FoodResultRow key={food.id} food={food} onClick={() => handleSelectFood(food)} />
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
 
             {newIngredients.length > 0 && (
               <button
@@ -1286,6 +1311,52 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
             />
 
+            {/* Ingredient search — same behaviour as Add Food (favourites first and starred). Placed ABOVE the ingredients already in the recipe. */}
+            <div className="space-y-2">
+              {searchInput(recipeSearch, setRecipeSearch, t.foodModal.searchPlaceholder)}
+              {recipeSearch.trim().length === 1 && (
+                favoriteOneChar(recipeSearch).length > 0 ? (
+                  <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                    {favoriteOneChar(recipeSearch).map((food) => (
+                      <FoodResultRow
+                        key={food.id}
+                        food={food}
+                        favorite
+                        onClick={() => {
+                          rememberFood(food);
+                          setRecipePendingFood(food);
+                          setRecipePendingAmt(getDefaultAmount(food));
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
+                )
+              )}
+              {recipeSearch.trim().length >= 2 && (
+                <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                  {recipeResults.length === 0 ? (
+                    <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
+                  ) : (
+                    recipeResults.map((food) => (
+                      <FoodResultRow
+                        key={food.id}
+                        food={food}
+                        favorite
+                        onClick={() => {
+                          rememberFood(food);
+                          setRecipePendingFood(food);
+                          setRecipePendingAmt(getDefaultAmount(food));
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+
             {recipeIngs.length > 0 && (
               <div className="bg-[var(--inset)] rounded-2xl p-3 space-y-2">
                 <div className="flex items-center justify-between">
@@ -1350,33 +1421,6 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 </div>
               </div>
             )}
-
-            {/* Ingredient search — same behaviour as Add Food */}
-            <div className="space-y-2">
-              {searchInput(recipeSearch, setRecipeSearch, t.foodModal.searchPlaceholder)}
-              {recipeSearch.trim().length === 1 && (
-                <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
-              )}
-              {recipeSearch.trim().length >= 2 && (
-                <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
-                  {recipeResults.length === 0 ? (
-                    <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
-                  ) : (
-                    recipeResults.map((food) => (
-                      <FoodResultRow
-                        key={food.id}
-                        food={food}
-                        onClick={() => {
-                          rememberFood(food);
-                          setRecipePendingFood(food);
-                          setRecipePendingAmt(getDefaultAmount(food));
-                        }}
-                      />
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
 
             {recipeIngs.length > 0 && (
               <button

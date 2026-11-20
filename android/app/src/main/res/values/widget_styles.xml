@@ -87,11 +87,10 @@
         <item name="android:textSize">21sp</item>
     </style>
 
-    <!-- Medium widget (4x2): icon (24 dp), value (22 sp) and badge share one line, so the card is about 35 dp tall.
-         These intake/burned cards are deliberately larger than the macro cards below them. -->
+    <!-- Medium widget (4x2): icon, value and badge share one line. The card fills the whole height that the 40 dp macro row and
+         the 40 dp buttons leave free, so these cards are always the biggest items of the widget. -->
     <style name="WidgetCardRow" parent="WidgetCard">
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:layout_height">match_parent</item>
         <item name="android:gravity">center_vertical</item>
         <item name="android:orientation">horizontal</item>
         <item name="android:padding">4dp</item>
@@ -99,12 +98,17 @@
 
     <style name="WidgetValueRow">
         <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_height">match_parent</item>
         <item name="android:layout_weight">1</item>
         <item name="android:gravity">center</item>
         <item name="android:singleLine">true</item>
-        <item name="android:textSize">22sp</item>
+        <item name="android:textSize">24sp</item>
         <item name="android:textStyle">bold</item>
+        <!-- API 26+: the value shrinks when the launcher gives the widget little height (older versions keep 24 sp). -->
+        <item name="android:autoSizeTextType">uniform</item>
+        <item name="android:autoSizeMinTextSize">12sp</item>
+        <item name="android:autoSizeMaxTextSize">26sp</item>
+        <item name="android:autoSizeStepGranularity">1sp</item>
     </style>
 
     <!-- Medium macro values: smaller than the intake/burned values above them. -->

@@ -8,7 +8,7 @@
 
 | File or directory | Role |
 | --- | --- |
-| `src/components/prebuilt/PreBuiltMealsView.tsx` | Custom page: collapsible sections (pastel in Classic, coherent theme surfaces with contrasting inner cards and readable text in the 6 style themes), transparent section-header/search/+ circles, Ultra Minimal labels and units, meal/recipe cards, search/edit/log actions, and ingredient pickers that show each ingredient's macros. |
+| `src/components/prebuilt/PreBuiltMealsView.tsx` | Custom page: collapsible sections (pastel in Classic, coherent theme surfaces with contrasting inner cards and readable text in the 6 style themes), transparent section-header/search/+ circles, Ultra Minimal labels and units, meal/recipe cards, search/edit/log actions, and ingredient pickers (search above the existing ingredients, favourites first and starred) that show each ingredient's macros. |
 | `src/components/database/FoodDatabaseView.tsx` | Browse, search, filter, favourite and log foods from the complete offline index and local records, with bounded pagination and an explicit catalogue-load retry. |
 | `src/components/history/HistoryView.tsx` | Statistics with compact icon/number summaries in Ultra Minimal, bottom-right `/ day` labels, weight plot, theme-coherent custom tracker and poop summaries, and shared day overview. |
 | `src/components/period/PeriodView.tsx`, `PeriodCalendar.tsx`, `PeriodTagEditor.tsx` | Cycle overview with a transparent droplet header icon circle, theme-coherent status cards/calendar markers/chips across all style themes, quick-action dock (droplet, pill, heart), non-shifting calendar markers, double-tap day inspection, Daily Log, and tag management. |

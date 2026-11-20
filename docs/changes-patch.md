@@ -25,7 +25,9 @@ git reset -q                     # leave the working tree as it was
 
 When you add a feature or a file, update the matching document first (see the maintenance table in [README.md](README.md#keeping-the-docs-current)), then regenerate the patch and update the base commit above.
 
-**Current patch contents (rename round Kakcalculator -> Kakcal, base `d43fc0a` "Fixed few bugs, update gradle"):** see [brand.md](brand.md#rename-kakcalculator--kakcal). Text-only changes plus wordmark SVGs, `Brand.tsx`, `scripts/outline-wordmark.mjs`, `scripts/smoke.mjs` expectations and docs. No new files, no `package.json` change.
+**Current patch contents (Medium widget / Mono / favourites / notification round, base `e4270fe` "App renamed"):** see [README.md](README.md). Source: `widget_medium.xml`, `widget_medium_dark.xml`, `widget_styles.xml`, `WidgetGallery.tsx`, `themes.ts`, `JournalWidgetProvider.java`, `PreBuiltMealsView.tsx`, `ic_stat_kak.xml`, `scripts/generate-notification-icon.mjs`, plus docs. No new files, no `package.json` change.
+
+**Earlier patch (rename round Kakcalculator -> Kakcal, base `d43fc0a` "Fixed few bugs, update gradle"):** see [brand.md](brand.md#rename-kakcalculator--kakcal). Text-only changes plus wordmark SVGs, `Brand.tsx`, `scripts/outline-wordmark.mjs`, `scripts/smoke.mjs` expectations and docs. No new files, no `package.json` change.
 
 **Earlier patch (transparent notification icon / Medium widget sizes round, base `d022963`):** see the *Transparent icon / Medium widget round* paragraph in [README.md](README.md). Source: `ic_stat_kak.xml`, `scripts/generate-notification-icon.mjs`, `widget_medium.xml`, `widget_medium_dark.xml`, `widget_styles.xml`, plus docs. No new files, no `package.json` change.
 

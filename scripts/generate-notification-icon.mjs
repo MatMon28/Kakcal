@@ -1,48 +1,76 @@
 #!/usr/bin/env node
-// Regenerates android/app/src/main/res/drawable/ic_stat_kak.xml: the app's K + poop as a plain white glyph on a
-// TRANSPARENT background (no disc), so it blends into the circle/status bar Android draws behind it.
-// Needs: npm i --no-save paper-jsdom && node scripts/generate-notification-icon.mjs
+// Regenerates android/app/src/main/res/drawable/ic_stat_kak.xml: the app's REAL logo (K + tiered poop, same geometry as
+// src/assets/brand/kakcalculator-icon.svg) as a one-colour glyph on a TRANSPARENT background, because Android only uses the
+// alpha channel of a notification icon and paints it in its own circle / status bar.
+//
+// What makes it read as the logo at 20 dp (the previous version was a solid blob that looked like "K and a triangle"):
+//   - K and poop use the exact coordinates of the logo (poop: translate(274 282) scale(2.85));
+//   - a clear gap is cut out of the K around the poop (the cream "halo" of the logo);
+//   - the poop's three tier lines (the dark lines of the logo) are cut out of the poop, so it reads as a swirl, not a blob.
+// Needs: npm i --no-save paper-jsdom && node scripts/generate-notification-icon.mjs [--preview out.svg]
 import paper from 'paper-jsdom';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
 paper.setup(new paper.Size(512, 512));
-const { Path, Point, Size, Rectangle, CompoundPath } = paper;
-// Original silhouette geometry (viewBox 512), applying the same two nested groups of ic_stat_kak.xml.
+const { Path, Point, Size, Rectangle } = paper;
+
+// --- K: three round-capped strokes of width 96 (logo coordinates) ---
 const cap = (a, b, w) => {
-  const len = Math.hypot(b[0]-a[0], b[1]-a[1]);
-  const r = new Path.Rectangle(new Rectangle(new Point(a[0]-w/2, a[1]-w/2), new Size(len + w, w)), w/2);
-  r.rotate(Math.atan2(b[1]-a[1], b[0]-a[0]) * 180 / Math.PI, new Point(a[0], a[1]));
+  const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+  const r = new Path.Rectangle(new Rectangle(new Point(a[0] - w / 2, a[1] - w / 2), new Size(len + w, w)), w / 2);
+  r.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI, new Point(a[0], a[1]));
   return r;
 };
 const W = 96;
-let K = cap([148,132],[148,392],W);
-K = K.unite(cap([156,268],[304,132],W)).unite(cap([196,252],[312,392],W));
-// K group: translate(-6,-22) scale(.86)
-K.scale(0.86, new Point(0,0)); K.translate(new Point(-6,-22));
-const poop = new Path();
-poop.pathData = 'M32,5 C37,9 39,12.5 36.5,15.5 C41,16 44,18.5 44,22.5 C44,25 43,27 42,28 C46.5,28.5 50,31.5 50,35 C50,37.5 49,39.5 48,41 C52.5,41.5 56,44.5 56,48 C56,52.5 52.5,56 48,56 H16 C11.5,56 8,52.5 8,48 C8,44.5 11.5,41.5 16,41 C15,39.5 14,37.5 14,35 C14,31.5 17.5,28.5 22,28 C21,27 20,25 20,22.5 C20,18.5 23,16 27.5,15.5 C25,12.5 27,9 32,5Z';
-poop.scale(2.75, new Point(0,0)); poop.translate(new Point(296,292));
-// Transparent background: the glyph itself is the icon (no disc). A thin gap is cut around the poop so that it stays
-// readable where it overlaps the K's leg.
-const poopGap = poop.clone();
-poopGap.scale(1.14, poop.bounds.center);
-const kCut = K.subtract(poopGap);
-let logo = kCut.unite(poop);
+let K = cap([148, 132], [148, 392], W);
+K = K.unite(cap([156, 268], [304, 132], W)).unite(cap([196, 252], [312, 392], W));
+
+// --- poop (logo path, translate(274 282) scale(2.85)) ---
+const POOP_D = 'M32,5 C37,9 39,12.5 36.5,15.5 C41,16 44,18.5 44,22.5 C44,25 43,27 42,28 C46.5,28.5 50,31.5 50,35 C50,37.5 49,39.5 48,41 C52.5,41.5 56,44.5 56,48 C56,52.5 52.5,56 48,56 H16 C11.5,56 8,52.5 8,48 C8,44.5 11.5,41.5 16,41 C15,39.5 14,37.5 14,35 C14,31.5 17.5,28.5 22,28 C21,27 20,25 20,22.5 C20,18.5 23,16 27.5,15.5 C25,12.5 27,9 32,5Z';
+const place = (p) => { p.scale(2.85, new Point(0, 0)); p.translate(new Point(274, 282)); return p; };
+const poop = new Path(); poop.pathData = POOP_D; place(poop);
+
+// Gap around the poop (the logo's cream halo): the poop grown by about 13 px.
+const halo = new Path(); halo.pathData = POOP_D; place(halo);
+halo.scale(1.17, poop.bounds.center);
+
+// Tier lines of the logo (quadratic curves in poop units), turned into thin filled ribbons.
+const LINE_W = 5.6 / 2; // half width in poop units (about 16 px in the 512 viewport)
+const ribbon = (p0, c, p1) => {
+  const pts = (t) => [(1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0], (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1]];
+  const top = [], bottom = [];
+  for (let i = 0; i <= 24; i++) { const [x, y] = pts(i / 24); top.push([x, y - LINE_W]); bottom.push([x, y + LINE_W]); }
+  const path = new Path({ closed: true });
+  [...top, ...bottom.reverse()].forEach(([x, y]) => path.add(new Point(x, y)));
+  place(path);
+  return path;
+};
+const lines = [
+  ribbon([27.5, 15.5], [32, 18], [36.5, 15.5]).unite(ribbon([22, 28], [32, 31.5], [42, 28])).unite(ribbon([16, 41], [32, 45.5], [48, 41])),
+];
+const poopCut = poop.subtract(lines[0]);
+const kCut = K.subtract(halo);
+const logo = kCut.unite(poopCut);
+
+// Centre it and let the larger side fill 90% of the 512 viewport (about 21.6 of 24 dp).
 const b = logo.bounds;
-console.log('logo bounds', b.x, b.y, b.width, b.height);
-// Centre the glyph and scale it so its larger side fills 88% of the 512 viewport (about 21 of 24 dp).
-const FILL = 512 * 0.88;
-const k = FILL / Math.max(b.width, b.height);
-logo.translate(new Point(256,256).subtract(b.center)); logo.scale(k, new Point(256,256));
-const result = logo;
-const d = result.pathData;
+console.log('logo bounds', Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height));
+const k = (512 * 0.90) / Math.max(b.width, b.height);
+logo.translate(new Point(256, 256).subtract(b.center));
+logo.scale(k, new Point(256, 256));
+const d = logo.pathData;
+
+const preview = process.argv.indexOf('--preview');
+if (preview > -1) fs.writeFileSync(process.argv[preview + 1], `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#fff" d="${d}"/></svg>`);
+
 const target = fileURLToPath(new URL('../android/app/src/main/res/drawable/ic_stat_kak.xml', import.meta.url));
 const xml = `<?xml version="1.0" encoding="utf-8"?>
 <!--
-  Notification icon (shown in the status bar and in the circle on the left of a notification).
-  The app's K + poop as a plain glyph on a TRANSPARENT background (no disc around it): the system uses only the alpha
-  channel and paints it in its own circle / status bar. Generated by scripts/generate-notification-icon.mjs.
-  There is no large icon any more (the square logo on the right of the notification was removed).
+  Notification icon (status bar and the circle on the left of a notification).
+  The app's real logo (K + tiered poop) as a one-colour glyph on a TRANSPARENT background: the system uses only the alpha
+  channel and paints it in its own circle / status bar. The K is cut away around the poop and the poop's tier lines are
+  transparent, so the poop stays readable at 20 dp. Generated by scripts/generate-notification-icon.mjs.
+  There is no large icon (nothing is drawn on the right of the notification).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
@@ -51,6 +79,7 @@ const xml = `<?xml version="1.0" encoding="utf-8"?>
     android:viewportHeight="512">
     <path
         android:fillColor="#FFFFFFFF"
+        android:fillType="evenOdd"
         android:pathData="${d}" />
 </vector>
 `;

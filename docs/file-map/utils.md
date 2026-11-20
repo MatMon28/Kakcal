@@ -22,4 +22,4 @@
 | `src/utils/spring.ts` | Damped-spring physics sampled into CSS `linear()` curves (`SPRING.soft` 271 ms, `SPRING.bounce` 297 ms) and published as `--ease-*` / `--dur-*` variables at startup. |
 | `src/utils/motion.ts` | `prefersReducedMotion()` and `slideIn()`: compositor-only Web Animations helpers used for the day-change slide. |
 | `src/utils/pwaInstall.ts` | PWA install state: captures `beforeinstallprompt`/`appinstalled`, detects standalone (`isStandaloneApp()`, used by `App.tsx` to skip the tour) and iOS (`isIosDevice()`), exposes `detectInstallTarget()`, `usePwaInstallState()` and `promptInstall()`. Started from `main.tsx`; in-memory only. |
-| `src/utils/favorites.ts` | Favourite helpers: `sortFavoritesFirst`, `pinCoherentFavorites` (while typing, only favourites that directly match the text are pinned above the other results), `matchesFirstChar`. |
+| `src/utils/favorites.ts` | Favourite helpers: `sortFavoritesFirst`, `pinCoherentFavorites` (while typing, only favourites that directly match the text are pinned above the other results), `matchesFirstChar`. Used by Add Food, the Foods page and the meal / recipe ingredient pickers. |
