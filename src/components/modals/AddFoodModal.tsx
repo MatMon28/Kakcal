@@ -3,7 +3,8 @@ import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { AmountSelector } from '../common/AmountSelector';
-import { FoodItem, LoggedFoodItem, MealSlotId, PreBuiltMeal } from '../../types';
+import { FoodItem, LoggedFoodItem, PreBuiltMeal } from '../../types';
+import { useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { FoodResultRow } from '../common/FoodResultRow';
 import { useOffCatalog } from '../../utils/useOffCatalog';
@@ -32,15 +33,6 @@ interface QueuedEntry {
   amount: number;
 }
 
-const SLOTS: MealSlotId[] = [
-  'breakfast',
-  'mid_morning',
-  'lunch',
-  'midday_snack',
-  'dinner',
-  'extra',
-];
-
 export const AddFoodModal: React.FC = () => {
   const {
     isAddFoodOpen,
@@ -60,6 +52,7 @@ export const AddFoodModal: React.FC = () => {
     rememberFood,
     t,
   } = useApp();
+  const { options: slotOptions, label: slotLabel } = useMealSlots();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFood, setActiveFood] = useState<FoodItem | null>(null);
@@ -349,7 +342,7 @@ export const AddFoodModal: React.FC = () => {
       isOpen={isAddFoodOpen}
       onClose={close}
       title={activeFood ? nameOf(activeFood) : t.foodModal.title}
-      subtitle={t.mealSlots[targetMealSlot]}
+      subtitle={slotLabel(targetMealSlot)}
       maxWidth="max-w-xl"
     >
       {activeFood ? (
@@ -447,7 +440,7 @@ export const AddFoodModal: React.FC = () => {
         <div className="space-y-3.5">
           {/* Slot selector */}
           <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
-            {SLOTS.map((s) => {
+            {slotOptions.map(({ id: s, label }) => {
               const active = targetMealSlot === s;
               return (
                 <button
@@ -457,7 +450,7 @@ export const AddFoodModal: React.FC = () => {
                   onClick={() => setTargetMealSlot(s)}
                   className={pill(active)}
                 >
-                  {t.mealSlots[s]}
+                  {label}
                 </button>
               );
             })}
@@ -571,7 +564,7 @@ export const AddFoodModal: React.FC = () => {
                           </span>
                           <span className="inline-block mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
                             {t.prebuilt.title}
-                            {res.m.slot ? ` · ${t.mealSlots[res.m.slot]}` : ''}
+                            {res.m.slot ? ` · ${slotLabel(res.m.slot)}` : ''}
                           </span>
                         </span>
                       </span>

@@ -7,6 +7,10 @@ import type { BodyGroup } from '../../types/advanced';
 import { formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { ActionDock, type DockAction } from '../common/ActionDock';
+import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
+import { LayoutToolbar } from '../layout/LayoutToolbar';
+import { useLayoutText } from '../../i18n/layout';
+import { useLayout } from '../../utils/layoutStore';
 import { BodyPartIcon } from '../common/BodyPartIcon';
 import { BodyChart } from './BodyChart';
 import { BodyMeasureModal, useTrackedMeasures } from './BodyMeasureModal';
@@ -97,6 +101,8 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
 export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false }) => {
   const { settings, setIsProfileOpen } = useApp();
   const text = useAdvancedText();
+  const layoutText = useLayoutText();
+  const layoutEnabled = useLayout().enabled;
   const measures = useTrackedMeasures();
   const today = getTodayDateString();
   const [range, setRange] = usePersistentState<RangeKey>('kcalsync_body_range', '3m');
@@ -129,7 +135,7 @@ export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false })
       onClick: () => setGroup(g),
     }));
 
-  return (
+  const rangeNode = (
     <div className={settings.ultraMinimal ? 'space-y-3' : 'space-y-4'}>
       <div className="flex justify-center">
         <div
@@ -174,6 +180,27 @@ export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false })
           ))}
         </div>
       )}
+    </div>
+  );
+
+  // ---- Advanced layout: the range chips and every measure card as fields of the editable grid ----
+  const items: LayoutItem[] = [
+    { id: 'range', label: layoutText.names.range, node: rangeNode, span: 'col-span-6' },
+    ...measures.map((m): LayoutItem => ({
+      id: `measure:${m.id}`,
+      label: m.name,
+      node: <MeasureCard id={m.id} name={m.name} unit={m.unit} from={from} to={to} />,
+      span: 'col-span-6',
+    })),
+  ];
+
+  return (
+    <div className={settings.ultraMinimal ? 'space-y-3' : 'space-y-4'}>
+      {/* Settings > Advanced > Advanced layout: the pencil icon (and, while editing, the toolbar). */}
+      <LayoutToolbar page="body" items={items} extra="measure" />
+      {layoutEnabled ? (
+        <EditableGrid page="body" items={items} className={settings.ultraMinimal ? 'gap-y-3 gap-x-2.5' : 'gap-y-4 gap-x-3 sm:gap-x-4'} />
+      ) : rangeNode}
 
       {measures.length === 0 ? (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-6 text-center space-y-3">
@@ -192,7 +219,7 @@ export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false })
           </button>
         </div>
       ) : (
-        measures.map((m) => <MeasureCard key={m.id} id={m.id} name={m.name} unit={m.unit} from={from} to={to} />)
+        !layoutEnabled && measures.map((m) => <MeasureCard key={m.id} id={m.id} name={m.name} unit={m.unit} from={from} to={to} />)
       )}
 
       <BodyMeasureModal group={group} onClose={() => setGroup(null)} />

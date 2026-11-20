@@ -4,6 +4,7 @@ import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { FoodItem, MealSlotId } from '../../types';
 import { AmountSelector } from '../common/AmountSelector';
+import { useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { getLoadedOffCatalog, loadOffCatalog } from '../../data/offCatalog';
 import {
@@ -49,15 +50,6 @@ const classicPortion = (value: number | string | undefined) => {
 };
 const reported = (value: number | undefined) => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 
-const SLOTS: MealSlotId[] = [
-  'breakfast',
-  'mid_morning',
-  'lunch',
-  'midday_snack',
-  'dinner',
-  'extra',
-];
-
 export const BarcodeLookupModal: React.FC = () => {
   const {
     isBarcodeOpen,
@@ -73,6 +65,7 @@ export const BarcodeLookupModal: React.FC = () => {
 
     t,
   } = useApp();
+  const { options: slotOptions } = useMealSlots();
 
   const [barcode, setBarcode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -424,7 +417,7 @@ export const BarcodeLookupModal: React.FC = () => {
             </div>
 
             <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
-              {SLOTS.map((s) => (
+              {slotOptions.map(({ id: s, label }) => (
                 <button
                   key={s}
                   type="button"
@@ -435,7 +428,7 @@ export const BarcodeLookupModal: React.FC = () => {
                       : 'bg-[var(--surface)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
-                  {t.mealSlots[s]}
+                  {label}
                 </button>
               ))}
             </div>

@@ -49,13 +49,18 @@ export interface FoodItem {
   recipeIngredients?: PreBuiltMealIngredient[]; // original quantities, shown when a recipe is expanded
 }
 
-export type MealSlotId =
+export type BuiltInMealSlotId =
   | 'breakfast'
   | 'mid_morning'
   | 'lunch'
   | 'midday_snack'
   | 'dinner'
   | 'extra';
+
+/** A meal type added by the user (Settings > Advanced > Advanced layout). Its name lives in `utils/layoutStore.ts`. */
+export type CustomMealSlotId = `custom_${string}`;
+
+export type MealSlotId = BuiltInMealSlotId | CustomMealSlotId;
 
 export interface LoggedFoodItem {
   id: string;
@@ -167,7 +172,7 @@ export interface DayLog {
     midday_snack: LoggedFoodItem[];
     dinner: LoggedFoodItem[];
     extra: LoggedFoodItem[];
-  };
+  } & Partial<Record<CustomMealSlotId, LoggedFoodItem[]>>; // custom meal types only exist once something was logged in them
   activities: ActivityLog[];
   weightKg?: number;
   waterMl?: number; // legacy total (migrated to waterEntries on load)
@@ -220,7 +225,7 @@ export interface WaterReminderSetting {
 }
 
 /** Meal slots that get their own reminder (the free-form "extra" slot has no fixed time). */
-export type MealReminderSlotId = Exclude<MealSlotId, 'extra'>;
+export type MealReminderSlotId = Exclude<BuiltInMealSlotId, 'extra'>;
 
 export interface NotificationSettings {
   water: WaterReminderSetting;

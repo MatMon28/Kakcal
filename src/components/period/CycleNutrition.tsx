@@ -4,6 +4,7 @@ import { CycleInfo, cycleDays, isInactivePackDay, phaseOfDate, PeriodStatus, tag
 import { calculateBMR, calculateMacros, calculateTEF, calculateTotalActivityCalories, calculateTotalCalories } from '../../utils/calculations';
 import { diffDays, formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import { CyclePhase, DayLog } from '../../types';
+import { allMealItems } from '../../utils/mealItems';
 
 type Bucket = { intake: number; burned: number; net: number; c: number; p: number; f: number; n: number };
 const emptyBucket = (): Bucket => ({ intake: 0, burned: 0, net: 0, c: 0, p: 0, f: 0, n: 0 });
@@ -26,7 +27,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
   const bmr = calculateBMR(userProfile);
   const dayMetrics = (log: DayLog | undefined) => {
     if (!log) return null;
-    const items = [...log.meals.breakfast, ...log.meals.mid_morning, ...log.meals.lunch, ...log.meals.midday_snack, ...log.meals.dinner, ...log.meals.extra];
+    const items = allMealItems(log.meals);
     if (items.length === 0) return null;
     const intake = calculateTotalCalories(items);
     const m = calculateMacros(items);

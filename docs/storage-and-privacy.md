@@ -18,4 +18,6 @@ Camera scanning is optional and depends on `BarcodeDetector` and permission. Kno
 
 **Delete all data:** Settings > *Delete all data* (after two confirmations) runs `src/utils/deleteAllData.ts`: it cancels the pending reminder notifications (Android app only), calls `localStorage.clear()` and `sessionStorage.clear()` and reloads the page, so every key listed above (including the language, theme, intro and UI-preference keys) is removed and the app restarts empty. It does not touch files you exported yourself, and the Android SharedPreferences cache of the widgets is refreshed with empty figures by the next start-up publish.
 
+**Advanced layout:** `kcalsync_layout` (switch, per-page field order / widths / sizes / removed fields, meal types added by the user). Food logged in an added meal type lives in the normal day logs under `meals.custom_*`. Included in the JSON backup as `layout`.
+
 **Advanced personalisation:** `kcalsync_advanced` (goal/limit switches and values, body-measure switch, tracked measure ids, custom measures), `kcalsync_body` (recorded body measurements per measure id and date) and the UI key `kcalsync_body_range` (selected Body page period). The JSON backup gets an `advanced` section with the first two; older backups without it import fine. See [advanced-personalisation.md](advanced-personalisation.md).

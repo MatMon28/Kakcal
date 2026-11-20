@@ -6,6 +6,7 @@ import { FoodCategory, FoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { AmountSelector } from '../common/AmountSelector';
+import { useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
 import { FavoriteButton } from '../common/FavoriteButton';
@@ -63,6 +64,7 @@ export const FoodDatabaseView: React.FC = () => {
     language,
     t,
   } = useApp();
+  const { options: mealSlots, label: slotLabel } = useMealSlots();
 
   const [search, updateQuery] = useState('');
   const [selectedCategory, updateCategory] = useState<CatalogFilter>('all');
@@ -158,15 +160,6 @@ export const FoodDatabaseView: React.FC = () => {
     logFoodItem(logSlot, foodToLog, finalAmount);
     setFoodToLog(null);
   };
-
-  const mealSlots: { id: MealSlotId; label: string }[] = [
-    { id: 'breakfast', label: t.mealSlots.breakfast },
-    { id: 'mid_morning', label: t.mealSlots.mid_morning },
-    { id: 'lunch', label: t.mealSlots.lunch },
-    { id: 'midday_snack', label: t.mealSlots.midday_snack },
-    { id: 'dinner', label: t.mealSlots.dinner },
-    { id: 'extra', label: t.mealSlots.extra },
-  ];
 
   const changePage = (next: number) => {
     setPage(next);
@@ -499,7 +492,7 @@ export const FoodDatabaseView: React.FC = () => {
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
-              {t.foodModal.addBtn} ({t.mealSlots[logSlot]})
+              {t.foodModal.addBtn} ({slotLabel(logSlot)})
             </span>
           </button>
         </div>

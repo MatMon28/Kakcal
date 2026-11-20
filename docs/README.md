@@ -24,6 +24,7 @@
 | Add or rename a stored key, backup, network behaviour | [storage-and-privacy.md](storage-and-privacy.md) |
 | Calorie maths, colours | [calculations-colors.md](calculations-colors.md) |
 | Goals / limits icons, Body measurements page, body-part icons (Settings > Advanced) | [advanced-personalisation.md](advanced-personalisation.md) |
+| Advanced layout: pencil icon, move / resize / remove fields, added meal types, restore layout | [advanced-layout.md](advanced-layout.md) |
 | Icon, wordmark, launcher art | [brand.md](brand.md) |
 | Activities / METs | [data-activities.md](data-activities.md) |
 | Bundled foods (USDA, curated) | [data-nutrition.md](data-nutrition.md) |
@@ -47,6 +48,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | Notifications | [notifications.md](notifications.md) and `android/BUILD_APK.md` > Reminder notifications |
 | Persisted keys / backup | [storage-and-privacy.md](storage-and-privacy.md) |
 | Goals / limits, Body page, Profile body section, body-part icons | [advanced-personalisation.md](advanced-personalisation.md), `file-map/components-pages.md`, `file-map/components-modals.md`, `file-map/components-common.md`, `file-map/utils.md` |
+| Advanced layout (editable grid, pencil toolbar, layout store, meal types) | [advanced-layout.md](advanced-layout.md), `file-map/components-common.md`, `file-map/components-dashboard.md`, `file-map/components-pages.md`, `file-map/components-modals.md`, `file-map/utils.md` |
 | Page behaviour or Settings layout | [journal-pages.md](journal-pages.md) / [journal-shell.md](journal-shell.md) |
 | Animation constants | [motion.md](motion.md), [launch-intro.md](launch-intro.md) |
 | Food/activity data or counts | [data-activities.md](data-activities.md), [data-nutrition.md](data-nutrition.md), [data-off-catalogue.md](data-off-catalogue.md) |

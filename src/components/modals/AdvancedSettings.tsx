@@ -1,7 +1,9 @@
-import React from 'react';
-import { Candy, Flame, Ruler, Target, User, Wheat } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Candy, Check, Flame, LayoutDashboard, RotateCcw, Ruler, Target, User, Wheat } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAdvancedText } from '../../i18n/advanced';
+import { useLayoutText } from '../../i18n/layout';
+import { resetLayout, setLayoutEnabled, useLayout } from '../../utils/layoutStore';
 import {
   GOAL_KEYS,
   GOAL_MODE_CHOICES,
@@ -12,6 +14,7 @@ import {
 } from '../../utils/advancedStore';
 import type { GoalKey } from '../../types/advanced';
 import { Collapsible } from '../common/Collapsible';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import { NumericInput } from '../common/NumericInput';
 import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
 
@@ -52,6 +55,15 @@ export const AdvancedSettings: React.FC = () => {
   const { t, settings, setIsSettingsOpen, setIsProfileOpen } = useApp();
   const text = useAdvancedText();
   const advanced = useAdvanced();
+  const layoutText = useLayoutText().settings;
+  const layout = useLayout();
+  const [confirmRestore, setConfirmRestore] = useState(false);
+  const [restored, setRestored] = useState(false);
+  useEffect(() => {
+    if (!restored) return undefined;
+    const timer = window.setTimeout(() => setRestored(false), 2500);
+    return () => window.clearTimeout(timer);
+  }, [restored]);
 
   const seg = (active: boolean) =>
     `pressable flex-1 py-2 rounded-xl text-[11px] font-extrabold text-center border ${
@@ -182,6 +194,44 @@ export const AdvancedSettings: React.FC = () => {
             <span>{text.settings.bodyProfileHint}</span>
           </button>
         )}
+      </div>
+      {/* ---------- Advanced layout ---------- */}
+      <div className="space-y-2.5">
+        <button
+          type="button"
+          aria-pressed={layout.enabled}
+          onClick={() => setLayoutEnabled(!layout.enabled)}
+          className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
+        >
+          <span className="flex items-center gap-2.5 min-w-0">
+            <span className="size-8 rounded-full bg-[#E2D6FF] text-[#49346F] flex items-center justify-center shrink-0">
+              <LayoutDashboard size={15} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-xs font-extrabold text-[var(--text)]">{layoutText.title}</span>
+              <span className="block text-[11px] font-medium text-[var(--muted)]">{layoutText.desc}</span>
+            </span>
+          </span>
+          <Switch on={layout.enabled} />
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setConfirmRestore(true)}
+          data-restore-layout
+          className="pressable w-full py-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center gap-1.5"
+        >
+          {restored ? <Check size={14} /> : <RotateCcw size={14} />}
+          <span>{restored ? layoutText.restored : layoutText.restore}</span>
+        </button>
+        <ConfirmDialog
+          open={confirmRestore}
+          title={layoutText.restoreTitle}
+          message={layoutText.restoreText}
+          confirmLabel={layoutText.restoreConfirm}
+          onCancel={() => setConfirmRestore(false)}
+          onConfirm={() => { resetLayout(); setConfirmRestore(false); setRestored(true); }}
+        />
       </div>
     </Collapsible>
   );

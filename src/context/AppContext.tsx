@@ -39,6 +39,8 @@ import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTag
 import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
+import { exportLayout, importLayout } from '../utils/layoutStore';
+import { allMealItems } from '../utils/mealItems';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
 import { DEFAULT_NOTIFICATION_SETTINGS, normalizeNotificationSettings } from '../utils/notifications';
@@ -1211,7 +1213,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...day,
       meals: {
         ...day.meals,
-        [mealSlot]: [...day.meals[mealSlot], newLoggedItem],
+        [mealSlot]: [...(day.meals[mealSlot] ?? []), newLoggedItem],
       },
     }));
   };
@@ -1226,7 +1228,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...day,
       meals: {
         ...day.meals,
-        [mealSlot]: day.meals[mealSlot].filter((item) => item.id !== loggedItemId),
+        [mealSlot]: (day.meals[mealSlot] ?? []).filter((item) => item.id !== loggedItemId),
       },
     }));
   };
@@ -1242,7 +1244,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...day,
       meals: {
         ...day.meals,
-        [mealSlot]: day.meals[mealSlot].map((item) =>
+        [mealSlot]: (day.meals[mealSlot] ?? []).map((item) =>
           item.id === loggedItemId ? { ...item, amount: newAmount } : item
         ),
       },
@@ -1366,14 +1368,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const targetDay = getDayLog(targetDate);
     const newMeals = { ...targetDay.meals };
 
-    const slots: MealSlotId[] = [
-      'breakfast',
-      'mid_morning',
-      'lunch',
-      'midday_snack',
-      'dinner',
-      'extra',
-    ];
+    // Built-in meals and the meal types added with the advanced layout.
+    const slots = Object.keys(yesterdayLog.meals) as MealSlotId[];
 
     for (const slot of slots) {
       const itemsToCopy = yesterdayLog.meals[slot] || [];
@@ -1383,7 +1379,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           id: 'item-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
           loggedAt: new Date().toISOString(),
         }));
-        newMeals[slot] = [...newMeals[slot], ...clonedItems];
+        newMeals[slot] = [...(newMeals[slot] ?? []), ...clonedItems];
         copiedCount += clonedItems.length;
       }
     }
@@ -1446,7 +1442,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
     mutateDay(date, (day) => ({
       ...day,
-      meals: { ...day.meals, [mealSlot]: [...day.meals[mealSlot], ...cloned] },
+      meals: { ...day.meals, [mealSlot]: [...(day.meals[mealSlot] ?? []), ...cloned] },
     }));
   };
 
@@ -1464,6 +1460,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       periodData,
       customActivities,
       advanced: exportAdvanced(), // goals/limits + body measures (Settings > Advanced)
+      layout: exportLayout(), // advanced layout: field order/sizes/removed fields + added meal types
     };
     return JSON.stringify(data, null, 2);
   };
@@ -1513,6 +1510,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCustomActivities(persistCustomActivities(normalizeCustomActivities(data.customActivities)));
       }
       importAdvanced(data.advanced);
+      importLayout(data.layout);
       if (data.periodData && typeof data.periodData === 'object') {
         try {
           savePeriodData(normalizePeriodData(data.periodData));
@@ -1528,14 +1526,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Calculations for current day
-  const allCurrentDayFoods: LoggedFoodItem[] = [
-    ...currentDayLog.meals.breakfast,
-    ...currentDayLog.meals.mid_morning,
-    ...currentDayLog.meals.lunch,
-    ...currentDayLog.meals.midday_snack,
-    ...currentDayLog.meals.dinner,
-    ...currentDayLog.meals.extra,
-  ];
+  const allCurrentDayFoods: LoggedFoodItem[] = allMealItems(currentDayLog.meals);
 
   const currentMacros = calculateMacros(allCurrentDayFoods);
   const currentIntakeCalories = calculateTotalCalories(allCurrentDayFoods);

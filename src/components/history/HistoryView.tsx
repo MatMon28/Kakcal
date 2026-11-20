@@ -3,6 +3,10 @@ import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, X } fr
 import { SecondaryNutrientRow } from '../common/FoodMacroGrid';
 import { useApp } from '../../context/AppContext';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
+import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
+import { LayoutToolbar } from '../layout/LayoutToolbar';
+import { useLayoutText } from '../../i18n/layout';
+import { useLayout } from '../../utils/layoutStore';
 import { PoopIcon } from '../common/PoopIcon';
 import { TrackerIcon } from '../common/TrackerIcon';
 import { usePersistentState } from '../../utils/usePersistentState';
@@ -19,6 +23,7 @@ import {
   formatKcal,
   getTodayDateString,
 } from '../../utils/formatters';
+import { allMealItems } from '../../utils/mealItems';
 import { getTrackerValue } from '../../utils/customTrackers';
 import { getPeriodStatus, phaseOfDate } from '../../utils/period';
 import type { ActivityLog, DayLog, PoopEntry, WaterEntry } from '../../types';
@@ -54,14 +59,7 @@ function summarizeDay(date: string, log: DayLog | undefined, bmr: number): DaySu
       waterEntries: [], poops: [], hasLog: false,
     };
   }
-  const items = [
-    ...log.meals.breakfast,
-    ...log.meals.mid_morning,
-    ...log.meals.lunch,
-    ...log.meals.midday_snack,
-    ...log.meals.dinner,
-    ...log.meals.extra,
-  ];
+  const items = allMealItems(log.meals);
   const macros = calculateMacros(items);
   const intake = calculateTotalCalories(items);
   const actExp = calculateTotalActivityCalories(log.activities);
@@ -96,6 +94,8 @@ function summarizeDay(date: string, log: DayLog | undefined, bmr: number): DaySu
 
 export const HistoryView: React.FC = () => {
   const { allDayLogs, userProfile, settings, periodData, language, t } = useApp();
+  const layoutText = useLayoutText();
+  const layoutEnabled = useLayout().enabled;
   const ultraMinimal = settings.ultraMinimal;
   const todayStr = getTodayDateString();
   const bmr = calculateBMR(userProfile);
@@ -177,9 +177,9 @@ export const HistoryView: React.FC = () => {
   const activeWeightIndex = selectedWeightIdx !== null && wp[selectedWeightIdx] ? selectedWeightIdx : wp.length - 1;
   const activeWeightPt = wp[activeWeightIndex];
 
-  return (
-    <>
-        <div className={ultraMinimal ? 'space-y-3' : 'space-y-4'}>
+  // ---- Advanced layout: every block of the page as a field of the editable grid ----
+  const rangeNode = (
+    <div className={ultraMinimal ? 'space-y-3' : 'space-y-4'}>
         <div className="flex justify-center">
           <div
             role="group"
@@ -239,8 +239,9 @@ export const HistoryView: React.FC = () => {
             .replace('{count}', String(period.loggedCount))
             .replace('{total}', String(period.total))}
         </div>
-
-        <div className="grid grid-cols-2 gap-3 sm:gap-4">
+    </div>
+  );
+  const intakeNode = (
           <div role="group" aria-label={t.history.avgIntake} className={`kc-hero-intake bg-intake rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
             <div className="flex items-center justify-between gap-1 min-h-[22px]">
               <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.history.avgIntake}>
@@ -266,7 +267,8 @@ export const HistoryView: React.FC = () => {
               <div className="kc-hero-fill h-full rounded-full bg-intake-accent transition-[width] duration-500" style={{ width: `${period.avgIntake > 0 ? Math.max(5, avgIntakePct) : 0}%` }} />
             </div>
           </div>
-
+  );
+  const burnedNode = (
           <div role="group" aria-label={t.history.avgExpenditure} className={`kc-hero-burned bg-activity rounded-3xl ${ultraMinimal ? 'p-3 sm:p-3.5' : 'p-4 sm:p-5'}`}>
             <div className="flex items-center justify-between gap-1 min-h-[22px]">
               <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-activity-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-activity-accent'}`} title={t.history.avgExpenditure}>
@@ -292,10 +294,8 @@ export const HistoryView: React.FC = () => {
               <div className="kc-hero-fill h-full rounded-full bg-activity-accent transition-[width] duration-500" style={{ width: `${Math.max(5, avgExpPct)}%` }} />
             </div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 tabular-nums">
-          {([
+  );
+          const macroNodes = ([
             [t.history.avgCarbs, period.avgCarbs, 'kc-macro-carbs bg-[#CFE7FE] text-[#1A4670]', 'text-[#0F3355]'],
             [t.history.avgProtein, period.avgProtein, 'kc-macro-protein bg-[#FAE0B4] text-[#7D4E14]', 'text-[#2D1E0B]'],
             [t.history.avgFat, period.avgFat, 'kc-macro-fat bg-[#E2D6FF] text-[#523A8C]', 'text-[#1F1636]'],
@@ -309,12 +309,8 @@ export const HistoryView: React.FC = () => {
                 </span>
               </div>
             </div>
-          ))}
-        </div>
-
-        <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />
-
-        {!settings.hidePoop && (
+          ));
+  const poopNode = (
           <div className={`kc-themed-card bg-[#FAE0B4] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
             <div className="kc-custom-stat-header flex items-center justify-between text-[#7D4E14]">
               {ultraMinimal ? <span className="inline-flex items-center" title={t.poop.poopsInPeriod}><PoopIcon size={15} /><span className="sr-only">{t.poop.poopsInPeriod}</span></span> : <span className="text-sm font-extrabold">{t.poop.poopsInPeriod}</span>}
@@ -349,11 +345,9 @@ export const HistoryView: React.FC = () => {
               })}
             </div>
           </div>
-        )}
-
-                {settings.customButtons.some((button) => button.showStats !== false) && (
-          <div className="space-y-2.5">
-            {settings.customButtons.filter((button) => button.showStats !== false).map((button) => {
+  );
+            const trackerButtons = settings.customButtons.filter((button) => button.showStats !== false);
+  const trackerNodes = settings.customButtons.filter((button) => button.showStats !== false).map((button) => {
               const values = period.days.map((day) => ({
                 date: day.date,
                 value: getTrackerValue(allDayLogs[day.date], button),
@@ -427,10 +421,8 @@ export const HistoryView: React.FC = () => {
                   {ultraMinimal && <span className="kc-custom-stat-sub absolute bottom-2 right-3 text-[10px] font-bold text-[#8A7224]">{t.stats.perDay}</span>}
                 </div>
               );
-            })}
-          </div>
-        )}
-
+            });
+  const weightNode = (
 <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">
           <button
             type="button"
@@ -520,8 +512,8 @@ export const HistoryView: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {range === '7' && (
+  );
+  const dailyNode = (
           <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">
             <button
               type="button"
@@ -608,8 +600,58 @@ export const HistoryView: React.FC = () => {
               </div>
             </div>
           </div>
+  );
+
+  const names = layoutText.names;
+  const items: LayoutItem[] = [
+    { id: 'range', label: names.range, node: rangeNode, span: 'col-span-6' },
+    { id: 'intake', label: names.avgIntake, node: intakeNode, span: 'col-span-3' },
+    { id: 'burned', label: names.avgBurned, node: burnedNode, span: 'col-span-3' },
+    ...(['carbs', 'protein', 'fat'] as const).map((id, index): LayoutItem => ({
+      id,
+      label: t.macros[id],
+      node: macroNodes[index],
+      span: 'col-span-2',
+    })),
+    {
+      id: 'nutrients',
+      label: names.nutrients,
+      node: <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />,
+      span: 'col-span-6',
+    },
+    { id: 'poop', label: names.poopStats, node: poopNode, span: 'col-span-6', show: !settings.hidePoop },
+    ...trackerButtons.map((button, index): LayoutItem => ({
+      id: `tracker:${button.id}`,
+      label: button.name,
+      node: trackerNodes[index],
+      span: 'col-span-6',
+    })),
+    { id: 'weight', label: names.weight, node: weightNode, span: 'col-span-6' },
+    { id: 'daily', label: names.daily, node: dailyNode, span: 'col-span-6', show: range === '7' },
+  ];
+
+  return (
+    <>
+      <div className={ultraMinimal ? 'space-y-3' : 'space-y-4'}>
+        {/* Settings > Advanced > Advanced layout: the pencil icon (and, while editing, the toolbar). */}
+        <LayoutToolbar page="stats" items={items} />
+        {layoutEnabled ? (
+          <EditableGrid page="stats" items={items} className={ultraMinimal ? 'gap-y-3 gap-x-2.5' : 'gap-y-4 gap-x-3 sm:gap-x-4'} />
+        ) : (
+          <>
+            {/* Original layout (advanced layout off) */}
+            {rangeNode}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">{intakeNode}{burnedNode}</div>
+            <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 tabular-nums">{macroNodes}</div>
+            <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />
+            {!settings.hidePoop && poopNode}
+            {trackerNodes.length > 0 && <div className="space-y-2.5">{trackerNodes}</div>}
+            {weightNode}
+            {range === '7' && dailyNode}
+          </>
         )}
       </div>
+
 
       <PeriodDayInfoModal date={inspectedDate} onClose={() => setInspectedDate(null)} />
     </>

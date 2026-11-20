@@ -15,5 +15,5 @@
 | `src/components/modals/WaterModal.tsx`, `WeightModal.tsx`, `PoopModal.tsx` | Hydration, weight, and bowel logging. |
 | `src/components/modals/CustomButtonModal.tsx`, `CustomPickerModal.tsx` | Individual quantity/toggle tracker dialog, entry history, and tracker selection. |
 | `src/components/modals/PeriodSheet.tsx`, `UserProfileModal.tsx`, `SettingsModal.tsx` | Period Quick Log, Profile/BMR fields, and app Settings including the Ultra Minimal toggle. |
-| `src/components/modals/AdvancedSettings.tsx` | Settings > Advanced group: goals/limits switches (per item, objective/limit, value) and the Body measurements switch. |
+| `src/components/modals/AdvancedSettings.tsx` | Settings > Advanced group: goals/limits switches (per item, objective/limit, value) and the Body measurements switch, plus the **Advanced layout** switch with the *Restore original layout* button (confirmation dialog). |
 | `src/components/modals/BodyMeasuresProfile.tsx` | Profile section (only when Body measurements is on): choose tracked measures, add/remove custom ones. |

@@ -6,6 +6,7 @@ import { formatKcal } from '../../utils/formatters';
 import { setLastAmount } from '../../utils/amountMemory';
 import { AmountSelector } from '../common/AmountSelector';
 import { MacroPills } from '../common/MacroPills';
+import { useMealSlots } from '../../utils/mealSlots';
 import {
   Coffee,
   Apple,
@@ -13,6 +14,7 @@ import {
   UtensilsCrossed,
   SunMedium,
   Moon,
+  Soup,
   Plus,
   Trash2,
   Edit2,
@@ -49,6 +51,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
     t,
   } = useApp();
 
+  const { label: slotLabel } = useMealSlots();
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState<number>(0);
 
@@ -88,6 +91,9 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
         return { title: t.mealSlots.dinner, icon: UtensilsCrossed };
       case 'extra':
         return { title: t.mealSlots.extra, icon: Moon };
+      default:
+        // A meal type added with the advanced layout.
+        return { title: slotLabel(id), icon: Soup };
     }
   };
 

@@ -7,6 +7,8 @@ import {
   calculateTotalCalories,
 } from '../../utils/calculations';
 
+import { allMealItems } from '../../utils/mealItems';
+
 // One serialisable bridge shared by the guided tour, the widget gallery and the
 // native widgets. The same action IDs and nutrition fields feed every presentation.
 export const WIDGET_CHANNEL = 'kakcalculator.widgets.v1';
@@ -94,7 +96,7 @@ export function makeWidgetSnapshot(
   day: DayLog | undefined,
   profile: UserProfile,
 ): WidgetSnapshot {
-  const foods = day ? Object.values(day.meals).flat() : [];
+  const foods = day ? allMealItems(day.meals) : [];
   const macros = calculateMacros(foods);
   const tef = calculateTEF(macros.carbsGrams, macros.proteinGrams, macros.fatGrams).totalTEF;
   const activity = calculateTotalActivityCalories(day?.activities ?? []);

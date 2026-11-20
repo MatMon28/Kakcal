@@ -16,6 +16,7 @@ import {
 import { formatFullDate, formatKcal } from '../../utils/formatters';
 import { formatTrackerAmount, getCustomEntries, getTrackerValue } from '../../utils/customTrackers';
 import type { PoopSize } from '../../types';
+import { allMealItems } from '../../utils/mealItems';
 import { activityLogLabel } from '../../utils/activityLabel';
 
 interface PeriodDayInfoModalProps {
@@ -38,14 +39,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
 
   const log = allDayLogs[date];
   const allItems = log
-    ? [
-        ...log.meals.breakfast,
-        ...log.meals.mid_morning,
-        ...log.meals.lunch,
-        ...log.meals.midday_snack,
-        ...log.meals.dinner,
-        ...log.meals.extra,
-      ]
+    ? allMealItems(log.meals)
     : [];
 
   const intake = calculateTotalCalories(allItems);

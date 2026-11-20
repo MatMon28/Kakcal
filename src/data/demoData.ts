@@ -138,7 +138,7 @@ export const DEMO_MEALS: PreBuiltMeal[] = [
 ];
 
 function cloneMeals(meals: DayLog['meals'], date: string): DayLog['meals'] {
-  const clone = (items: DayLog['meals'][keyof DayLog['meals']]) =>
+  const clone = (items: DayLog['meals'][keyof DayLog['meals']] = []) =>
     items.map((item, index) => ({
       ...item,
       id: `${item.id}-${date}-${index}`,

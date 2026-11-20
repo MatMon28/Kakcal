@@ -32,3 +32,5 @@ Everything is **off by default** and is switched on in **Settings > Advanced** (
 ## Data
 
 Keys `kcalsync_advanced` (switches, goals, tracked ids, custom measures), `kcalsync_body` (`{ measureId: [{ date, value }] }`) and `kcalsync_body_range`. The JSON backup has an `advanced` section (`exportAdvanced` / `importAdvanced`, called from `AppContext`); older backups without it leave the current data untouched. Strings: `src/i18n/advanced.ts` (EN/IT, `useAdvancedText()`); only the tab label `nav.body` is in `translations.ts`.
+
+See also [advanced-layout.md](advanced-layout.md) for the *Advanced layout* switch (same Settings > Advanced group).

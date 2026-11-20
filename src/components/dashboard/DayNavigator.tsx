@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { allMealItems } from '../../utils/mealItems';
 import { formatDateDisplay, addDaysToDateString, getTodayDateString, dateFormatter } from '../../utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar, CornerUpLeft } from 'lucide-react';
 
@@ -102,12 +103,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay }) => {
     const log = allDayLogs[ds];
     if (!log) return false;
     return (
-      log.meals.breakfast.length > 0 ||
-      log.meals.mid_morning.length > 0 ||
-      log.meals.lunch.length > 0 ||
-      log.meals.midday_snack.length > 0 ||
-      log.meals.dinner.length > 0 ||
-      log.meals.extra.length > 0 ||
+      allMealItems(log.meals).length > 0 ||
       log.activities.length > 0 ||
       typeof log.weightKg === 'number' ||
       (log.waterEntries || []).length > 0 ||

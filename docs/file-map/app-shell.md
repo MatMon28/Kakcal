@@ -24,4 +24,5 @@
 | `src/app/`, `src/db/`, `next.config.ts`, `drizzle.config.json`, `eslint.config.mjs` | **Inert Next.js-era leftovers**, not imported by `src/main.tsx` (see [provenance](../provenance.md)). |
 | `src/assets/themes_insp.txt` | Stand-alone HTML design exploration (6 themes x 3 modes). Reference only; not imported. |
 | `docs/`, `README.md`, `android/BUILD_APK.md` | The documentation set; index at [docs/README.md](../README.md). |
+| `src/types/layout.ts`, `src/i18n/layout.ts` | Advanced layout contracts (page layouts, custom meal types) and English/Italian strings (`useLayoutText()`). `MealSlotId` in `types/index.ts` also accepts `custom_*` ids. |
 | `src/types/advanced.ts`, `src/i18n/advanced.ts` | Advanced personalisation contracts (goals, body measures) and their English/Italian strings (`useAdvancedText()`). |

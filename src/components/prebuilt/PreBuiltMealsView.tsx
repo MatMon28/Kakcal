@@ -4,6 +4,7 @@ import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../.
 import { Modal } from '../common/Modal';
 import { ActionDock } from '../common/ActionDock';
 import { AmountSelector } from '../common/AmountSelector';
+import { useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, getLastAmount, setLastAmount } from '../../utils/amountMemory';
 import { FoodResultRow } from '../common/FoodResultRow';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
@@ -192,6 +193,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
     t,
   } = useApp();
+  const { options: mealSlots, label: slotLabel } = useMealSlots();
   const ultraMinimal = settings.ultraMinimal;
 
   const savedRecipes = useMemo(() => allFoods.filter((f) => f.isRecipe), [allFoods]);
@@ -501,15 +503,6 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
   const pendingKcal = pendingFood ? Math.round((pendingFood.calories * pendingAmount) / 100) : 0;
 
-  const mealSlots: { id: MealSlotId; label: string }[] = [
-    { id: 'breakfast', label: t.mealSlots.breakfast },
-    { id: 'mid_morning', label: t.mealSlots.mid_morning },
-    { id: 'lunch', label: t.mealSlots.lunch },
-    { id: 'midday_snack', label: t.mealSlots.midday_snack },
-    { id: 'dinner', label: t.mealSlots.dinner },
-    { id: 'extra', label: t.mealSlots.extra },
-  ];
-
   const mealResults = useMemo(() => {
     const q = mealQuery.trim();
     if (q.length < 2) return [];
@@ -621,7 +614,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                           </h3>
                           {meal.slot && !ultraMinimal && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)]">
-                              {t.mealSlots[meal.slot]}
+                              {slotLabel(meal.slot)}
                             </span>
                           )}
                         </div>
@@ -989,7 +982,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
-              {t.prebuilt.logMeal} → {t.mealSlots[selectedSlot]}
+              {t.prebuilt.logMeal} → {slotLabel(selectedSlot)}
             </span>
           </button>
         </div>
@@ -1040,7 +1033,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           >
             <Check size={18} strokeWidth={2.5} />
             <span>
-              {t.prebuilt.logRecipe} → {t.mealSlots[recipeLogSlot]} ·{' '}
+              {t.prebuilt.logRecipe} → {slotLabel(recipeLogSlot)} ·{' '}
               {activeRecipeToLog ? Math.round((activeRecipeToLog.calories * recipeLogAmount) / 100) : 0} kcal
             </span>
           </button>
