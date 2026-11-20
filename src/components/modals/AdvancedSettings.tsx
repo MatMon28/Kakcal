@@ -188,9 +188,10 @@ export const AdvancedSettings: React.FC = () => {
           <button
             type="button"
             onClick={() => { setIsSettingsOpen(false); setIsProfileOpen(true); }}
-            className="pressable w-full py-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center gap-1.5"
+            className="pressable w-full py-2.5 px-4 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] text-center"
           >
-            <User size={14} />
+            {/* Icon and text flow together and are centred together, so a wrapped label no longer leaves the icon at the left edge. */}
+            <User size={14} className="inline-block align-[-2px] mr-1.5" aria-hidden="true" />
             <span>{text.settings.bodyProfileHint}</span>
           </button>
         )}

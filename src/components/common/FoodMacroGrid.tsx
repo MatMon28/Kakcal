@@ -42,30 +42,43 @@ export function FoodMacroGrid({ food, amount, mode = 'portion' }: {
   );
 }
 
+export type SecondaryNutrient = 'fiber' | 'salt' | 'sugar';
+
+/**
+ * One of the yellow fields fibre / salt / sugar (daily totals on Today, averages on Statistics). Each one is a card
+ * of its own, so the advanced layout can place and resize them independently.
+ */
+export function SecondaryNutrientCard({ nutrient, value, average = false }: {
+  nutrient: SecondaryNutrient; value: number; average?: boolean;
+}) {
+  const { t, settings } = useApp();
+  const labels = average ? { fiber: t.stats.avgFiber, salt: t.stats.avgSalt, sugar: t.stats.avgSugar } : t.macros;
+  const Icon = extraIcons[nutrient];
+  return (
+    <div data-nutrient={nutrient} role="group" title={labels[nutrient]} aria-label={`${labels[nutrient]}: ${value} g`}
+      className={`bg-nutrient text-nutrient-ink rounded-2xl flex flex-wrap items-center justify-between gap-x-1.5 ${settings.ultraMinimal ? 'px-3 py-2.5' : 'px-3 py-3 sm:px-4'}`}>
+      <span className="inline-flex items-center gap-1.5">
+        {settings.ultraMinimal ? <Icon size={16} aria-hidden="true" /> : <span className="text-xs sm:text-sm font-semibold">{labels[nutrient]}</span>}
+        {/* Settings > Advanced: objective / limit reached (daily totals only, not the period averages) */}
+        {!average && <GoalBadge goal={nutrient} amount={value} />}
+      </span>
+      <span className="whitespace-nowrap text-base sm:text-lg font-extrabold">{value}
+        {(!settings.ultraMinimal || average) && <small className="ml-0.5 text-xs font-semibold">{settings.ultraMinimal ? '/day' : 'g'}</small>}
+      </span>
+    </div>
+  );
+}
+
 export function SecondaryNutrientRow({ fiber, salt, sugar, average = false }: {
   fiber: number; salt: number; sugar: number; average?: boolean;
 }) {
-  const { t, settings } = useApp();
+  const { settings } = useApp();
   const values = { fiber, salt, sugar };
-  const labels = average ? { fiber: t.stats.avgFiber, salt: t.stats.avgSalt, sugar: t.stats.avgSugar } : t.macros;
   return (
     <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5 sm:gap-3.5 tabular-nums`}>
-      {(['fiber', 'salt', 'sugar'] as const).filter((key) => key !== 'sugar' || settings.trackSugar).map((key) => {
-        const Icon = extraIcons[key];
-        return (
-          <div key={key} data-nutrient={key} role="group" title={labels[key]} aria-label={`${labels[key]}: ${values[key]} g`}
-            className={`bg-nutrient text-nutrient-ink rounded-2xl flex flex-wrap items-center justify-between gap-x-1.5 ${settings.ultraMinimal ? 'px-3 py-2.5' : 'px-3 py-3 sm:px-4'}`}>
-            <span className="inline-flex items-center gap-1.5">
-              {settings.ultraMinimal ? <Icon size={16} aria-hidden="true" /> : <span className="text-xs sm:text-sm font-semibold">{labels[key]}</span>}
-              {/* Settings > Advanced: objective / limit reached (daily totals only, not the period averages) */}
-              {!average && <GoalBadge goal={key} amount={values[key]} />}
-            </span>
-            <span className="whitespace-nowrap text-base sm:text-lg font-extrabold">{values[key]}
-              {(!settings.ultraMinimal || average) && <small className="ml-0.5 text-xs font-semibold">{settings.ultraMinimal ? '/day' : 'g'}</small>}
-            </span>
-          </div>
-        );
-      })}
+      {(['fiber', 'salt', 'sugar'] as const).filter((key) => key !== 'sugar' || settings.trackSugar).map((key) => (
+        <SecondaryNutrientCard key={key} nutrient={key} value={values[key]} average={average} />
+      ))}
     </div>
   );
 }

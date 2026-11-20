@@ -6,14 +6,12 @@
 /** The pages that can be personalised. */
 export type LayoutPageId = 'today' | 'stats' | 'body';
 
-/** Width of a field on the 6-column page grid: 1/3, 1/2, 2/3 or the full row. */
-export type LayoutWidth = 'third' | 'half' | 'twothirds' | 'full';
-
 /** What the user changed for one field. A missing value means "the original one". */
 export interface LayoutItemPrefs {
-  width?: LayoutWidth;
-  /** Size step from -2 (smallest) to 2 (biggest); 0 / missing = original size. */
-  scale?: number;
+  /** Width in columns of the 6-column page grid (2 ... 6), set by pulling the left / right side of the field. */
+  cols?: number;
+  /** Height in pixels, set by pulling the top / bottom side of the field. Longer content scrolls inside the field. */
+  height?: number;
 }
 
 export interface PageLayout {

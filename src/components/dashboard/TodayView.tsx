@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BurnedCard, EnergyBalanceCards, IntakeCard } from './EnergyBalanceCards';
 import { DayNavigator } from './DayNavigator';
-import { MacroCard, MacroNutrientsOverview, NutrientsRow } from './MacroNutrientsOverview';
+import { MacroCard, MacroNutrientsOverview, NutrientCard } from './MacroNutrientsOverview';
 import { MealSlotCard } from './MealSlotCard';
 import { ActivityCardSummary } from './ActivityCardSummary';
 import { WaterCard } from './WaterCard';
@@ -161,7 +161,14 @@ export const TodayView: React.FC = () => {
     { id: 'carbs', label: t.macros.carbs, node: <MacroCard macro="carbs" />, span: 'col-span-2' },
     { id: 'protein', label: t.macros.protein, node: <MacroCard macro="protein" />, span: 'col-span-2' },
     { id: 'fat', label: t.macros.fat, node: <MacroCard macro="fat" />, span: 'col-span-2' },
-    { id: 'nutrients', label: names.nutrients, node: <NutrientsRow />, span: 'col-span-6' },
+    // Fibre, salt and sugar are three fields of their own (3 per row, 2 per row while sugar is not tracked).
+    ...(['fiber', 'salt', 'sugar'] as const).map((id): LayoutItem => ({
+      id,
+      label: t.macros[id],
+      node: <NutrientCard nutrient={id} />,
+      span: settings.trackSugar ? 'col-span-2' : 'col-span-3',
+      show: id !== 'sugar' || settings.trackSugar,
+    })),
     { id: 'layoutSwitch', label: names.layoutSwitch, node: layoutSwitch, span: 'col-span-6', fixed: true, show: !ultraMinimal },
     ...MEAL_SLOTS.map((slotId): LayoutItem => ({
       id: mealItemId(slotId),

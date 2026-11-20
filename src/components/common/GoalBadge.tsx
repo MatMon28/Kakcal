@@ -3,10 +3,14 @@ import { goalState, useAdvanced } from '../../utils/advancedStore';
 import type { GoalKey } from '../../types/advanced';
 
 /**
- * Tiny round icon shown inside a Today field when its goal is reached:
- * a check on a soft green disc for an objective, an exclamation on a soft red disc for a limit
- * (same pastel palette as the rest of the app). Renders nothing when goals are off, the goal is off
- * or it is not reached yet, so it takes no space.
+ * Small badge shown inside a Today field when its goal is reached:
+ *  - objective reached: a solid green circle with a white check,
+ *  - limit reached / exceeded: a solid red warning triangle with a white exclamation mark.
+ *
+ * Both are one inline SVG with fixed colours, a white ring and a thin dark halo, so they stay clearly visible
+ * on every theme (light, dark, pastel, the style themes that force `color: inherit` inside the nutrient cards).
+ * The two shapes differ as well as the colours, so they can be told apart without seeing colours. Renders nothing
+ * when goals are off, the goal is off or it is not reached yet, so it takes no space.
  */
 export function GoalBadge({ goal, amount, className = '' }: { goal: GoalKey; amount: number; className?: string }) {
   const config = useAdvanced();
@@ -22,12 +26,22 @@ export function GoalBadge({ goal, amount, className = '' }: { goal: GoalKey; amo
       aria-label={label}
       title={label}
       data-goal-badge={objective ? 'objective' : 'limit'}
-      className={`inline-flex size-4 shrink-0 items-center justify-center rounded-full anim-value ${
-        objective ? 'bg-[#C9EFD3] text-[#174A2B]' : 'bg-[#F6D0D0] text-[#7A2727]'
-      } ${className}`}
+      className={`inline-flex size-5 shrink-0 items-center justify-center anim-value ${className}`}
+      style={{ filter: 'drop-shadow(0 0 1px rgba(0,0,0,0.55)) drop-shadow(0 1px 1.5px rgba(0,0,0,0.25))' }}
     >
-      <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        {objective ? <path d="M2.5 6.3L5 8.8L9.5 3.5" /> : <path d="M6 2.5V6.5M6 9.3V9.3" />}
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        {objective ? (
+          <>
+            <circle cx="12" cy="12" r="10" fill="#15A04A" stroke="#FFFFFF" strokeWidth="2" />
+            <path d="M7 12.4L10.6 16L17.2 8.6" fill="none" stroke="#FFFFFF" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          </>
+        ) : (
+          <>
+            <path d="M12 2.8L22 20.2H2Z" fill="#DC2626" stroke="#FFFFFF" strokeWidth="2.2" strokeLinejoin="round" />
+            <path d="M12 9V14.2" fill="none" stroke="#FFFFFF" strokeWidth="2.8" strokeLinecap="round" />
+            <circle cx="12" cy="17.2" r="1.5" fill="#FFFFFF" />
+          </>
+        )}
       </svg>
     </span>
   );

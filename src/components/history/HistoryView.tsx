@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, X } from 'lucide-react';
-import { SecondaryNutrientRow } from '../common/FoodMacroGrid';
+import { SecondaryNutrientCard, SecondaryNutrientRow } from '../common/FoodMacroGrid';
 import { useApp } from '../../context/AppContext';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
@@ -613,12 +613,13 @@ export const HistoryView: React.FC = () => {
       node: macroNodes[index],
       span: 'col-span-2',
     })),
-    {
-      id: 'nutrients',
-      label: names.nutrients,
-      node: <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />,
-      span: 'col-span-6',
-    },
+    ...(['fiber', 'salt', 'sugar'] as const).map((id): LayoutItem => ({
+      id,
+      label: t.macros[id],
+      node: <SecondaryNutrientCard nutrient={id} value={{ fiber: period.avgFiber, salt: period.avgSalt, sugar: period.avgSugar }[id]} average />,
+      span: settings.trackSugar ? 'col-span-2' : 'col-span-3',
+      show: id !== 'sugar' || settings.trackSugar,
+    })),
     { id: 'poop', label: names.poopStats, node: poopNode, span: 'col-span-6', show: !settings.hidePoop },
     ...trackerButtons.map((button, index): LayoutItem => ({
       id: `tracker:${button.id}`,

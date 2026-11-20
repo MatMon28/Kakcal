@@ -13,7 +13,7 @@ Everything is **off by default** and is switched on in **Settings > Advanced** (
 - Master switch *Goals & limits*, then one independent switch per item: **calories, fibre, carbs, protein, fat, salt, sugar**.
 - **Calories and fibre** can be an *objective* or a *limit* (segmented control). **Carbs, protein, fat, salt and sugar** are *limits*. The choices per item are the table `GOAL_MODE_CHOICES` in `advancedStore.ts`: add `'objective'` to a list to offer it for that item.
 - Values: kcal for calories, grams for the rest. Defaults when first switched on: 2000 kcal limit, 25 g fibre objective, 250 g carbs, 120 g protein, 70 g fat, 5 g salt, 50 g sugar.
-- **Icons** (`components/common/GoalBadge.tsx`): a 16 px round badge in the pastel palette of the app. A check on green = objective reached (intake >= value); an exclamation on red = limit reached or exceeded (the tooltip / accessible name says which). The badge renders nothing, so takes no space, until the goal is reached.
+- **Icons** (`components/common/GoalBadge.tsx`): a 20 px badge drawn as one inline SVG with fixed colours, a white ring and a thin dark halo, so it is clearly visible on every theme (the style themes force `color: inherit` inside the nutrient cards, which used to wash the old pastel badge out). **Objective reached** = solid green circle with a white check; **limit reached or exceeded** = solid red warning triangle with a white exclamation mark (different shapes as well as colours; the tooltip / accessible name says which). The badge renders nothing, so takes no space, until the goal is reached.
 - Where: the calorie badge sits beside the *Intake* label (Today), the carbs/protein/fat badges in the top-right corner of their cards, fibre/salt/sugar beside their labels (`SecondaryNutrientRow`, daily totals only; Statistics averages show none). Sugar only appears when *Track sugar intake* is on.
 - Pure logic: `goalState(config, key, amount)`; hook `useGoalState`.
 
@@ -27,7 +27,7 @@ Everything is **off by default** and is switched on in **Settings > Advanced** (
 
 ## Body-part icons
 
-`components/common/BodyPartIcon.tsx` draws the icons from `bodyIconPaths.ts` (React-free path data). Same language as the lucide icons used elsewhere: 24 px grid, round strokes, `currentColor`. A soft filled silhouette of the body part is crossed by a bold measuring-tape band; `custom` is a tape measure. Colours come from the surrounding pastel chip, so they follow every theme.
+`components/common/BodyPartIcon.tsx` draws the icons from `bodyIconPaths.ts` (React-free path data: `shape`, `detail`, `band`, optional `transform` and `extra`). Same language as the lucide icons used elsewhere: 24 px grid, round strokes, `currentColor`. Each icon shows the body part **together with the joint or extremity next to it**, as a soft filled silhouette crossed by a bold measuring-tape band: **biceps** = flexed arm (lucide `biceps-flexed`), **forearms** = forearm with the hand (lucide `hand`, turned and scaled), **thighs** = bent leg with knee, shin and foot, **calves** = lower leg with the calf bulge and the foot, **neck** = simplified head, neck and shoulders, plus waist, hips (pelvis and leg tops) and chest (torso with pectorals); `custom` is a tape measure. Colours come from the surrounding pastel chip, so they follow every theme.
 
 ## Data
 

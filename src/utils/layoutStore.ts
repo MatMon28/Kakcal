@@ -4,7 +4,6 @@ import type {
   LayoutItemPrefs,
   LayoutPageId,
   LayoutState,
-  LayoutWidth,
   PageLayout,
 } from '../types/layout';
 
@@ -20,12 +19,16 @@ import type {
 export const LAYOUT_STORAGE_KEY = 'kcalsync_layout';
 
 export const LAYOUT_PAGES: LayoutPageId[] = ['today', 'stats', 'body'];
-export const WIDTHS: LayoutWidth[] = ['third', 'half', 'twothirds', 'full'];
 
-/** Size steps (-2 ... 2) and the CSS zoom factor each one applies to a field. */
-export const MIN_SCALE = -2;
-export const MAX_SCALE = 2;
-export const SCALE_ZOOM: Record<number, number> = { [-2]: 0.75, [-1]: 0.88, 0: 1, 1: 1.15, 2: 1.3 };
+/** Width limits in columns of the 6-column grid, height limits and snapping in pixels. */
+export const MIN_COLS = 2;
+export const MAX_COLS = 6;
+export const MIN_HEIGHT = 44;
+export const MAX_HEIGHT = 900;
+export const HEIGHT_STEP = 4;
+
+/** Widths stored by the first version of the advanced layout (1/3, 1/2, 2/3, full) as columns. */
+const LEGACY_WIDTH_COLS: Record<string, number> = { third: 2, half: 3, twothirds: 4, full: 6 };
 
 /** Ids of the built-in Today fields in their original order (custom meal types are added after the meals). */
 export const TODAY_BUILTIN_ITEMS = [
@@ -34,7 +37,9 @@ export const TODAY_BUILTIN_ITEMS = [
   'carbs',
   'protein',
   'fat',
-  'nutrients',
+  'fiber',
+  'salt',
+  'sugar',
   'layoutSwitch',
   'meal:breakfast',
   'meal:mid_morning',
@@ -65,21 +70,34 @@ const isObject = (v: unknown): v is Record<string, unknown> => typeof v === 'obj
 const strings = (v: unknown): string[] =>
   Array.isArray(v) ? Array.from(new Set(v.filter((x): x is string => typeof x === 'string' && x.length > 0))) : [];
 
+/** Fibre, salt and sugar used to be one field called `nutrients`; they are three independent fields now. */
+const NUTRIENT_IDS = ['fiber', 'salt', 'sugar'];
+const expandLegacyIds = (v: unknown): unknown =>
+  Array.isArray(v) ? v.flatMap((id) => (id === 'nutrients' ? NUTRIENT_IDS : [id])) : v;
+
+export function clampCols(cols: number): number {
+  return Math.min(MAX_COLS, Math.max(MIN_COLS, Math.round(cols)));
+}
+
+export function clampHeight(height: number): number {
+  const snapped = Math.round(height / HEIGHT_STEP) * HEIGHT_STEP;
+  return Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, snapped));
+}
+
 function normalizePage(raw: unknown): PageLayout {
   const src = isObject(raw) ? raw : {};
   const items: Record<string, LayoutItemPrefs> = {};
   if (isObject(src.items)) {
     for (const [id, value] of Object.entries(src.items)) {
-      if (!isObject(value)) continue;
+      if (!isObject(value) || id === 'nutrients') continue;
       const prefs: LayoutItemPrefs = {};
-      if (typeof value.width === 'string' && (WIDTHS as string[]).includes(value.width)) prefs.width = value.width as LayoutWidth;
-      if (typeof value.scale === 'number' && Number.isInteger(value.scale) && value.scale >= MIN_SCALE && value.scale <= MAX_SCALE && value.scale !== 0) {
-        prefs.scale = value.scale;
-      }
-      if (prefs.width || prefs.scale) items[id] = prefs;
+      if (typeof value.cols === 'number' && Number.isFinite(value.cols)) prefs.cols = clampCols(value.cols);
+      else if (typeof value.width === 'string' && value.width in LEGACY_WIDTH_COLS) prefs.cols = LEGACY_WIDTH_COLS[value.width];
+      if (typeof value.height === 'number' && Number.isFinite(value.height)) prefs.height = clampHeight(value.height);
+      if (prefs.cols || prefs.height) items[id] = prefs;
     }
   }
-  return { order: strings(src.order), hidden: strings(src.hidden), items };
+  return { order: strings(expandLegacyIds(src.order)), hidden: strings(expandLegacyIds(src.hidden)), items };
 }
 
 export function normalizeLayout(raw: unknown): LayoutState {
@@ -113,10 +131,6 @@ export function mergeOrder(stored: string[], ids: string[]): string[] {
   const kept = stored.filter((id) => known.has(id));
   const keptSet = new Set(kept);
   return [...kept, ...ids.filter((id) => !keptSet.has(id))];
-}
-
-export function clampScale(scale: number): number {
-  return Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round(scale)));
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -220,18 +234,28 @@ function patchItem(layout: PageLayout, id: string, patch: Partial<LayoutItemPref
   const { [id]: _old, ...rest } = layout.items;
   void _old;
   const clean: LayoutItemPrefs = {};
-  if (merged.width) clean.width = merged.width;
-  if (merged.scale) clean.scale = merged.scale;
-  return { ...layout, items: clean.width || clean.scale ? { ...rest, [id]: clean } : rest };
+  if (merged.cols) clean.cols = clampCols(merged.cols);
+  if (merged.height) clean.height = clampHeight(merged.height);
+  return { ...layout, items: clean.cols || clean.height ? { ...rest, [id]: clean } : rest };
 }
 
-/** `undefined` = back to the field's original width. */
-export function setItemWidth(page: LayoutPageId, id: string, width: LayoutWidth | undefined) {
-  updatePage(page, (layout) => patchItem(layout, id, { width }));
+/** Sets the width (columns) and / or height (px) of a field. A key set to `undefined` goes back to the original. */
+export function setItemSize(page: LayoutPageId, id: string, size: Partial<LayoutItemPrefs>) {
+  updatePage(page, (layout) => patchItem(layout, id, size));
 }
 
-export function setItemScale(page: LayoutPageId, id: string, scale: number) {
-  updatePage(page, (layout) => patchItem(layout, id, { scale: clampScale(scale) }));
+/**
+ * Stores a new order of the *shown* fields (after a drag and drop). Removed fields keep their own slots in the
+ * stored order; the shown ones are laid into the remaining slots in the new order. `ids` = all current field ids.
+ */
+export function reorderItems(page: LayoutPageId, shownOrder: string[], ids: string[]) {
+  updatePage(page, (layout) => {
+    const order = mergeOrder(layout.order, ids);
+    const hidden = new Set(layout.hidden);
+    const queue = shownOrder.filter((id) => order.includes(id) && !hidden.has(id));
+    const next = order.map((id) => (hidden.has(id) ? id : queue.shift() ?? id));
+    return next.join('\u0000') === order.join('\u0000') ? { ...layout, order } : { ...layout, order: next };
+  });
 }
 
 export function hideItem(page: LayoutPageId, id: string) {

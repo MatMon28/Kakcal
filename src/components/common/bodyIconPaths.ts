@@ -1,58 +1,72 @@
 /**
  * Path data of the body-part icons (24x24 grid, stroke only, like the lucide icons used elsewhere).
  * `shape` is the closed silhouette of the body part (soft fill + softer stroke), `detail` are optional
- * open lines inside it, `band` is the measuring tape around it (drawn bolder). Kept free of React so the
- * artwork can be previewed outside the app.
+ * open lines inside it (muscle lines, fingers, a kneecap...), `band` is the measuring tape around it
+ * (drawn bolder). `transform` (optional) is an SVG transform applied to `shape` and `detail` only, and
+ * `extra` (optional) are more silhouettes drawn like `shape` but not transformed.
+ *
+ * Every icon shows the part together with the joint / extremity next to it so that it is recognisable at
+ * 22 px: a flexed arm (biceps), a forearm with its hand, a bent leg with the knee and foot (thighs), a calf
+ * with the foot. The biceps and the hand are the lucide `biceps-flexed` and `hand` outlines (ISC licence),
+ * the rest is drawn in the same language. Kept free of React so the artwork can be previewed outside the app.
  */
 export interface BodyIconArt {
   shape: string;
   detail?: string[];
   band: string;
+  transform?: string;
+  extra?: string[];
 }
 
 export const BODY_ICON_ART = {
-  // Vita: torso that narrows at the waist
+  // Vita: torso with a gentle waist, tape at the waist and the navel below it
   waist: {
-    shape: 'M7 3.5H17C16.5 8 15 10 15 12C15 14 17 16 17.5 20.5H6.5C7 16 9 14 9 12C9 10 7.5 8 7 3.5Z',
-    band: 'M4.5 12H19.5',
+    shape: 'M6 3.5H18C18.4 8 17 10 17 12C17 14 18.6 16.5 19 20.5H5C5.4 16.5 7 14 7 12C7 10 5.6 8 6 3.5Z',
+    detail: ['M12 16.4H12.01'],
+    band: 'M4 12H20',
   },
-  // Collo: head, neck and sloping shoulders
+  // Collo (simplified): head, a clear neck and the shoulders, tape around the neck
   neck: {
-    shape: 'M10.2 9V11.5C10.2 13 5.5 12.8 3.5 16.5V20.5H20.5V16.5C18.5 12.8 13.8 13 13.8 11.5V9',
-    detail: ['M8.9 6a3.1 3.1 0 1 0 6.2 0a3.1 3.1 0 1 0-6.2 0'],
-    band: 'M7.5 11H16.5',
+    shape: 'M10.3 9.2V11C10.3 12.6 5 12.6 3.5 17.5V20.5H20.5V17.5C19 12.6 13.7 12.6 13.7 11V9.2',
+    detail: ['M8.8 5.6a3.2 3.2 0 1 0 6.4 0a3.2 3.2 0 1 0-6.4 0'],
+    band: 'M8 10.8H16',
   },
-  // Fianchi: pelvis, widest point
+  // Fianchi: pelvis with the start of both legs, tape at the widest point
   hips: {
-    shape: 'M7 3.5H17C17.5 7 19.5 9.5 19.5 12.5C19.5 15.5 18 18 17.5 20.5H6.5C6 18 4.5 15.5 4.5 12.5C4.5 9.5 6.5 7 7 3.5Z',
-    detail: ['M12 16V20.5'],
+    shape: 'M7.5 3.5H16.5C17 7 19.5 9 19.5 12.5C19.5 15.5 18.2 18 17.8 20.5H13.4L12 14.8L10.6 20.5H6.2C5.8 18 4.5 15.5 4.5 12.5C4.5 9 7 7 7.5 3.5Z',
     band: 'M3 11.5H21',
   },
-  // Petto: torso with shoulders and the chest line
+  // Petto: torso with the shoulders and the two pectoral muscles
   chest: {
-    shape: 'M8.5 3.5C9.5 5 14.5 5 15.5 3.5L19.5 5.5C19 9 18.5 13 17.5 20.5H6.5C5.5 13 5 9 4.5 5.5Z',
-    detail: ['M8 13C10 15 11.5 14.5 12 13C12.5 14.5 14 15 16 13'],
-    band: 'M3.5 9.5H20.5',
+    shape: 'M5 3.5H19L20.5 8C20 12 18.8 16 18.3 20.5H5.7C5.2 16 4 12 3.5 8Z',
+    detail: ['M7.2 12.5C7.5 15.5 11.3 15.9 11.8 13.1', 'M16.8 12.5C16.5 15.5 12.7 15.9 12.2 13.1'],
+    band: 'M3 9.5H21',
   },
-  // Avambracci: diagonal forearm from elbow to fist
+  // Avambracci: forearm (left) with the hand (the lucide hand turned to the right, fingers pointing right)
   forearms: {
-    shape: 'M9 3.5L18 13C20.5 14.5 20.5 16.5 18.5 18.5C16.5 20.5 14.5 20.5 13 18L3.5 9C5 6.5 7 4.5 9 3.5Z',
-    band: 'M13.8 6.4L6.4 13.8',
+    shape: 'M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15',
+    detail: ['M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2', 'M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2', 'M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8'],
+    transform: 'translate(6.2 3.4) scale(0.72) rotate(90 12 12)',
+    extra: ['M8.4 8.9L3.7 8.1C2.7 7.9 2 8.7 2 9.7V14.3C2 15.3 2.7 16.1 3.7 15.9L8.4 15.1'],
+    band: 'M5.2 5.6V18.4',
   },
-  // Bicipiti: upper arm with the muscle bulging at the front
+  // Bicipiti: the flexed arm (lucide biceps-flexed), tape around the muscle
   biceps: {
-    shape: 'M8 3.5H15C17.5 7 18 10.5 15.5 13.5C14.5 15 14.5 17.5 15.5 20.5H8.5C7.5 14 7.5 8 8 3.5Z',
-    band: 'M5.5 9H19.5',
+    shape: 'M12.409 13.017A5 5 0 0 1 22 15c0 3.866-4 7-9 7-4.077 0-8.153-.82-10.371-2.462-.426-.316-.631-.832-.62-1.362C2.118 12.723 2.627 2 10 2a3 3 0 0 1 3 3 2 2 0 0 1-2 2c-1.105 0-1.64-.444-2-1',
+    detail: ['M15 14a5 5 0 0 0-7.584 2', 'M9.964 6.825C8.019 7.977 9.5 13 8 15'],
+    band: 'M5.8 8.6L11.4 12.6',
   },
-  // Cosce: thigh, wide at the top, narrowing to the knee
+  // Cosce: seated leg: the thigh (tape), the knee, the shin and the foot
   thighs: {
-    shape: 'M7 3.5H17C18.5 8 17 14 15.5 20.5H8.5C6.5 14 5.5 8 7 3.5Z',
-    band: 'M4.5 9H19.5',
+    shape: 'M3.5 7C3.5 6 4.3 5.5 5.3 5.5H15.3C18.2 5.5 20.5 7.5 20.5 10.5V18C22 18.3 22.7 19 22.7 20.2C22.7 20.6 22.4 20.8 22 20.8H15.5C14.9 20.8 14.8 20.3 14.8 19.8V13H5.3C4.3 13 3.5 12.3 3.5 11.4Z',
+    detail: ['M16.2 8.6C16.7 7.8 17.6 7.5 18.4 7.8'],
+    band: 'M9 3.5V15',
   },
-  // Polpacci: lower leg with the calf bulging at the back
+  // Polpacci: lower leg with the calf bulging at the back and the foot
   calves: {
-    shape: 'M9.5 3.5H15C15.5 8 15 14 14 20.5H10C9.5 17 7.5 15 6.5 12C5.5 9 8 6 9.5 3.5Z',
-    band: 'M3.5 9.5H18',
+    shape: 'M9.5 3.5H14.5L14.2 15.2C14.3 16.6 15.9 17 17.8 17.7C19.8 18.4 21 19.2 21 20.2C21 21.1 20.3 21.5 19.5 21.5H9.2C8 21.5 7.4 20.6 7.8 19.6C8.2 18.5 9.6 17 9.8 15.6C10 13 6.2 12 6.6 8.2C6.8 6.2 8.2 5 9.5 3.5Z',
+    detail: ['M11.2 21.5C12.2 20.3 14.2 20.3 15.2 21.5'],
+    band: 'M3.5 9.5H16.5',
   },
   // Personalizzata: a tape measure
   custom: {

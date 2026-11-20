@@ -1,5 +1,5 @@
 import React from 'react';
-import { SecondaryNutrientRow } from '../common/FoodMacroGrid';
+import { SecondaryNutrientCard, SecondaryNutrientRow, type SecondaryNutrient } from '../common/FoodMacroGrid';
 import { useApp } from '../../context/AppContext';
 import { GoalBadge } from '../common/GoalBadge';
 
@@ -38,6 +38,13 @@ export const MacroCard: React.FC<{ macro: MacroKey }> = ({ macro }) => {
       </span>
     </div>
   );
+};
+
+/** One of fibre, salt or sugar of the day, as a field of its own (advanced layout). */
+export const NutrientCard: React.FC<{ nutrient: SecondaryNutrient }> = ({ nutrient }) => {
+  const { currentMacros } = useApp();
+  const value = { fiber: currentMacros.fiberGrams, salt: currentMacros.saltGrams, sugar: currentMacros.sugarGrams }[nutrient];
+  return <SecondaryNutrientCard nutrient={nutrient} value={value} />;
 };
 
 /** Fibre, salt and (optional) sugar of the day. */
