@@ -6,7 +6,7 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md)
 
-`changes.patch` is a `git diff --binary` taken against GitHub commit **`f95e567` ("Minor fixes")**, the tip of `main` when the Quick-add buttons / pencil round was done (apply it to a checkout of that commit; use `git apply --3way` if your `main` has moved on). Apply it to a checkout of that commit (or one whose files still match):
+`changes.patch` is a `git diff --binary` taken against GitHub commit **`c456192` ("Fixed coherence")**, the tip of `main` when the **logo-click poop animation round** was done: new files `src/components/common/poopAnimations.ts` and `src/components/common/poop-anim.css`; edited `src/components/common/Brand.tsx` (poop markup + CSS import) and `src/components/common/Header.tsx` (click handler), the root `README.md` and the docs (`motion.md`, `README.md`, `changes-patch.md`, `file-map/components-common.md`). No `package.json` change. Apply it to a checkout of that commit (use `git apply --3way` if your `main` has moved on, or one whose files still match):
 
 ```sh
 git apply --check changes.patch   # dry run

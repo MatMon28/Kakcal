@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { User, Settings } from 'lucide-react';
 import { Tabs } from './Tabs';
 import { Wordmark } from './Brand';
+import { playPoopAnimation } from './poopAnimations';
 
 const TOP_HIDE_SCROLL_PX = 48;
 const TABS_HIDE_DELTA_PX = 68;
@@ -21,6 +22,7 @@ export const Header: React.FC = () => {
   const surfaceRef = React.useRef<HTMLDivElement>(null);
   const topRowRef = React.useRef<HTMLDivElement>(null);
   const tabsRowRef = React.useRef<HTMLDivElement>(null);
+  const titleBtnRef = React.useRef<HTMLButtonElement>(null);
   const scrollStateRef = React.useRef({
     lastY: 0,
     topProgress: 1,
@@ -167,6 +169,10 @@ export const Header: React.FC = () => {
   }, [scheduleSmoothUpdate]);
 
   const handleTitleClick = () => {
+    // Logo click: only the poop animates (random, never the same twice in a row).
+    // `?poop=1..6` forces one animation for review. Navigation below is unchanged.
+    const forced = Number(new URLSearchParams(window.location.search).get('poop')) || undefined;
+    playPoopAnimation(titleBtnRef.current, forced);
     if (activeTab !== 'today') {
       setActiveTab('today');
     } else {
@@ -200,6 +206,7 @@ export const Header: React.FC = () => {
             </div>
 
             <button
+              ref={titleBtnRef}
               type="button"
               onClick={handleTitleClick}
               aria-label={t.appName}

@@ -1,0 +1,157 @@
+/*
+ * Logo-click poop animations (see poopAnimations.ts and docs/motion.md).
+ *
+ * The wordmark SVG (Brand.tsx) wraps the poop in `.kc-poop` and marks its paths:
+ *   .kc-poop-body     the outline (pathLength 100)
+ *   .kc-poop-crease   the three tier lines (pathLength 100)
+ *   .kc-poop-tick     three burst ticks around the poop (hidden unless an animation uses them)
+ * `data-poop-anim="<id>"` on `.kc-wordmark` starts the matching animation. Durations here must
+ * match POOP_ANIMATIONS in poopAnimations.ts. Transform / opacity / dashoffset only.
+ * Lengths are SVG user units of the poop group (the group is scaled 1.45 in the wordmark).
+ */
+
+/* Let the poop leave the 500x260 viewBox while it jumps or falls in. */
+.kc-wordmark > svg {
+  overflow: visible;
+}
+
+.kc-poop {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+
+.kc-poop-tick {
+  opacity: 0;
+}
+
+/* ---------- 1. plop: falls from above, squashes on impact, bounces, creases redraw ---------- */
+[data-poop-anim='plop'] .kc-poop {
+  animation: kc-plop 1150ms both;
+}
+[data-poop-anim='plop'] .kc-poop-crease {
+  stroke-dasharray: 100 100;
+  animation: kc-plop-crease 1150ms linear both;
+}
+@keyframes kc-plop {
+  0% { opacity: 0; transform: translateY(-64px) rotate(-14deg) scale(1, 1); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.65); }
+  6% { opacity: 1; }
+  30% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1, 1); animation-timing-function: linear; }
+  32% { transform: translateY(0) rotate(0deg) scale(1.3, 0.68); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  48% { transform: translateY(-16px) rotate(0deg) scale(0.94, 1.08); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.65); }
+  60% { transform: translateY(0) rotate(0deg) scale(1.12, 0.86); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  72% { transform: translateY(-5px) rotate(0deg) scale(0.98, 1.03); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.65); }
+  82% { transform: translateY(0) rotate(0deg) scale(1.04, 0.96); animation-timing-function: ease-out; }
+  100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1, 1); }
+}
+@keyframes kc-plop-crease {
+  0%, 32% { opacity: 0; stroke-dashoffset: 100; }
+  34% { opacity: 1; stroke-dashoffset: 100; }
+  80%, 100% { opacity: 1; stroke-dashoffset: 0; }
+}
+
+/* ---------- 2. flush: spins down a whirlpool, corkscrews back up with overshoot ---------- */
+[data-poop-anim='flush'] .kc-poop {
+  transform-origin: 50% 55%;
+  animation: kc-flush 1250ms both;
+}
+@keyframes kc-flush {
+  0% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5); }
+  42% { opacity: 1; transform: translateY(14px) rotate(640deg) scale(0.04); animation-timing-function: linear; }
+  43% { opacity: 0; transform: translateY(14px) rotate(640deg) scale(0.04); }
+  50% { opacity: 0; transform: translateY(14px) rotate(-220deg) scale(0.04); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  51% { opacity: 1; transform: translateY(14px) rotate(-220deg) scale(0.04); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  78% { opacity: 1; transform: translateY(-9px) rotate(12deg) scale(1.16); animation-timing-function: ease-in-out; }
+  100% { opacity: 1; transform: translateY(0) rotate(0deg) scale(1); }
+}
+
+/* ---------- 3. jelly: squash and stretch wobble on the base ---------- */
+[data-poop-anim='jelly'] .kc-poop {
+  animation: kc-jelly 1000ms both;
+}
+@keyframes kc-jelly {
+  0% { transform: scale(1, 1) skewX(0deg); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  12% { transform: scale(1.26, 0.76) skewX(-5deg); animation-timing-function: cubic-bezier(0.34, 1.2, 0.64, 1); }
+  28% { transform: scale(0.82, 1.26) skewX(6deg); animation-timing-function: ease-in-out; }
+  44% { transform: scale(1.14, 0.88) skewX(-4deg); animation-timing-function: ease-in-out; }
+  60% { transform: scale(0.93, 1.08) skewX(3deg); animation-timing-function: ease-in-out; }
+  76% { transform: scale(1.04, 0.97) skewX(-1.5deg); animation-timing-function: ease-out; }
+  100% { transform: scale(1, 1) skewX(0deg); }
+}
+
+/* ---------- 4. flip: crouches, jumps, front flip, lands with a squash ---------- */
+[data-poop-anim='flip'] .kc-poop {
+  transform-origin: 50% 58%;
+  animation: kc-flip 1100ms both;
+}
+@keyframes kc-flip {
+  0% { transform: translateY(0) rotate(0deg) scale(1, 1); animation-timing-function: ease-out; }
+  14% { transform: translateY(6px) rotate(0deg) scale(1.2, 0.78); animation-timing-function: cubic-bezier(0.2, 0.7, 0.3, 1); }
+  48% { transform: translateY(-30px) rotate(360deg) scale(0.94, 1.08); animation-timing-function: cubic-bezier(0.6, 0, 0.9, 0.7); }
+  64% { transform: translateY(5px) rotate(360deg) scale(1.24, 0.74); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  80% { transform: translateY(-3px) rotate(360deg) scale(0.97, 1.04); animation-timing-function: ease-out; }
+  100% { transform: translateY(0) rotate(360deg) scale(1, 1); }
+}
+
+/* ---------- 5. press: pressed like a key, pops up, burst ticks fly out ---------- */
+[data-poop-anim='press'] .kc-poop {
+  animation: kc-press 950ms both;
+}
+[data-poop-anim='press'] .kc-poop-tick {
+  stroke-dasharray: 100 100;
+  animation: kc-press-tick 950ms ease-out both;
+}
+[data-poop-anim='press'] .kc-poop-tick:nth-of-type(2) { animation-delay: 30ms; }
+[data-poop-anim='press'] .kc-poop-tick:nth-of-type(3) { animation-delay: 60ms; }
+@keyframes kc-press {
+  0% { transform: translateY(0) scale(1, 1); animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1); }
+  20% { transform: translateY(8px) scale(1.2, 0.6); animation-timing-function: linear; }
+  34% { transform: translateY(8px) scale(1.2, 0.6); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  54% { transform: translateY(-14px) scale(0.9, 1.24); animation-timing-function: cubic-bezier(0.55, 0, 1, 0.65); }
+  70% { transform: translateY(0) scale(1.1, 0.9); animation-timing-function: ease-out; }
+  86% { transform: translateY(0) scale(0.98, 1.03); animation-timing-function: ease-out; }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes kc-press-tick {
+  0%, 34% { opacity: 0; stroke-dashoffset: 100; }
+  42% { opacity: 1; stroke-dashoffset: 0; }
+  90% { opacity: 1; stroke-dashoffset: -80; }
+  100% { opacity: 0; stroke-dashoffset: -100; }
+}
+
+/* ---------- 6. sketch: draws itself stroke by stroke, then a happy pop ---------- */
+[data-poop-anim='sketch'] .kc-poop-body {
+  stroke-dasharray: 100 100;
+  animation: kc-sketch-body 1300ms linear both;
+}
+[data-poop-anim='sketch'] .kc-poop-crease {
+  stroke-dasharray: 100 100;
+  animation: kc-sketch-crease 1300ms linear both;
+}
+[data-poop-anim='sketch'] .kc-poop-crease:nth-of-type(3) { animation-delay: 60ms; }
+[data-poop-anim='sketch'] .kc-poop-crease:nth-of-type(4) { animation-delay: 120ms; }
+[data-poop-anim='sketch'] .kc-poop {
+  animation: kc-sketch-pop 1300ms both;
+}
+@keyframes kc-sketch-body {
+  0% { opacity: 0; stroke-dashoffset: 100; }
+  2% { opacity: 1; stroke-dashoffset: 100; animation-timing-function: cubic-bezier(0.45, 0, 0.3, 1); }
+  58%, 100% { opacity: 1; stroke-dashoffset: 0; }
+}
+@keyframes kc-sketch-crease {
+  0%, 52% { opacity: 0; stroke-dashoffset: 100; }
+  54% { opacity: 1; stroke-dashoffset: 100; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  76%, 100% { opacity: 1; stroke-dashoffset: 0; }
+}
+@keyframes kc-sketch-pop {
+  0%, 74% { transform: translateY(0) scale(1, 1); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  84% { transform: translateY(-6px) scale(0.94, 1.12); animation-timing-function: ease-in; }
+  92% { transform: translateY(0) scale(1.08, 0.92); animation-timing-function: ease-out; }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kc-wordmark .kc-poop,
+  .kc-wordmark .kc-poop * {
+    animation: none !important;
+  }
+}

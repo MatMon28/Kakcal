@@ -17,7 +17,7 @@
 | Change reminders | [notifications.md](notifications.md) |
 | Understand header / dialogs | [journal-shell.md](journal-shell.md) |
 | Understand a page (Today, Food, Movement, Custom, Statistics, Period, Settings) | [journal-pages.md](journal-pages.md) |
-| Change animations / springs / swipe feel | [motion.md](motion.md) |
+| Change animations / springs / swipe feel / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
 | Speed up app start | [startup-performance.md](startup-performance.md) |
