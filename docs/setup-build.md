@@ -24,14 +24,16 @@
 | Command | Purpose |
 | --- | --- |
 | `node scripts/check-widget-layouts.mjs` | Fails if a widget layout uses a view class RemoteViews cannot inflate (a plain `<View>` gives "Can't load widget"). |
-| `node scripts/generate-notification-icon.mjs` | Re-generates `ic_stat_kak.xml` (real-logo glyph on a transparent background; `npm i --no-save paper-jsdom` first). |
+| `node scripts/generate-notification-icon.mjs` | Re-generates `ic_stat_kak.xml` (real-logo glyph on a transparent background; `npm i --no-save paper-jsdom` first) and, when `sharp` is installed, `public/icons/badge-96.png` (the browser notification badge). |
+| `node scripts/generate-intro-animations.mjs` | Writes the six launch animations, the lockups and the overview sheet from the Koink-style art ([brand.md](brand.md#launch-animations-and-every-other-place-the-logo-appears)). |
 | `node scripts/prepare-android.mjs` | **The** Android release preparation: clean no-demo build, copies licences and the OFF catalogue, `npx cap sync android`, integrity checks. Needs `npm install` first. |
 | `npx cap sync android` | Only re-syncs plugins/assets (use after native plugin changes when `dist/` is already a clean Android build). |
 | `npx cap open android` | Opens `android/` in Android Studio. |
 | `node scripts/build-off-catalog.mjs` | Rebuilds `public/data/off-foods.bin` ([details](data-off-catalogue.md)). |
-| `node scripts/outline-wordmark.mjs` | Regenerates the outlined wordmark SVG asset (`--launch-screens` also rewrites `splash_wordmark.xml` and the `index.html` boot SVG, no longer used). Needs `npm i --no-save opentype.js`. |
+| `node scripts/outline-wordmark.mjs` | Regenerates every wordmark SVG (Koink-style layout, Nunito ExtraBold outlines; `--launch-screens` also rewrites `splash_wordmark.xml` and the `index.html` boot SVG, no longer used). Needs `npm i --no-save opentype.js`. |
 | `node scripts/generate-splash-themes.mjs` | Regenerates `android/app/src/main/res/values/splash_themes.xml` (one launch-screen style per app background colour). Run it after changing a `--bg` in `src/index.css` or the mono palette ([launch intro](launch-intro.md)). |
 | `node scripts/render-widget-tray.mjs` | Regenerates the chamfered widget tray 9-patches (no dependencies; [widgets](widgets.md)). |
+| `node scripts/generate-icon.mjs` | Writes the Koink-style icon SVGs (no dependency); run it before `render-brand.mjs` and `render-pwa-icons.mjs` ([brand.md](brand.md#koink-style-icon)). |
 | `node scripts/render-pwa-icons.mjs` | Regenerates the PWA PNG icons in `public/icons/` from the icon SVG. Needs `npm i --no-save sharp` ([pwa.md](pwa.md)). |
 | `node scripts/render-brand.mjs` | Regenerates launcher PNGs from the icon SVG ([brand](brand.md)). |
 | `python3 scripts/generate-usda-foods.py <zip>` | Regenerates the USDA rows ([data-nutrition](data-nutrition.md)). |

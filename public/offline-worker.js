@@ -1,12 +1,13 @@
+// v4: Koink-style icons (new files behind the same names, plus the notification badge).
 // v3: production launch mode (installed app opens the journal, not the tour) + install guide.
-const CACHE = 'kakcalculator-shell-v3';
+const CACHE = 'kakcalculator-shell-v4';
 // Static, public food data (the Open Food Facts catalogue). Bump the suffix when it is rebuilt.
 const DATA_CACHE = 'kakcalculator-data-v1';
 const DATA_FILE = new URL('data/off-foods.bin', self.registration.scope).href;
 const SHELL = new URL('index.html', self.registration.scope).href;
 // PWA install assets. Cached best-effort: a missing icon must never make the install of the worker fail.
 const PWA_ASSETS = ['manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png',
-  'icons/maskable-512.png', 'icons/apple-touch-icon.png'].map((file) => new URL(file, self.registration.scope).href);
+  'icons/maskable-512.png', 'icons/apple-touch-icon.png', 'icons/badge-96.png'].map((file) => new URL(file, self.registration.scope).href);
 let checkedCatalogue = false;
 
 // Some hosts return index.html with HTTP 200 for a missing binary. Never keep that as food data.

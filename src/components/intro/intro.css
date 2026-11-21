@@ -12,12 +12,12 @@
   place-items: center;
   background: var(--bg, #EFE9DD);
   /*
-   * The icon "card" takes the page background exactly (it used to be cream #FBF3E3, a visible box
+   * The icon "card" takes the page background exactly (it used to be cream, a visible box
    * on the beige Light background), so only the K and the poop show and the box is invisible in
    * every theme. The keycap skirt/iris layers that sit under the card keep their own colours.
    */
   --kc-cream: var(--bg, #EFE9DD);
-  --kc-ink: #232325;
+  --kc-ink: #0B0F1E; /* Koink's ink */
   --kc-edge: #D5C8B3;
   opacity: 1;
   transition: opacity 200ms ease-out; /* FADE_MS in launchIntro.ts */
@@ -26,8 +26,8 @@
 
 /* Dark / Lite Dark: the card takes the surface colour exactly so only the cream strokes remain. */
 .kc-intro[data-dark='true'] {
-  --kc-cream: var(--bg, #141417);
-  --kc-ink: #FBF3E3;
+  --kc-cream: var(--bg, #070A14);
+  --kc-ink: #F9F3E6; /* Koink's dark-mode ink (its light paper) */
   --kc-edge: #0b0b0e;
 }
 

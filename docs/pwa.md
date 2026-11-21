@@ -11,9 +11,9 @@
 | Piece | File | Notes |
 | --- | --- | --- |
 | Web app manifest | `public/manifest.webmanifest` | `display: standalone`, relative `start_url`/`scope` (`./`) so it works at a domain root **and** under a sub-path such as `https://user.github.io/Kakcalculator/`. `start_url` is `./?view=app&source=pwa`, so the installed copy always opens the journal itself. Theme/background `#EFE9DD` (the Light theme). |
-| Icons | `public/icons/icon-192.png`, `icon-512.png` (purpose `any`), `maskable-512.png` (purpose `maskable`, artwork inside the 80 % safe zone), `apple-touch-icon.png` (180 px, iOS) | Generated from `src/assets/brand/kakcalculator-icon.svg` by `scripts/render-pwa-icons.mjs` (`npm i --no-save sharp` first). |
+| Icons | `public/icons/icon-192.png`, `icon-512.png` (purpose `any`), `maskable-512.png` (purpose `maskable`, artwork inside the 80 % safe zone), `apple-touch-icon.png` (180 px, iOS) | Generated from `src/assets/brand/kakcalculator-icon.svg` by `scripts/render-pwa-icons.mjs` (`npm i --no-save sharp` first). Served with `no-cache` (`public/_headers`): the names do not change when the art does. `badge-96.png` (white glyph on transparent, from `scripts/generate-notification-icon.mjs`) is the `badge` of browser notifications. |
 | Document tags | `index.html`, between `<!-- pwa:start -->` and `<!-- pwa:end -->` | `rel="manifest"`, `apple-touch-icon`, `mobile-web-app-capable`, iOS web-app meta tags. |
-| Service worker | `public/offline-worker.js` (registered in `src/main.tsx`) | Precaches the manifest and icons (`PWA_ASSETS`, best effort) and the shell. Cache `kakcalculator-shell-v3` (bumped for the install-guide round). |
+| Service worker | `public/offline-worker.js` (registered in `src/main.tsx`) | Precaches the manifest and icons (`PWA_ASSETS`, best effort) and the shell. Cache `kakcalculator-shell-v4` (bumped for the Koink-style icons, so installed copies fetch them). |
 | Install capture | `src/utils/pwaInstall.ts`, started from `src/main.tsx` | Stores the browser's `beforeinstallprompt` event as soon as it fires, tracks `appinstalled` and standalone mode. States: `hidden`, `available`, `ios`, `installed`. |
 | Install button | `src/components/common/InstallApp.tsx`, rendered in Settings under *Data Backup* (`SettingsModal.tsx`) | One-tap browser install when offered, otherwise/also a **How to install** button. Strings in `translations.ts` > `pwa` (English and Italian). Hidden inside the APK. |
 | Install guide | `src/components/common/InstallGuide.tsx`, mounted by `src/App.tsx` (both tour and journal) | Self-contained, theme-aware sheet with iPhone/iPad (Safari Share → Add to Home Screen), Android (Chrome/Edge/Samsung PWA steps **plus the APK**, which explains the “unknown source / could be dangerous” Play Protect warning), and Windows/macOS/Linux steps. Opened with `openInstallGuide(target?, lang?)`; it is dispatched as a window event (`kc:open-install-guide`) and rendered above every journal modal. Detect target with `detectInstallTarget()`. |
@@ -34,6 +34,6 @@
 
 ## Changing things
 
-- **New icon art:** edit the brand SVG, run `npm i --no-save sharp && node scripts/render-pwa-icons.mjs`, commit the PNGs in `public/icons/`.
+- **New icon art:** edit `scripts/brand-geometry.mjs`, run `node scripts/generate-icon.mjs`, then `npm i --no-save sharp && node scripts/render-pwa-icons.mjs`, commit the PNGs in `public/icons/`.
 - **New theme colour for the splash/title bar:** edit `theme_color` and `background_color` in the manifest. (The runtime `theme-color` meta tag is still set per theme by the pre-paint script in `index.html`.)
 - **Add a file to the offline set:** add its relative path to `PWA_ASSETS` in `offline-worker.js` and bump `CACHE`.

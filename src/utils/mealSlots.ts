@@ -2,6 +2,7 @@ import { useApp } from '../context/AppContext';
 import type { MealSlotId } from '../types';
 import { BUILT_IN_MEAL_SLOTS } from './mealItems';
 import { mealItemId, useLayout } from './layoutStore';
+import { mealSlotForTime } from './mealByTime';
 
 export interface MealSlotOption {
   id: MealSlotId;
@@ -33,4 +34,16 @@ export function useMealSlots(): { options: MealSlotOption[]; label: (id: MealSlo
     ordered = ordered.filter((id) => !page.hidden.includes(mealItemId(id)));
   }
   return { options: ordered.map((id) => ({ id, label: label(id) })), label };
+}
+
+/**
+ * `() => MealSlotId`: the meal that fits the time of day right now, among the meals the user can
+ * choose from. Call it when something opens that does not come from one specific meal card
+ * (the Add food button, a widget, the Foods and Custom pages) and pass the result to
+ * `setTargetMealSlot`; the user can still pick another meal in the popup. See
+ * docs/journal-pages.md (Meal chosen by the time of day).
+ */
+export function useAutoMealSlot(): () => MealSlotId {
+  const { options } = useMealSlots();
+  return () => mealSlotForTime(new Date(), options.map((o) => o.id));
 }

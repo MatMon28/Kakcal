@@ -2,18 +2,20 @@ import { UtensilsCrossed, Footprints, Droplets, Scale, Sparkles } from 'lucide-r
 import { useApp } from '../../context/AppContext';
 import { ActionDock, type DockAction } from '../common/ActionDock';
 import { PoopIcon } from '../common/PoopIcon';
+import { useAutoMealSlot } from '../../utils/mealSlots';
 
 /** Food, activity and tracker shortcuts for the Today page only. */
 export function QuickAddBar() {
   const {
     settings, activeTab, t, setIsAddFoodOpen, setIsLogActivityOpen, setIsWaterOpen,
-    setIsPoopOpen, setIsWeightOpen, setCustomButtonOpenId, setIsCustomPickerOpen,
+    setIsPoopOpen, setIsWeightOpen, setCustomButtonOpenId, setIsCustomPickerOpen, setTargetMealSlot,
   } = useApp();
+  const autoMealSlot = useAutoMealSlot();
   if (activeTab !== 'today') return null;
 
   const quick = settings.quickAdd;
   const actions: DockAction[] = [];
-  if (quick.food) actions.push({ id: 'food', icon: <UtensilsCrossed size={20} />, tone: 'bg-intake text-intake-ink', onClick: () => setIsAddFoodOpen(true), label: t.quickAdd.food });
+  if (quick.food) actions.push({ id: 'food', icon: <UtensilsCrossed size={20} />, tone: 'bg-intake text-intake-ink', onClick: () => { setTargetMealSlot(autoMealSlot()); setIsAddFoodOpen(true); }, label: t.quickAdd.food });
   if (quick.movement) actions.push({ id: 'activity', icon: <Footprints size={20} />, tone: 'bg-activity text-activity-ink', onClick: () => setIsLogActivityOpen(true), label: t.quickAdd.movement });
   if (quick.water) actions.push({ id: 'water', icon: <Droplets size={20} />, tone: 'bg-[#CFE7FE] text-[#183F66]', onClick: () => setIsWaterOpen(true), label: t.quickAdd.water });
   if (quick.poop && !settings.hidePoop) actions.push({ id: 'poop', icon: <PoopIcon size={20} />, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: () => setIsPoopOpen(true), label: t.quickAdd.poop });

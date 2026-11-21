@@ -293,7 +293,7 @@ export function syncNativeNotifications(plan: PlannedNotification[], copy: Notif
         body: n.body,
         channelId: n.channelId,
         smallIcon: 'ic_stat_kak',
-        iconColor: '#2E7D4F',
+        iconColor: '#0B0F1E',
         extra: { screen: n.screen },
         // Daily at hour:minute. `second: 0` matters: without it Android keeps the seconds of "now".
         schedule: { on: { hour: n.hour, minute: n.minute, second: 0 }, allowWhileIdle: true },
@@ -324,9 +324,12 @@ const msUntil = (hour: number, minute: number, now = new Date()) => {
   return next.getTime() - now.getTime();
 };
 
+/** The PWA icons live next to index.html (see public/icons and scripts/render-pwa-icons.mjs). */
+const assetUrl = (file: string) => new URL(file, document.baseURI).href;
+
 const showWebNotification = (title: string, body: string, tag: string, onClick?: () => void) => {
   if (typeof Notification === 'undefined' || Notification.permission !== 'granted') return;
-  const n = new Notification(title, { body, tag });
+  const n = new Notification(title, { body, tag, icon: assetUrl('icons/icon-192.png'), badge: assetUrl('icons/badge-96.png') });
   n.onclick = () => { window.focus(); onClick?.(); n.close(); };
 };
 
@@ -366,7 +369,7 @@ export async function sendTestNotification(copy: NotificationCopy): Promise<void
         body: copy.testBody,
         channelId: 'kc-reminders',
         smallIcon: 'ic_stat_kak',
-        iconColor: '#2E7D4F',
+        iconColor: '#0B0F1E',
         extra: { screen: 'today' },
         schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true },
       }],

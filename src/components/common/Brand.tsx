@@ -2,31 +2,34 @@ import wordmarkSvg from '../../assets/brand/kakcalculator-wordmark.svg?raw';
 import iconSvg from '../../assets/brand/kakcalculator-icon.svg?raw';
 import './poop-anim.css';
 
-const INK = '#232325';
-// The plate width follows the wordmark width (500 for "Kakcal"), so it is matched by pattern.
-const CREAM_PLATE = /<rect width="\d+" height="260" fill="#FBF3E3" \/>/;
+const INK = '#0B0F1E'; // Koink's ink, the colour scripts/outline-wordmark.mjs draws the wordmark in
+// The plate is the one `kc-plate` rect that scripts/outline-wordmark.mjs writes first.
+const CREAM_PLATE = /<rect class="kc-plate"[^>]*\/>/;
 // Verified at build time by scripts/smoke.mjs: the plate must be found and removed.
 
 /*
- * The supplied wordmark, with its cream background plate removed and its ink set to
- * currentColor. The text then takes the colour of the header or theme behind it.
- * The source file is unchanged; this transform runs at build time.
+ * The wordmark (K, poop, "kcal" as Nunito ExtraBold outlines, laid out like the Koink wordmark; see
+ * docs/brand.md), with its cream background plate removed and its ink set to currentColor. The
+ * letters then take the colour of the header or theme behind it. The source file is unchanged; this
+ * transform runs at build time. The wrapping span already is the image, so the svg itself is hidden.
  */
 const BASE_WORDMARK = wordmarkSvg
+  .replace(/<!--[\s\S]*?-->\s*/, '')
   .replace(/<title>[\s\S]*?<\/title>/, '')
+  .replace(' role="img" aria-label="Kakcal"', ' aria-hidden="true"')
   .replace(CREAM_PLATE, '')
   .split(INK)
   .join('currentColor');
 
 /*
  * Logo-click animation hooks (poop-anim.css, poopAnimations.ts). The poop is the group that
- * is scaled 1.45 in the wordmark. Its content is wrapped in `.kc-poop` (the first path is the
+ * is the `kc-poop-group` group of the wordmark. Its content is wrapped in `.kc-poop` (the first path is the
  * outline, the other three are the tier creases; all get pathLength 100 so they can be drawn
  * with stroke-dashoffset) and three burst ticks are added next to it. Nothing visible changes
  * at rest. If the wordmark file changes shape and the group is not found, the markup is
  * returned untouched and the logo simply does not animate.
  */
-const POOP_GROUP = /(<g transform="translate\(172, 80\) scale\(1\.45\)"[^>]*>)([\s\S]*?)(<\/g>)/;
+const POOP_GROUP = /(<g class="kc-poop-group"[^>]*>)([\s\S]*?)(<\/g>)/;
 const POOP_TICKS = [
   'M2 14 L-5 7', // up-left
   'M32 -1 V-10', // up
@@ -54,13 +57,13 @@ interface BrandProps {
   className?: string;
 }
 
-/** The full name, for the top of every page. Transparent, so it follows the theme. */
+/** The full name, for the top of every page. No plate; its ink is Koink's brand ink, dark or light with the theme. */
 export function Wordmark({ className = '' }: BrandProps) {
   return (
     <span
       role="img"
       aria-label="Kakcal"
-      className={`kc-wordmark inline-flex items-center text-[var(--text)] [&>svg]:block [&>svg]:h-full [&>svg]:w-auto ${className}`}
+      className={`kc-wordmark inline-flex items-center text-[var(--kc-brand-ink)] [&>svg]:block [&>svg]:h-full [&>svg]:w-auto ${className}`}
       dangerouslySetInnerHTML={{ __html: WORDMARK_MARKUP }}
     />
   );

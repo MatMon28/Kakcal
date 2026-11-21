@@ -1,186 +1,77 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 510 380" width="510" height="380" class="lockup" style="--lk-d:1410ms">
-  <style>
-    /* --- 01: SKETCH &amp; PLOP (1150ms) --- */
-        .s1-card { animation: s1-card-anim 1150ms linear both; }
-        .s1-stem { stroke-dasharray: 262 600; animation: s1-stem-anim 1150ms linear both; }
-        .s1-upper { stroke-dasharray: 204 600; animation: s1-upper-anim 1150ms linear both; }
-        .s1-lower { stroke-dasharray: 185 600; animation: s1-lower-anim 1150ms linear both; }
-        .s1-poop { animation: s1-poop-anim 1150ms linear both; }
-        .s1-c-bot { stroke-dasharray: 36 100; animation: s1-c-bot-anim 1150ms linear both; }
-        .s1-c-mid { stroke-dasharray: 24 100; animation: s1-c-mid-anim 1150ms linear both; }
-        .s1-c-top { stroke-dasharray: 14 100; animation: s1-c-top-anim 1150ms linear both; }
-    
-        @keyframes s1-card-anim {
-          0% { opacity: 0; transform: scale(0.74); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          24% { opacity: 1; transform: scale(1.018); animation-timing-function: ease-out; }
-          40% { transform: translate(0px, 0px) scale(1, 1); }
-          50% { transform: translate(0px, 0px) scale(1, 1); animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1); }
-          57% { transform: translate(0px, 5px) scale(1.012, 0.988); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
-          74% { transform: translate(0px, -1.5px) scale(0.997, 1.003); }
-          90%, 100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
-        }
-        @keyframes s1-stem-anim {
-          0%, 9% { opacity: 0; stroke-width: 0; stroke-dashoffset: 262; animation-timing-function: ease-out; }
-          14% { opacity: 1; stroke-width: 96; stroke-dashoffset: 215; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          34%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
-        }
-        @keyframes s1-upper-anim {
-          0%, 21% { opacity: 0; stroke-width: 0; stroke-dashoffset: 204; animation-timing-function: ease-out; }
-          26% { opacity: 1; stroke-width: 96; stroke-dashoffset: 165; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          45%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
-        }
-        @keyframes s1-lower-anim {
-          0%, 31% { opacity: 0; stroke-width: 0; stroke-dashoffset: 185; animation-timing-function: ease-out; }
-          36% { opacity: 1; stroke-width: 96; stroke-dashoffset: 148; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          53%, 100% { opacity: 1; stroke-width: 96; stroke-dashoffset: 0; }
-        }
-        @keyframes s1-poop-anim {
-          0%, 42% { opacity: 0; transform: translate(0px, -145px) scale(0.76, 1.24); animation-timing-function: cubic-bezier(0.55, 0.05, 0.85, 0.35); }
-          46% { opacity: 1; transform: translate(0px, -95px) scale(0.82, 1.2); animation-timing-function: cubic-bezier(0.55, 0.08, 0.85, 0.45); }
-          56% { opacity: 1; transform: translate(0px, 4px) scale(1.26, 0.72); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          68% { transform: translate(0px, -14px) scale(0.89, 1.13); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
-          79% { transform: translate(0px, 1.5px) scale(1.06, 0.95); animation-timing-function: ease-out; }
-          89% { transform: translate(0px, 0px) scale(0.985, 1.015); }
-          100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
-        }
-        @keyframes s1-c-bot-anim {
-          0%, 52% { stroke-dashoffset: 36; opacity: 0; }
-          56% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          70%, 100% { stroke-dashoffset: 0; opacity: 1; }
-        }
-        @keyframes s1-c-mid-anim {
-          0%, 57% { stroke-dashoffset: 24; opacity: 0; }
-          61% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          75%, 100% { stroke-dashoffset: 0; opacity: 1; }
-        }
-        @keyframes s1-c-top-anim {
-          0%, 62% { stroke-dashoffset: 14; opacity: 0; }
-          66% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          80%, 100% { stroke-dashoffset: 0; opacity: 1; }
-        }
-    
-    /* ==========================================================================
-           PHASE 2 — BRAND LOCKUP (shared by every animation)
-           The brand layer sits ON TOP of the running animation but is fully transparent
-           until the launch animation has settled. At that instant the icon and the brand
-           layer are pixel-identical, so the hand-off is invisible — then the K and the
-           swirl walk out of the icon and become part of the app name.
-           ========================================================================== */
-        .lockup .lk-brand { animation: lk-brand-in 1500ms linear var(--lk-d, 1400ms) both; }
-        .lockup .lk-icon { animation: lk-icon-out 1500ms linear var(--lk-d, 1400ms) both; }
-        .lockup .lk-plate { animation: lk-plate-morph 1500ms linear var(--lk-d, 1400ms) both; }
-        .lockup .lk-k { animation: lk-k-move 1500ms linear var(--lk-d, 1400ms) both; }
-        .lockup .lk-poop { animation: lk-poop-move 1500ms linear var(--lk-d, 1400ms) both; }
-        .lockup .lk-word { animation: lk-word-in 1500ms linear var(--lk-d, 1400ms) both; }
-    
-        /* Deterministic SVG transform space (never rely on default transform-origin) */
-        .lockup .lk-k,
-        .lockup .lk-poop {
-          transform-box: view-box;
-          transform-origin: 0 0;
-        }
-    
-        /* Invisible during the whole launch animation, then snapped on in one frame.
-           Both layers are identical at that moment, so nothing can be seen. */
-        @keyframes lk-brand-in {
-          0%, 1% { opacity: 0; }
-          1.8%, 100% { opacity: 1; }
-        }
-        /* Faded out BEHIND the opaque brand plate — never visible to the eye */
-        @keyframes lk-icon-out {
-          0%, 2% { opacity: 1; }
-          9%, 100% { opacity: 0; }
-        }
-        /* Squircle -> wordmark banner. Attributes carry the exact final geometry as a
-           fallback; the keyframes morph it out of the icon's squircle (identical centre). */
-        @keyframes lk-plate-morph {
-          0%, 1.8% { x: 259.5px; y: 19.5px; width: 341px; height: 341px; rx: 79.75px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          7% { x: 239px; y: -1px; width: 382px; height: 382px; rx: 92px; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          46% { x: 13px; y: 57px; width: 834px; height: 266px; rx: 47px; }
-          62% { x: 18px; y: 61px; width: 824px; height: 258px; rx: 44px; }
-          74%, 100% { x: 20px; y: 60px; width: 470px; height: 260px; rx: 42px; }
-        }
-        /* Straight out of the icon, easing into the wordmark's K slot */
-        @keyframes lk-k-move {
-          0%, 7% { transform: translate(254px, 14px) scale(0.6875); animation-timing-function: cubic-bezier(0.4, 0, 0.25, 1); }
-          50% { transform: translate(47px, 53px) scale(0.537); }
-          64% { transform: translate(34px, 60px) scale(0.516); }
-          78%, 100% { transform: translate(38px, 58px) scale(0.52); }
-        }
-        /* Hops across on an arc, squash-and-stretch landing next to the K */
-        @keyframes lk-poop-move {
-          0%, 8% { transform: translate(505.075px, 270.575px) scale(1.959375) rotate(0deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 0, 0.5, 1); }
-          30% { transform: translate(392px, 148px) scale(1.6) rotate(-17deg) translate(-32px, -32px); animation-timing-function: ease-in-out; }
-          46% { transform: translate(238.4px, 170px) scale(1.55) rotate(10deg) translate(-32px, -32px); animation-timing-function: cubic-bezier(0.34, 1.5, 0.5, 1); }
-          60% { transform: translate(238.4px, 191px) scale(1.43, 1.49) rotate(-3deg) translate(-32px, -32px); }
-          72%, 100% { transform: translate(238.4px, 186.4px) scale(1.45) rotate(0deg) translate(-32px, -32px); }
-        }
-        @keyframes lk-word-in {
-          0%, 44% { opacity: 0; transform: translate(0px, 17px); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
-          50% { opacity: 1; }
-          74%, 100% { opacity: 1; transform: translate(0px, 0px); }
-        }
-  </style>
-          <g class="lk-brand">
-            <rect class="lk-plate" x="20" y="60" width="470" height="260" rx="42" fill="var(--kc-cream, #FBF3E3)" />
-            <g class="lk-k" transform="translate(254 14) scale(0.6875)" fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
-              
-      <path d="M148 132 V392" />
-      <path d="M156 268 L304 132" />
-      <path d="M196 252 L312 392" />
-    
-            </g>
-            <g class="lk-poop" transform="translate(505.075 270.575) scale(1.959375) translate(-32 -32)" stroke-linecap="round" stroke-linejoin="round">
-              
-      <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
-      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
-        <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
-        <path d="M27.5 15.5 Q32 18 36.5 15.5" />
-        <path d="M22 28 Q32 31.5 42 28" />
-        <path d="M16 41 Q32 45.5 48 41" />
-      </g>
-    
-            </g>
-            <g class="lk-word" fill="var(--kc-ink, #232325)">
-              <text x="272" y="226" textLength="201" lengthAdjust="spacingAndGlyphs" font-family="'Nunito', 'Quicksand', 'Rubik', 'Varela Round', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="96" font-weight="800" letter-spacing="-2px">kcal</text>
-            </g>
-          </g>
-          <g class="lk-icon" transform="translate(254 14) scale(0.6875)">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-              <defs>
-                <clipPath id="s1-s1-clip">
-                  <rect x="8" y="8" width="496" height="496" rx="116" />
-                </clipPath>
-              </defs>
-              <g transform="translate(256 256)">
-                <g class="s1-card">
-                  <g transform="translate(-256 -256)">
-                    <rect x="8" y="8" width="496" height="496" rx="116" fill="var(--kc-cream, #FBF3E3)" />
-                    <g clip-path="url(#s1-s1-clip)">
-                      <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="96" stroke-linecap="round" stroke-linejoin="round">
-                        <path class="s1-stem" d="M148 132 V392" />
-                        <path class="s1-upper" d="M156 268 L304 132" />
-                        <path class="s1-lower" d="M196 252 L312 392" />
-                      </g>
-                      <g transform="translate(365.2 441.6)">
-                        <g class="s1-poop">
-                          <g transform="translate(-365.2 -441.6)">
-                            <g transform="translate(274 282) scale(2.85)" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #FBF3E3)" stroke="var(--kc-cream, #FBF3E3)" stroke-width="9.5" />
-                              <g fill="none" stroke="var(--kc-ink, #232325)" stroke-width="3.5">
-                                <path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" />
-                                <path class="s1-c-top" d="M27.5 15.5 Q32 18 36.5 15.5" />
-                                <path class="s1-c-mid" d="M22 28 Q32 31.5 42 28" />
-                                <path class="s1-c-bot" d="M16 41 Q32 45.5 48 41" />
-                              </g>
-                            </g>
-                          </g>
-                        </g>
-                      </g>
-                    </g>
-                  </g>
-                </g>
-              </g>
-            </svg>
-          </g>
-        </svg>
+<!-- Generated by scripts/generate-intro-animations.mjs (Koink-style art). Do not hand-edit. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1062 300" width="1062" height="300" role="img" aria-label="Kakcal">
+<title>Kakcal launch animation 1: sketch and plop (with wordmark hand-off)</title>
+<style>
+.s1-card { animation: s1-card-k 1150ms linear both; }
+@keyframes s1-card-k {
+  0% { opacity: 0; transform: scale(0.74); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  24% { opacity: 1; transform: scale(1.018); animation-timing-function: ease-out; }
+  40% { transform: translate(0px, 0px) scale(1, 1); }
+  50% { transform: translate(0px, 0px) scale(1, 1); animation-timing-function: cubic-bezier(0.25, 0.8, 0.4, 1); }
+  57% { transform: translate(0px, 10px) scale(1.012, 0.988); animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
+  74% { transform: translate(0px, -3px) scale(0.997, 1.003); }
+  90%, 100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
+}
+.s1-stem { animation: s1-stem-k 1150ms linear both; }
+@keyframes s1-stem-k {
+  0%, 9% { opacity: 0; transform: scale(1, 0); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  10% { opacity: 1; }
+  34%, 100% { opacity: 1; transform: none; }
+}
+.s1-arm { animation: s1-arm-k 1150ms linear both; }
+@keyframes s1-arm-k {
+  0%, 21% { opacity: 0; transform: rotate(-46.3deg) scale(0, 1) rotate(46.3deg); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  22% { opacity: 1; }
+  45%, 100% { opacity: 1; transform: none; }
+}
+.s1-leg { animation: s1-leg-k 1150ms linear both; }
+@keyframes s1-leg-k {
+  0%, 31% { opacity: 0; transform: rotate(46.4deg) scale(0, 1) rotate(-46.4deg); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  32% { opacity: 1; }
+  53%, 100% { opacity: 1; transform: none; }
+}
+.s1-poop { animation: s1-poop-k 1150ms linear both; }
+@keyframes s1-poop-k {
+  0%, 42% { opacity: 0; transform: translate(0px, -290px) scale(0.76, 1.24); animation-timing-function: cubic-bezier(0.55, 0.05, 0.85, 0.35); }
+  46% { opacity: 1; transform: translate(0px, -190px) scale(0.82, 1.2); animation-timing-function: cubic-bezier(0.55, 0.08, 0.85, 0.45); }
+  56% { opacity: 1; transform: translate(0px, 8px) scale(1.26, 0.72); animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+  68% { transform: translate(0px, -28px) scale(0.89, 1.13); animation-timing-function: cubic-bezier(0.45, 0, 0.55, 1); }
+  79% { transform: translate(0px, 3px) scale(1.06, 0.95); animation-timing-function: ease-out; }
+  89% { transform: translate(0px, 0px) scale(0.985, 1.015); }
+  100% { opacity: 1; transform: translate(0px, 0px) scale(1, 1); }
+}
+.s1-poop .c3 { stroke-dasharray: 100 100; animation: s1-poop-c3-k 1150ms linear both; }
+@keyframes s1-poop-c3-k { 0%, 52% { stroke-dashoffset: 100; opacity: 0; } 53% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); } 70%, 100% { stroke-dashoffset: 0; opacity: 1; } }
+.s1-poop .c2 { stroke-dasharray: 100 100; animation: s1-poop-c2-k 1150ms linear both; }
+@keyframes s1-poop-c2-k { 0%, 57% { stroke-dashoffset: 100; opacity: 0; } 58% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); } 75%, 100% { stroke-dashoffset: 0; opacity: 1; } }
+.s1-poop .c1 { stroke-dasharray: 100 100; animation: s1-poop-c1-k 1150ms linear both; }
+@keyframes s1-poop-c1-k { 0%, 62% { stroke-dashoffset: 100; opacity: 0; } 63% { opacity: 1; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); } 80%, 100% { stroke-dashoffset: 0; opacity: 1; } }
+.s1l-p2k { animation: s1l-p2k-k 1500ms cubic-bezier(0.65, 0, 0.35, 1) 1410ms both; }
+@keyframes s1l-p2k-k { 0% { transform: translate(0px, 0px) scale(1); } 100% { transform: translate(-1587.61px, -140.36px) scale(1.39087); } }
+.s1l-p2p { animation: s1l-p2p-k 1500ms cubic-bezier(0.65, 0, 0.35, 1) 1410ms both; }
+@keyframes s1l-p2p-k { 0% { transform: translate(0px, 0px) scale(1); } 100% { transform: translate(-1807.36px, -898.65px) scale(2.36356); } }
+.s1l-hop { animation: s1l-hop-k 1500ms linear 1410ms both; }
+@keyframes s1l-hop-k { 0% { transform: translate(0px, 0px); } 45% { transform: translate(0px, -260px); animation-timing-function: cubic-bezier(0.55, 0, 0.9, 0.5); } 75% { transform: translate(0px, 0px) ; } 85% { transform: translate(0px, 22px) } 100% { transform: translate(0px, 0px); } }
+.s1l-line { animation: s1l-line-k 1500ms ease-in-out 1410ms both; }
+@keyframes s1l-line-k { 0% { stroke-width: 4.8111; } 100% { stroke-width: 4.2578; } }
+.s1l-gone { animation: s1l-gone-k 1500ms linear 1410ms both; }
+@keyframes s1l-gone-k { 0%, 55% { opacity: 1; } 75%, 100% { opacity: 0; } }
+.s1l-tile { animation: s1l-tile-k 2910ms linear both; }
+@keyframes s1l-tile-k { 0%, 48.45% { opacity: 1; } 48.46%, 100% { opacity: 0; } }
+.s1l-plate { animation: s1l-plate-k 2910ms linear both, s1l-plate-w 1500ms cubic-bezier(0.65, 0, 0.35, 1) 1410ms both; }
+@keyframes s1l-plate-k { 0%, 48.45% { opacity: 0; } 48.46%, 100% { opacity: 1; } }
+@keyframes s1l-plate-w { 0% { x: 381px; width: 300px; } 100% { x: 0px; width: 1062px; } }
+.s1l-unclip { animation: s1l-unclip-k 2910ms linear both; }
+@keyframes s1l-unclip-k { 0%, 48.45% { clip-path: url(#s1l-clip); } 48.46%, 100% { clip-path: none; } }
+.s1l-unmask { animation: s1l-unmask-k 2910ms linear both; }
+@keyframes s1l-unmask-k { 0%, 48.45% { mask: url(#s1-mask); } 48.46%, 100% { mask: none; } }
+.s1l-text { animation: s1l-text-k 1500ms ease-out 1410ms both; }
+@keyframes s1l-text-k { 0%, 55% { opacity: 0; transform: translate(-40px, 0px); } 100% { opacity: 1; transform: translate(0px, 0px); } }
+.s1l-p2p .halo { animation: s1l-gone-k 1500ms linear 1410ms both; }
+.s1l-p2p .poop-ink { animation: s1l-line-k 1500ms ease-in-out 1410ms both; }
+.s1l-p2p .poop-ink > path:first-child { animation: s1l-fill-k 1500ms linear 1410ms both; }
+@keyframes s1l-fill-k { 0%, 55% { fill-opacity: 1; } 75%, 100% { fill-opacity: 0; } }
+</style>
+<defs><clipPath id="s1l-clip"><rect width="1024" height="1024" rx="240"/></clipPath></defs>
+<rect class="s1l-plate" x="381" y="0" width="300" height="300" rx="70" fill="var(--kc-cream, #F9F3E6)"/><g class="s1l-textwrap" transform="translate(-102 -80) scale(2)"><g class="s1l-text"><path fill="var(--kc-ink, #0B0F1E)" d="M288.16 181.06Q282.22 181.06 279.09 177.85Q275.96 174.64 275.96 168.71L275.96 77.38Q275.96 71.28 279.09 68.15Q282.22 65.02 288.16 65.02Q293.94 65.02 297.07 68.15Q300.20 71.28 300.20 77.38L300.20 133.40L300.52 133.40L323.79 107.56Q327.32 103.54 330.29 101.54Q333.26 99.53 338.24 99.53Q343.21 99.53 345.86 102.10Q348.51 104.67 348.59 108.28Q348.67 111.89 345.46 115.58L324.91 138.53L348.19 165.34Q351.24 169.03 350.83 172.72Q350.43 176.41 347.54 178.74Q344.66 181.06 340.16 181.06Q334.70 181.06 331.41 178.98Q328.12 176.89 324.75 172.56L300.52 145.59L300.20 145.59L300.20 168.71Q300.20 181.06 288.16 181.06M402.60 181.39Q389.76 181.39 380.21 176.33Q370.66 171.27 365.52 161.97Q360.38 152.66 360.38 139.98Q360.38 130.51 363.27 122.96Q366.16 115.42 371.70 110.12Q377.24 104.83 385.10 102.02Q392.97 99.21 402.60 99.21Q407.57 99.21 413.19 100.41Q418.81 101.62 424.26 104.51Q427.47 105.95 428.68 108.60Q429.88 111.25 429.56 114.06Q429.24 116.86 427.55 119.03Q425.87 121.20 423.30 121.92Q420.73 122.64 417.52 121.04Q414.47 119.27 411.18 118.47Q407.89 117.67 405 117.67Q400.19 117.67 396.50 119.19Q392.81 120.72 390.32 123.53Q387.83 126.33 386.47 130.51Q385.10 134.68 385.10 140.14Q385.10 150.73 390.32 156.75Q395.53 162.77 405 162.77Q407.89 162.77 411.10 162.05Q414.31 161.32 417.52 159.56Q420.73 157.95 423.30 158.75Q425.87 159.56 427.39 161.72Q428.92 163.89 429.16 166.70Q429.40 169.51 428.20 172.16Q426.99 174.81 423.94 176.25Q418.49 178.98 413.03 180.18Q407.57 181.39 402.60 181.39M467.28 181.39Q458.61 181.39 451.71 178.02Q444.81 174.64 440.96 168.87Q437.10 163.09 437.10 155.87Q437.10 147.20 441.60 142.14Q446.09 137.09 456.20 134.92Q466.31 132.75 483.01 132.75L488.78 132.75L488.78 130.03Q488.78 122.96 485.57 119.99Q482.36 117.03 474.66 117.03Q470.33 117.03 465.27 118.07Q460.22 119.11 454.12 121.52Q450.59 123.12 447.86 122.24Q445.13 121.36 443.68 119.03Q442.24 116.70 442.24 113.90Q442.24 111.09 443.84 108.44Q445.45 105.79 449.14 104.51Q456.68 101.46 463.35 100.33Q470.01 99.21 475.62 99.21Q487.98 99.21 495.93 102.82Q503.87 106.43 507.88 113.90Q511.90 121.36 511.90 133.07L511.90 168.71Q511.90 174.64 509.01 177.85Q506.12 181.06 500.66 181.06Q495.20 181.06 492.24 177.85Q489.27 174.64 489.27 168.71L489.27 167.90Q488.14 170.79 486.38 173.04Q483.17 177.05 478.35 179.22Q473.54 181.39 467.28 181.39M488.78 148.48L488.78 145.27L483.17 145.27Q474.98 145.27 469.93 146.16Q464.87 147.04 462.70 149.13Q460.54 151.21 460.54 154.90Q460.54 159.40 463.67 162.29Q466.80 165.18 472.73 165.18Q477.39 165.18 481 163.01Q484.61 160.84 486.70 157.07Q488.78 153.30 488.78 148.48M558.44 181.39Q544.16 181.39 537.09 173.44Q530.03 165.50 530.03 149.77L530.03 77.38Q530.03 71.28 533.16 68.15Q536.29 65.02 542.23 65.02Q548.01 65.02 551.14 68.15Q554.27 71.28 554.27 77.38L554.27 148.80Q554.27 155.38 557.08 158.51Q559.89 161.64 564.54 161.64Q565.82 161.64 566.95 161.48Q568.07 161.32 569.36 161.32Q571.92 161 572.97 162.85Q574.01 164.69 574.01 170.15Q574.01 174.97 572.08 177.45Q570.16 179.94 566.15 180.74Q564.54 180.90 562.45 181.14Q560.37 181.39 558.44 181.39"/></g></g><g transform="translate(381 0) scale(0.29296880000000003)"><g transform="translate(512 512)"><g class="s1-card"><g transform="translate(-512 -512)"><g class="s1l-tile"><rect width="1024" height="1024" rx="240" fill="var(--kc-cream, #F9F3E6)"/></g><g clip-path="url(#s1l-clip)" class="s1l-unclip"><g class="s1l-p2k"><g transform="translate(307.35 224.5)"><g class="s1-stem"><g transform="translate(-307.35 -224.5)"><g fill="var(--kc-ink, #0B0F1E)"><rect x="246.5" y="224.5" width="121.7" height="567.6" rx="54"/></g></g></g></g><g transform="translate(352 515)"><g class="s1-arm"><g transform="translate(-352 -515)"><g fill="var(--kc-ink, #0B0F1E)"><path d="M314.72 530L583.1 249.78A82 82 0 0 1 642.32 224.5L642.43 224.5A47 47 0 0 1 676.07 304.32L455.93 530Z"/></g></g></g></g><g transform="translate(352 495)"><g class="s1-leg"><g transform="translate(-352 -495)"><g fill="var(--kc-ink, #0B0F1E)"><path d="M339.08 500L592.42 766.59A82 82 0 0 0 651.86 792.1L657.84 792.1A47 47 0 0 0 692.13 712.96L464.4 470Z"/></g></g></g></g></g><g class="s1l-p2p"><g class="s1l-hop"><g transform="translate(682.6 775.69)"><g class="s1-poop"><g transform="translate(-682.6 -775.69)"><g transform="translate(509.67 473.07) scale(5.404)" fill="var(--kc-cream, #F9F3E6)" stroke="var(--kc-cream, #F9F3E6)" stroke-width="14.99" stroke-linejoin="round" stroke-linecap="round"><path class="halo" d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z"/></g><g class="poop-ink" transform="translate(509.67 473.07) scale(5.404)" fill="none" stroke="var(--kc-ink, #0B0F1E)" stroke-width="4.8111" stroke-linecap="round" stroke-linejoin="round"><path d="M32 5 C37 9 39 12.5 36.5 15.5 C41 16 44 18.5 44 22.5 C44 25 43 27 42 28 C46.5 28.5 50 31.5 50 35 C50 37.5 49 39.5 48 41 C52.5 41.5 56 44.5 56 48 C56 52.5 52.5 56 48 56 H16 C11.5 56 8 52.5 8 48 C8 44.5 11.5 41.5 16 41 C15 39.5 14 37.5 14 35 C14 31.5 17.5 28.5 22 28 C21 27 20 25 20 22.5 C20 18.5 23 16 27.5 15.5 C25 12.5 27 9 32 5Z" fill="var(--kc-cream, #F9F3E6)"/><path class="c1" pathLength="100" d="M27.5 15.5 Q32 18 36.5 15.5"/><path class="c2" pathLength="100" d="M22 28 Q32 31.5 42 28"/><path class="c3" pathLength="100" d="M16 41 Q32 45.5 48 41"/></g></g></g></g></g></g></g></g></g></g></g>
+</svg>

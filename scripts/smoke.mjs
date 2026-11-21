@@ -51,9 +51,12 @@ try {
   // 1. The tour opens by default, with the transparent wordmark and the kept links.
   await page.goto(base + '/');
   await page.getByRole('heading', { level: 1, name: 'See how Kakcal works' }).waitFor();
-  assert.equal(await page.locator('header svg rect[fill="#FBF3E3"]').count(), 0, 'Wordmark still has its cream plate');
-  assert.equal(await page.locator('header svg text').count(), 1, 'Wordmark text missing');
-  assert.equal(await page.locator('header svg text').first().evaluate((el) => el.closest('svg').querySelector('path') !== null), true);
+  assert.equal(await page.locator('header svg rect[fill="#F9F3E6"]').count(), 0, 'Wordmark still has its cream plate');
+  assert.equal(await page.locator('header svg rect.kc-plate').count(), 0, 'Wordmark still has its plate');
+  // The letters are Nunito ExtraBold outlines (no <text>, no font needed); the poop is its own group.
+  assert.equal(await page.locator('header svg path.kc-text').count(), 1, 'Wordmark letters missing');
+  assert.equal(await page.locator('header svg text').count(), 0, 'Wordmark must not use live text');
+  assert.equal(await page.locator('header svg g.kc-poop-group g.kc-poop').count(), 1, 'Wordmark poop missing');
   // Open full app appears in the header and under the phone; both must point to the plain journal.
   const openLinks = page.getByRole('link', { name: 'Open full app', exact: true });
   assert.equal(await openLinks.count(), 2);
@@ -168,12 +171,8 @@ try {
   assert.equal(await app.locator('iframe').count(), 0);
   assert.match(await app.locator('[data-energy-overview] > div').first().getAttribute('aria-label'), /: 0 kcal/);
   assert.equal(await app.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('kcalsync_day_logs') || '{}')).length), 0);
-  await app.waitForFunction(
-    () => [...document.fonts].some((f) => f.family.replace(/["']/g, '') === 'Nunito' && f.weight === '800' && f.status === 'loaded'),
-    null,
-    { timeout: 7000 },
-  );
-  console.log('PASS: the Android bundle starts empty and offline, with its bundled Nunito wordmark.');
+  assert.equal(await app.locator('header svg path.kc-text').count(), 1, 'Wordmark outlines missing offline');
+  console.log('PASS: the Android bundle starts empty and offline, with its outlined wordmark (no font needed).');
 
   // 10. Native swipe, Back and widget delivery, simulated at the protocol level only.
   const input = await clean.newCDPSession(app);

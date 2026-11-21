@@ -47,6 +47,7 @@ import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
 import { useAdvanced } from './utils/advancedStore';
 import { whenIdle } from './utils/idle';
+import { useAutoMealSlot } from './utils/mealSlots';
 import { useAppReady } from './components/intro/useAppReady';
 import type { ActiveTab } from './types';
 
@@ -66,6 +67,7 @@ const targetOrigin = () => (window.location.origin === 'null' ? '*' : window.loc
 
 function WidgetAppBridge() {
   const app = useApp();
+  const autoMealSlot = useAutoMealSlot();
   const [today, setToday] = useState(getTodayDateString);
   const snapshot = useMemo(
     () => makeWidgetSnapshot(today, app.language, app.allDayLogs[today], app.userProfile),
@@ -114,6 +116,7 @@ function WidgetAppBridge() {
         break;
       case 'food':
         app.setActiveTab('today');
+        app.setTargetMealSlot(autoMealSlot());
         app.setIsAddFoodOpen(true);
         break;
       case 'activity':

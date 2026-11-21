@@ -4,7 +4,7 @@ import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../.
 import { Modal } from '../common/Modal';
 import { ActionDock } from '../common/ActionDock';
 import { AmountSelector } from '../common/AmountSelector';
-import { useMealSlots } from '../../utils/mealSlots';
+import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, getLastAmount, setLastAmount } from '../../utils/amountMemory';
 import { FoodResultRow } from '../common/FoodResultRow';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
@@ -188,12 +188,17 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     selectedDate,
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
+    setTargetMealSlot,
     setActiveTab,
     settings,
 
     t,
   } = useApp();
   const { options: mealSlots, label: slotLabel } = useMealSlots();
+  const autoMealSlot = useAutoMealSlot();
+  // The pages below are not opened from a meal: the meal preselected is the one that fits the time of day.
+  const openBarcode = () => { setTargetMealSlot(autoMealSlot()); setIsBarcodeOpen(true); };
+  const openCustomFood = () => { setTargetMealSlot(autoMealSlot()); setIsCustomFoodOpen(true); };
   const ultraMinimal = settings.ultraMinimal;
 
   const savedRecipes = useMemo(() => allFoods.filter((f) => f.isRecipe), [allFoods]);
@@ -280,7 +285,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     setEditingMealId(null);
     setNewMealName('');
     setNewMealDesc('');
-    setNewMealSlot('breakfast');
+    setNewMealSlot(autoMealSlot());
     setNewIngredients([]);
     setPendingFood(null);
     setIngredientSearch('');
@@ -300,7 +305,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
   const handleOpenLogModal = (meal: PreBuiltMeal) => {
     setActiveMealToLog(meal);
-    setSelectedSlot(meal.slot ?? 'lunch');
+    setSelectedSlot(meal.slot ?? autoMealSlot());
   };
 
   const confirmLogToSlot = () => {
@@ -793,7 +798,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         type="button"
                         onClick={() => {
                           setActiveRecipeToLog(recipe);
-                          setRecipeLogSlot('lunch');
+                          setRecipeLogSlot(autoMealSlot());
                           setRecipeLogAmount(getLastAmount(recipe.id));
                         }}
                         title={t.prebuilt.logRecipe}
@@ -879,7 +884,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           summary={t.settings.foodsDesc}
           icon={<BookOpen size={16} />}
           createLabel={t.database.createCustom}
-          onCreate={() => setIsCustomFoodOpen(true)}
+          onCreate={openCustomFood}
           open={sectionsOpen.foods}
           onToggle={() => toggleSection('foods')}
         />
@@ -889,7 +894,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             data-library-food-btn
-            onClick={() => setIsBarcodeOpen(true)}
+            onClick={openBarcode}
             className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.prebuilt.barcode}
             aria-label={t.prebuilt.barcode}
@@ -900,7 +905,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             data-library-food-btn
-            onClick={() => setIsCustomFoodOpen(true)}
+            onClick={openCustomFood}
             className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.customFood}
             aria-label={t.database.customFood}
@@ -911,7 +916,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           <button
             type="button"
             data-library-food-btn
-            onClick={() => setActiveTab('database')}
+            onClick={() => { setTargetMealSlot(autoMealSlot()); setActiveTab('database'); }}
             className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.browseAll}
             aria-label={t.database.browseAll}
@@ -945,7 +950,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           actions={[
             { id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: openNewMealModal },
             { id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openRecipeModal },
-            { id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: () => setIsCustomFoodOpen(true) },
+            { id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: openCustomFood },
           ]}
         />
       )}

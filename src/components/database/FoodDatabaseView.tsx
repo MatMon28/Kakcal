@@ -6,7 +6,7 @@ import { FoodCategory, FoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { AmountSelector } from '../common/AmountSelector';
-import { useMealSlots } from '../../utils/mealSlots';
+import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
 import { FavoriteButton } from '../common/FavoriteButton';
@@ -56,15 +56,19 @@ export const FoodDatabaseView: React.FC = () => {
     deleteCustomFood,
     rememberFood,
     logFoodItem,
-    targetMealSlot,
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
+    setTargetMealSlot,
     returnFromDatabase,
     favoriteFoods,
     language,
     t,
   } = useApp();
   const { options: mealSlots, label: slotLabel } = useMealSlots();
+  const autoMealSlot = useAutoMealSlot();
+  // This page is not opened from a meal: the barcode and custom food popups log to the meal of the moment.
+  const openBarcode = () => { setTargetMealSlot(autoMealSlot()); setIsBarcodeOpen(true); };
+  const openCustomFood = () => { setTargetMealSlot(autoMealSlot()); setIsCustomFoodOpen(true); };
 
   const [search, updateQuery] = useState('');
   const [selectedCategory, updateCategory] = useState<CatalogFilter>('all');
@@ -77,7 +81,7 @@ export const FoodDatabaseView: React.FC = () => {
   // Quick log modal
   const [foodToLog, setFoodToLog] = useState<FoodItem | null>(null);
   const [foodToDelete, setFoodToDelete] = useState<FoodItem | null>(null);
-  const [logSlot, setLogSlot] = useState<MealSlotId>(targetMealSlot);
+  const [logSlot, setLogSlot] = useState<MealSlotId>(() => autoMealSlot());
   const [logAmount, setLogAmount] = useState<number>(100);
 
   useEffect(() => {
@@ -196,7 +200,7 @@ export const FoodDatabaseView: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setIsBarcodeOpen(true)}
+            onClick={openBarcode}
             className="pressable px-3.5 py-2.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-bold text-xs flex items-center gap-1.5"
             title={t.prebuilt.barcode}
           >
@@ -206,7 +210,7 @@ export const FoodDatabaseView: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => setIsCustomFoodOpen(true)}
+            onClick={openCustomFood}
             className="pressable px-4 py-2.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs flex items-center gap-1.5"
           >
             <Plus size={15} strokeWidth={2.5} />
@@ -324,7 +328,7 @@ export const FoodDatabaseView: React.FC = () => {
           </p>
           <button
             type="button"
-            onClick={() => setIsCustomFoodOpen(true)}
+            onClick={openCustomFood}
             className="pressable inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold"
           >
             <Plus size={14} strokeWidth={2.5} />
@@ -409,7 +413,7 @@ export const FoodDatabaseView: React.FC = () => {
                       type="button"
                       onClick={() => {
                         setFoodToLog(food);
-                        setLogSlot(targetMealSlot);
+                        setLogSlot(autoMealSlot());
                         setLogAmount(getDefaultAmount(food));
                       }}
                       className="pressable px-3.5 py-1.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold flex items-center gap-1"

@@ -16,7 +16,7 @@
 | Change widgets | [widgets.md](widgets.md) |
 | Change reminders | [notifications.md](notifications.md) |
 | Understand header / dialogs | [journal-shell.md](journal-shell.md) |
-| Understand a page (Today, Food, Movement, Custom, Statistics, Period, Settings) | [journal-pages.md](journal-pages.md) |
+| Understand a page (Today, Food, Movement, Custom, Statistics, Period, Settings), or how the meal is preselected by the time of day | [journal-pages.md](journal-pages.md) |
 | Change animations / springs / swipe feel / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
@@ -25,7 +25,7 @@
 | Calorie maths, colours | [calculations-colors.md](calculations-colors.md) |
 | Goals / limits icons, Body measurements page, body-part icons (Settings > Advanced) | [advanced-personalisation.md](advanced-personalisation.md) |
 | Advanced layout: pencil (edit) icon, dashed outlines, free placement at any height, resize / remove fields, expanded meals vs chosen shape, added meal types, restore layout | [advanced-layout.md](advanced-layout.md) |
-| Icon, wordmark, launcher art | [brand.md](brand.md) |
+| Icon, wordmark (Koink-style layout, where the poop sits), launcher art, launch animations, notification icon / badge, every place the logo appears | [brand.md](brand.md) |
 | Activities / METs | [data-activities.md](data-activities.md) |
 | Bundled foods (USDA, curated) | [data-nutrition.md](data-nutrition.md) |
 | 130,000-product Open Food Facts catalogue | [data-off-catalogue.md](data-off-catalogue.md) |

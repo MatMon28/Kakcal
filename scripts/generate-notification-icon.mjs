@@ -1,55 +1,53 @@
 #!/usr/bin/env node
-// Regenerates android/app/src/main/res/drawable/ic_stat_kak.xml: the app's REAL logo (K + tiered poop, same geometry as
-// src/assets/brand/kakcalculator-icon.svg) as a one-colour glyph on a TRANSPARENT background, because Android only uses the
-// alpha channel of a notification icon and paints it in its own circle / status bar.
+// Regenerates android/app/src/main/res/drawable/ic_stat_kak.xml: the app's REAL logo (Koink's K + the tiered poop,
+// same geometry as src/assets/brand/kakcalculator-icon.svg, see scripts/brand-geometry.mjs) as a one-colour glyph on a
+// TRANSPARENT background, because Android only uses the alpha channel of a notification icon and paints it in its own
+// circle / status bar.
 //
-// What makes it read as the logo at 20 dp (the previous version was a solid blob that looked like "K and a triangle"):
-//   - K and poop use the exact coordinates of the logo (poop: translate(274 282) scale(2.85));
-//   - a clear gap is cut out of the K around the poop (the cream "halo" of the logo);
-//   - the poop's three tier lines (the dark lines of the logo) are cut out of the poop, so it reads as a swirl, not a blob.
+// What makes it read as the logo at 20 dp:
+//   - K and poop use the exact coordinates of the icon;
+//   - a clear gap is cut out of the K around the poop (the background-coloured halo of the icon, same width);
+//   - the poop's three tier lines are cut out of the poop as transparent lines, 35 % heavier than the icon's line
+//     weight (the pig's lines are made 35 % heavier in Koink's notification icon for the same reason).
 // Needs: npm i --no-save paper-jsdom && node scripts/generate-notification-icon.mjs [--preview out.svg]
 import paper from 'paper-jsdom';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-paper.setup(new paper.Size(512, 512));
-const { Path, Point, Size, Rectangle } = paper;
+import { ICON, K, PIG, POOP, stemPath } from './brand-geometry.mjs';
+paper.setup(new paper.Size(1024, 1024));
+const { Path, Point } = paper;
 
-// --- K: three round-capped strokes of width 96 (logo coordinates) ---
-const cap = (a, b, w) => {
-  const len = Math.hypot(b[0] - a[0], b[1] - a[1]);
-  const r = new Path.Rectangle(new Rectangle(new Point(a[0] - w / 2, a[1] - w / 2), new Size(len + w, w)), w / 2);
-  r.rotate(Math.atan2(b[1] - a[1], b[0] - a[0]) * 180 / Math.PI, new Point(a[0], a[1]));
-  return r;
-};
-const W = 96;
-let K = cap([148, 132], [148, 392], W);
-K = K.unite(cap([156, 268], [304, 132], W)).unite(cap([196, 252], [312, 392], W));
+const path = (d) => { const p = new Path(); p.pathData = d; return p; };
 
-// --- poop (logo path, translate(274 282) scale(2.85)) ---
-const POOP_D = 'M32,5 C37,9 39,12.5 36.5,15.5 C41,16 44,18.5 44,22.5 C44,25 43,27 42,28 C46.5,28.5 50,31.5 50,35 C50,37.5 49,39.5 48,41 C52.5,41.5 56,44.5 56,48 C56,52.5 52.5,56 48,56 H16 C11.5,56 8,52.5 8,48 C8,44.5 11.5,41.5 16,41 C15,39.5 14,37.5 14,35 C14,31.5 17.5,28.5 22,28 C21,27 20,25 20,22.5 C20,18.5 23,16 27.5,15.5 C25,12.5 27,9 32,5Z';
-const place = (p) => { p.scale(2.85, new Point(0, 0)); p.translate(new Point(274, 282)); return p; };
-const poop = new Path(); poop.pathData = POOP_D; place(poop);
+// --- K (icon units) ---
+let kShape = path(stemPath(K.stem)).unite(path(K.arm)).unite(path(K.leg));
 
-// Gap around the poop (the logo's cream halo): the poop grown by about 13 px.
-const halo = new Path(); halo.pathData = POOP_D; place(halo);
-halo.scale(1.17, poop.bounds.center);
+// --- poop (icon units): the same transform the icon uses ---
+const layout = ICON.poop;
+const place = (p) => { p.scale(layout.scale, new Point(0, 0)); p.translate(new Point(layout.x, layout.y)); return p; };
+const poop = place(path(POOP.body));
+
+// Gap around the poop = the icon's halo (a PIG.haloStroke wide outline centred on the poop's edge, so it reaches half that
+// far past the edge): the poop grown by half the halo width.
+const halo = place(path(POOP.body));
+const grow = PIG.haloStroke / 2;
+halo.scale(1 + (2 * grow) / Math.max(halo.bounds.width, halo.bounds.height) * 1.0, halo.bounds.center);
 
 // Tier lines of the logo (quadratic curves in poop units), turned into thin filled ribbons.
-const LINE_W = 5.6 / 2; // half width in poop units (about 16 px in the 512 viewport)
+const LINE_W = (PIG.iconStroke * 1.35) / layout.scale / 2; // half width in poop units
 const ribbon = (p0, c, p1) => {
   const pts = (t) => [(1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0], (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1]];
   const top = [], bottom = [];
   for (let i = 0; i <= 24; i++) { const [x, y] = pts(i / 24); top.push([x, y - LINE_W]); bottom.push([x, y + LINE_W]); }
-  const path = new Path({ closed: true });
-  [...top, ...bottom.reverse()].forEach(([x, y]) => path.add(new Point(x, y)));
-  place(path);
-  return path;
+  const p = new Path({ closed: true });
+  [...top, ...bottom.reverse()].forEach(([x, y]) => p.add(new Point(x, y)));
+  place(p);
+  return p;
 };
-const lines = [
-  ribbon([27.5, 15.5], [32, 18], [36.5, 15.5]).unite(ribbon([22, 28], [32, 31.5], [42, 28])).unite(ribbon([16, 41], [32, 45.5], [48, 41])),
-];
-const poopCut = poop.subtract(lines[0]);
-const kCut = K.subtract(halo);
+const q = POOP.creases.map((d) => d.match(/-?[\d.]+/g).map(Number)); // M x y Q cx cy x y
+const lines = q.map(([x0, y0, cx, cy, x1, y1]) => ribbon([x0, y0], [cx, cy], [x1, y1])).reduce((a, b) => a.unite(b));
+const poopCut = poop.subtract(lines);
+const kCut = kShape.subtract(halo);
 const logo = kCut.unite(poopCut);
 
 // Centre it and let the larger side fill 90% of the 512 viewport (about 21.6 of 24 dp).
@@ -61,13 +59,13 @@ logo.scale(k, new Point(256, 256));
 const d = logo.pathData;
 
 const preview = process.argv.indexOf('--preview');
-if (preview > -1) fs.writeFileSync(process.argv[preview + 1], `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#fff" d="${d}"/></svg>`);
+if (preview > -1) fs.writeFileSync(process.argv[preview + 1], `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><rect width="512" height="512" fill="#333"/><path fill="#fff" fill-rule="evenodd" d="${d}"/></svg>`);
 
 const target = fileURLToPath(new URL('../android/app/src/main/res/drawable/ic_stat_kak.xml', import.meta.url));
 const xml = `<?xml version="1.0" encoding="utf-8"?>
 <!--
   Notification icon (status bar and the circle on the left of a notification).
-  The app's real logo (K + tiered poop) as a one-colour glyph on a TRANSPARENT background: the system uses only the alpha
+  The app's real logo (Koink's K + tiered poop) as a one-colour glyph on a TRANSPARENT background: the system uses only the alpha
   channel and paints it in its own circle / status bar. The K is cut away around the poop and the poop's tier lines are
   transparent, so the poop stays readable at 20 dp. Generated by scripts/generate-notification-icon.mjs.
   There is no large icon (nothing is drawn on the right of the notification).
@@ -85,3 +83,15 @@ const xml = `<?xml version="1.0" encoding="utf-8"?>
 `;
 fs.writeFileSync(target, xml);
 console.log('wrote', target);
+
+// The browser notification badge (Chrome on Android draws it in the status bar like the native glyph): the same glyph,
+// white on transparent, 96 px. Needs `sharp` (npm i --no-save sharp); skipped with a note when it is missing.
+try {
+  const sharp = (await import('sharp')).default;
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path fill="#fff" fill-rule="evenodd" d="${d}"/></svg>`;
+  const badge = fileURLToPath(new URL('../public/icons/badge-96.png', import.meta.url));
+  await sharp(Buffer.from(svg), { density: 384 }).resize(96, 96).png({ compressionLevel: 9 }).toFile(badge);
+  console.log('wrote', badge);
+} catch (error) {
+  console.warn('public/icons/badge-96.png not written (needs sharp):', error.message);
+}

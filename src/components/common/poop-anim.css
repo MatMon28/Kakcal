@@ -7,10 +7,11 @@
  *   .kc-poop-tick     three burst ticks around the poop (hidden unless an animation uses them)
  * `data-poop-anim="<id>"` on `.kc-wordmark` starts the matching animation. Durations here must
  * match POOP_ANIMATIONS in poopAnimations.ts. Transform / opacity / dashoffset only.
- * Lengths are SVG user units of the poop group (the group is scaled 1.45 in the wordmark).
+ * Lengths are SVG user units of the poop group (the group is scaled about 1.87 in the wordmark, so the
+ * poop is as wide as Koink's pig).
  */
 
-/* Let the poop leave the 500x260 viewBox while it jumps or falls in. */
+/* Let the poop leave the wordmark's viewBox while it jumps or falls in. */
 .kc-wordmark > svg {
   overflow: visible;
 }

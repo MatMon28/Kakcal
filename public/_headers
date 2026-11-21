@@ -13,7 +13,7 @@
   Cache-Control: no-cache
 
 /icons/*
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: no-cache
 
 /data/off-foods.bin
   Cache-Control: public, max-age=86400
