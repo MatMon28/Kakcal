@@ -1,9 +1,9 @@
-import sketchAndPlop from '../../assets/kakcalculator_intro/animations/01-sketch-and-plop.svg?raw';
-import tactileKeypress from '../../assets/kakcalculator_intro/animations/02-tactile-keypress.svg?raw';
-import swirlAndUnfold from '../../assets/kakcalculator_intro/animations/03-swirl-and-unfold.svg?raw';
-import polarityIrisFlip from '../../assets/kakcalculator_intro/animations/04-polarity-iris-flip.svg?raw';
-import flushVortexSpin from '../../assets/kakcalculator_intro/animations/05-flush-vortex-spin.svg?raw';
-import modularStack from '../../assets/kakcalculator_intro/animations/06-modular-stack.svg?raw';
+import softServe from '../../assets/kakcalculator_intro/animations/01-soft-serve.svg?raw';
+import stackPlop from '../../assets/kakcalculator_intro/animations/02-stack-plop.svg?raw';
+import jellyPress from '../../assets/kakcalculator_intro/animations/03-jelly-press.svg?raw';
+import irisFlip from '../../assets/kakcalculator_intro/animations/04-iris-flip.svg?raw';
+import swirl from '../../assets/kakcalculator_intro/animations/05-swirl.svg?raw';
+import flushReturn from '../../assets/kakcalculator_intro/animations/06-flush-return.svg?raw';
 
 export interface IntroAnimation {
   id: string;
@@ -13,11 +13,12 @@ export interface IntroAnimation {
 }
 
 /**
- * The supplied SVGs run 1.06-1.28 s. The launch plays them this many times faster: every `NNNms` value in
- * their embedded CSS is divided by it (they only contain animation durations, no delays), so the keyframe
- * percentages and the final frame (the brand icon) are unchanged. 1.35 gives about 0.8-0.95 s.
+ * The SVGs run 2.0-2.4 s on their own (the previous six ran 1.06-1.28 s and were played 1.35 times faster). The
+ * launch plays them this many times faster: every `NNNms` value in their embedded CSS is divided by it (they only
+ * contain animation durations, no delays), so the keyframe percentages and the final frame (the brand icon) are
+ * unchanged. 2.5 gives 0.80-0.96 s, the same as the previous 0.79-0.95 s.
  */
-export const INTRO_SPEED = 1.35;
+export const INTRO_SPEED = 2.5;
 
 function speedUp(svg: string): string {
   return svg.replace(/(\d+(?:\.\d+)?)ms\b/g, (_, ms: string) => `${Math.round(Number(ms) / INTRO_SPEED)}ms`);
@@ -27,14 +28,14 @@ function entry(id: string, durationMs: number, svg: string): IntroAnimation {
   return { id, duration: Math.round(durationMs / INTRO_SPEED), svg: speedUp(svg) };
 }
 
-/** The six one-phase launch animations, in the order of intro_animation.md. */
+/** The six one-phase launch animations, in the order of intro_animation.md (`?intro=1` ... `?intro=6`). */
 export const INTRO_ANIMATIONS: IntroAnimation[] = [
-  entry('sketch-and-plop', 1150, sketchAndPlop),
-  entry('tactile-keypress', 1120, tactileKeypress),
-  entry('swirl-and-unfold', 1280, swirlAndUnfold),
-  entry('polarity-iris-flip', 1060, polarityIrisFlip),
-  entry('flush-vortex-spin', 1220, flushVortexSpin),
-  entry('modular-stack', 1240, modularStack),
+  entry('soft-serve', 2200, softServe),
+  entry('stack-plop', 2000, stackPlop),
+  entry('jelly-press', 2000, jellyPress),
+  entry('iris-flip', 2100, irisFlip),
+  entry('swirl', 2300, swirl),
+  entry('flush-return', 2400, flushReturn),
 ];
 
 const LAST_KEY = 'kcalsync_intro_last';

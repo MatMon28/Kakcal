@@ -1322,13 +1322,10 @@ html[data-style]:not([data-style="classic"]) .kc-icon-btn {
 :root { --kc-brand-ink: #0B0F1E; }
 [data-theme="lite-dark"], [data-theme="dark"] { --kc-brand-ink: #F9F3E6; }
 
-/* Wordmark: the poop is an outline only. It must stay transparent in every theme, so no theme may fill
-   it (this used to colour the poop with --brand-flame-color in the non-classic themes). The K and the
-   letters are solid ink (currentColor), like the Koink wordmark; `.kc-poop-group` is the poop. */
-.kc-wordmark svg .kc-poop-group,
-.kc-wordmark svg .kc-poop-group g,
-.kc-wordmark svg .kc-poop-group path {
-  fill: none !important;
+/* Wordmark: the poop is solid ink (currentColor, like the letters). The artwork carries its own fill, so no theme
+   may recolour it (the previous outline poop needed a `fill: none` rule here). `.kc-poop-group` is the poop. */
+.kc-wordmark svg .kc-poop-group {
+  fill: currentColor;
 }
 
 /* Navigation pill & tabs */

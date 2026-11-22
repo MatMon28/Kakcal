@@ -16,9 +16,9 @@ const root = fileURLToPath(new URL('../', import.meta.url));
 const out = path.join(root, 'public/icons');
 await mkdir(out, { recursive: true });
 
-import { LOGO_CENTRE, PALETTE } from './brand-geometry.mjs';
+import { APPLE_SCALE, LOGO_CENTRE, MASKABLE_SCALE, PALETTE } from './brand-geometry.mjs';
 
-const BG = PALETTE.light.bg; // Koink's tile colour
+const BG = PALETTE.light.bg; // the tile colour
 const svg = await readFile(path.join(root, 'src/assets/brand/kakcalculator-icon.svg'), 'utf8');
 // Inner artwork of the brand SVG (everything after the rounded tile <rect>), reused on a full-bleed square.
 const art = svg.replace(/^[\s\S]*?<rect[^>]*\/>/, '').replace('</svg>', '');
@@ -37,5 +37,5 @@ const render = async (name, source, size) => {
 await render('icon-192.png', svg, 192);
 await render('icon-512.png', svg, 512);
 // Maskable: Android may crop to a circle (radius 40% of the side), so keep the artwork well inside it.
-await render('maskable-512.png', fullBleed(1), 512);
-await render('apple-touch-icon.png', fullBleed(1.15), 180);
+await render('maskable-512.png', fullBleed(MASKABLE_SCALE), 512);
+await render('apple-touch-icon.png', fullBleed(APPLE_SCALE), 180);

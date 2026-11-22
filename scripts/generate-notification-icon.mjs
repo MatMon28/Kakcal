@@ -1,61 +1,44 @@
 #!/usr/bin/env node
-// Regenerates android/app/src/main/res/drawable/ic_stat_kak.xml: the app's REAL logo (Koink's K + the tiered poop,
-// same geometry as src/assets/brand/kakcalculator-icon.svg, see scripts/brand-geometry.mjs) as a one-colour glyph on a
-// TRANSPARENT background, because Android only uses the alpha channel of a notification icon and paints it in its own
-// circle / status bar.
-//
-// What makes it read as the logo at 20 dp:
-//   - K and poop use the exact coordinates of the icon;
-//   - a clear gap is cut out of the K around the poop (the background-coloured halo of the icon, same width);
-//   - the poop's three tier lines are cut out of the poop as transparent lines, 35 % heavier than the icon's line
-//     weight (the pig's lines are made 35 % heavier in Koink's notification icon for the same reason).
-// Needs: npm i --no-save paper-jsdom && node scripts/generate-notification-icon.mjs [--preview out.svg]
+// Regenerates android/app/src/main/res/drawable/ic_stat_kak.xml: the app's REAL logo (the solid tiered poop with the K
+// carved out of its belly, same geometry as src/assets/brand/kakcalculator-icon.svg, see scripts/brand-geometry.mjs) as a
+// one-colour glyph on a TRANSPARENT background, because Android only uses the alpha channel of a notification icon and
+// paints it in its own circle / status bar. The K is a real hole in the poop (not painted), which is what makes it
+// read as the logo at 20 dp.
+// Needs: npm i --no-save paper-jsdom sharp && node scripts/generate-notification-icon.mjs [--preview out.svg]
 import paper from 'paper-jsdom';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { ICON, K, PIG, POOP, stemPath } from './brand-geometry.mjs';
+import { ICON, K, POOP, stemPath } from './brand-geometry.mjs';
 paper.setup(new paper.Size(1024, 1024));
-const { Path, Point } = paper;
+const { Path, Point, Matrix } = paper;
 
 const path = (d) => { const p = new Path(); p.pathData = d; return p; };
+const rect = (t) => { const p = path(stemPath({ x: t.x, y: t.y, width: t.width, height: t.height, rx: t.rx })); return p; };
 
-// --- K (icon units) ---
-let kShape = path(stemPath(K.stem)).unite(path(K.arm)).unite(path(K.leg));
-
-// --- poop (icon units): the same transform the icon uses ---
-const layout = ICON.poop;
-const place = (p) => { p.scale(layout.scale, new Point(0, 0)); p.translate(new Point(layout.x, layout.y)); return p; };
-const poop = place(path(POOP.body));
-
-// Gap around the poop = the icon's halo (a PIG.haloStroke wide outline centred on the poop's edge, so it reaches half that
-// far past the edge): the poop grown by half the halo width.
-const halo = place(path(POOP.body));
-const grow = PIG.haloStroke / 2;
-halo.scale(1 + (2 * grow) / Math.max(halo.bounds.width, halo.bounds.height) * 1.0, halo.bounds.center);
-
-// Tier lines of the logo (quadratic curves in poop units), turned into thin filled ribbons.
-const LINE_W = (PIG.iconStroke * 1.35) / layout.scale / 2; // half width in poop units
-const ribbon = (p0, c, p1) => {
-  const pts = (t) => [(1 - t) * (1 - t) * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0], (1 - t) * (1 - t) * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1]];
-  const top = [], bottom = [];
-  for (let i = 0; i <= 24; i++) { const [x, y] = pts(i / 24); top.push([x, y - LINE_W]); bottom.push([x, y + LINE_W]); }
-  const p = new Path({ closed: true });
-  [...top, ...bottom.reverse()].forEach(([x, y]) => p.add(new Point(x, y)));
-  place(p);
+// --- poop (poop units): tip + three tiers, merged into one outline ---
+let poop = path(POOP.tip);
+for (const t of POOP.tiers) poop = poop.unite(rect(t));
+// into the 1000 box of the icon, then the icon's own artwork transform (scale 0.84 about the centre)
+const toIcon = (p) => {
+  p.transform(new Matrix(ICON.poop.scale, 0, 0, ICON.poop.scale, ICON.poop.x, ICON.poop.y));
   return p;
 };
-const q = POOP.creases.map((d) => d.match(/-?[\d.]+/g).map(Number)); // M x y Q cx cy x y
-const lines = q.map(([x0, y0, cx, cy, x1, y1]) => ribbon([x0, y0], [cx, cy], [x1, y1])).reduce((a, b) => a.unite(b));
-const poopCut = poop.subtract(lines);
-const kCut = kShape.subtract(halo);
-const logo = kCut.unite(poopCut);
+poop = toIcon(poop);
+
+// --- K (icon units), placed like the carved K of the icon (in the 1000 box) ---
+let k = path(stemPath(K.stem)).unite(path(K.arm)).unite(path(K.leg));
+k.transform(new Matrix(1, 0, 0, 1, -469.32, -508.3));
+k.transform(new Matrix(ICON.kScale, 0, 0, ICON.kScale, 0, 0));
+k.transform(new Matrix(1, 0, 0, 1, ICON.k.cx, ICON.k.cy));
+
+const logo = poop.subtract(k);
 
 // Centre it and let the larger side fill 90% of the 512 viewport (about 21.6 of 24 dp).
 const b = logo.bounds;
 console.log('logo bounds', Math.round(b.x), Math.round(b.y), Math.round(b.width), Math.round(b.height));
-const k = (512 * 0.90) / Math.max(b.width, b.height);
+const scale = (512 * 0.90) / Math.max(b.width, b.height);
 logo.translate(new Point(256, 256).subtract(b.center));
-logo.scale(k, new Point(256, 256));
+logo.scale(scale, new Point(256, 256));
 const d = logo.pathData;
 
 const preview = process.argv.indexOf('--preview');
@@ -65,9 +48,9 @@ const target = fileURLToPath(new URL('../android/app/src/main/res/drawable/ic_st
 const xml = `<?xml version="1.0" encoding="utf-8"?>
 <!--
   Notification icon (status bar and the circle on the left of a notification).
-  The app's real logo (Koink's K + tiered poop) as a one-colour glyph on a TRANSPARENT background: the system uses only the alpha
-  channel and paints it in its own circle / status bar. The K is cut away around the poop and the poop's tier lines are
-  transparent, so the poop stays readable at 20 dp. Generated by scripts/generate-notification-icon.mjs.
+  The app's real logo (the solid tiered poop with the K carved out) as a one-colour glyph on a TRANSPARENT background:
+  the system uses only the alpha channel and paints it in its own circle / status bar. The K is a real hole in the poop,
+  so it stays readable at 20 dp. Generated by scripts/generate-notification-icon.mjs.
   There is no large icon (nothing is drawn on the right of the notification).
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"

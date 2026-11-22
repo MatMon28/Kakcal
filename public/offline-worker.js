@@ -1,6 +1,7 @@
+// v5: the new logo (solid poop with carved K): new icon files behind the same names, plus the new notification badge.
 // v4: Koink-style icons (new files behind the same names, plus the notification badge).
 // v3: production launch mode (installed app opens the journal, not the tour) + install guide.
-const CACHE = 'kakcalculator-shell-v4';
+const CACHE = 'kakcalculator-shell-v5';
 // Static, public food data (the Open Food Facts catalogue). Bump the suffix when it is rebuilt.
 const DATA_CACHE = 'kakcalculator-data-v1';
 const DATA_FILE = new URL('data/off-foods.bin', self.registration.scope).href;

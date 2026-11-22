@@ -85,7 +85,7 @@ Your journal stays on that browser/device (`localStorage`). A browser tab and th
 
 ## 5. Verify
 
-1. Chrome DevTools > **Application** > *Manifest*: no errors, three icons, "Installable" is shown. *Service Workers*: `offline-worker.js` is **activated and running**. *Cache Storage*: `kakcalculator-shell-v4` lists `index.html`, `manifest.webmanifest` and five icons (the four app icons and `badge-96.png`).
+1. Chrome DevTools > **Application** > *Manifest*: no errors, three icons, "Installable" is shown. *Service Workers*: `offline-worker.js` is **activated and running**. *Cache Storage*: `kakcalculator-shell-v5` lists `index.html`, `manifest.webmanifest` and five icons (the four app icons and `badge-96.png`).
 2. Tick *Offline* (Application > Service Workers) or switch on flight mode and reload: the app must still open.
 3. Run **Lighthouse** > Progressive Web App (or *Installable* audit); it should pass.
 4. Open Settings and scroll to the bottom of the profile/backup group: the **Install app** card appears when the browser allows installation, and shows "Installed" inside the installed app.

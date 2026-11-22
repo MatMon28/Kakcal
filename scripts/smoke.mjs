@@ -53,10 +53,13 @@ try {
   await page.getByRole('heading', { level: 1, name: 'See how Kakcal works' }).waitFor();
   assert.equal(await page.locator('header svg rect[fill="#F9F3E6"]').count(), 0, 'Wordmark still has its cream plate');
   assert.equal(await page.locator('header svg rect.kc-plate').count(), 0, 'Wordmark still has its plate');
-  // The letters are Nunito ExtraBold outlines (no <text>, no font needed); the poop is its own group.
-  assert.equal(await page.locator('header svg path.kc-text').count(), 1, 'Wordmark letters missing');
+  // The letters are Nunito Black outlines (no <text>, no font needed); the poop is its own group.
+  assert.equal(await page.locator('header svg path.kc-text').count(), 2, 'Wordmark letters missing ("k" and "kcal")');
   assert.equal(await page.locator('header svg text').count(), 0, 'Wordmark must not use live text');
   assert.equal(await page.locator('header svg g.kc-poop-group g.kc-poop').count(), 1, 'Wordmark poop missing');
+  // The solid poop (a tip and three tiers) and the three burst ticks of the logo-press animations.
+  assert.equal(await page.locator('header svg g.kc-poop > g.kc-t3, header svg g.kc-poop > g.kc-t2, header svg g.kc-poop > g.kc-t1, header svg g.kc-poop > g.kc-tip').count(), 4, 'Wordmark poop parts missing');
+  assert.equal(await page.locator('header svg g.kc-poop-ticks path.kc-tick').count(), 3, 'Wordmark poop ticks missing');
   // Open full app appears in the header and under the phone; both must point to the plain journal.
   const openLinks = page.getByRole('link', { name: 'Open full app', exact: true });
   assert.equal(await openLinks.count(), 2);
@@ -171,7 +174,7 @@ try {
   assert.equal(await app.locator('iframe').count(), 0);
   assert.match(await app.locator('[data-energy-overview] > div').first().getAttribute('aria-label'), /: 0 kcal/);
   assert.equal(await app.evaluate(() => Object.keys(JSON.parse(localStorage.getItem('kcalsync_day_logs') || '{}')).length), 0);
-  assert.equal(await app.locator('header svg path.kc-text').count(), 1, 'Wordmark outlines missing offline');
+  assert.equal(await app.locator('header svg path.kc-text').count(), 2, 'Wordmark outlines missing offline');
   console.log('PASS: the Android bundle starts empty and offline, with its outlined wordmark (no font needed).');
 
   // 10. Native swipe, Back and widget delivery, simulated at the protocol level only.

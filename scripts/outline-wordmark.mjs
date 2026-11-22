@@ -1,21 +1,19 @@
 #!/usr/bin/env node
-// Builds the Kakcal wordmark, laid out exactly like the Koink wordmark (github.com/MatMon28/Koink,
-// src/brand/art.js): the same K, the same Nunito ExtraBold letters as outlines (so no font is
-// needed to draw them), and the poop standing where Koink's pig stands.
+// Builds the Kakcal wordmark: "k" + the solid poop (the first "a", as tall as the ascenders) + "kcal", the letters as
+// Nunito Black outlines (so no font is needed to draw them). The layout (sizes, gaps, where the poop stands) is
+// computed in scripts/brand-geometry.mjs (`layoutWordmark`). Colours are Koink's exactly (#0B0F1E ink on #F9F3E6, dark:
+// #F9F3E6 on #070A14). It writes, all generated, never hand-edited:
 //
-//   K  +  poop (the first "a", placed and sized like the pig)  +  "kcal"
-//
-// Colours are Koink's exactly (#0B0F1E ink on #F9F3E6, dark: #F9F3E6 on #070A14). It writes, all generated, never hand-edited:
-//
-//   1. src/assets/brand/kakcalculator-wordmark.svg           cream plate (the app strips it), ink #232325
+//   1. src/assets/brand/kakcalculator-wordmark.svg           cream plate (the app strips it), ink #0B0F1E
 //   2. src/assets/brand/kakcalculator-wordmark-outline.svg   transparent, ink = currentColor
 //   3. src/assets/kakcalculator_intro/logos/kakcalculator-wordmark{,-inverted,-theme-aware,-transparent}.svg
 //      and src/assets/kakcalculator_intro/animations/wordmark.svg
 //   4. the <svg> between the kc-boot markers in index.html   [only with --launch-screens]
 //   5. android/app/src/main/res/drawable/splash_wordmark.xml  [only with --launch-screens]
 //
-// The launch screens no longer show the logo (see docs/launch-intro.md), so 4 and 5 are skipped
-// unless you pass --launch-screens. How the poop is placed: docs/brand.md > Koink-style wordmark.
+// The launch screens do not show the logo (see docs/launch-intro.md), so 4 and 5 are skipped unless you pass
+// --launch-screens. The poop group carries the hooks of the logo-press animations (`kc-poop-group`, `kc-poop`,
+// `kc-t3` ... `kc-tip`, see src/components/common/poop-anim.css).
 //
 // Needs opentype.js, which is intentionally not a project dependency:
 //   npm i --no-save opentype.js && node scripts/outline-wordmark.mjs
@@ -23,71 +21,31 @@ import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import opentype from 'opentype.js';
+import { K, PALETTE, POOP, layoutWordmark, poopParts, stemPath } from './brand-geometry.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const fontFile = path.join(root, 'node_modules/@fontsource/nunito/files/nunito-latin-800-normal.woff');
-const buffer = await readFile(fontFile);
+const buffer = await readFile(path.join(root, 'node_modules/@fontsource/nunito/files/nunito-latin-900-normal.woff'));
 const font = opentype.parse(buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength));
 
-import { K, PALETTE, POOP, WORDMARK, stemPath } from './brand-geometry.mjs';
-
-// Koink's exact colours (light: ink on cream; dark: cream on ink).
 const INK = PALETTE.light.ink;
 const CREAM = PALETTE.light.bg;
-const r2 = (v) => Math.round(v * 100) / 100;
+const L = layoutWordmark(font);
+const box = { x: 0, y: 0, w: L.width, h: L.height };
+const viewBox = `${box.x} ${box.y} ${box.w} ${box.h}`;
+const first = L.first.list.map((l) => l.d).join('');
+const rest = L.rest.list.map((l) => l.d).join('');
 
-// All geometry (the K, the pig's box, the poop placed like the pig) lives in brand-geometry.mjs.
-const poop = WORDMARK.poop;
-const pig = WORDMARK.pig;
-const FONT_SIZE = WORDMARK.fontSize;
-const K_TRANSFORM = WORDMARK.k.transform;
-const K_BOTTOM = WORDMARK.bottom;
-const TEXT_BASELINE = WORDMARK.textBaseline;
-const PIG_TO_LETTERS = WORDMARK.gapToLetters;
-
-// --- "kcal" in Nunito ExtraBold, as outlines --------------------------------------------------
-const textPath = new opentype.Path();
-{
-  const unit = FONT_SIZE / font.unitsPerEm;
-  const first = font.charToGlyph('k');
-  const lsb = first.getBoundingBox().x1 * unit; // the "k" starts where its ink starts, like Koink's "i"
-  let pen = poop.right + PIG_TO_LETTERS - lsb;
-  let previous = null;
-  // Manual layout: opentype.js' own text shaping throws on this font's GSUB tables.
-  for (const char of 'kcal') {
-    const glyph = font.charToGlyph(char);
-    if (previous) {
-      let kern = 0;
-      try { kern = font.getKerningValue(previous, glyph) || 0; } catch { /* no kerning for this pair */ }
-      pen += kern * unit;
-    }
-    textPath.commands.push(...glyph.getPath(pen, TEXT_BASELINE, FONT_SIZE).commands);
-    pen += glyph.advanceWidth * unit;
-    previous = glyph;
-  }
-}
-const textD = textPath.toPathData(2);
-const tb = textPath.getBoundingBox();
-
-// View box: Koink's (y 40, 150 high) so the wordmark is as tall as Koink's at the same CSS height.
-const box = { x: 51, y: 40, w: Math.ceil(tb.x2 + 7.4) - 51, h: 150 };
-
-// --- SVG ----------------------------------------------------------------------------------------
-function inner({ ink, tag = '' }) {
-  const t = (cls) => (tag ? ` class="${cls}"` : '');
+function inner({ ink }) {
   return (
-    `<g${t('kc-k')} transform="${K_TRANSFORM}" fill="${ink}"><rect x="${K.stem.x}" y="${K.stem.y}" width="${K.stem.width}" height="${K.stem.height}" rx="${K.stem.rx}"/>` +
-    `<path d="${K.arm}"/><path d="${K.leg}"/></g>` +
-    `<g class="kc-poop-group" transform="translate(${poop.x} ${poop.y}) scale(${poop.scale})" fill="none" stroke="${ink}" stroke-width="${poop.strokeWidth}" stroke-linecap="round" stroke-linejoin="round">` +
-    POOP.d.map((d) => `<path d="${d}"/>`).join('') + `</g>` +
-    `<path${t('kc-text')} fill="${ink}" d="${textD}"/>`
+    `<path class="kc-text" fill="${ink}" d="${first}"/>` +
+    `<g class="kc-poop-group" transform="translate(${L.poop.x} ${L.poop.y}) scale(${L.poop.scale})" fill="${ink}"><g class="kc-m kc-poop">${poopParts('kc-')}</g></g>` +
+    `<path class="kc-text" fill="${ink}" d="${rest}"/>`
   );
 }
-const viewBox = `${box.x} ${box.y} ${box.w} ${box.h}`;
 const plate = (fill) => `<rect class="kc-plate" x="${box.x}" y="${box.y}" width="${box.w}" height="${box.h}" fill="${fill}"/>`;
 const svg = ({ title, bg, ink, size = false }) =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"${size ? ` width="${box.w * 2}" height="${box.h * 2}"` : ''} role="img" aria-label="Kakcal"><title>${title}</title>${plate(bg)}${inner({ ink, tag: 'x' })}</svg>\n`;
-const NOTE = '<!-- Generated by scripts/outline-wordmark.mjs (Koink-style wordmark, Nunito ExtraBold outlines). Do not hand-edit. -->\n';
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}"${size ? ` width="${box.w * 2}" height="${box.h * 2}"` : ''} role="img" aria-label="Kakcal"><title>${title}</title>${plate(bg)}${inner({ ink })}</svg>\n`;
+const NOTE = '<!-- Generated by scripts/outline-wordmark.mjs (k + poop + kcal, Nunito Black outlines). Do not hand-edit. -->\n';
 const write = (file, text) => writeFile(path.join(root, file), text);
 
 await write('src/assets/brand/kakcalculator-wordmark.svg', NOTE + svg({ title: 'Kakcal wordmark', bg: CREAM, ink: INK }));
@@ -103,30 +61,28 @@ await write(`${logos}kakcalculator-wordmark-transparent.svg`, NOTE + svg({ title
 await write('src/assets/kakcalculator_intro/animations/wordmark.svg', NOTE + svg({ title: 'Kakcal wordmark', bg: CREAM, ink: INK, size: true }));
 
 const outline = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${viewBox}" role="img" aria-label="Kakcal">${inner({ ink: 'currentColor' })}</svg>`;
-const launchScreens = process.argv.includes('--launch-screens');
-if (launchScreens) {
+if (process.argv.includes('--launch-screens')) {
   const indexPath = path.join(root, 'index.html');
   const index = await readFile(indexPath, 'utf8');
   const marker = /(<!-- kc-boot:start -->)[\s\S]*?(<!-- kc-boot:end -->)/;
   if (!marker.test(index)) throw new Error('kc-boot markers not found in index.html');
   await writeFile(indexPath, index.replace(marker, (_m, a, b) => `${a}\n        ${outline}\n        ${b}`));
 
-  // Android vector drawable. The system launch screen draws the icon in a 288 dp box masked to a
-  // 192 dp circle, so the artwork is scaled until its bounding-box diagonal fits inside 96 % of it.
+  // Android vector drawable. The system launch screen draws the icon in a 288 dp box masked to a 192 dp circle, so
+  // the artwork is scaled until its bounding-box diagonal fits inside 96 % of it.
   const BOX = 288;
   const s = (192 * 0.96) / Math.hypot(box.w, box.h);
   const tx = (BOX - box.w * s) / 2 - box.x * s;
   const ty = (BOX - box.h * s) / 2 - box.y * s;
   const f = (n) => Number(n.toFixed(4));
-  const fillPath = (d) => `            <path\n                android:fillColor="${INK}"\n                android:pathData="${d}" />`;
-  const stemD = stemPath(K.stem);
+  const fillPath = (d, pad = '            ') => `${pad}<path\n${pad}    android:fillColor="${INK}"\n${pad}    android:pathData="${d}" />`;
+  const tiers = POOP.tiers.map((t) => stemPath({ x: t.x, y: t.y, width: t.width, height: t.height, rx: t.rx }));
   const xml = `<?xml version="1.0" encoding="utf-8"?>
 <!--
-  Generated by scripts/outline-wordmark.mjs (do not hand-edit): the full-name Kakcal wordmark
-  (K, poop, "kcal" as outlines, laid out like the Koink wordmark) used as the Android launch-screen
-  icon, see AppTheme.NoActionBarLaunch in res/values/styles.xml. Android 12+ draws it in a 288 dp
-  box masked to a 192 dp circle, so the artwork is scaled to stay inside that circle. Ink ${INK} on
-  the launch-screen background #EFE9DD.
+  Generated by scripts/outline-wordmark.mjs (do not hand-edit): the full-name Kakcal wordmark (k, poop, "kcal" as
+  outlines) used as the Android launch-screen icon, see AppTheme.NoActionBarLaunch in res/values/styles.xml. Android
+  12+ draws it in a 288 dp box masked to a 192 dp circle, so the artwork is scaled to stay inside that circle.
+  Ink ${INK} on the launch-screen background #EFE9DD.
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="${BOX}dp"
@@ -134,23 +90,15 @@ if (launchScreens) {
     android:viewportWidth="${BOX}"
     android:viewportHeight="${BOX}">
     <group android:translateX="${f(tx)}" android:translateY="${f(ty)}" android:scaleX="${f(s)}" android:scaleY="${f(s)}">
-        <group android:translateX="8.94" android:translateY="19.44" android:scaleX="0.20374" android:scaleY="0.20374">
-${fillPath(stemD)}
-${fillPath(K.arm)}
-${fillPath(K.leg)}
+${fillPath(first, '        ')}
+        <group android:translateX="${L.poop.x}" android:translateY="${L.poop.y}" android:scaleX="${L.poop.scale}" android:scaleY="${L.poop.scale}">
+${[POOP.tip, ...tiers].map((d) => fillPath(d)).join('\n')}
         </group>
-        <group android:translateX="${poop.x}" android:translateY="${poop.y}" android:scaleX="${poop.scale}" android:scaleY="${poop.scale}">
-${POOP.d.map((d) => `            <path\n                android:strokeColor="${INK}"\n                android:strokeWidth="${poop.strokeWidth}"\n                android:strokeLineCap="round"\n                android:strokeLineJoin="round"\n                android:pathData="${d}" />`).join('\n')}
-        </group>
-${fillPath(textD).replace(/^ {4}/, '')}
+${fillPath(rest, '        ')}
     </group>
 </vector>
 `;
   await write('android/app/src/main/res/drawable/splash_wordmark.xml', xml);
 }
 
-console.log(
-  `box ${box.w} x ${box.h}; pig outer ${r2(pig.left)}..${r2(pig.right)} top ${r2(pig.top)}; ` +
-  `poop x ${poop.x} y ${poop.y} scale ${poop.scale} stroke ${poop.strokeWidth} right edge ${r2(poop.right)}; ` +
-  `text bbox x ${r2(tb.x1)}..${r2(tb.x2)} y ${r2(tb.y1)}..${r2(tb.y2)}`,
-);
+console.log(`box ${box.w} x ${box.h}; poop x ${L.poop.x} y ${L.poop.y} scale ${L.poop.scale}; letters end ${Math.round(L.rest.end * 100) / 100}`);

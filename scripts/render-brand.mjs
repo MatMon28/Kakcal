@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Renders the Android launcher, round, adaptive-foreground and Play Store PNGs
-// from src/assets/brand/kakcalculator-icon.svg (written by scripts/generate-icon.mjs: Koink-style icon on a
-// 1024 canvas). Needs Playwright's Chromium:
+// from src/assets/brand/kakcalculator-icon.svg (written by scripts/generate-icon.mjs: the solid poop with the carved K
+// on a 1024 canvas). Needs Playwright's Chromium:
 //   npm ci && npx playwright install chromium && node scripts/generate-icon.mjs && node scripts/render-brand.mjs
 import { mkdir, readFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -14,11 +14,11 @@ if (!/<rect[^>]*rx="240"[^>]*\/>/.test(source)) {
   throw new Error('Unexpected icon: the rounded background tile was not found.');
 }
 
-import { LOGO_CENTRE, PALETTE } from './brand-geometry.mjs';
+import { ADAPTIVE_SCALE, LOGO_CENTRE, PALETTE, ROUND_SCALE } from './brand-geometry.mjs';
 
 const CREAM = PALETTE.light.bg;
-// Everything after the rounded tile is the artwork (the K and the poop).
-// Its bounding-box centre in icon units (1024 canvas) is LOGO_CENTRE, as in Koink.
+// Everything after the rounded tile is the artwork (the poop and the carved K).
+// Its bounding-box centre in icon units (1024 canvas) is LOGO_CENTRE.
 const { x: CX, y: CY } = LOGO_CENTRE;
 const artwork = source.replace(/^[\s\S]*?<rect[^>]*\/>/, '').replace(/<\/svg>\s*$/, '');
 const NS = 'xmlns="http://www.w3.org/2000/svg"';
@@ -27,9 +27,9 @@ const markup = {
   // The supplied icon, with its rounded tile and transparent corners, for legacy launchers.
   launcher: source,
   // Circular crop for launchers that request round icons.
-  round: `<svg ${NS} width="512" height="512" viewBox="0 0 1024 1024"><defs><clipPath id="round"><circle cx="512" cy="512" r="512"/></clipPath></defs><g clip-path="url(#round)"><rect width="1024" height="1024" fill="${CREAM}"/><g transform="translate(512 512) translate(${-CX} ${-CY})">${artwork}</g></g></svg>`,
-  // Adaptive foreground on a 108 dp canvas. 0.084 dp per icon unit (1024 canvas) keeps the visible outline inside the 66 dp safe circle.
-  foreground: (px) => `<svg ${NS} width="${px}" height="${px}" viewBox="0 0 108 108"><g transform="translate(54 54) scale(0.084) translate(${-CX} ${-CY})">${artwork}</g></svg>`,
+  round: `<svg ${NS} width="512" height="512" viewBox="0 0 1024 1024"><defs><clipPath id="round"><circle cx="512" cy="512" r="512"/></clipPath></defs><g clip-path="url(#round)"><rect width="1024" height="1024" fill="${CREAM}"/><g transform="translate(512 512) scale(${ROUND_SCALE}) translate(${-CX} ${-CY})">${artwork}</g></g></svg>`,
+  // Adaptive foreground on a 108 dp canvas. ADAPTIVE_SCALE dp per icon unit (1024 canvas) keeps the visible outline inside the 66 dp safe circle.
+  foreground: (px) => `<svg ${NS} width="${px}" height="${px}" viewBox="0 0 108 108"><g transform="translate(54 54) scale(${ADAPTIVE_SCALE}) translate(${-CX} ${-CY})">${artwork}</g></svg>`,
   // Full-bleed square for the Play Console, which applies its own mask.
   play: `<svg ${NS} width="512" height="512" viewBox="0 0 1024 1024"><rect width="1024" height="1024" fill="${CREAM}"/>${artwork}</svg>`,
 };
