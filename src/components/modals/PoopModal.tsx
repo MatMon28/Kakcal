@@ -82,7 +82,7 @@ export const PoopModal: React.FC = () => {
 
         {/* Bristol type (optional) */}
         <div>
-          <div className="flex items-center justify-between mb-2">
+          <div className="flex items-baseline gap-1.5 mb-2">
             <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
               {t.poop.bristolTitle}
             </span>

@@ -5,6 +5,7 @@ import { SPRING } from '../../utils/spring';
 import { prefersReducedMotion } from '../../utils/motion';
 import { useApp } from '../../context/AppContext';
 import { getDockTarget } from './ActionDock';
+import { scrollFadeY } from '../../utils/scrollFade';
 
 interface ModalProps {
   isOpen: boolean;
@@ -441,7 +442,7 @@ export const Modal: React.FC<ModalProps> = ({
             <X size={17} />
           </button>
         </div>
-        <div data-dialog-scroll className="p-4 sm:p-5 overflow-y-auto overscroll-contain min-h-0 flex-1 text-[var(--text)]">
+        <div ref={scrollFadeY} data-dialog-scroll className="p-4 sm:p-5 overflow-y-auto overscroll-contain min-h-0 flex-1 text-[var(--text)]">
           {children}
         </div>
         {footer && (

@@ -6,12 +6,11 @@ import { useOffCatalog } from '../../utils/useOffCatalog';
 import { catalogueScore } from '../../data/offCatalog';
 import { FoodItem } from '../../types';
 import {
-  UtensilsCrossed,
+  Utensils,
   Footprints,
   Droplets,
   Scale,
   Sparkles,
-  BookOpen,
   ChevronRight,
   ArrowLeft,
   Search,
@@ -33,6 +32,7 @@ import { InlineCollapse } from '../common/InlineCollapse';
 import { NotificationSettings } from './NotificationSettings';
 import { AdvancedSettings } from './AdvancedSettings';
 import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
+import { scrollFadeY } from '../../utils/scrollFade';
 
 export const SettingsModal: React.FC = () => {
   const {
@@ -108,7 +108,7 @@ export const SettingsModal: React.FC = () => {
   );
 
   const quickRows = [
-    { key: 'food' as const, icon: UtensilsCrossed, cls: 'bg-intake text-intake-ink', label: t.quickAdd.food },
+    { key: 'food' as const, icon: Utensils, cls: 'bg-intake text-intake-ink', label: t.quickAdd.food },
     { key: 'movement' as const, icon: Footprints, cls: 'bg-activity text-activity-ink', label: t.quickAdd.movement },
     { key: 'water' as const, icon: Droplets, cls: 'bg-[#CFE7FE] text-[#183F66]', label: t.quickAdd.water },
     { key: 'poop' as const, icon: null, cls: 'bg-[#FAE0B4] text-[#7D4E14]', label: t.quickAdd.poop },
@@ -206,7 +206,7 @@ export const SettingsModal: React.FC = () => {
               {t.foodModal.minCharsHint}
             </p>
           ) : (
-            <div className="max-h-72 overflow-y-auto divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
+            <div ref={scrollFadeY} className="max-h-72 overflow-y-auto divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
               {pickerResults.length === 0 ? (
                 <div className="p-4 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
               ) : (
@@ -239,12 +239,9 @@ export const SettingsModal: React.FC = () => {
       ) : (
         /* ---------- Settings main ---------- */
         <div className="space-y-5">
-          {/* Language */}
-          <div>
-            <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-2">
-              {t.settings.language}
-            </span>
-            <div className="flex gap-1.5">
+          {/* Language (collapsible like the other groups) */}
+          <Collapsible title={t.settings.language}>
+            <div className="flex gap-1.5" role="group" aria-label={t.settings.language}>
               <button type="button" onClick={() => setLanguage('en')} className={seg(language === 'en')}>
                 English (EN)
               </button>
@@ -252,7 +249,7 @@ export const SettingsModal: React.FC = () => {
                 Italiano (IT)
               </button>
             </div>
-          </div>
+          </Collapsible>
 
           <Collapsible title={t.settings.appearance}>
           {/* Theme */}
@@ -345,13 +342,6 @@ export const SettingsModal: React.FC = () => {
                       <span className="min-w-0">
                         <span className="block text-xs font-extrabold leading-tight truncate">
                           {preset.name[language]}
-                        </span>
-                        <span
-                          className={`block text-[10px] font-semibold leading-tight truncate mt-0.5 ${
-                            active ? 'opacity-80' : 'text-[var(--muted)]'
-                          }`}
-                        >
-                          {preset.tag[language]}
                         </span>
                       </span>
                       <span className="inline-flex items-center -space-x-1 shrink-0" aria-hidden="true">
@@ -756,27 +746,6 @@ export const SettingsModal: React.FC = () => {
 
           {/* Reminders: water, meals, custom buttons, weight, daily log */}
           <NotificationSettings />
-
-          {/* Foods database */}
-          <button
-            type="button"
-            onClick={() => {
-              close();
-              setActiveTab('database');
-            }}
-            className="pressable w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 text-left"
-          >
-            <span className="flex items-center gap-2.5">
-              <span className="w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
-                <BookOpen size={15} />
-              </span>
-              <span>
-                <span className="block text-sm font-extrabold text-[var(--text)]">{t.settings.foodsDatabase}</span>
-                <span className="block text-[11px] font-medium text-[var(--muted)]">{t.settings.foodsDesc}</span>
-              </span>
-            </span>
-            <ChevronRight size={16} className="text-[var(--muted)] shrink-0" />
-          </button>
 
           {/* JSON backup now lives in Settings, not Statistics */}
           <DataBackup />

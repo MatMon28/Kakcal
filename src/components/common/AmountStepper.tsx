@@ -8,7 +8,10 @@ interface Props {
   unit: string;
   compact?: boolean;
   ariaLabel?: string;
-  /** Food portions: +10 g below 100, +20 g from 100, +50 g from 200 (water and trackers keep the plain steps). */
+  /**
+   * Food portions: +10 g below 100, +20 g from 100, +50 g from 200 (water and trackers keep the plain steps).
+   * A "−" pressed after a "+" steps back by only 10 g above 100 g and 20 g above 300 g.
+   */
   foodSteps?: boolean;
 }
 
@@ -36,11 +39,39 @@ export const foodStepDown = (v: number) => {
   return Math.max(200, Math.ceil(v / 50) * 50 - 50);
 };
 
+/**
+ * Food portions, "−" right after a "+": a fine step back, so one "+" can be undone gently.
+ * Above 300 g → 20 g (never below 300), above 100 g → 10 g (never below 100); up to 100 g the normal steps apply.
+ * Plain "−" presses (no "+" used before) keep `foodStepDown`.
+ */
+export const foodStepDownAfterPlus = (v: number) => {
+  if (v <= 0) return 0;
+  if (v > 300) return Math.max(300, v - 20);
+  if (v > 100) return Math.max(100, v - 10);
+  return foodStepDown(v);
+};
+
 export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact, ariaLabel, foodSteps }) => {
-  const up = foodSteps ? foodStepUp : stepUp;
-  const down = foodSteps ? foodStepDown : stepDown;
   const valRef = useRef(value);
   valRef.current = value;
+  // Food portions: remembers that "+" was used, so the next "−" steps back gently (see `foodStepDownAfterPlus`).
+  // `lastEmitted` is the value this stepper produced last; a different value means it was changed from outside
+  // (typed, quick preset, another food), which forgets the "+".
+  const usedPlus = useRef(false);
+  const lastEmitted = useRef(value);
+  const up = (v: number) => (foodSteps ? foodStepUp(v) : stepUp(v));
+  const down = (v: number) => {
+    if (!foodSteps) return stepDown(v);
+    return usedPlus.current ? foodStepDownAfterPlus(v) : foodStepDown(v);
+  };
+  /** Applies one step in a direction and keeps the "+ was used" memory in step with the value. */
+  const apply = (dir: 'up' | 'down', from: number) => {
+    if (lastEmitted.current !== from) usedPlus.current = false;
+    const next = dir === 'up' ? up(from) : down(from);
+    if (dir === 'up' && next !== from) usedPlus.current = true;
+    lastEmitted.current = next;
+    return next;
+  };
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
 
@@ -60,11 +91,10 @@ export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact,
   const startHold = (dir: 'up' | 'down') => {
     stopHold();
     didHoldRef.current = false;
-    const stepFn = dir === 'up' ? up : down;
     holdTimeout.current = window.setTimeout(() => {
       didHoldRef.current = true;
       holdInterval.current = window.setInterval(() => {
-        const next = stepFn(valRef.current);
+        const next = apply(dir, valRef.current);
         if (next !== valRef.current) {
           valRef.current = next;
           onChangeRef.current(next);
@@ -78,8 +108,7 @@ export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact,
       didHoldRef.current = false;
       return;
     }
-    const stepFn = dir === 'up' ? up : down;
-    onChange(stepFn(value));
+    onChange(apply(dir, value));
   };
 
   const btn = `pressable ${

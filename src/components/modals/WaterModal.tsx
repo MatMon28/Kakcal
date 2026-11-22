@@ -24,7 +24,7 @@ export const WaterModal: React.FC = () => {
   const previewPct = Math.min(100, Math.round(((total + Math.max(0, amount)) / Math.max(1, target)) * 100));
 
   const quick = [
-    { label: `${t.water.glass} 250`, value: 250 },
+    { label: '250ml', value: 250 },
     { label: '0.5 L', value: 500 },
     { label: '0.75 L', value: 750 },
     { label: '1 L', value: 1000 },
@@ -69,6 +69,8 @@ export const WaterModal: React.FC = () => {
           </div>
         </div>
 
+        <AmountStepper value={amount} onChange={setAmount} unit="ml" />
+
         <div className="grid grid-cols-4 gap-1.5">
           {quick.map((q) => (
             <button
@@ -86,8 +88,6 @@ export const WaterModal: React.FC = () => {
           ))}
         </div>
 
-        <AmountStepper value={amount} onChange={setAmount} unit="ml" />
-
         <button
           type="button"
           onClick={handleAdd}
@@ -96,7 +96,7 @@ export const WaterModal: React.FC = () => {
         >
           <Check size={18} strokeWidth={2.5} />
           <span>
-            {t.water.add} · {amount} ml
+            {t.water.save} · {amount} ml
           </span>
         </button>
       </div>

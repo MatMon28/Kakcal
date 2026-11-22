@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Utensils } from 'lucide-react';
+import { ArrowDownToLine, Flame } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatKcal } from '../../utils/formatters';
 import { GoalBadge } from '../common/GoalBadge';
@@ -37,7 +37,7 @@ export const IntakeCard: React.FC<{ compact?: boolean }> = ({ compact = false })
         <div className={`flex items-center justify-between gap-1 ${ultraMinimal ? 'min-h-5' : 'mb-1 min-h-[22px]'}`}>
           <span className="inline-flex min-w-0 items-center gap-1.5">
             <span className={`${ultraMinimal ? 'inline-flex items-center text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.energy.intake}>
-              {ultraMinimal && <Utensils size={15} aria-hidden="true" />}
+              {ultraMinimal && <ArrowDownToLine size={15} aria-hidden="true" />}
               <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.intake}</span>
             </span>
             {/* Settings > Advanced: calorie objective / limit reached */}

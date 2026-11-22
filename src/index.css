@@ -374,6 +374,32 @@ html.kc-sheet-open, .kc-sheet-open body, .dialog-viewport { overscroll-behavior:
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+/*
+ * Edge-fade for scrollable fields (see src/utils/scrollFade.ts). The script sets data-fade-start / data-fade-end while
+ * content is hidden before / after the visible part; a mask fades that edge, so it works on every theme and style.
+ */
+[data-scroll-fade][data-fade-start],
+[data-scroll-fade][data-fade-end] {
+  --kc-fade-a: 0px;
+  --kc-fade-b: 0px;
+  -webkit-mask-image: linear-gradient(var(--kc-fade-dir, to bottom), transparent 0, #000 var(--kc-fade-a), #000 calc(100% - var(--kc-fade-b)), transparent 100%);
+  mask-image: linear-gradient(var(--kc-fade-dir, to bottom), transparent 0, #000 var(--kc-fade-a), #000 calc(100% - var(--kc-fade-b)), transparent 100%);
+}
+[data-scroll-fade="x"] {
+  --kc-fade-dir: to right;
+  --kc-fade-size: 22px;
+}
+[data-scroll-fade="y"] {
+  --kc-fade-dir: to bottom;
+  --kc-fade-size: 26px;
+}
+[data-scroll-fade][data-fade-start="true"] {
+  --kc-fade-a: var(--kc-fade-size);
+}
+[data-scroll-fade][data-fade-end="true"] {
+  --kc-fade-b: var(--kc-fade-size);
+}
+
 .no-scrollbar::-webkit-scrollbar {
   display: none;
 }
@@ -1762,6 +1788,12 @@ html[data-style="angular"] .rounded-xl,
 html[data-style="angular"] .rounded-lg {
   border-radius: 0px !important;
   clip-path: var(--clip-sm);
+}
+
+/* Angular: the meal selection chips (Add food, Custom meals) are `rounded-full`, which the rules above do not cover. */
+html[data-style="angular"] [data-slot-chip] {
+  border-radius: 0px !important;
+  clip-path: var(--clip-xs);
 }
 
 /* Pop Neo-Brutalist elevation on main cards across Custom, Period, Statistics & Database */

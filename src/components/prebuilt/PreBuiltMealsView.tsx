@@ -30,6 +30,7 @@ import {
 import { usePersistentState } from '../../utils/usePersistentState';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MacroPills } from '../common/MacroPills';
+import { scrollFadeX, scrollFadeY } from '../../utils/scrollFade';
 
 const libraryPalettes = {
   meals: { text: '#7D4E14', muted: '#8A5617', border: '#E8C68E' },
@@ -1122,12 +1123,13 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2 text-[var(--text)] placeholder-[var(--muted)] text-xs font-medium focus:outline-none focus:border-[var(--muted)]"
             />
 
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+            <div ref={scrollFadeX} className="flex gap-1.5 overflow-x-auto no-scrollbar">
               {mealSlots.map((s) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => setNewMealSlot(s.id)}
+                  data-slot-chip
                   className={`pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
                     newMealSlot === s.id
                       ? 'kc-chip-active bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
@@ -1147,7 +1149,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               {searchInput(ingredientSearch, setIngredientSearch, t.foodModal.searchPlaceholder)}
               {ingredientSearch.trim().length === 1 && (
                 favoriteOneChar(ingredientSearch).length > 0 ? (
-                  <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                  <div ref={scrollFadeY} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
                     {favoriteOneChar(ingredientSearch).map((food) => (
                       <FoodResultRow key={food.id} food={food} onClick={() => handleSelectFood(food)} favorite />
                     ))}
@@ -1157,7 +1159,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 )
               )}
               {ingredientSearch.trim().length >= 2 && (
-                <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                <div ref={scrollFadeY} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
                   {filteredFoodsForSearch.length === 0 ? (
                     <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
                   ) : (
@@ -1180,7 +1182,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                     {newMealNutrition.totalKcal} kcal
                   </span>
                 </div>
-                <div className="space-y-1.5 max-h-36 overflow-y-auto">
+                <div ref={scrollFadeY} className="space-y-1.5 max-h-36 overflow-y-auto">
                   {newIngredients.map((ing, idx) => {
                     const food = allFoods.find((f) => f.id === ing.foodId);
                     const kcal = food ? Math.round((food.calories * ing.amount) / 100) : 0;
@@ -1314,7 +1316,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
               {searchInput(recipeSearch, setRecipeSearch, t.foodModal.searchPlaceholder)}
               {recipeSearch.trim().length === 1 && (
                 favoriteOneChar(recipeSearch).length > 0 ? (
-                  <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                  <div ref={scrollFadeY} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
                     {favoriteOneChar(recipeSearch).map((food) => (
                       <FoodResultRow
                         key={food.id}
@@ -1333,7 +1335,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 )
               )}
               {recipeSearch.trim().length >= 2 && (
-                <div className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                <div ref={scrollFadeY} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
                   {recipeResults.length === 0 ? (
                     <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
                   ) : (
@@ -1373,7 +1375,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <span data-nutrient="salt" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}g</span>
                   {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {recipeTotals.sugar100}g</span>}
                 </div>
-                <div className="space-y-1.5 max-h-32 overflow-y-auto">
+                <div ref={scrollFadeY} className="space-y-1.5 max-h-32 overflow-y-auto">
                   {recipeIngs.map((ing, idx) => {
                     const food = allFoods.find((f) => f.id === ing.foodId);
                     return (

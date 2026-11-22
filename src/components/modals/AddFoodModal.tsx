@@ -27,6 +27,7 @@ import {
   PlusCircle,
   X,
 } from 'lucide-react';
+import { scrollFadeRef, scrollFadeX } from '../../utils/scrollFade';
 
 interface QueuedEntry {
   key: string;
@@ -65,6 +66,11 @@ export const AddFoodModal: React.FC = () => {
   const searchInputRef = useRef<HTMLInputElement | null>(null);
   const resultsRef = useRef<HTMLDivElement | null>(null);
   const blurTimer = useRef<number | null>(null);
+  // The results list keeps its own ref (scroll to top on a new query) and gets the edge-fade.
+  const setResultsEl = useMemo(
+    () => scrollFadeRef('y', (el) => { resultsRef.current = el as HTMLDivElement | null; }),
+    [],
+  );
 
   useEffect(() => {
     if (isAddFoodOpen && !activeFood) {
@@ -335,7 +341,7 @@ export const AddFoodModal: React.FC = () => {
       {items.length === 0 ? (
         <p className="p-4 text-center text-xs font-medium text-[var(--muted)]">{t.favorites.empty}</p>
       ) : (
-        <div ref={resultsRef} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)]">
+        <div ref={setResultsEl} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)]">
           {items.map((f) => (
             <FoodRow key={f.id} food={f} onClick={() => handlePickFood(f)} />
           ))}
@@ -455,7 +461,7 @@ export const AddFoodModal: React.FC = () => {
         /* ---------- PICK STEP ---------- */
         <div className="space-y-3.5">
           {/* Slot selector */}
-          <div className="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
+          <div ref={scrollFadeX} className="flex gap-1.5 overflow-x-auto no-scrollbar pb-0.5">
             {slotOptions.map(({ id: s, label }) => {
               const active = targetMealSlot === s;
               return (
@@ -464,6 +470,7 @@ export const AddFoodModal: React.FC = () => {
                   ref={active ? activeSlotRef : null}
                   type="button"
                   onClick={() => setTargetMealSlot(s)}
+                  data-slot-chip
                   className={pill(active)}
                 >
                   {label}
@@ -532,7 +539,7 @@ export const AddFoodModal: React.FC = () => {
 
           {/* Search results: favourites pinned first (min 2 chars, fuzzy) */}
           {isSearching ? (
-            <div ref={resultsRef} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
+            <div ref={setResultsEl} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
               {searchResults.length === 0 ? (
                 <div className="p-5 space-y-3 text-center">
                   <p className="text-xs font-medium text-[var(--muted)]">{t.foodModal.noResults}</p>

@@ -94,9 +94,9 @@ export const TodayView: React.FC = () => {
   };
 
   const layouts: { id: MealLayout; label: string; icon: React.ReactNode }[] = [
-    { id: 'compact', label: t.mealSlots.compact, icon: <Columns2 size={13} /> },
-    { id: 'normal', label: t.mealSlots.normal, icon: <LayoutList size={13} /> },
-    { id: 'expanded', label: t.mealSlots.expanded, icon: <ListTree size={13} /> },
+    { id: 'compact', label: t.mealSlots.compact, icon: <Columns2 size={16} /> },
+    { id: 'normal', label: t.mealSlots.normal, icon: <LayoutList size={16} /> },
+    { id: 'expanded', label: t.mealSlots.expanded, icon: <ListTree size={16} /> },
   ];
 
   // The three layout options replace the redundant Expand all / Collapse all action.
@@ -115,14 +115,13 @@ export const TodayView: React.FC = () => {
             aria-label={item.label}
             aria-pressed={layout === item.id}
             title={item.label}
-            className={`pressable inline-flex min-h-7 items-center justify-center gap-1 rounded-full px-2.5 text-[11px] font-extrabold ${
+            className={`pressable inline-flex min-h-8 min-w-10 items-center justify-center rounded-full px-3 text-[11px] font-extrabold ${
               layout === item.id
                 ? 'bg-[var(--text)] text-[var(--on-text)]'
                 : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
             }`}
           >
             {item.icon}
-            <span>{item.label}</span>
           </button>
         ))}
       </div>

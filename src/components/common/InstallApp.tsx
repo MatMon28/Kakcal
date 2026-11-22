@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
 import { isAndroidApp } from '../../utils/android';
 import { openInstallGuide } from './InstallGuide';
+import { Collapsible } from './Collapsible';
 
 /**
  * "Install app" card for Settings. Always available in a browser (iOS and desktop included),
@@ -40,8 +41,7 @@ export const InstallApp: React.FC = () => {
     state === 'installed' ? t.pwa.installed : state === 'ios' ? t.pwa.iosDesc : ui.manual;
 
   return (
-    <section aria-label={t.pwa.title} className="bg-[var(--inset)] rounded-2xl p-3 space-y-2.5">
-      <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.pwa.title}</h3>
+    <Collapsible title={t.pwa.title}>
       <div className="flex items-start gap-2.5">
         <span className="w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
           {state === 'installed' ? <CheckCircle size={15} /> : <Smartphone size={15} />}
@@ -75,6 +75,6 @@ export const InstallApp: React.FC = () => {
           </button>
         )}
       </div>
-    </section>
+    </Collapsible>
   );
 };

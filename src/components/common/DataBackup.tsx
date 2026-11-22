@@ -3,8 +3,9 @@ import { AlertCircle, CheckCircle, Download, Upload } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
 import { isAndroidApp, JournalDevice } from '../../utils/android';
+import { Collapsible } from './Collapsible';
 
-/** Local JSON backup controls. Kept in Settings so Statistics stays focused on charts. */
+/** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
 export const DataBackup: React.FC = () => {
   const { exportDataJson, importDataJson, t } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -46,10 +47,7 @@ export const DataBackup: React.FC = () => {
   };
 
   return (
-    <section aria-label={t.history.backupTitle} className="bg-[var(--inset)] rounded-2xl p-3 space-y-2.5">
-      <h3 className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">
-        {t.history.backupTitle}
-      </h3>
+    <Collapsible title={t.history.backupTitle}>
       {message && (
         <div
           role={message.error ? 'alert' : 'status'}
@@ -87,6 +85,6 @@ export const DataBackup: React.FC = () => {
           aria-label={t.history.importBtn}
         />
       </div>
-    </section>
+    </Collapsible>
   );
 };

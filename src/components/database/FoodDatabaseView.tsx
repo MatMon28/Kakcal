@@ -40,6 +40,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from 'lucide-react';
+import { scrollFadeX } from '../../utils/scrollFade';
 
 const PAGE_SIZE = 36;
 type CatalogFilter = FoodCategory | 'all' | 'custom' | 'favorites';
@@ -252,7 +253,7 @@ export const FoodDatabaseView: React.FC = () => {
         </div>
 
         {/* Categories Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" data-no-swipe>
+        <div ref={scrollFadeX} className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs" data-no-swipe>
           <button
             type="button"
             onClick={() => setSelectedCategory('all')}

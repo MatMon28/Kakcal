@@ -118,7 +118,8 @@ export const AdvancedSettings: React.FC = () => {
 
         {advanced.goalsEnabled && (
           <CollapseBody open={goalsOpen}>
-          <div className="space-y-2">
+          {/* Sub-sections of "Goals & limits": indented under a guide line so they clearly belong to the group above. */}
+          <div data-goals-subsections className="space-y-2 ml-5 pl-3 border-l-2 border-[var(--border)] rounded-bl-xl">
             {GOAL_KEYS.map((key) => {
               const goal = advanced.goals[key];
               const choices = GOAL_MODE_CHOICES[key];

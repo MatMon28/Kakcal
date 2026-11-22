@@ -14,6 +14,7 @@ import {
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
 import { matchesFirstChar, sortFavoritesFirst } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
+import { scrollFadeRef, scrollFadeX } from '../../utils/scrollFade';
 
 interface ActivitySearchProps {
   onPick: (activity: ActivityInfo) => void;
@@ -30,7 +31,12 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState<'all' | ActivityCategory>('all');
   const inputRef = useRef<HTMLInputElement>(null);
-  const listRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  // The list keeps its own ref (scroll to top on a new query) and gets the edge-fade.
+  const setListEl = useMemo(
+    () => scrollFadeRef('y', (el) => { listRef.current = el as HTMLDivElement | null; }),
+    [],
+  );
 
   const trimmed = query.trim();
 
@@ -178,7 +184,7 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
       </div>
 
       {/* Category filter */}
-      <div className="flex gap-1.5 overflow-x-auto overscroll-x-contain -mx-1 px-1 pb-1" role="group" aria-label={t.activities.searchTitle}>
+      <div ref={scrollFadeX} className="flex gap-1.5 overflow-x-auto overscroll-x-contain -mx-1 px-1 pb-1" role="group" aria-label={t.activities.searchTitle}>
         <button type="button" onClick={() => setCategory('all')} className={chip(category === 'all')} aria-pressed={category === 'all'}>
           {t.activities.allCategories}
         </button>
@@ -197,7 +203,7 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
 
       {/* Results: favourites first, then the rest */}
       <div
-        ref={listRef}
+        ref={setListEl}
         className="max-h-72 overflow-y-auto overscroll-contain bg-[var(--inset)] border border-[var(--border)] rounded-2xl"
       >
         {total === 0 ? (
