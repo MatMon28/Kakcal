@@ -165,11 +165,18 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
     />
   );
 
-  // Fibre, salt and sugar of the whole meal live in the same area as the macros (right under them, icon + number only).
+  // Fibre, salt and sugar of the whole meal live in the same area as the macros (right under them, icon + number only), shown only when the meal is open.
   const macroArea = (
-    <div data-macro-area className="flex min-w-0 flex-1 w-full flex-col gap-1.5">
+    <div data-macro-area className="flex min-w-0 flex-1 w-full flex-col">
       {macroPills}
-      <MealNutrientTotals fiber={slotMacros.fiberGrams} salt={slotMacros.saltGrams} sugar={slotMacros.sugarGrams} compact={compact} />
+      {/* Fibre, salt and sugar only show while the meal is open; the row grows / shrinks with the same accordion. */}
+      <div className="accordion-grid" data-open={open} inert={!open} aria-hidden={!open}>
+        <div className="accordion-inner">
+          <div className="pt-1.5">
+            <MealNutrientTotals fiber={slotMacros.fiberGrams} salt={slotMacros.saltGrams} sugar={slotMacros.sugarGrams} compact={compact} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 

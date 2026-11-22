@@ -231,14 +231,17 @@ export const HistoryView: React.FC = () => {
           </div>
         )}
 
-        <div
-          className="px-1 text-center text-xs font-bold tabular-nums text-[var(--muted)]"
-          aria-label={t.history.daysLogged.replace('{count}', String(period.loggedCount)).replace('{total}', String(period.total))}
-        >
-          {ultraMinimal ? `${period.loggedCount}/${period.total}` : t.history.daysLogged
-            .replace('{count}', String(period.loggedCount))
-            .replace('{total}', String(period.total))}
-        </div>
+        {/* Hidden when every day of the period is logged (7/7 etc.). */}
+        {period.loggedCount < period.total && (
+          <div
+            className="px-1 text-center text-xs font-bold tabular-nums text-[var(--muted)]"
+            aria-label={t.history.daysLogged.replace('{count}', String(period.loggedCount)).replace('{total}', String(period.total))}
+          >
+            {ultraMinimal ? `${period.loggedCount}/${period.total}` : t.history.daysLogged
+              .replace('{count}', String(period.loggedCount))
+              .replace('{total}', String(period.total))}
+          </div>
+        )}
     </div>
   );
   const intakeNode = (

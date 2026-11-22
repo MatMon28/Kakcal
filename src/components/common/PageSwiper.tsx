@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { flushSync } from 'react-dom';
 import type { ActiveTab } from '../../types';
 import { prefersReducedMotion } from '../../utils/motion';
+import { animatePageFields } from '../../utils/pageFields';
 import { getOpenModalCount } from './Modal';
 
 interface PageSwiperProps {
@@ -106,7 +107,9 @@ export function PageSwiper(props: PageSwiperProps) {
     document.documentElement.style.setProperty('--kc-swipe-dir', String(side));
     document.documentElement.dataset.swipeDir = side > 0 ? 'right' : 'left';
     document.documentElement.classList.add('kc-page-moving');
-    settle(side * 16, 115);
+    // One 10 px compositor slide of the rail (transform only), then the fields rise in with a tiny stagger.
+    settle(side * 10, 180);
+    animatePageFields(rail.current?.querySelector<HTMLElement>('[data-journal-page]'));
   }, [activeTab, rest, settle]);
 
   useEffect(() => {

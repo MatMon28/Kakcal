@@ -94,18 +94,18 @@ export const TodayView: React.FC = () => {
   };
 
   const layouts: { id: MealLayout; label: string; icon: React.ReactNode }[] = [
-    { id: 'compact', label: t.mealSlots.compact, icon: <Columns2 size={16} /> },
-    { id: 'normal', label: t.mealSlots.normal, icon: <LayoutList size={16} /> },
-    { id: 'expanded', label: t.mealSlots.expanded, icon: <ListTree size={16} /> },
+    { id: 'compact', label: t.mealSlots.compact, icon: <Columns2 size={14} /> },
+    { id: 'normal', label: t.mealSlots.normal, icon: <LayoutList size={14} /> },
+    { id: 'expanded', label: t.mealSlots.expanded, icon: <ListTree size={14} /> },
   ];
 
   // The three layout options replace the redundant Expand all / Collapse all action.
   const layoutSwitch = !ultraMinimal ? (
-    <div className="flex flex-wrap items-center justify-center gap-2 px-1">
+    <div className="flex items-center justify-end gap-2 px-1">
       <div
         role="group"
         aria-label={t.mealSlots.layout}
-        className="inline-flex items-center gap-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] p-1"
+        className="inline-flex items-center gap-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] p-0.5"
       >
         {layouts.map((item) => (
           <button
@@ -115,7 +115,7 @@ export const TodayView: React.FC = () => {
             aria-label={item.label}
             aria-pressed={layout === item.id}
             title={item.label}
-            className={`pressable inline-flex min-h-8 min-w-10 items-center justify-center rounded-full px-3 text-[11px] font-extrabold ${
+            className={`pressable inline-flex min-h-7 min-w-9 items-center justify-center rounded-full px-2.5 text-[11px] font-extrabold ${
               layout === item.id
                 ? 'bg-[var(--text)] text-[var(--on-text)]'
                 : 'text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
