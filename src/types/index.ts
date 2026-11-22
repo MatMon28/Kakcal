@@ -254,6 +254,10 @@ export interface Settings {
   hidePoop: boolean;
   /** Show and total sugar in Today, food forms and statistics. */
   trackSugar: boolean;
+  /** Opt-in meal photographs, stored locally and included in JSON backups. */
+  photoDiary: boolean;
+  /** Show the diary action in Today and a note field while logging food. */
+  inlineMealNotes: boolean;
   hidePeriod: boolean;
   hidePeriodCustomized?: boolean;
   quickFoods: string[]; // food ids for the 3 quick-add shortcut buttons

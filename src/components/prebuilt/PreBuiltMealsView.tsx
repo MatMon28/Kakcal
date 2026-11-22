@@ -31,6 +31,11 @@ import { usePersistentState } from '../../utils/usePersistentState';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MacroPills } from '../common/MacroPills';
 import { scrollFadeX, scrollFadeY } from '../../utils/scrollFade';
+import { useJournalText } from '../../i18n/journal';
+import { MealDiary } from '../journal/MealDiary';
+import { MealPlanner } from '../journal/MealPlanner';
+import { LibraryPhoto, PhotoDiary } from '../journal/PhotoDiary';
+import { CustomPageHeading } from '../journal/JournalChrome';
 
 const libraryPalettes = {
   meals: { text: '#7D4E14', muted: '#8A5617', border: '#E8C68E' },
@@ -197,6 +202,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   } = useApp();
   const { options: mealSlots, label: slotLabel } = useMealSlots();
   const autoMealSlot = useAutoMealSlot();
+  const j = useJournalText();
   // The pages below are not opened from a meal: the meal preselected is the one that fits the time of day.
   const openBarcode = () => { setTargetMealSlot(autoMealSlot()); setIsBarcodeOpen(true); };
   const openCustomFood = () => { setTargetMealSlot(autoMealSlot()); setIsCustomFoodOpen(true); };
@@ -561,12 +567,16 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   );
 
   return (
-    <div className={ultraMinimal ? 'grid grid-cols-3 gap-2 sm:gap-3 items-start' : 'space-y-4'}>
+    <>
+    <CustomPageHeading onMeal={openNewMealModal} onRecipe={openRecipeModal} onFood={openCustomFood} />
+    <div className={ultraMinimal ? 'journal-minimal-grid grid grid-cols-3 gap-2 sm:gap-3 items-start' : 'custom-library-grid'}>
+      <MealDiary />
       {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}
       <section data-library-section="meals" className={`bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.meals ? 'col-span-3' : 'col-span-1') : ''}`}>
         <LibrarySectionHeader
           title={t.prebuilt.title}
           tone="meals"
+          summary={j('Your go-to combinations, ready to log.', 'I tuoi abbinamenti, pronti da registrare.')}
           icon={<UtensilsCrossed size={16} strokeWidth={2.2} />}
           count={preBuiltMeals.length}
           createLabel={t.prebuilt.createNew}
@@ -681,6 +691,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
                       <div className="pt-1 space-y-3 border-t border-[var(--border)]">
+                        <LibraryPhoto linkedId={meal.id} title={meal.name} slot={meal.slot} />
                         {meal.description && !ultraMinimal && (
                           <p className="text-xs text-[var(--muted)]">{meal.description}</p>
                         )}
@@ -829,6 +840,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
                       <div className="pt-1 space-y-2.5 border-t border-[var(--border)]">
+                        <LibraryPhoto linkedId={recipe.id} title={nameOf(recipe)} />
                         <div className="pt-2"><FoodMacroGrid food={recipe} amount={100} mode={ultraMinimal ? 'minimal' : 'facts'} /></div>
 
                         {/* Ingredients with their original quantities */}
@@ -876,6 +888,9 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         </div>
         </div>
       </section>
+
+      <MealPlanner />
+      <PhotoDiary />
 
       {/* ============ FOODS ============ */}
       <section data-library-section="foods" className={`bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.foods ? 'col-span-3' : 'col-span-1') : ''}`}>
@@ -1439,5 +1454,6 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         )}
       </Modal>
     </div>
+    </>
   );
 };

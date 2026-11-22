@@ -1,5 +1,7 @@
 # File map: `src/components/common/`
 
+Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed sections/search; `JournalChrome.tsx` supplies the desktop sidebar/topbar and Custom create menu. `journal.css` contains their responsive and theme-aware styles. The original `Header.tsx` retains the mobile header and is hidden only above 1100 px. See [meal journal](../meal-journal.md).
+
 > **Scope:** Shared UI: modal, header, tabs, swiper, icons, amount selectors, backup, brand.
 >
 > **Read when:** you need to know which file implements something in this area (open only this file, not the others).

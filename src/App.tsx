@@ -2,6 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp } from './context/AppContext';
 import { Header } from './components/common/Header';
+import { JournalChrome } from './components/journal/JournalChrome';
 import { closeTopModal, getOpenModalCount } from './components/common/Modal';
 import { TodayView } from './components/dashboard/TodayView';
 import { PreBuiltMealsView } from './components/prebuilt/PreBuiltMealsView';
@@ -349,11 +350,12 @@ function MainContent() {
   }, []);
 
   return (
-    <div data-journal-root className="min-h-dvh bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
+    <div data-journal-root data-active-tab={activeTab} className="min-h-dvh bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <WidgetAppBridge />
       <Header />
+      <JournalChrome />
       <main data-journal-surface className="flex-1 min-w-0">
-        <div className={`w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}>
+        <div className={`journal-main-container w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}>
           <PageSwiper
             tabs={visibleTabs}
             activeTab={activeTab}

@@ -1,5 +1,7 @@
 # Journal pages and workflows
 
+**Meal journal round:** Custom starts with a yellow searchable/filterable Meal diary, keeps saved Meals and Recipes, adds the blue selected-day/selected-meal planner below Recipes, and (only when enabled in Settings > Today & pages) a red Photo diary. Plans, photos and optional diary notes are integrated into Today and Add food. The desktop layout gains a responsive sidebar and Custom creation menu; the original mobile header/dock are retained. `?view=app&tab=custom&intro=0` opens Custom directly without the tour or launch intro. Workflows, storage limits and file roles: [meal-journal.md](meal-journal.md).
+
 > **Scope:** What each page does: Today, Food, Movement, Custom, Statistics, Period, Day overview, Settings and Profile.
 >
 > **Read when:** you change page behaviour or need the intended UX of a page/dialog.

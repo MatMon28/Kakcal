@@ -181,7 +181,7 @@ export const Header: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-40 h-[calc(max(0.75rem,env(safe-area-inset-top))+6.25rem)] pointer-events-none">
+    <header data-mobile-journal-header className="sticky top-0 z-40 h-[calc(max(0.75rem,env(safe-area-inset-top))+6.25rem)] pointer-events-none">
       <div
         ref={surfaceRef}
         className="kc-header-surface pointer-events-auto border-b border-transparent px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1"

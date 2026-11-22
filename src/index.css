@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./components/journal/journal.css";
 
 /* ---- Bundled typography ----
    The single-file build inlines every url() as base64, so the fonts are declared here with

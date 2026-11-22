@@ -6,6 +6,8 @@ A local-first nutrition, activity and wellness journal built with React 19, Type
 
 **Gestures:** page and popup swipes are tuned to be sensitive; closing a popup sucks it into the bottom-bar button that opens it (a barely perceivable 60-90 ms, cut short by your next tap, and taps right after a swipe-down close are never lost); the bottom bar hides on scroll down and returns on a small scroll up; swiping the Today calendar changes the day ([gestures](docs/gestures.md), [motion](docs/motion.md)).
 
+**Meal journal:** Custom now includes a yellow searchable/filterable Meal diary, a blue selected-day / selected-meal planner below Recipes, and an optional red Photo diary. Plans and read-acknowledgeable notes flow into Today and Log food. Enable Photo diary and Meal notes in Today in Settings > Today & pages; both default to off. Saved meal/recipe photo attachments, local photos and meal memories are included in JSON backups. Existing themes and mobile navigation are preserved, with a two-column Custom layout / sidebar on desktop. See [docs/meal-journal.md](docs/meal-journal.md) for workflows, file roles, storage limits and verification.
+
 ## Quick start
 
 ```sh

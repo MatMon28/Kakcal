@@ -20,6 +20,8 @@ import {
   Droplet,
   Minimize2,
   Candy,
+  Camera,
+  BookOpen,
   X,
 } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
@@ -33,8 +35,10 @@ import { NotificationSettings } from './NotificationSettings';
 import { AdvancedSettings } from './AdvancedSettings';
 import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
 import { scrollFadeY } from '../../utils/scrollFade';
+import { useJournalText } from '../../i18n/journal';
 
 export const SettingsModal: React.FC = () => {
+  const j = useJournalText();
   const {
     isSettingsOpen,
     setIsSettingsOpen,
@@ -499,6 +503,13 @@ export const SettingsModal: React.FC = () => {
                 <SwitchVisual on={settings.trackSugar} />
               </span>
             </button>
+          </div>
+
+          <div className="space-y-1.5" data-journal-settings>
+            {[
+              { key: 'photoDiary' as const, icon: Camera, title: j('Photo diary', 'Diario fotografico'), description: j('Keep a visual memory of your meals. Photos stay on this device.', 'Ricorda i tuoi pasti con una foto. Le foto restano sul dispositivo.') },
+              { key: 'inlineMealNotes' as const, icon: BookOpen, title: j('Meal notes in Today', 'Note dei pasti in Oggi'), description: j('Add a diary note in a meal field or while logging food.', 'Aggiungi note dai pasti in Oggi o mentre registri alimenti.') },
+            ].map(({ key, icon: Icon, title, description }) => <button type="button" key={key} role="switch" aria-checked={settings[key]} aria-label={title} className="journal-settings-toggle" onClick={() => updateSettings({ [key]: !settings[key] })}><span><Icon size={18} /><span><strong>{title}</strong><small>{description}</small></span></span><SwitchVisual on={settings[key]} /></button>)}
           </div>
 
           {/* Quick food shortcuts */}

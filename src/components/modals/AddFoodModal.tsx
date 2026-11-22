@@ -28,11 +28,16 @@ import {
   X,
 } from 'lucide-react';
 import { scrollFadeRef, scrollFadeX } from '../../utils/scrollFade';
+import { PlannedMeals } from '../journal/MealPlanner';
+import { MealNoteField } from '../journal/MealDiary';
+import { memoryKey, updateMealMemory, updateMealPlan, useMealJournal } from '../../utils/journalStore';
+import type { MealPlan } from '../../types/journal';
 
 interface QueuedEntry {
   key: string;
   food: FoodItem;
   amount: number;
+  planId?: string;
 }
 
 export const AddFoodModal: React.FC = () => {
@@ -55,6 +60,10 @@ export const AddFoodModal: React.FC = () => {
     t,
   } = useApp();
   const { options: slotOptions, label: slotLabel } = useMealSlots();
+  const journal = useMealJournal();
+  const [noteDrafts, setNoteDrafts] = useState<Record<string, string>>({});
+  const noteKey = memoryKey(selectedDate, targetMealSlot);
+  const mealNote = noteDrafts[noteKey] ?? journal.memories[noteKey]?.note ?? '';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFood, setActiveFood] = useState<FoodItem | null>(null);
@@ -314,6 +323,11 @@ export const AddFoodModal: React.FC = () => {
     }));
 
     logItemsToSlot(targetMealSlot, toLog);
+    if (settings.inlineMealNotes && noteDrafts[noteKey] !== undefined) updateMealMemory(selectedDate, targetMealSlot, { note: mealNote.trim() });
+    for (const id of new Set(finalEntries.map((e) => e.planId).filter((id): id is string => Boolean(id)))) {
+      const plan = journal.plans.find((p) => p.id === id);
+      if (plan?.date === selectedDate && plan.slot === targetMealSlot && finalEntries.filter((e) => e.planId === id).length === plan.items.length) updateMealPlan(id, { loggedAt: new Date().toISOString() });
+    }
     close();
   };
 
@@ -478,6 +492,8 @@ export const AddFoodModal: React.FC = () => {
               );
             })}
           </div>
+
+          <PlannedMeals date={selectedDate} slot={targetMealSlot} queuedIds={queuedItems.flatMap((e) => e.planId ? [e.planId] : [])} onQueue={(plan: MealPlan) => { setQueuedItems((prev) => [...prev, ...plan.items.map(({ food, amount }, index) => ({ key: `${plan.id}-${index}-${Date.now()}`, food, amount, planId: plan.id }))]); plan.items.forEach(({ food }) => rememberFood(food)); }} />
 
           {/* Search + Barcode — immediately accessible without scrolling */}
           <div className="space-y-1">
@@ -780,6 +796,7 @@ export const AddFoodModal: React.FC = () => {
           )}
         </div>
       )}
+      {settings.inlineMealNotes && <div className="mt-4"><MealNoteField value={mealNote} onChange={(value) => setNoteDrafts((prev) => ({ ...prev, [noteKey]: value }))} /></div>}
     </Modal>
     <SaveBeforeCloseDialog
       open={confirmCloseOpen && isAddFoodOpen}

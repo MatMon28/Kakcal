@@ -8,6 +8,9 @@ import { AmountSelector } from '../common/AmountSelector';
 import { MacroPills } from '../common/MacroPills';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { MealNutrientTotals } from './MealNutrientTotals';
+import { PlannedMeals } from '../journal/MealPlanner';
+import { InlineMealNote, MealNoteAction } from '../journal/MealDiary';
+import { MealPhotoAction, MealPhotos } from '../journal/PhotoDiary';
 import { useMealSlots } from '../../utils/mealSlots';
 import {
   Coffee,
@@ -258,6 +261,8 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
           <div className="flex items-center gap-2.5 w-full">
             {slotBadge('size-9', 16)}
             <h4 className="min-w-0 flex-1 text-sm font-extrabold text-[var(--text)] truncate">{details.title}</h4>
+            <MealNoteAction date={activeDate} slot={slotId} />
+            <MealPhotoAction date={activeDate} slot={slotId} />
             {addButton('size-8', 16)}
             <ChevronDown
               size={16}
@@ -284,6 +289,10 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
           <div className={`${compact ? 'px-2.5' : 'px-4'} py-1.5 border-t border-[var(--border)] divide-y divide-[var(--border)]`}>
+            {compact && <div className="flex items-center justify-end py-1"><MealNoteAction date={activeDate} slot={slotId} /><MealPhotoAction date={activeDate} slot={slotId} /></div>}
+            <PlannedMeals date={activeDate} slot={slotId} />
+            <MealPhotos date={activeDate} slot={slotId} />
+            <InlineMealNote date={activeDate} slot={slotId} />
             {items.length === 0 && ultraMinimal ? (
               <div className="min-h-7" aria-hidden="true" />
             ) : items.length === 0 ? (

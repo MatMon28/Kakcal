@@ -1,0 +1,702 @@
+import { useEffect, useRef, useState } from 'react';
+import {
+  ArrowUpRight,
+  Camera,
+  Check,
+  ChevronLeft,
+  ChevronRight,
+  ImagePlus,
+  LockKeyhole,
+  Plus,
+  Search,
+  Trash2,
+  Upload,
+  X,
+} from 'lucide-react';
+import { useApp } from '../../context/AppContext';
+import { useJournalText } from '../../i18n/journal';
+import { useMealSlots } from '../../utils/mealSlots';
+import { journalId, removeMealPhoto, saveMealPhoto, useMealJournal } from '../../utils/journalStore';
+import type { MealSlotId } from '../../types';
+import type { MealPhoto } from '../../types/journal';
+import { Modal } from '../common/Modal';
+import { ConfirmDialog } from '../common/ConfirmDialog';
+import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './JournalUI';
+
+export function PhotoDiary() {
+  const { settings, selectedDate, language } = useApp();
+  const { photos } = useMealJournal();
+  const j = useJournalText();
+  const [add, setAdd] = useState(false);
+  const [browse, setBrowse] = useState(false);
+  const [selected, setSelected] = useState<string | null>(null);
+  if (!settings.photoDiary) return null;
+  const ordered = [...photos].sort(
+    (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
+  );
+  return (
+    <>
+      <JournalSection
+        tone="red"
+        className="journal-photo-diary"
+        title={j('Photo diary', 'Diario fotografico')}
+        subtitle={j('Your meals. A different kind of memory.', 'I tuoi pasti. Un altro modo di ricordare.')}
+        icon={<Camera size={21} />}
+        actions={
+          <>
+            <button
+              className="journal-icon-button"
+              type="button"
+              aria-label={j('Search photo diary', 'Cerca nel diario fotografico')}
+              onClick={() => setBrowse(true)}
+            >
+              <Search size={16} />
+            </button>
+            <button
+              className="journal-icon-button"
+              type="button"
+              aria-label={j('Add a meal photo', 'Aggiungi una foto')}
+              onClick={() => setAdd(true)}
+            >
+              <Plus size={19} />
+            </button>
+          </>
+        }
+      >
+        <div className="journal-photo-grid">
+          {ordered.slice(0, 3).map((photo) => (
+            <button
+              className="journal-photo-preview"
+              key={photo.id}
+              type="button"
+              onClick={() => setSelected(photo.id)}
+            >
+              <span>
+                <img src={photo.src} alt={photo.note} loading="lazy" />
+              </span>
+              <strong>{photo.note}</strong>
+              <small>{journalDate(photo.date, language)}</small>
+            </button>
+          ))}
+          {!ordered.length && (
+            <button className="journal-photo-empty" type="button" onClick={() => setAdd(true)}>
+              <ImagePlus size={30} />
+              <strong>{j('Start with a snapshot', 'Inizia con una foto')}</strong>
+              <span>{j('A good meal is more than a number.', 'Un buon pasto e piu di un numero.')}</span>
+            </button>
+          )}
+        </div>
+        <div className="journal-section-footer">
+          <span className="journal-private-label">
+            <LockKeyhole size={12} />
+            {j('Just for you', 'Solo per te')}
+          </span>
+          <button type="button" onClick={() => setBrowse(true)}>
+            {j('View all photos', 'Tutte le foto')}
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
+      </JournalSection>
+      {add && <PhotoComposer initialDate={selectedDate} onClose={() => setAdd(false)} />}
+      {browse && <PhotoBrowser onClose={() => setBrowse(false)} />}
+      {selected && <PhotoViewer photos={ordered} selectedId={selected} onClose={() => setSelected(null)} />}
+    </>
+  );
+}
+
+export function MealPhotoAction({ date, slot }: { date: string; slot: MealSlotId }) {
+  const { settings } = useApp();
+  const j = useJournalText();
+  const [open, setOpen] = useState(false);
+  if (!settings.photoDiary) return null;
+  return (
+    <>
+      <button
+        type="button"
+        className="journal-icon-button journal-meal-camera"
+        aria-label={j('Photograph this meal', 'Fotografa questo pasto')}
+        title={j('Photograph this meal', 'Fotografa questo pasto')}
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen(true);
+        }}
+      >
+        <Camera size={16} />
+      </button>
+      {open && <PhotoComposer initialDate={date} initialSlot={slot} onClose={() => setOpen(false)} />}
+    </>
+  );
+}
+
+export function MealPhotos({ date, slot }: { date: string; slot: MealSlotId }) {
+  const { settings } = useApp();
+  const { photos } = useMealJournal();
+  const [selected, setSelected] = useState<string | null>(null);
+  const matching = photos.filter((p) => p.date === date && p.slot === slot && !p.linkedId);
+  if (!settings.photoDiary || !matching.length) return null;
+  return (
+    <>
+      <div className="journal-meal-photos">
+        {matching.map((p) => (
+          <button type="button" key={p.id} onClick={() => setSelected(p.id)}>
+            <img src={p.src} alt="" />
+            <span>{p.note}</span>
+            <ChevronRight size={14} />
+          </button>
+        ))}
+      </div>
+      {selected && <PhotoViewer photos={matching} selectedId={selected} onClose={() => setSelected(null)} />}
+    </>
+  );
+}
+
+export function LibraryPhoto({
+  linkedId,
+  title,
+  slot = 'lunch',
+}: {
+  linkedId: string;
+  title: string;
+  slot?: MealSlotId;
+}) {
+  const { settings, selectedDate, language } = useApp();
+  const { photos } = useMealJournal();
+  const j = useJournalText();
+  const [add, setAdd] = useState(false);
+  const [view, setView] = useState(false);
+  if (!settings.photoDiary) return null;
+  const matching = photos.filter((p) => p.linkedId === linkedId);
+  return (
+    <div className="journal-library-photo">
+      {matching.length ? (
+        <button type="button" onClick={() => setView(true)}>
+          <img src={matching[0].src} alt={matching[0].note} />
+          <span>
+            <Camera size={13} />
+            {j('View photo', 'Vedi foto')}
+          </span>
+        </button>
+      ) : (
+        <button type="button" className="journal-attach-photo" onClick={() => setAdd(true)}>
+          <Camera size={13} />
+          {j('Add a photo', 'Aggiungi una foto')}
+        </button>
+      )}
+      {add && (
+        <PhotoComposer
+          initialDate={selectedDate}
+          initialSlot={slot}
+          linkedId={linkedId}
+          initialNote={`${title}, ${journalDate(selectedDate, language, { day: 'numeric', month: 'short', year: 'numeric' })}`}
+          onClose={() => setAdd(false)}
+        />
+      )}
+      {view && <PhotoViewer photos={matching} selectedId={matching[0].id} onClose={() => setView(false)} />}
+    </div>
+  );
+}
+
+async function imageData(file: File): Promise<string> {
+  if (!file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.size > 25 * 1024 * 1024)
+    throw new Error('image');
+  const url = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    const scale = Math.min(1, 1200 / Math.max(image.naturalWidth, image.naturalHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+    const context = canvas.getContext('2d');
+    if (!context) throw new Error('canvas');
+    context.fillStyle = '#ffffff';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    let quality = 0.8,
+      data = canvas.toDataURL('image/jpeg', quality);
+    while (data.length > 350000 && quality > 0.35) {
+      quality -= 0.1;
+      data = canvas.toDataURL('image/jpeg', quality);
+    }
+    return data;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function PhotoComposer({
+  initialDate,
+  initialSlot = 'lunch',
+  linkedId,
+  initialNote = '',
+  onClose,
+}: {
+  initialDate: string;
+  initialSlot?: MealSlotId;
+  linkedId?: string;
+  initialNote?: string;
+  onClose: () => void;
+}) {
+  const { language } = useApp();
+  const { options, label } = useMealSlots();
+  const j = useJournalText();
+  const [date, setDate] = useState(initialDate);
+  const [slot, setSlot] = useState(initialSlot);
+  const [note, setNote] = useState(initialNote);
+  const [src, setSrc] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const cameraRef = useRef<HTMLVideoElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const nativeCameraRef = useRef<HTMLInputElement>(null);
+  const mounted = useRef(true);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+    };
+  }, []);
+  useEffect(() => {
+    if (stream && cameraRef.current) cameraRef.current.srcObject = stream;
+    return () => stream?.getTracks().forEach((track) => track.stop());
+  }, [stream]);
+  const choose = async (file?: File) => {
+    if (!file) return;
+    setBusy(true);
+    setError('');
+    try {
+      const result = await imageData(file);
+      if (mounted.current) setSrc(result);
+    } catch {
+      if (mounted.current)
+        setError(
+          j(
+            'Choose a supported image under 25 MB (JPG, PNG or WebP).',
+            "Scegli un'immagine JPG, PNG o WebP sotto 25 MB.",
+          ),
+        );
+    } finally {
+      if (mounted.current) setBusy(false);
+    }
+  };
+  const startCamera = async () => {
+    if (!navigator.mediaDevices?.getUserMedia || /Android|iPhone|iPad/i.test(navigator.userAgent)) {
+      nativeCameraRef.current?.click();
+      return;
+    }
+    try {
+      const media = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' },
+        audio: false,
+      });
+      if (!mounted.current) {
+        media.getTracks().forEach((t) => t.stop());
+        return;
+      }
+      setStream(media);
+      setError('');
+    } catch {
+      setError(
+        j(
+          'Camera access is unavailable. Allow camera permission or choose a photo instead.',
+          "Fotocamera non disponibile. Consenti l'accesso o scegli una foto.",
+        ),
+      );
+    }
+  };
+  const capture = () => {
+    const video = cameraRef.current;
+    if (!video?.videoWidth) return;
+    const scale = Math.min(1, 1200 / Math.max(video.videoWidth, video.videoHeight));
+    const canvas = document.createElement('canvas');
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    setSrc(canvas.toDataURL('image/jpeg', 0.75));
+    setStream(null);
+  };
+  const defaultNote = `${label(slot)}, ${journalDate(date, language, { day: 'numeric', month: 'short', year: 'numeric' })}`;
+  return (
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={j('A meal to remember', 'Un pasto da ricordare')}
+      subtitle={j('Capture the moment, not just the macros.', 'Ricorda il momento, non solo i nutrienti.')}
+      maxWidth="max-w-lg"
+    >
+      <form
+        className="journal-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!src || !date || busy) return;
+          try {
+            saveMealPhoto({
+              id: journalId(),
+              date,
+              slot,
+              src,
+              note: note.trim() || defaultNote,
+              linkedId,
+              createdAt: new Date().toISOString(),
+            });
+            onClose();
+          } catch {
+            setError(
+              j(
+                'Your device storage is full. Export a backup, then remove older photos and try again.',
+                'Memoria piena. Esporta un backup, rimuovi vecchie foto e riprova.',
+              ),
+            );
+          }
+        }}
+      >
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          aria-label={j('Choose meal photo', 'Scegli foto del pasto')}
+          onChange={(e) => {
+            void choose(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
+        <input
+          ref={nativeCameraRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          className="sr-only"
+          aria-label={j('Take meal photo', 'Scatta foto del pasto')}
+          onChange={(e) => {
+            void choose(e.target.files?.[0]);
+            e.target.value = '';
+          }}
+        />
+        {stream ? (
+          <div className="journal-camera-preview">
+            <video ref={cameraRef} autoPlay playsInline muted />
+            <div>
+              <button type="button" className="journal-secondary-button" onClick={() => setStream(null)}>
+                <X size={16} />
+                {j('Cancel', 'Annulla')}
+              </button>
+              <button type="button" className="journal-primary-button" onClick={capture}>
+                <Camera size={17} />
+                {j('Capture', 'Scatta')}
+              </button>
+            </div>
+          </div>
+        ) : src ? (
+          <div className="journal-photo-selected">
+            <img src={src} alt={j('Meal photo preview', 'Anteprima foto del pasto')} />
+            <button type="button" className="journal-secondary-button" onClick={() => setSrc('')}>
+              {j('Choose another', "Scegli un'altra foto")}
+            </button>
+          </div>
+        ) : (
+          <div className="journal-photo-dropzone">
+            <span>
+              <Camera size={30} />
+            </span>
+            <h3>
+              {busy
+                ? j('Getting your photo ready...', 'Preparazione della foto...')
+                : j("What's on your plate?", "Cosa c'e nel tuo piatto?")}
+            </h3>
+            <p>
+              {j('A little snapshot of your food story.', 'Un piccolo ricordo della tua storia a tavola.')}
+            </p>
+            <div>
+              <button
+                disabled={busy}
+                type="button"
+                className="journal-primary-button"
+                onClick={() => void startCamera()}
+              >
+                <Camera size={16} />
+                {j('Take a photo', 'Scatta una foto')}
+              </button>
+              <button
+                disabled={busy}
+                type="button"
+                className="journal-secondary-button"
+                onClick={() => fileRef.current?.click()}
+              >
+                <Upload size={15} />
+                {j('Choose photo', 'Scegli foto')}
+              </button>
+            </div>
+          </div>
+        )}
+        <div className="journal-form-columns">
+          <label>
+            {j('Date', 'Data')}
+            <input required type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+          </label>
+          <label>
+            {j('Meal', 'Pasto')}
+            <select value={slot} onChange={(e) => setSlot(e.target.value as MealSlotId)}>
+              {options.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <label>
+          {j('A little note (optional)', 'Una nota (facoltativa)')}
+          <textarea
+            rows={2}
+            value={note}
+            maxLength={1000}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder={defaultNote}
+          />
+          <small>
+            {j(
+              'Leave it blank to use the meal name and date.',
+              'Lascia vuoto per usare il nome del pasto e la data.',
+            )}
+          </small>
+        </label>
+        {error && (
+          <p role="alert" className="journal-error">
+            {error}
+          </p>
+        )}
+        <div className="journal-form-actions">
+          <span className="journal-private-label">
+            <LockKeyhole size={13} />
+            {j('Saved on this device only', 'Salvata solo su questo dispositivo')}
+          </span>
+          <button type="submit" className="journal-primary-button" disabled={!src || busy || !date}>
+            <Check size={17} />
+            {j('Save photo', 'Salva foto')}
+          </button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function PhotoBrowser({ onClose }: { onClose: () => void }) {
+  const { photos } = useMealJournal();
+  const { options } = useMealSlots();
+  const { language, selectedDate } = useApp();
+  const j = useJournalText();
+  const [query, setQuery] = useState('');
+  const [slot, setSlot] = useState('');
+  const [date, setDate] = useState('');
+  const [selected, setSelected] = useState<string | null>(null);
+  const [add, setAdd] = useState(false);
+  const matching = photos
+    .filter(
+      (p) =>
+        p.note.toLowerCase().includes(query.toLowerCase()) &&
+        (!slot || p.slot === slot) &&
+        (!date || p.date === date),
+    )
+    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  return (
+    <>
+      <Modal
+        isOpen
+        onClose={onClose}
+        title={j('Your photo diary', 'Il tuo diario fotografico')}
+        subtitle={j('Little moments, one meal at a time.', 'Piccoli momenti, un pasto alla volta.')}
+        maxWidth="max-w-3xl"
+      >
+        <div className="journal-form">
+          <div className="journal-gallery-search">
+            <JournalSearch
+              value={query}
+              onChange={setQuery}
+              placeholder={j('Find a photo by its note...', 'Cerca una foto dalla sua nota...')}
+            />
+            <button type="button" className="journal-primary-button" onClick={() => setAdd(true)}>
+              <Plus size={16} />
+              {j('Add photo', 'Aggiungi foto')}
+            </button>
+          </div>
+          <div className="journal-form-columns">
+            <label>
+              {j('Meal', 'Pasto')}
+              <select value={slot} onChange={(e) => setSlot(e.target.value)}>
+                <option value="">{j('All meals', 'Tutti i pasti')}</option>
+                {options.map((o) => (
+                  <option key={o.id} value={o.id}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              {j('Date', 'Data')}
+              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            </label>
+          </div>
+          <div className="journal-full-photo-grid">
+            {matching.map((photo) => (
+              <button
+                type="button"
+                className="journal-photo-preview"
+                key={photo.id}
+                onClick={() => setSelected(photo.id)}
+              >
+                <span>
+                  <img src={photo.src} alt={photo.note} loading="lazy" />
+                </span>
+                <strong>{photo.note}</strong>
+                <small>{journalDate(photo.date, language)}</small>
+              </button>
+            ))}
+          </div>
+          {!matching.length && (
+            <JournalEmpty>
+              {j(
+                'No snapshots here yet. Try another search or add a photo.',
+                "Nessuna foto. Prova un'altra ricerca o aggiungi una foto.",
+              )}
+            </JournalEmpty>
+          )}
+        </div>
+      </Modal>
+      {selected && <PhotoViewer photos={matching} selectedId={selected} onClose={() => setSelected(null)} />}
+      {add && <PhotoComposer initialDate={selectedDate} onClose={() => setAdd(false)} />}
+    </>
+  );
+}
+
+function PhotoViewer({
+  photos,
+  selectedId,
+  onClose,
+}: {
+  photos: MealPhoto[];
+  selectedId: string;
+  onClose: () => void;
+}) {
+  const [id, setId] = useState(selectedId);
+  const index = photos.findIndex((p) => p.id === id);
+  const photo = photos[index];
+  const { language } = useApp();
+  const { label } = useMealSlots();
+  const j = useJournalText();
+  const [note, setNote] = useState(photo?.note || '');
+  const [saved, setSaved] = useState(false);
+  const [confirm, setConfirm] = useState(false);
+  const [error, setError] = useState('');
+  useEffect(() => {
+    setNote(photo?.note || '');
+    setSaved(false);
+  }, [id, photo?.note]);
+  useEffect(() => {
+    setId(selectedId);
+  }, [selectedId]);
+  useEffect(() => {
+    const key = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).matches('input,textarea,select')) return;
+      if (e.key === 'ArrowRight' && photos[index + 1]) setId(photos[index + 1].id);
+      if (e.key === 'ArrowLeft' && photos[index - 1]) setId(photos[index - 1].id);
+    };
+    document.addEventListener('keydown', key);
+    return () => document.removeEventListener('keydown', key);
+  }, [photos, index]);
+  if (!photo) return null;
+  return (
+    <>
+      <Modal
+        isOpen
+        onClose={onClose}
+        title={photo.note}
+        subtitle={`${label(photo.slot)}, ${journalDate(photo.date, language, { day: 'numeric', month: 'long', year: 'numeric' })}`}
+        maxWidth="max-w-2xl"
+      >
+        <div className="journal-form">
+          <div className="journal-lightbox">
+            <img src={photo.src} alt={photo.note} />
+            {photos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="journal-photo-prev"
+                  disabled={index <= 0}
+                  aria-label={j('Previous photo', 'Foto precedente')}
+                  onClick={() => setId(photos[index - 1].id)}
+                >
+                  <ChevronLeft size={20} />
+                </button>
+                <button
+                  type="button"
+                  className="journal-photo-next"
+                  disabled={index >= photos.length - 1}
+                  aria-label={j('Next photo', 'Foto successiva')}
+                  onClick={() => setId(photos[index + 1].id)}
+                >
+                  <ChevronRight size={20} />
+                </button>
+              </>
+            )}
+          </div>
+          <label>
+            {j('Photo note', 'Nota della foto')}
+            <textarea
+              value={note}
+              maxLength={1000}
+              rows={2}
+              onChange={(e) => {
+                setNote(e.target.value);
+                setSaved(false);
+              }}
+            />
+          </label>
+          {error && (
+            <p role="alert" className="journal-error">
+              {error}
+            </p>
+          )}
+          <div className="journal-form-actions">
+            <button type="button" className="journal-danger-button" onClick={() => setConfirm(true)}>
+              <Trash2 size={15} />
+              {j('Delete photo', 'Elimina foto')}
+            </button>
+            <button
+              type="button"
+              className="journal-primary-button"
+              onClick={() => {
+                try {
+                  saveMealPhoto({
+                    ...photo,
+                    note: note.trim() || `${label(photo.slot)}, ${journalDate(photo.date, language)}`,
+                  });
+                  setSaved(true);
+                } catch {
+                  setError(j('Not enough storage to save this change.', 'Spazio insufficiente per salvare.'));
+                }
+              }}
+            >
+              <Check size={16} />
+              {saved ? j('Saved', 'Salvato') : j('Save note', 'Salva nota')}
+            </button>
+          </div>
+        </div>
+      </Modal>
+      <ConfirmDialog
+        open={confirm}
+        message={j(
+          'Delete this photo from your device? This cannot be undone.',
+          'Eliminare la foto dal dispositivo? Non puoi annullare questa azione.',
+        )}
+        onCancel={() => setConfirm(false)}
+        onConfirm={() => {
+          removeMealPhoto(photo.id);
+          onClose();
+        }}
+      />
+    </>
+  );
+}

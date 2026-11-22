@@ -40,6 +40,7 @@ import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
 import { exportLayout, importLayout } from '../utils/layoutStore';
+import { exportMealJournal, importMealJournal } from '../utils/journalStore';
 import { allMealItems } from '../utils/mealItems';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
@@ -994,7 +995,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Navigation tab (lifted so Settings can jump to the Foods database)
-  const [activeTab, setActiveTabState] = useState<ActiveTab>('today');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => new URLSearchParams(window.location.search).get('tab') === 'custom' ? 'prebuilt' : 'today');
   const lastMainTabRef = React.useRef<ActiveTab>('today');
   const setActiveTab = (tab: ActiveTab) => {
     setActiveTabState((prev) => {
@@ -1037,6 +1038,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           },
           hidePoop: Boolean(p.hidePoop),
           trackSugar: Boolean(p.trackSugar),
+          photoDiary: Boolean(p.photoDiary),
+          inlineMealNotes: Boolean(p.inlineMealNotes),
           hidePeriod: resolvedHidePeriod,
           hidePeriodCustomized: customized,
           quickFoods:
@@ -1072,6 +1075,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       quickAdd: { food: true, movement: true, water: true, poop: true, weight: true, custom: true },
       hidePoop: false,
       trackSugar: false,
+      photoDiary: false,
+      inlineMealNotes: false,
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
       quickFoods: DEFAULT_QUICK_FOODS,
@@ -1461,6 +1466,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       customActivities,
       advanced: exportAdvanced(), // goals/limits + body measures (Settings > Advanced)
       layout: exportLayout(), // advanced layout: field order/sizes/removed fields + added meal types
+      mealJournal: exportMealJournal(),
     };
     return JSON.stringify(data, null, 2);
   };
@@ -1511,6 +1517,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
       importAdvanced(data.advanced);
       importLayout(data.layout);
+      importMealJournal(data.mealJournal);
       if (data.periodData && typeof data.periodData === 'object') {
         try {
           savePeriodData(normalizePeriodData(data.periodData));
