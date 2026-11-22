@@ -9,45 +9,46 @@ interface MealNutrientTotalsProps {
   fiber: number;
   salt: number;
   sugar: number;
-  /** Compact arrangement: icon and number only. */
+  /** Compact arrangement: number only next to the icon, no unit. */
   compact?: boolean;
 }
 
 /**
- * Whole-meal fibre, salt and (when Track sugar is on) sugar, in grams. Shown at the top of an expanded meal on Today,
- * above the list of items (each item shows its own values below it). Same yellow nutrient fields as the Today totals.
+ * Whole-meal fibre, salt and (when Track sugar is on) sugar. They sit in the same area as the meal's carbs / protein /
+ * fat pills (directly under them in the header of the meal card, no dividing line) and show **only the icon and the
+ * number**, never the name. The unit (g) is added in the Normal layout and left out in Compact and Ultra minimal.
  *
- * Each field carries `data-nutrient`, the hook the theme CSS (`index.css`, "Secondary nutrients") uses to apply the
- * active theme's fibre colours, radius, border, shadow and clip-path. The icons use `currentColor`, so they follow the
- * theme's text colour on every style (the `[data-nutrient] *` rule makes children inherit it).
+ * Each pill carries `data-macro`, the hook the theme CSS (`index.css`, "Numeric Macro Pills") uses to apply the active
+ * style's pill colours, radius, border and clip-path, so they match the macro pills on every style. The icons use
+ * `currentColor`. The name stays available as `title` and `aria-label`.
  */
 export const MealNutrientTotals: React.FC<MealNutrientTotalsProps> = ({ fiber, salt, sugar, compact = false }) => {
   const { t, settings } = useApp();
   const values = { fiber, salt, sugar };
   const keys = (['fiber', 'salt', 'sugar'] as const).filter((key) => key !== 'sugar' || settings.trackSugar);
+  const showUnit = !compact && !settings.ultraMinimal;
 
   return (
     <div
       data-meal-totals
-      className={`grid ${keys.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-1.5 text-center tabular-nums`}
+      className={`grid ${keys.length === 3 ? 'grid-cols-3' : 'grid-cols-2'} gap-1.5 w-full min-w-0 text-center tabular-nums`}
     >
       {keys.map((key) => {
         const Icon = icons[key];
         const name = t.macros[key];
         return (
-          <div
+          <span
             key={key}
             data-meal-total={key}
-            data-nutrient={key}
-            role="group"
+            data-macro={key}
+            role="img"
             title={name}
             aria-label={`${name}: ${values[key]} g`}
-            className="bg-nutrient text-nutrient-ink min-w-0 rounded-xl px-1 py-1.5 flex items-center justify-center gap-1.5"
+            className="bg-nutrient text-nutrient-ink min-w-0 overflow-hidden rounded-lg px-1 py-1.5 flex items-center justify-center gap-1 text-[11px] font-extrabold leading-none whitespace-nowrap"
           >
-            <Icon size={15} aria-hidden="true" />
-            {!compact && <span className="truncate text-[10px] font-bold uppercase tracking-wider">{name}</span>}
-            <span className="whitespace-nowrap text-xs font-extrabold">{values[key]}g</span>
-          </div>
+            <Icon size={12} aria-hidden="true" className="shrink-0" />
+            <span>{values[key]}{showUnit && 'g'}</span>
+          </span>
         );
       })}
     </div>

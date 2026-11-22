@@ -29,6 +29,9 @@ export type DefaultMeasureId =
   | 'thighs'
   | 'calves';
 
+/** Limb measures are recorded for both sides. A paired measure `biceps` stores `biceps:left` and `biceps:right`. */
+export type BodySide = 'left' | 'right';
+
 /** The three buttons at the bottom of the Body page. */
 export type BodyGroup = 'upper' | 'lower' | 'custom';
 
@@ -58,5 +61,5 @@ export interface BodyEntry {
   value: number;
 }
 
-/** Measure id -> entries sorted by date (one entry per day). */
+/** Series key -> entries sorted by date (one entry per day). The key is the measure id, or `id:left` / `id:right` for paired measures. */
 export type BodyEntries = Record<string, BodyEntry[]>;

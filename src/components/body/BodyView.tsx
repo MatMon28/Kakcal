@@ -2,8 +2,8 @@ import React, { useMemo, useState } from 'react';
 import { CalendarDays, Ruler, User } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAdvancedText } from '../../i18n/advanced';
-import { BODY_GROUPS, entriesInRange, groupOfMeasure, isDefaultMeasure, useBodyEntries } from '../../utils/advancedStore';
-import type { BodyGroup } from '../../types/advanced';
+import { BODY_GROUPS, entriesInRange, groupOfMeasure, isDefaultMeasure, isPairedMeasure, seriesKeysOf, useBodyEntries } from '../../utils/advancedStore';
+import type { BodyEntry, BodyGroup, BodySide } from '../../types/advanced';
 import { formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { ActionDock, type DockAction } from '../common/ActionDock';
@@ -12,7 +12,7 @@ import { LayoutToolbar, PencilRow } from '../layout/LayoutToolbar';
 import { useLayoutText } from '../../i18n/layout';
 import { useLayout } from '../../utils/layoutStore';
 import { BodyPartIcon } from '../common/BodyPartIcon';
-import { BodyChart } from './BodyChart';
+import { BodyChart, type ChartSelection } from './BodyChart';
 import { BodyMeasureModal, useTrackedMeasures } from './BodyMeasureModal';
 
 type RangeKey = '3m' | '6m' | '1y' | 'custom';
@@ -36,20 +36,63 @@ const GROUP_TONE: Record<BodyGroup, string> = {
   custom: 'bg-[#E2D6FF] text-[#4D3582]',
 };
 
-/** One graph card. Own component so each card keeps its own selected point. */
+/** Legend mark of a side: same shape as its chart markers (circle for the first, diamond for the second). */
+const SideMark: React.FC<{ alt?: boolean }> = ({ alt }) => (
+  <svg width="10" height="10" viewBox="0 0 10 10" aria-hidden="true" className="shrink-0">
+    {alt
+      ? <rect x="2" y="2" width="6" height="6" transform="rotate(45 5 5)" fill="var(--weight-on-surface)" />
+      : <circle cx="5" cy="5" r="4" fill="var(--color-weight)" stroke="var(--color-weight-ink)" strokeWidth="1.4" />}
+  </svg>
+);
+
+/**
+ * One graph card. Own component so each card keeps its own selected point. Paired measures (biceps, forearms, thighs,
+ * calves) show the left and the right side together: two legend chips with the latest value of each side, and one
+ * chart with two lines.
+ */
 const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: string; to: string }> = ({ id, name, unit, from, to }) => {
   const { language, settings } = useApp();
   const text = useAdvancedText();
-  const all = useBodyEntries()[id];
-  const inRange = useMemo(() => entriesInRange(all, from, to), [all, from, to]);
-  const [picked, setPicked] = useState<number | null>(null);
-  const selected = picked !== null && inRange[picked] ? picked : inRange.length - 1;
-  const point = inRange[selected];
-  const latest = all?.[all.length - 1];
-  const delta = inRange.length >= 2 ? Math.round((inRange[inRange.length - 1].value - inRange[0].value) * 10) / 10 : 0;
+  const allEntries = useBodyEntries();
+  const paired = isPairedMeasure(id);
+  const sideName = (side: BodySide | null) => (side ? text.side[side] : '');
+  const sideShort = (side: BodySide | null) => (side ? text.side[side === 'left' ? 'leftShort' : 'rightShort'] : '');
+
+  const sides = useMemo(
+    () => seriesKeysOf(id).map(({ side, key }, index) => {
+      const all = allEntries[key];
+      return { id: side ?? 'value', side, alt: index === 1, all, inRange: entriesInRange(all, from, to) };
+    }),
+    [id, allEntries, from, to],
+  );
+  const [picked, setPicked] = useState<ChartSelection | null>(null);
+
+  // Default selection: the most recent point of the period (of either side).
+  const latestInRange = sides.reduce<ChartSelection | null>((best, s) => {
+    if (!s.inRange.length) return best;
+    const index = s.inRange.length - 1;
+    const bestDate = best ? sides.find((x) => x.id === best.series)!.inRange[best.index].date : '';
+    return !best || s.inRange[index].date > bestDate ? { series: s.id, index } : best;
+  }, null);
+  const pickedSeries = picked ? sides.find((s) => s.id === picked.series) : undefined;
+  const selected = picked && pickedSeries?.inRange[picked.index] ? picked : latestInRange;
+  const selectedSeries = selected ? sides.find((s) => s.id === selected.series)! : null;
+  const point = selected && selectedSeries ? selectedSeries.inRange[selected.index] : null;
+  const hasRange = sides.some((s) => s.inRange.length > 0);
+  const hasAny = sides.some((s) => s.all?.length);
   const ultra = settings.ultraMinimal;
-  const label = (e: { date: string; value: number }) =>
-    text.body.pointLabel.replace('{date}', formatDateDisplay(e.date, language)).replace('{value}', `${e.value} ${unit}`);
+
+  const deltaOf = (list: BodyEntry[]) => (list.length >= 2 ? Math.round((list[list.length - 1].value - list[0].value) * 10) / 10 : 0);
+  const latestOf = (s: (typeof sides)[number]) => s.all?.[s.all.length - 1];
+  const label = (e: BodyEntry, seriesId: string) => {
+    const side = sides.find((s) => s.id === seriesId)?.side ?? null;
+    return `${side ? `${sideName(side)} · ` : ''}${text.body.pointLabel.replace('{date}', formatDateDisplay(e.date, language)).replace('{value}', `${e.value} ${unit}`)}`;
+  };
+  const deltaChip = (delta: number) => delta !== 0 && (
+    <span title={text.body.change} className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
+      {delta > 0 ? `+${delta}` : delta}
+    </span>
+  );
 
   return (
     <section aria-label={name} className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5" data-measure={id}>
@@ -60,29 +103,64 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
           </span>
           <span className={`text-sm font-extrabold text-[var(--text)] truncate ${ultra ? 'sr-only' : ''}`}>{name}</span>
         </span>
-        <span className="flex items-center gap-2 tabular-nums shrink-0">
-          {delta !== 0 && (
-            <span title={text.body.change} className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
-              {delta > 0 ? `+${delta}` : delta}
+        {!paired && (
+          <span className="flex items-center gap-2 tabular-nums shrink-0">
+            {deltaChip(deltaOf(sides[0].inRange))}
+            <span className="text-base font-extrabold text-[var(--weight-on-surface)]">
+              {latestOf(sides[0]) ? `${latestOf(sides[0])!.value} ${unit}` : '–'}
             </span>
-          )}
-          <span className="text-base font-extrabold text-[var(--weight-on-surface)]">
-            {latest ? `${latest.value} ${unit}` : '–'}
           </span>
-        </span>
+        )}
       </div>
 
-      {inRange.length === 0 ? (
+      {/* Left and right side: one chip each, with the latest value and the change over the period. */}
+      {paired && (
+        <div className="mt-3 grid grid-cols-2 gap-2 tabular-nums" data-sides>
+          {sides.map((s) => {
+            const latest = latestOf(s);
+            return (
+              <div
+                key={s.id}
+                data-side={s.side}
+                title={sideName(s.side)}
+                aria-label={`${sideName(s.side)}: ${latest ? `${latest.value} ${unit}` : text.body.noDataYet}`}
+                className="flex items-center justify-between gap-1.5 rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-2.5 py-1.5 min-w-0"
+              >
+                <span className="flex items-center gap-1.5 min-w-0 text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
+                  <SideMark alt={s.alt} />
+                  <span className="truncate">{ultra ? sideShort(s.side) : sideName(s.side)}</span>
+                </span>
+                <span className="flex items-center gap-1.5 shrink-0">
+                  {deltaChip(deltaOf(s.inRange))}
+                  <span className="text-sm font-extrabold text-[var(--weight-on-surface)]">{latest ? `${latest.value} ${unit}` : '–'}</span>
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {!hasRange || !point || !selected ? (
         <p className="py-6 text-center text-xs font-bold text-[var(--muted)]">
-          {all?.length ? text.body.noData : text.body.noDataYet}
+          {hasAny ? text.body.noData : text.body.noDataYet}
         </p>
       ) : (
         <div className="pt-3 space-y-1.5">
           <div className="flex items-center justify-between gap-2 text-xs font-bold tabular-nums px-1" aria-live="polite">
-            <span className="text-[var(--muted)]">{formatDateDisplay(point.date, language)}</span>
+            <span className="text-[var(--muted)]">
+              {formatDateDisplay(point.date, language)}
+              {selectedSeries?.side && ` · ${sideName(selectedSeries.side)}`}
+            </span>
             <span className="text-[var(--weight-on-surface)] font-extrabold">{point.value} {unit}</span>
           </div>
-          <BodyChart entries={inRange} from={from} to={to} label={label} selected={selected} onSelect={setPicked} />
+          <BodyChart
+            series={sides.map((s) => ({ id: s.id, entries: s.inRange, alt: s.alt }))}
+            from={from}
+            to={to}
+            label={label}
+            selected={selected}
+            onSelect={setPicked}
+          />
           <div className="flex justify-between px-1 text-[10px] font-bold text-[var(--muted)]">
             <span>{formatDateDisplay(from, language)}</span>
             <span>{formatDateDisplay(to, language)}</span>

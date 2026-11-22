@@ -36,6 +36,7 @@ const advancedText = {
       thighs: 'Thighs',
       calves: 'Calves',
     },
+    side: { left: 'Left', right: 'Right', leftShort: 'L', rightShort: 'R', both: 'Left and right', choose: 'Side' },
     group: { upper: 'Upper body', lower: 'Lower body', custom: 'Custom' },
     body: {
       pageTitle: 'Body measurements',
@@ -112,6 +113,7 @@ const advancedText = {
       thighs: 'Cosce',
       calves: 'Polpacci',
     },
+    side: { left: 'Lato sinistro', right: 'Lato destro', leftShort: 'Sx', rightShort: 'Dx', both: 'Sinistro e destro', choose: 'Lato' },
     group: { upper: 'Parte superiore', lower: 'Parte inferiore', custom: 'Personalizzate' },
     body: {
       pageTitle: 'Misure corporee',

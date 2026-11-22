@@ -1491,6 +1491,8 @@ html[data-style]:not([data-style="classic"]) [data-macro="fat"] {
   border-radius: var(--pill-radius, 8px) !important;
   clip-path: var(--clip-xs, none);
 }
+html[data-style]:not([data-style="classic"]) [data-macro="fiber"],
+html[data-style]:not([data-style="classic"]) [data-macro="salt"],
 html[data-style]:not([data-style="classic"]) [data-macro="sugar"] {
   background: var(--fiber-bg) !important;
   color: var(--fiber-text) !important;

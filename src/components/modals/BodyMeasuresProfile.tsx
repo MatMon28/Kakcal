@@ -4,6 +4,7 @@ import { useAdvancedText } from '../../i18n/advanced';
 import {
   addCustomMeasure,
   DEFAULT_MEASURES,
+  isPairedMeasure,
   removeCustomMeasure,
   toggleTrackedMeasure,
   useAdvanced,
@@ -25,7 +26,7 @@ export const BodyMeasuresProfile: React.FC = () => {
 
   if (!body.enabled) return null;
 
-  const tile = (id: string, label: string, icon: React.ReactNode) => {
+  const tile = (id: string, label: string, icon: React.ReactNode, paired = false) => {
     const on = body.tracked.includes(id);
     return (
       <button
@@ -41,6 +42,11 @@ export const BodyMeasuresProfile: React.FC = () => {
       >
         <span className="shrink-0">{icon}</span>
         <span className="flex-1 min-w-0 truncate text-xs font-extrabold">{label}</span>
+        {paired && (
+          <span title={text.side.both} aria-label={text.side.both} className="shrink-0 rounded-full bg-black/10 px-1.5 py-0.5 text-[9px] font-extrabold leading-none">
+            {text.side.leftShort}·{text.side.rightShort}
+          </span>
+        )}
         {on && <Check size={14} strokeWidth={3} className="shrink-0" aria-hidden="true" />}
       </button>
     );
@@ -61,7 +67,7 @@ export const BodyMeasuresProfile: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-2 gap-1.5">
-        {DEFAULT_MEASURES.map(({ id }) => tile(id, text.measure[id], <BodyPartIcon id={id} size={22} />))}
+        {DEFAULT_MEASURES.map(({ id }) => tile(id, text.measure[id], <BodyPartIcon id={id} size={22} />, isPairedMeasure(id)))}
       </div>
 
       {body.custom.length > 0 && (

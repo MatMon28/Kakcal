@@ -165,6 +165,14 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
     />
   );
 
+  // Fibre, salt and sugar of the whole meal live in the same area as the macros (right under them, icon + number only).
+  const macroArea = (
+    <div data-macro-area className="flex min-w-0 flex-1 w-full flex-col gap-1.5">
+      {macroPills}
+      <MealNutrientTotals fiber={slotMacros.fiberGrams} salt={slotMacros.saltGrams} sugar={slotMacros.sugarGrams} compact={compact} />
+    </div>
+  );
+
   const kcalLabel = (
     <span
       ref={kcalRef}
@@ -235,7 +243,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
               {!ultraMinimal && <p className="text-xs font-medium text-[var(--muted)]">{t.mealSlots.emptySlot}</p>}
             </div>
           ) : (
-            macroPills
+            macroArea
           )}
         </>
       ) : (
@@ -251,7 +259,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
           </div>
           <div ref={kcalRoom} data-nutrition-row className="relative flex items-center gap-3 w-full min-w-0">
             {kcalLabel}
-            {items.length > 0 ? macroPills : (
+            {items.length > 0 ? macroArea : (
               <span className="text-xs font-medium text-[var(--muted)]">{t.mealSlots.emptySlot}</span>
             )}
           </div>
@@ -285,10 +293,6 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
               </button>
             ) : (
               <>
-              {/* Whole-meal fibre, salt and sugar (the carbs / protein / fat of the meal are in the header). */}
-              <div className="py-2.5">
-                <MealNutrientTotals fiber={slotMacros.fiberGrams} salt={slotMacros.saltGrams} sugar={slotMacros.sugarGrams} compact={compact} />
-              </div>
               {items.map((item) => {
                 const isEditing = editingItemId === item.id;
                 const displayAmt = isEditing ? editAmount : item.amount;
@@ -317,13 +321,13 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
                         </span>
                         <span className="text-[11px] font-medium tabular-nums text-[var(--muted)]">
                           {displayAmt}
-                          {item.unit}
+                          {!ultraMinimal && item.unit}
                         </span>
                       </button>
 
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-xs sm:text-sm font-extrabold tabular-nums text-[var(--text)] mr-1" aria-label={`${itemKcal} kcal`} title={`${itemKcal} kcal`}>
-                          {itemKcal}{!compact && ' kcal'}
+                          {itemKcal}{!compact && !ultraMinimal && ' kcal'}
                         </span>
                         <button
                           type="button"
@@ -355,7 +359,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
 
                     {/* Every logged item shows its own carbs, protein, fat, fibre, salt (and sugar) for the portion eaten. */}
                     <div data-item-nutrition>
-                      <FoodMacroGrid food={item} amount={displayAmt} dense />
+                      <FoodMacroGrid food={item} amount={displayAmt} dense mode={ultraMinimal ? 'minimal' : 'portion'} />
                     </div>
 
                     {isEditing && (

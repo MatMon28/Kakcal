@@ -5,13 +5,16 @@ import { useAdvancedText } from '../../i18n/advanced';
 import {
   DEFAULT_MEASURES,
   groupOfMeasure,
+  BODY_SIDES,
   isDefaultMeasure,
+  isPairedMeasure,
   removeBodyEntry,
+  seriesKey,
   setBodyEntry,
   useAdvanced,
   useBodyEntries,
 } from '../../utils/advancedStore';
-import type { BodyGroup } from '../../types/advanced';
+import type { BodyGroup, BodySide } from '../../types/advanced';
 import { formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import { Modal } from '../common/Modal';
 import { NumericInput } from '../common/NumericInput';
@@ -21,6 +24,8 @@ interface MeasureInfo {
   id: string;
   name: string;
   unit: string;
+  /** Recorded for both sides (left and right). */
+  paired: boolean;
 }
 
 /** Tracked measures that belong to a group, in display order. */
@@ -28,8 +33,8 @@ export function useTrackedMeasures(group?: BodyGroup): MeasureInfo[] {
   const { body } = useAdvanced();
   const text = useAdvancedText();
   const all: MeasureInfo[] = [
-    ...DEFAULT_MEASURES.map(({ id }) => ({ id: id as string, name: text.measure[id], unit: 'cm' })),
-    ...body.custom.map((m) => ({ id: m.id, name: m.name, unit: m.unit })),
+    ...DEFAULT_MEASURES.map(({ id }) => ({ id: id as string, name: text.measure[id], unit: 'cm', paired: isPairedMeasure(id) })),
+    ...body.custom.map((m) => ({ id: m.id, name: m.name, unit: m.unit, paired: false })),
   ];
   return all.filter((m) => body.tracked.includes(m.id) && (!group || groupOfMeasure(m.id) === group));
 }
@@ -38,15 +43,31 @@ export function useTrackedMeasures(group?: BodyGroup): MeasureInfo[] {
 const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack: () => void }> = ({ measure, onSaved, onBack }) => {
   const { language } = useApp();
   const text = useAdvancedText();
-  const entries = useBodyEntries()[measure.id] ?? [];
-  const last = entries[entries.length - 1];
+  const all = useBodyEntries();
   const today = getTodayDateString();
-  const [value, setValue] = useState<number>(last?.value ?? 0);
+  const lastOf = (side?: BodySide) => {
+    const list = all[seriesKey(measure.id, side)] ?? [];
+    return list[list.length - 1];
+  };
+  // Paired measures: start on the side that has no value for today yet (left first).
+  const hasToday = (side: BodySide) => (all[seriesKey(measure.id, side)] ?? []).some((e) => e.date === today);
+  const [side, setSide] = useState<BodySide>(measure.paired && hasToday('left') && !hasToday('right') ? 'right' : 'left');
+  const activeSide = measure.paired ? side : undefined;
+  const key = seriesKey(measure.id, activeSide);
+  const entries = all[key] ?? [];
+  const last = entries[entries.length - 1];
+  const [value, setValue] = useState<number>(lastOf(activeSide)?.value ?? 0);
   const [date, setDate] = useState(today);
+  const sideName = (s: BodySide) => text.side[s];
+
+  const chooseSide = (next: BodySide) => {
+    setSide(next);
+    setValue(lastOf(next)?.value ?? 0);
+  };
 
   const save = () => {
     if (!(value > 0) || !date) return;
-    setBodyEntry(measure.id, date > today ? today : date, value);
+    setBodyEntry(key, date > today ? today : date, value);
     onSaved();
   };
 
@@ -72,6 +93,26 @@ const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack:
           </div>
         </div>
       </div>
+
+      {/* Left / right side of a paired measure (biceps, forearms, thighs, calves). */}
+      {measure.paired && (
+        <div role="group" aria-label={text.side.choose} className="grid grid-cols-2 gap-1 p-1 bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
+          {BODY_SIDES.map((s) => (
+            <button
+              key={s}
+              type="button"
+              aria-pressed={side === s}
+              data-side={s}
+              onClick={() => chooseSide(s)}
+              className={`pressable py-2 rounded-xl text-xs font-extrabold ${
+                side === s ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
+              }`}
+            >
+              {sideName(s)}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-2.5">
         <div>
@@ -112,7 +153,7 @@ const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack:
                   <span className="text-sm font-extrabold tabular-nums text-[var(--text)]">{entry.value} {measure.unit}</span>
                   <button
                     type="button"
-                    onClick={() => removeBodyEntry(measure.id, entry.date)}
+                    onClick={() => removeBodyEntry(key, entry.date)}
                     aria-label={`${text.body.remove}: ${formatDateDisplay(entry.date, language)}`}
                     title={text.body.remove}
                     className="pressable size-7 rounded-full text-[var(--muted)] hover:bg-[#F6D0D0] hover:text-[#7A2727] flex items-center justify-center"
@@ -163,8 +204,10 @@ export const BodyMeasureModal: React.FC<{ group: BodyGroup | null; onClose: () =
       ) : (
         <div className="grid grid-cols-2 gap-2">
           {measures.map((m) => {
-            const list = entries[m.id];
-            const last = list?.[list.length - 1];
+            const lastOf = (key: string) => entries[key]?.[entries[key].length - 1];
+            const last = lastOf(m.id);
+            const lastLeft = lastOf(seriesKey(m.id, 'left'));
+            const lastRight = lastOf(seriesKey(m.id, 'right'));
             return (
               <button
                 key={m.id}
@@ -177,7 +220,9 @@ export const BodyMeasureModal: React.FC<{ group: BodyGroup | null; onClose: () =
                 </span>
                 <span className="text-xs font-extrabold text-[var(--text)] max-w-full truncate">{m.name}</span>
                 <span className="text-[11px] font-bold tabular-nums text-[var(--muted)]">
-                  {last ? `${last.value} ${m.unit}` : '–'}
+                  {m.paired
+                    ? `${text.side.leftShort} ${lastLeft ? lastLeft.value : '–'} · ${text.side.rightShort} ${lastRight ? lastRight.value : '–'} ${m.unit}`
+                    : last ? `${last.value} ${m.unit}` : '–'}
                 </span>
                 {savedId === m.id && (
                   <span

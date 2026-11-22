@@ -4,6 +4,7 @@ import type {
   BodyEntries,
   BodyEntry,
   BodyGroup,
+  BodySide,
   CustomMeasure,
   DefaultMeasureId,
   GoalKey,
@@ -101,6 +102,16 @@ export const DEFAULT_MEASURES: { id: DefaultMeasureId; group: Exclude<BodyGroup,
 
 export const BODY_GROUPS: BodyGroup[] = ['upper', 'lower', 'custom'];
 
+/** Limbs that are measured on both sides (left and right). Torso measures and custom measures have one value. */
+export const PAIRED_MEASURES: readonly string[] = ['forearms', 'biceps', 'thighs', 'calves'];
+export const BODY_SIDES: BodySide[] = ['left', 'right'];
+export const isPairedMeasure = (id: string) => PAIRED_MEASURES.includes(id);
+/** Storage key of one series: the plain id for single measures, `id:left` / `id:right` for paired ones. */
+export const seriesKey = (id: string, side?: BodySide) => (isPairedMeasure(id) && side ? `${id}:${side}` : id);
+/** The series a measure is made of, in display order. */
+export const seriesKeysOf = (id: string): { side: BodySide | null; key: string }[] =>
+  isPairedMeasure(id) ? BODY_SIDES.map((side) => ({ side, key: seriesKey(id, side) })) : [{ side: null, key: id }];
+
 const DEFAULT_IDS = new Set<string>(DEFAULT_MEASURES.map((m) => m.id));
 
 export const isDefaultMeasure = (id: string): id is DefaultMeasureId => DEFAULT_IDS.has(id);
@@ -170,7 +181,18 @@ export function normalizeAdvanced(raw: unknown): AdvancedSettings {
 export function normalizeBodyEntries(raw: unknown): BodyEntries {
   const out: BodyEntries = {};
   if (!isObject(raw)) return out;
+  // Values saved before left / right existed (key `biceps`, no side) are kept as the right side; an explicit
+  // `biceps:right` series wins over them.
+  const source: Record<string, unknown> = {};
   for (const [id, list] of Object.entries(raw)) {
+    if (isPairedMeasure(id)) {
+      const right = `${id}:right`;
+      source[right] = Array.isArray(source[right]) || Array.isArray(raw[right]) ? raw[right] : list;
+    } else if (!(id in source)) {
+      source[id] = list;
+    }
+  }
+  for (const [id, list] of Object.entries(source)) {
     if (!Array.isArray(list)) continue;
     const byDate = new Map<string, number>();
     for (const item of list) {
