@@ -1,22 +1,18 @@
 import { useState } from 'react';
 import {
-  ArrowUpRight,
   BookOpen,
   CalendarDays,
   ChartNoAxesCombined,
-  ChefHat,
   CircleHelp,
   Droplet,
   Leaf,
   LockKeyhole,
   PersonStanding,
-  Plus,
   Settings,
   Sparkles,
   Sprout,
   Sun,
   User,
-  UtensilsCrossed,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
@@ -192,78 +188,5 @@ export function JournalChrome() {
         </Modal>
       )}
     </>
-  );
-}
-
-export function CustomPageHeading({
-  onMeal,
-  onRecipe,
-  onFood,
-}: {
-  onMeal: () => void;
-  onRecipe: () => void;
-  onFood: () => void;
-}) {
-  const { settings } = useApp();
-  const j = useJournalText();
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={`journal-custom-page-heading ${settings.ultraMinimal ? 'is-minimal' : ''}`}>
-      <div>
-        <h1>
-          {j('Custom', 'Personalizza')}
-          <span className="journal-heading-spark">
-            <Sparkles size={23} strokeWidth={1.5} />
-          </span>
-        </h1>
-        <p>
-          {j(
-            'Your favorites, your plans, your food story.',
-            'I tuoi preferiti, i tuoi programmi, la tua storia a tavola.',
-          )}
-        </p>
-      </div>
-      <div className="journal-create-menu">
-        <button
-          type="button"
-          className="journal-create-button"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-        >
-          <Plus size={17} />
-          {j('Create new', 'Crea nuovo')}
-        </button>
-        {open && (
-          <>
-            <button
-              type="button"
-              className="journal-menu-backdrop"
-              aria-label={j('Close create menu', 'Chiudi menu')}
-              onClick={() => setOpen(false)}
-            />
-            <div className="journal-menu-options">
-              {[
-                { label: j('Saved meal', 'Pasto salvato'), icon: UtensilsCrossed, action: onMeal },
-                { label: j('Recipe', 'Ricetta'), icon: ChefHat, action: onRecipe },
-                { label: j('Custom food', 'Alimento personalizzato'), icon: BookOpen, action: onFood },
-              ].map(({ label, icon: Icon, action }) => (
-                <button
-                  type="button"
-                  key={label}
-                  onClick={() => {
-                    setOpen(false);
-                    action();
-                  }}
-                >
-                  <Icon size={17} />
-                  {label}
-                  <ArrowUpRight size={14} />
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
   );
 }

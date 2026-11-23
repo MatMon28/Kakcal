@@ -46,9 +46,17 @@
 - All three journal sections render through `JournalSection` -> `LibrarySectionHeader` (`src/components/common/LibrarySectionHeader.tsx`, extracted from `PreBuiltMealsView.tsx`), with the same radius (24 px), padding, title/count/summary, transparent circle buttons, inline search and ultra-minimal behaviour as Meals, Recipes and Foods. The old footers ("A journal, not a judgement", "n planned this week") were removed; the only footer left is a full-width *See all* secondary button.
 - Search fields (`.journal-search`), chips (`JournalChip`), meal chips, segmented switch, secondary and primary buttons copy the app's `rounded-2xl` fields, Foods category chips, Foods > Log meal chips and `kc-primary-btn` styling (green in Classic, theme intake colours in the other styles).
 
+## Today-style meals (match round)
+
+- **One meal look.** The colourless slot icon of Today (`mealSlotIcon` in `common/mealSlotIcon.tsx`: coffee, apple, utensils, sun, crossed utensils, moon, soup for added meal types) is used by Today, the Meal diary and the Meal planner. The old tinted diary icon squares are gone.
+- **Previews.** A diary preview or planner row shows date, meal name and, *only if a note was written*, the note underneath (no food list; nothing otherwise). Plan rows show the plan's note the same way.
+- **Detail views.** Pressing a diary meal or a planned meal opens the shared read-only `MealSummaryCard` (`journal/MealSummaryCard.tsx`): the Today meal field expanded, with icon, name, kcal, carbs / protein / fat pills, fibre / salt / sugar and every food with its own macros. The diary detail adds the note editor, favourite star, *Log again* and *Save note*; the plan detail adds the plan note, a delete icon, *Edit* (opens the editor) and *Add to this meal*.
+- **Filters.** The Reset control of the diary filter interface is an icon (`RotateCcw`, label *Reset filters*).
+- **Today.** The *+ Log Food* row at the bottom of an empty meal is removed (the header **+**, the dock and Foods already log). In Compact, the note and photo icons are part of the header bar: shown next to **+** when they fit, otherwise only once the meal is expanded (no separate row inside the field). The fit is measured by `useExtrasFit` in `MealSlotCard.tsx`.
+
 ## Implementation files
 
-The existing mobile header, swipe navigation and creation dock are retained. At 1100 px and wider, a quiet sidebar / breadcrumb header replaces the mobile header; Custom uses two columns with the diary first, Meals / Recipes next, and Planner / Photo diary beneath. A Create new menu opens the existing editors. Theme colours, fonts, geometry and reduced-motion preferences are respected.
+The existing mobile header, swipe navigation and creation dock are retained. At 1100 px and wider, a quiet sidebar / breadcrumb header replaces the mobile header; Custom uses two columns with the diary first, Meals / Recipes next, and Planner / Photo diary beneath. The Custom page has no title block, tagline or *Create new* menu any more: it starts directly with the Meal diary, and every field creates through its own **+** (and the mobile dock). Theme colours, fonts, geometry and reduced-motion preferences are respected.
 
 The Custom creation dock is hidden on desktop only (including its portal); Today and the mobile dock are unaffected. Classic's two dark appearances use dark neutral inner diary/search rows, while keeping the established pastel section headers.
 
@@ -60,6 +68,7 @@ Desktop fields align at their own content height rather than stretching a short 
 | `src/utils/journalStore.ts` | Reactive local-first persistence, normalization, cross-tab updates and backup helpers. |
 | `src/i18n/journal.ts` | English/Italian copy selector for the journal additions. |
 | `src/components/journal/JournalUI.tsx` | Shared themed section (built on `LibrarySectionHeader`), header icon button, filter chip, search field, empty state and date formatter. |
+| `src/components/journal/MealSummaryCard.tsx` | Read-only Today-style meal card shared by the diary and planner detail views. |
 | `src/components/journal/MealPlanner.tsx` | Week browser with plan search, the plan editor (same-for-all / different-for-each, `EntryEditor`) and Today / food-batch suggestions. |
 | `src/components/common/LibrarySectionHeader.tsx` | The collapsible section header shared by Meals, Recipes, Foods and the journal sections. |
 | `src/components/journal/MealDiary.tsx` | Searchable/filterable meal history, favourites, notes, detail dialog and inline Today/logging controls. |

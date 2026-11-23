@@ -35,7 +35,6 @@ import { useJournalText } from '../../i18n/journal';
 import { MealDiary } from '../journal/MealDiary';
 import { MealPlanner } from '../journal/MealPlanner';
 import { LibraryPhoto, PhotoDiary } from '../journal/PhotoDiary';
-import { CustomPageHeading } from '../journal/JournalChrome';
 import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
 
 export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
@@ -429,7 +428,6 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
   return (
     <>
-    <CustomPageHeading onMeal={openNewMealModal} onRecipe={openRecipeModal} onFood={openCustomFood} />
     <div className={ultraMinimal ? 'journal-minimal-grid grid grid-cols-3 gap-2 sm:gap-3 items-start' : 'custom-library-grid'}>
       <MealDiary />
       {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}

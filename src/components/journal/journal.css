@@ -3,87 +3,6 @@
 .journal-desktop-topbar {
   display: none;
 }
-.journal-custom-page-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  margin: 6px 0 27px;
-}
-.journal-custom-page-heading h1 {
-  display: flex;
-  align-items: center;
-  gap: 13px;
-  font-size: 34px;
-  line-height: 1.3;
-  font-weight: 750;
-  letter-spacing: -1.5px;
-}
-.journal-custom-page-heading p {
-  color: var(--muted);
-  font-size: 12px;
-  margin-top: 7px;
-}
-.journal-heading-spark {
-  color: #b19055;
-  margin-top: 4px;
-}
-.journal-create-menu {
-  position: relative;
-  flex-shrink: 0;
-}
-.journal-create-button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--text);
-  color: var(--on-text);
-  padding: 12px 17px;
-  border-radius: var(--pill-radius, 11px);
-  font-size: 12px;
-  font-weight: 650;
-  transition:
-    transform 160ms,
-    opacity 160ms;
-}
-.journal-create-button:hover {
-  transform: translateY(-2px);
-  opacity: 0.9;
-}
-.journal-menu-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 45;
-  cursor: default;
-}
-.journal-menu-options {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  width: 220px;
-  padding: 7px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 10px 40px #00000015;
-  z-index: 46;
-  animation: journal-arrive 0.18s ease-out;
-}
-.journal-menu-options button {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  width: 100%;
-  padding: 12px 10px;
-  font-size: 12px;
-  border-radius: 8px;
-}
-.journal-menu-options button:hover {
-  background: var(--inset);
-}
-.journal-menu-options button svg:last-child {
-  margin-left: auto;
-}
 .custom-library-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -217,21 +136,9 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  background: #ece1cc;
-  border-radius: var(--micro-radius, 10px);
+  background: transparent;
+  color: inherit;
   flex-shrink: 0;
-}
-.journal-meal-symbol.is-breakfast {
-  background: #f5e7ca;
-  color: #8b663b;
-}
-.journal-meal-symbol.is-lunch {
-  background: #e2eacb;
-  color: #5c7040;
-}
-.journal-meal-symbol.is-dinner {
-  background: #e7ddf3;
-  color: #725189;
 }
 .journal-meal-preview > span:nth-child(2) {
   display: flex;
@@ -371,15 +278,34 @@
 }
 .journal-plan-row-icon {
   display: flex;
-  padding: 3px;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: transparent;
 }
 .journal-plan-row > span:nth-child(2) {
+  display: flex;
+  flex-direction: column;
   flex: 1;
   min-width: 0;
 }
-.journal-plan-row small,
+.journal-plan-row small {
+  font-size: 9px;
+  opacity: 0.65;
+}
 .journal-plan-row strong {
-  display: block;
+  font-size: 12px;
+  font-weight: 750;
+  margin: 3px 0;
+}
+.journal-plan-row-note {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  opacity: 0.65;
 }
 .journal-plan-row small {
   font-size: 9px;
@@ -686,10 +612,21 @@
   gap: 18px;
 }
 .journal-reset-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
   margin-left: auto;
-  font-size: 11px;
+  border-radius: 999px;
   color: var(--muted);
-  text-decoration: underline;
+  transition:
+    background 150ms,
+    color 150ms;
+}
+.journal-reset-button:hover {
+  background: var(--inset);
+  color: var(--text);
 }
 .journal-filter-grid {
   display: grid;
@@ -718,7 +655,7 @@
   padding: 11px 0;
   gap: 10px;
 }
-.journal-diary-result > button {
+.journal-diary-result > button:not(.journal-star) {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -813,6 +750,13 @@
 }
 .journal-detail-foods b small {
   display: inline;
+}
+.journal-detail-note {
+  display: grid;
+  gap: 6px;
+  padding: 12px 0;
+  font-size: 11px;
+  color: var(--muted);
 }
 .journal-inline-plans {
   padding: 4px 0;
@@ -1063,9 +1007,6 @@
 .journal-minimal-grid > .journal-feature {
   grid-column: 1 / -1;
 }
-.journal-custom-page-heading.is-minimal > div:first-child {
-  display: none;
-}
 html[data-style]:not([data-style='classic']) .journal-feature {
   --feature-ink: var(--text);
   color: var(--text);
@@ -1079,11 +1020,6 @@ html[data-style]:not([data-style='classic']) :is(.journal-search, .journal-recen
 html[data-style]:not([data-style='classic']) .journal-week button.is-selected {
   background: var(--text);
   color: var(--on-text);
-}
-html[data-style]:not([data-style='classic']) .journal-meal-symbol {
-  background: var(--surface);
-  color: var(--text);
-  border: 1px solid var(--border);
 }
 html[data-style]:not([data-style='classic']) .journal-star {
   color: var(--muted);
@@ -1353,15 +1289,6 @@ html[data-style='aurora'] .journal-photo-preview > span {
     max-width: 1250px;
     padding: 28px 36px 30px;
   }
-  .journal-custom-page-heading {
-    margin: 0 0 26px;
-  }
-  .journal-custom-page-heading h1 {
-    font-size: 33px;
-  }
-  .journal-custom-page-heading p {
-    font-size: 12px;
-  }
   .custom-library-grid {
     gap: 18px;
   }
@@ -1392,21 +1319,6 @@ html[data-style='aurora'] .journal-photo-preview > span {
   }
 }
 @media (max-width: 759px) {
-  .journal-custom-page-heading {
-    flex-wrap: wrap;
-    margin-top: 6px;
-    margin-bottom: 21px;
-  }
-  .journal-custom-page-heading h1 {
-    font-size: 29px;
-  }
-  .journal-custom-page-heading p {
-    font-size: 11px;
-  }
-  .journal-create-button {
-    font-size: 10px;
-    padding: 10px 12px;
-  }
   .journal-feature {
     padding: 17px;
   }
@@ -1462,12 +1374,6 @@ html[data-style='aurora'] .journal-photo-preview > span {
     font-size: 9px;
   }
 }
-@media (max-width: 390px) {
-  .journal-custom-page-heading p {
-    max-width: 190px;
-    line-height: 1.7;
-  }
-}
 html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark'])
   :is(.journal-recent-meal, .journal-plan-row, .journal-search) {
   background: var(--surface);
@@ -1475,13 +1381,11 @@ html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark'])
 }
 @media (prefers-reduced-motion: reduce) {
   .custom-library-grid > section,
-  .journal-menu-options,
   .journal-filter-grid {
     animation: none;
   }
   .journal-photo-preview img,
-  .journal-recent-meal,
-  .journal-create-button {
+  .journal-recent-meal {
     transition: none;
   }
 }

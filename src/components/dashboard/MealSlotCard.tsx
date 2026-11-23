@@ -12,14 +12,8 @@ import { PlannedMeals } from '../journal/MealPlanner';
 import { InlineMealNote, MealNoteAction } from '../journal/MealDiary';
 import { MealPhotoAction, MealPhotos } from '../journal/PhotoDiary';
 import { useMealSlots } from '../../utils/mealSlots';
+import { mealSlotIcon } from '../common/mealSlotIcon';
 import {
-  Coffee,
-  Apple,
-  Utensils,
-  UtensilsCrossed,
-  SunMedium,
-  Moon,
-  Soup,
   Plus,
   Trash2,
   Edit2,
@@ -49,6 +43,48 @@ function useCramped(room: React.RefObject<HTMLElement | null>, target: React.Ref
     return () => observer.disconnect();
   }, [room, target, reserve, watch]);
   return cramped;
+}
+
+/**
+ * True when the note / photo icons (`extras`) fit in the one-line header of a compact meal next to the other controls.
+ * Everything is measured from the DOM (the extras are always rendered, only hidden with `invisible absolute`), so the
+ * answer does not depend on whether they are currently shown and cannot flip back and forth. Without any icon enabled
+ * (no `extras` width) the answer is simply true.
+ */
+function useExtrasFit(
+  row: React.RefObject<HTMLElement | null>,
+  kcalRoom: React.RefObject<HTMLElement | null>,
+  kcal: React.RefObject<HTMLElement | null>,
+  extras: React.RefObject<HTMLElement | null>,
+  watch: unknown,
+) {
+  const [fits, setFits] = useState(false);
+  useLayoutEffect(() => {
+    const rowEl = row.current;
+    const roomEl = kcalRoom.current;
+    const kcalEl = kcal.current;
+    const extrasEl = extras.current;
+    if (!rowEl || !roomEl || !kcalEl || !extrasEl) return undefined;
+    const check = () => {
+      const extrasWidth = extrasEl.getBoundingClientRect().width;
+      if (extrasWidth === 0) {
+        setFits(true);
+        return;
+      }
+      const gap = parseFloat(getComputedStyle(rowEl).columnGap) || 0;
+      const others = Array.from(rowEl.children).filter((child) => child !== roomEl && child !== extrasEl);
+      const fixed = others.reduce((sum, child) => sum + child.getBoundingClientRect().width, 0);
+      // others + calories + extras, with a gap between every pair of items.
+      const needed = fixed + kcalEl.getBoundingClientRect().width + extrasWidth + gap * (others.length + 1);
+      setFits(rowEl.clientWidth >= needed);
+    };
+    check();
+    const observer = new ResizeObserver(check);
+    observer.observe(rowEl);
+    observer.observe(extrasEl);
+    return () => observer.disconnect();
+  }, [row, kcalRoom, kcal, extras, watch]);
+  return fits;
 }
 
 interface MealSlotCardProps {
@@ -107,27 +143,26 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   // The calories disappear when the card is too narrow for them (a meal field resized in the advanced layout).
   const kcalRoom = useRef<HTMLDivElement>(null);
   const kcalRef = useRef<HTMLSpanElement>(null);
+  const compactRow = useRef<HTMLDivElement>(null);
+  const extrasRef = useRef<HTMLDivElement>(null);
+  const extrasFit = useExtrasFit(compactRow, kcalRoom, kcalRef, extrasRef, `${compact}:${formatKcal(slotCalories)}`);
   const kcalCramped = useCramped(kcalRoom, kcalRef, compact ? 0 : PILLS_RESERVE, `${compact}:${formatKcal(slotCalories)}:${items.length}`);
 
   // Circle rule: the icon circle is transparent (same colour as the card, no border, no shadow),
   // so the macro pills stay the only coloured elements on a meal card. Size and round shape are kept.
   const getSlotDetails = (id: MealSlotId) => {
+    const icon = mealSlotIcon(id);
     switch (id) {
       case 'breakfast':
-        return { title: t.mealSlots.breakfast, icon: Coffee };
       case 'mid_morning':
-        return { title: t.mealSlots.mid_morning, icon: Apple };
       case 'lunch':
-        return { title: t.mealSlots.lunch, icon: Utensils };
       case 'midday_snack':
-        return { title: t.mealSlots.midday_snack, icon: SunMedium };
       case 'dinner':
-        return { title: t.mealSlots.dinner, icon: UtensilsCrossed };
       case 'extra':
-        return { title: t.mealSlots.extra, icon: Moon };
+        return { title: t.mealSlots[id], icon };
       default:
         // A meal type added with the advanced layout.
-        return { title: slotLabel(id), icon: Soup };
+        return { title: slotLabel(id), icon };
     }
   };
 
@@ -238,9 +273,21 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
       {compact ? (
         <>
           {/* Row 1: icon · kcal · add · chevron (meal name hidden in compact) */}
-          <div className="flex items-center gap-2 max-[359px]:gap-1 w-full">
+          <div ref={compactRow} className="relative flex items-center gap-2 max-[359px]:gap-1 w-full">
             {slotBadge('size-8 max-[359px]:size-7', 15)}
             <div ref={kcalRoom} className="relative min-w-0 flex-1 self-stretch flex items-center">{kcalLabel}</div>
+            {/* Note and photo icons: next to + when they fit in the bar, otherwise only once the meal is expanded.
+                Always rendered (so they can be measured) and hidden with `invisible absolute` while they are not shown. */}
+            <div
+              ref={extrasRef}
+              data-compact-extras
+              data-shown={extrasFit || open ? '' : undefined}
+              className={`flex items-center shrink-0 ${extrasFit || open ? '' : 'invisible absolute right-0 top-0 pointer-events-none'}`}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MealNoteAction date={activeDate} slot={slotId} />
+              <MealPhotoAction date={activeDate} slot={slotId} />
+            </div>
             {addButton('size-7 max-[359px]:size-6', 14)}
             <ChevronDown
               size={14}
@@ -289,24 +336,13 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
           <div className={`${compact ? 'px-2.5' : 'px-4'} py-1.5 border-t border-[var(--border)] divide-y divide-[var(--border)]`}>
-            {compact && <div className="flex items-center justify-end py-1"><MealNoteAction date={activeDate} slot={slotId} /><MealPhotoAction date={activeDate} slot={slotId} /></div>}
             <PlannedMeals date={activeDate} slot={slotId} />
             <MealPhotos date={activeDate} slot={slotId} />
             <InlineMealNote date={activeDate} slot={slotId} />
             {items.length === 0 && ultraMinimal ? (
               <div className="min-h-7" aria-hidden="true" />
             ) : items.length === 0 ? (
-              <button
-                type="button"
-                onClick={handleOpenAddFood}
-                className="w-full py-3 flex items-center justify-between text-xs font-medium text-[var(--muted)] hover:text-[var(--text)] transition-colors text-left"
-              >
-                <span>{t.mealSlots.emptySlot}</span>
-                <span className="font-bold inline-flex items-center gap-1">
-                  <Plus size={13} />
-                  {t.mealSlots.addItem}
-                </span>
-              </button>
+              <p className="py-3 text-xs font-medium text-[var(--muted)]">{t.mealSlots.emptySlot}</p>
             ) : (
               <>
               {items.map((item) => {

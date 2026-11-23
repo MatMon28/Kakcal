@@ -3,12 +3,11 @@ import {
   ArrowUpRight,
   Check,
   ChevronRight,
-  Coffee,
   NotebookPen,
+  RotateCcw,
   SlidersHorizontal,
   Star,
   Utensils,
-  UtensilsCrossed,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
@@ -17,6 +16,8 @@ import { calculateMacros, calculateTotalCalories } from '../../utils/calculation
 import { memoryKey, updateMealMemory, useMealJournal } from '../../utils/journalStore';
 import type { FoodItem, LoggedFoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
+import { MealSlotIcon } from '../common/mealSlotIcon';
+import { MealSummaryCard } from './MealSummaryCard';
 import {
   JournalChip,
   JournalEmpty,
@@ -78,14 +79,15 @@ function useDiaryMeals() {
   }, [allDayLogs, memories]);
 }
 
+/** Same colourless icon the meal has in Today (no tinted background). */
 function MealSymbol({ slot }: { slot: MealSlotId }) {
-  return slot === 'breakfast' || slot === 'mid_morning' ? (
-    <Coffee size={20} />
-  ) : slot === 'dinner' ? (
-    <UtensilsCrossed size={20} />
-  ) : (
-    <Utensils size={20} />
-  );
+  return <MealSlotIcon slot={slot} size={20} />;
+}
+
+/** The saved note of a meal, or nothing: previews show the note under the meal name instead of the foods. */
+function useMealNote() {
+  const { memories } = useMealJournal();
+  return (key: string) => memories[key]?.note?.trim() || '';
 }
 
 export function MealDiary() {
@@ -94,6 +96,7 @@ export function MealDiary() {
   const { memories } = useMealJournal();
   const meals = useDiaryMeals();
   const matchesSearch = useMealSearch();
+  const noteOf = useMealNote();
   const j = useJournalText();
   const [query, setQuery] = useState('');
   const [favorites, setFavorites] = useState(false);
@@ -137,13 +140,13 @@ export function MealDiary() {
           {matches.slice(0, previewCount).map((meal) => (
             <div className="journal-recent-meal" key={meal.key}>
               <button className="journal-meal-preview" type="button" onClick={() => setSelected(meal)}>
-                <span className={`journal-meal-symbol is-${meal.slot}`}>
+                <span className="journal-meal-symbol">
                   <MealSymbol slot={meal.slot} />
                 </span>
                 <span>
                   <small>{journalDate(meal.date, language)}</small>
                   <strong>{label(meal.slot)}</strong>
-                  <span>{meal.items.map((i) => i.name).join(', ') || memories[meal.key]?.note}</span>
+                  {noteOf(meal.key) && <span>{noteOf(meal.key)}</span>}
                 </span>
                 <ChevronRight className="journal-preview-arrow" size={16} />
               </button>
@@ -223,6 +226,7 @@ function DiaryBrowser({
   const { memories } = useMealJournal();
   const meals = useDiaryMeals();
   const matchesSearch = useMealSearch();
+  const noteOf = useMealNote();
   const j = useJournalText();
   const [query, setQuery] = useState(initialQuery);
   const [filterOpen, setFilterOpen] = useState(showFilters);
@@ -298,8 +302,14 @@ function DiaryBrowser({
               <Star size={13} fill={favorites ? 'currentColor' : 'none'} />
               {j('Favorites only', 'Solo preferiti')}
             </JournalChip>
-            <button type="button" className="journal-reset-button" onClick={reset}>
-              {j('Reset', 'Reimposta')}
+            <button
+              type="button"
+              className="journal-reset-button"
+              onClick={reset}
+              aria-label={j('Reset filters', 'Reimposta filtri')}
+              title={j('Reset filters', 'Reimposta filtri')}
+            >
+              <RotateCcw size={15} />
             </button>
           </div>
           {filterOpen && (
@@ -418,7 +428,7 @@ function DiaryBrowser({
                         })}
                       </small>
                     </strong>
-                    <span>{meal.items.map((i) => i.name).join(', ') || memories[meal.key]?.note}</span>
+                    {noteOf(meal.key) && <span>{noteOf(meal.key)}</span>}
                   </span>
                   <b>
                     {Math.round(calculateTotalCalories(meal.items))}
@@ -458,13 +468,11 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
   const [saved, setSaved] = useState(false);
   const [copied, setCopied] = useState(false);
   const [error, setError] = useState('');
-  const macros = calculateMacros(meal.items);
   return (
     <Modal
       isOpen
       onClose={onClose}
-      title={label(meal.slot)}
-      subtitle={journalDate(meal.date, language, {
+      title={journalDate(meal.date, language, {
         weekday: 'long',
         day: 'numeric',
         month: 'long',
@@ -473,49 +481,31 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
       maxWidth="max-w-lg"
     >
       <div className="journal-form">
-        <div className="journal-meal-detail-top">
-          <strong>
-            {Math.round(calculateTotalCalories(meal.items))} <small>kcal</small>
-          </strong>
-          <FavoriteMeal date={meal.date} slot={meal.slot} />
-        </div>
-        <p className="journal-meal-macro-summary">
-          {j('Carbs', 'Carboidrati')} {Math.round(macros.carbsGrams)}g <span>/</span>{' '}
-          {j('Protein', 'Proteine')} {Math.round(macros.proteinGrams)}g <span>/</span> {j('Fat', 'Grassi')}{' '}
-          {Math.round(macros.fatGrams)}g
-        </p>
-        <div className="journal-detail-foods">
-          {meal.items.map((item) => (
-            <div key={item.id}>
-              <span>
-                <strong>{item.name}</strong>
-                <small>
-                  {item.amount}
-                  {item.unit}
-                </small>
-              </span>
-              <b>
-                {Math.round((item.amount * item.calories) / 100)} <small>kcal</small>
-              </b>
-            </div>
-          ))}
-        </div>
-        <label>
-          {j('A note for this meal', 'Una nota per questo pasto')}
-          <textarea
-            rows={3}
-            maxLength={4000}
-            value={note}
-            placeholder={j(
-              'How was it? A little detail to remember...',
-              "Com'era? Un piccolo dettaglio da ricordare...",
-            )}
-            onChange={(e) => {
-              setNote(e.target.value);
-              setSaved(false);
-            }}
-          />
-        </label>
+        {/* The same card as an expanded meal in Today: icon, name, kcal, macro pills, then every food. */}
+        <MealSummaryCard
+          slot={meal.slot}
+          title={label(meal.slot)}
+          items={meal.items}
+          emptyText={j('No foods logged', 'Nessun alimento')}
+          trailing={<FavoriteMeal date={meal.date} slot={meal.slot} />}
+        >
+          <label className="journal-detail-note">
+            {j('A note for this meal', 'Una nota per questo pasto')}
+            <textarea
+              rows={3}
+              maxLength={4000}
+              value={note}
+              placeholder={j(
+                'How was it? A little detail to remember...',
+                "Com'era? Un piccolo dettaglio da ricordare...",
+              )}
+              onChange={(e) => {
+                setNote(e.target.value);
+                setSaved(false);
+              }}
+            />
+          </label>
+        </MealSummaryCard>
         {error && (
           <p role="alert" className="journal-error">
             {error}

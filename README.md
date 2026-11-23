@@ -10,6 +10,8 @@ A local-first nutrition, activity and wellness journal built with React 19, Type
 
 **Journal consistency round:** Meal diary, Meal planner and Photo diary now use the same section header (new `LibrarySectionHeader.tsx`), search, chips and buttons as Meals, Recipes and Foods; the Meal diary icon is a notebook; and the planner offers *Same for all* or *Different for each* when several days / meals are selected.
 
+**Today-style meals round:** the Custom page no longer has the heading block (title, "Your favorites…" line, *Create new* button); the Meal diary and Meal planner use the same colourless meal icons as Today, previews show the note (or nothing) under the meal name, pressing a meal or plan opens a Today-style meal card (new `MealSummaryCard.tsx`, `common/mealSlotIcon.tsx`), the diary filter Reset is an icon, Today's empty meals lose *+ Log Food*, and Compact note / photo icons join the header bar. See [docs/meal-journal.md](docs/meal-journal.md).
+
 ## Quick start
 
 ```sh

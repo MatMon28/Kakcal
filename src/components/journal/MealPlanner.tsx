@@ -5,6 +5,8 @@ import {
   ChevronLeft,
   ChevronRight,
   FileText,
+  NotebookPen,
+  Pencil,
   Plus,
   Trash2,
   Utensils,
@@ -26,6 +28,8 @@ import type { MealSlotId } from '../../types';
 import type { MealPlan, PlannedFood } from '../../types/journal';
 import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { MealSlotIcon } from '../common/mealSlotIcon';
+import { MealSummaryCard } from './MealSummaryCard';
 import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './JournalUI';
 
 export function MealPlanner() {
@@ -36,6 +40,8 @@ export function MealPlanner() {
   const [date, setDate] = useState(selectedDate);
   const [weekStart, setWeekStart] = useState(selectedDate);
   const [editing, setEditing] = useState<MealPlan | 'new' | null>(null);
+  // A plan that is open for reading (the Today-style meal view); Edit opens the editor.
+  const [viewing, setViewing] = useState<MealPlan | null>(null);
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
   const searching = q.length > 0;
@@ -70,7 +76,7 @@ export function MealPlanner() {
             {found.length === 0 ? (
               <JournalEmpty>{j('No planned meals match.', 'Nessun pasto pianificato corrisponde.')}</JournalEmpty>
             ) : (
-              found.map((plan) => <PlanRow key={plan.id} plan={plan} withDate onOpen={() => setEditing(plan)} />)
+              found.map((plan) => <PlanRow key={plan.id} plan={plan} onOpen={() => setViewing(plan)} />)
             )}
           </div>
         ) : (
@@ -134,12 +140,22 @@ export function MealPlanner() {
                   )}
                 </JournalEmpty>
               ) : (
-                dayPlans.map((plan) => <PlanRow key={plan.id} plan={plan} onOpen={() => setEditing(plan)} />)
+                dayPlans.map((plan) => <PlanRow key={plan.id} plan={plan} onOpen={() => setViewing(plan)} />)
               )}
             </div>
           </>
         )}
       </JournalSection>
+      {viewing && (
+        <PlanDetails
+          plan={viewing}
+          onClose={() => setViewing(null)}
+          onEdit={() => {
+            setEditing(viewing);
+            setViewing(null);
+          }}
+        />
+      )}
       {editing && (
         <PlanEditor
           initialDate={date}
@@ -151,23 +167,124 @@ export function MealPlanner() {
   );
 }
 
-function PlanRow({ plan, withDate, onOpen }: { plan: MealPlan; withDate?: boolean; onOpen: () => void }) {
+/**
+ * One planned meal, laid out like a Meal diary preview: the colourless meal icon Today uses, the date, the meal name and
+ * (only when the plan has a note) the note underneath.
+ */
+function PlanRow({ plan, onOpen }: { plan: MealPlan; onOpen: () => void }) {
   const { language } = useApp();
   const { label } = useMealSlots();
+  const note = plan.note.trim();
   return (
     <button type="button" className="journal-plan-row" onClick={onOpen}>
       <span className="journal-plan-row-icon">
-        {plan.kind === 'note' ? <FileText size={16} /> : <Utensils size={16} />}
+        <MealSlotIcon slot={plan.slot} size={20} />
       </span>
       <span>
-        <small>
-          {withDate ? `${journalDate(plan.date, language, { weekday: 'short', day: 'numeric', month: 'short' })} · ` : ''}
-          {label(plan.slot)}
-        </small>
-        <strong>{plan.title}</strong>
+        <small>{journalDate(plan.date, language, { weekday: 'short', day: 'numeric', month: 'short' })}</small>
+        <strong>{label(plan.slot)}</strong>
+        {note && <span className="journal-plan-row-note">{note}</span>}
       </span>
       {plan.loggedAt ? <Check size={16} /> : <ChevronRight size={16} />}
     </button>
+  );
+}
+
+/** Opens a plan the way Today opens a meal: the same meal card (icon, kcal, macros, foods), with the plan note inside. */
+function PlanDetails({ plan, onClose, onEdit }: { plan: MealPlan; onClose: () => void; onEdit: () => void }) {
+  const { language, logItemsToSlot } = useApp();
+  const { label } = useMealSlots();
+  const j = useJournalText();
+  const [error, setError] = useState('');
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const note = plan.note.trim();
+  const firstLine = note.split('\n')[0];
+  // The plan name is only worth a second line when it adds something beyond the note itself.
+  const subtitle = plan.title && plan.title !== firstLine ? plan.title : undefined;
+  const items = plannedLogItems(plan, language);
+  const logPlan = () => {
+    try {
+      logItemsToSlot(plan.slot, items, plan.date);
+      updateMealPlan(plan.id, { loggedAt: new Date().toISOString() });
+      onClose();
+    } catch {
+      setError(
+        j(
+          'Could not save. Please free some device storage.',
+          'Salvataggio non riuscito. Libera spazio sul dispositivo.',
+        ),
+      );
+    }
+  };
+  return (
+    <>
+      <Modal
+        isOpen
+        onClose={onClose}
+        title={journalDate(plan.date, language, {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        })}
+        maxWidth="max-w-lg"
+      >
+        <div className="journal-form">
+          <MealSummaryCard
+            slot={plan.slot}
+            title={label(plan.slot)}
+            subtitle={subtitle}
+            items={items}
+            trailing={plan.loggedAt ? <Check size={18} aria-label={j('Logged', 'Registrato')} /> : undefined}
+          >
+            {note && (
+              <div className="journal-inline-memory">
+                <NotebookPen size={15} />
+                <p>{note}</p>
+              </div>
+            )}
+          </MealSummaryCard>
+          {error && (
+            <p role="alert" className="journal-error">
+              {error}
+            </p>
+          )}
+          <div className="journal-form-actions">
+            <button
+              type="button"
+              className="journal-secondary-button journal-danger-button"
+              onClick={() => setConfirmDelete(true)}
+              aria-label={j('Delete plan', 'Elimina programma')}
+              title={j('Delete plan', 'Elimina programma')}
+            >
+              <Trash2 size={16} />
+            </button>
+            <button type="button" className="journal-secondary-button" onClick={onEdit}>
+              <Pencil size={15} />
+              {j('Edit', 'Modifica')}
+            </button>
+            {items.length > 0 && !plan.loggedAt && (
+              <button type="button" className="journal-primary-button" onClick={logPlan}>
+                <Plus size={16} />
+                {j('Add to this meal', 'Aggiungi al pasto')}
+              </button>
+            )}
+          </div>
+        </div>
+      </Modal>
+      <ConfirmDialog
+        open={confirmDelete}
+        message={j(
+          'Delete this meal plan? Your logged food will not be changed.',
+          'Eliminare il programma? Gli alimenti registrati non cambieranno.',
+        )}
+        onCancel={() => setConfirmDelete(false)}
+        onConfirm={() => {
+          removeMealPlan(plan.id);
+          onClose();
+        }}
+      />
+    </>
   );
 }
 
