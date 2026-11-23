@@ -114,8 +114,13 @@
   border: 1px solid var(--feature-border);
   background: var(--feature-bg);
   color: var(--feature-ink);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: 24px; /* rounded-3xl, like Meals / Recipes / Foods */
+  padding: 16px;
+}
+@media (min-width: 640px) {
+  .journal-feature {
+    padding: 20px;
+  }
 }
 .journal-feature[data-tone='blue'] {
   --feature-bg: #cfe7fe;
@@ -126,47 +131,6 @@
   --feature-bg: #f6d0d0;
   --feature-ink: #702d32;
   --feature-border: #e8b9ba;
-}
-.journal-section-heading {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  min-height: 37px;
-}
-.journal-section-title {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-align: left;
-  flex: 1;
-  min-width: 0;
-}
-.journal-section-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  flex-shrink: 0;
-}
-.journal-section-title h2 {
-  font-size: 15px;
-  font-weight: 750;
-  letter-spacing: -0.35px;
-  line-height: 1.5;
-}
-.journal-section-description {
-  display: block;
-  font-size: 11px;
-  opacity: 0.76;
-  margin-top: 1px;
-  line-height: 1.6;
-}
-.journal-heading-actions {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  flex-shrink: 0;
 }
 .journal-icon-button {
   display: inline-flex;
@@ -185,33 +149,8 @@
   background: #ffffff35;
   transform: translateY(-1px);
 }
-.journal-chevron {
-  transition: transform 0.26s;
-}
-.journal-chevron.is-open {
-  transform: rotate(180deg);
-}
 .journal-section-body {
-  padding-top: 16px;
-}
-.journal-filter-button {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 11px;
-  font-weight: 650;
-  padding: 7px 10px;
-  border: 1px solid #5d49112b;
-  border-radius: var(--pill-radius, 8px);
-}
-.journal-filter-button:hover {
-  background: #ffffff35;
-}
-.journal-diary-search {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  margin-bottom: 14px;
+  padding-top: 0;
 }
 .journal-search {
   display: flex;
@@ -245,20 +184,6 @@
 .journal-search:focus-within {
   outline: 2px solid currentColor;
   outline-offset: 2px;
-}
-.journal-favorites-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 9px 13px;
-  border-radius: var(--pill-radius, 9px);
-  border: 1px solid #5d49112b;
-  font-size: 11px;
-  height: 37px;
-}
-.journal-favorites-toggle.is-active {
-  background: #ffffff70;
 }
 .journal-recent-meals {
   display: grid;
@@ -360,29 +285,6 @@
 .journal-star:hover,
 .journal-star.is-favorite {
   color: #a77a20;
-}
-.journal-section-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 10px;
-  margin-top: 15px;
-}
-.journal-section-footer > span {
-  opacity: 0.7;
-}
-.journal-section-footer button {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 3px 0;
-}
-.journal-section-footer button:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
 }
 .journal-empty {
   padding: 19px 8px;
@@ -783,13 +685,6 @@
   align-items: center;
   gap: 18px;
 }
-.journal-text-button {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  font-size: 12px;
-  font-weight: 600;
-}
 .journal-reset-button {
   margin-left: auto;
   font-size: 11px;
@@ -1168,16 +1063,6 @@
 .journal-minimal-grid > .journal-feature {
   grid-column: 1 / -1;
 }
-.journal-feature[data-minimal] .journal-section-description {
-  display: none;
-}
-.journal-feature[data-minimal] .journal-section-title h2 {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-}
 .journal-custom-page-heading.is-minimal > div:first-child {
   display: none;
 }
@@ -1190,9 +1075,6 @@ html[data-style]:not([data-style='classic']) :is(.journal-search, .journal-recen
   color: var(--text);
   border-color: var(--border);
   border-radius: min(var(--micro-radius, 12px), 15px);
-}
-html[data-style]:not([data-style='classic']) :is(.journal-filter-button, .journal-favorites-toggle) {
-  border-color: var(--border);
 }
 html[data-style]:not([data-style='classic']) .journal-week button.is-selected {
   background: var(--text);
@@ -1487,9 +1369,6 @@ html[data-style='aurora'] .journal-photo-preview > span {
   .custom-library-grid [data-library-section='recipes'] .md\:grid-cols-2 {
     grid-template-columns: 1fr;
   }
-  .custom-library-grid [data-library-section='meals'] .journal-section-description {
-    display: none;
-  }
   body:has([data-journal-root][data-active-tab='prebuilt']) [data-dock] {
     display: none;
   }
@@ -1532,7 +1411,7 @@ html[data-style='aurora'] .journal-photo-preview > span {
     padding: 17px;
   }
   .journal-recent-meals {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 8px;
   }
   .journal-recent-meal {
@@ -1566,17 +1445,11 @@ html[data-style='aurora'] .journal-photo-preview > span {
     display: block;
     margin-top: 4px;
   }
-  .journal-section-description {
-    font-size: 10px;
-  }
   .journal-full-photo-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .journal-photo-preview strong {
     font-size: 10px;
-  }
-  .journal-filter-button span {
-    display: none;
   }
   .journal-photo-grid > .journal-photo-preview > span {
     aspect-ratio: 1;
@@ -1590,16 +1463,6 @@ html[data-style='aurora'] .journal-photo-preview > span {
   }
 }
 @media (max-width: 390px) {
-  .journal-favorites-toggle {
-    padding: 9px;
-    font-size: 0;
-  }
-  .journal-section-title h2 {
-    font-size: 14px;
-  }
-  .journal-section-description {
-    display: none;
-  }
   .journal-custom-page-heading p {
     max-width: 190px;
     line-height: 1.7;
@@ -1617,9 +1480,246 @@ html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark'])
     animation: none;
   }
   .journal-photo-preview img,
-  .journal-chevron,
   .journal-recent-meal,
   .journal-create-button {
     transition: none;
   }
+}
+
+/* ---------------------------------------------------------------------------
+   Consistency round: journal fields reuse the look of Meals / Recipes / Foods.
+   --------------------------------------------------------------------------- */
+
+/* Search fields = the rounded-2xl search input used on Foods and in the section headers. */
+.journal-search {
+  height: 42px;
+  border-radius: 16px;
+  padding: 0 12px 0 14px;
+}
+.journal-search input,
+.journal-form .journal-search input {
+  font-size: 14px;
+  font-weight: 500;
+}
+html[data-style]:not([data-style='classic']) .journal-search {
+  border-radius: min(var(--micro-radius, 16px), 16px);
+}
+
+/* Chips = the category chips of the Foods page (rounded-full, tinted when active). */
+.journal-chip-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scrollbar-width: none;
+}
+.journal-chip-row::-webkit-scrollbar {
+  display: none;
+}
+.journal-chip {
+  background: var(--inset, #fbf8f2);
+  color: var(--muted);
+  flex-shrink: 0;
+}
+.journal-chip:hover {
+  background: var(--hover, #fff);
+  color: var(--text);
+}
+.journal-chip.is-active {
+  background: var(--feature-bg, #f7e9aa);
+  color: var(--feature-ink, #5d4911);
+  box-shadow: inset 0 0 0 1px var(--feature-border, #e9d68f);
+}
+.journal-browser-toolbar .journal-chip.is-active {
+  background: #f7e9aa;
+  color: #5d4911;
+  box-shadow: inset 0 0 0 1px #e9d68f;
+}
+html[data-style]:not([data-style='classic']) :is(.journal-chip.is-active, .journal-browser-toolbar .journal-chip.is-active) {
+  background: var(--text);
+  color: var(--on-text);
+  box-shadow: none;
+}
+.journal-section-body > .journal-chip-row + .journal-recent-meals {
+  margin-top: 0;
+}
+
+/* "See all" = the quiet secondary button used in modals. */
+.journal-see-all {
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* Buttons = the app's rounded-2xl, full-width, extra-bold action buttons. */
+.journal-primary-button,
+.journal-secondary-button,
+.journal-danger-button {
+  border-radius: 16px;
+  padding: 12px 16px;
+  font-size: 14px;
+  font-weight: 800;
+}
+.journal-form-actions .journal-primary-button {
+  flex: 1 1 180px;
+}
+html[data-style='classic'] .journal-primary-button {
+  background: #c9efd3;
+  color: #174a2b;
+}
+html[data-style='classic'] .journal-primary-button:hover {
+  background: #b8e6c4;
+  opacity: 1;
+}
+html[data-style]:not([data-style='classic']) .journal-primary-button {
+  background: var(--intake-bg);
+  color: var(--intake-text);
+  border: var(--card-border, none);
+  box-shadow: var(--card-shadow, none);
+  border-radius: var(--micro-radius, 16px);
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style='classic']) :is(.journal-secondary-button, .journal-danger-button) {
+  border-radius: var(--micro-radius, 16px);
+}
+.journal-secondary-button.journal-danger-button {
+  background: var(--inset);
+  border: 1px solid var(--border);
+  color: var(--text-warn);
+}
+
+/* Meal choices = the 3-column meal chips of Foods > Log (rounded-xl, tinted when selected). */
+.journal-slot-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+.journal-slot-options button {
+  justify-content: center;
+  padding: 8px 6px;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 12px;
+  color: var(--muted);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journal-slot-options button.is-active {
+  background: #cfe7fe;
+  border-color: #b9d7f2;
+  color: #183f66;
+}
+html[data-style]:not([data-style='classic']) .journal-slot-options button {
+  border-radius: min(var(--micro-radius, 12px), 14px);
+}
+html[data-style]:not([data-style='classic']) .journal-slot-options button.is-active {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--on-text);
+}
+.journal-segmented {
+  border-radius: 16px;
+}
+.journal-segmented button {
+  font-weight: 700;
+  border-radius: 12px;
+  min-width: 0;
+  text-align: center;
+}
+
+/* Meal planner: "different meal for each" rows. */
+.journal-target-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 232px;
+  overflow-y: auto;
+  padding: 2px;
+}
+.journal-target {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--inset);
+  color: var(--muted);
+  transition:
+    background 150ms,
+    border-color 150ms;
+}
+.journal-target > span {
+  min-width: 0;
+  flex: 1;
+}
+.journal-target small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.journal-target strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journal-target:hover {
+  background: var(--hover, var(--inset));
+}
+.journal-target.is-done strong {
+  color: var(--text);
+}
+.journal-target.is-active {
+  border-color: #b9d7f2;
+  background: #cfe7fe;
+  color: #183f66;
+}
+.journal-target.is-active small,
+.journal-target.is-active strong {
+  color: #183f66;
+}
+html[data-style]:not([data-style='classic']) .journal-target {
+  border-radius: min(var(--micro-radius, 14px), 14px);
+}
+html[data-style]:not([data-style='classic']) .journal-target.is-active {
+  background: var(--text);
+  border-color: var(--text);
+}
+html[data-style]:not([data-style='classic']) .journal-target.is-active :is(small, strong) {
+  color: var(--on-text);
+}
+html[data-style]:not([data-style='classic']) .journal-target.is-active {
+  color: var(--on-text);
+}
+.journal-entry-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.journal-entry-heading {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+/* Long ingredient lists ellipsize instead of pushing the arrow / kcal out of the card. */
+.journal-feature .accordion-grid,
+.journal-feature .accordion-inner,
+.journal-section-body,
+.journal-recent-meals,
+.journal-recent-meal,
+.journal-meal-preview {
+  min-width: 0;
 }

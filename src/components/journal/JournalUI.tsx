@@ -1,69 +1,124 @@
-import { useState, type ReactNode } from 'react';
-import { ChevronDown, Search, X } from 'lucide-react';
+import type { ReactNode } from 'react';
+import { Search, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
+import { usePersistentState } from '../../utils/usePersistentState';
+import { LibrarySectionHeader, libraryIconButton } from '../common/LibrarySectionHeader';
 
+const toneToPalette = { yellow: 'diary', blue: 'planner', red: 'photos' } as const;
+
+/**
+ * Journal section (Meal diary, Meal planner, Photo diary). It deliberately uses the same
+ * `LibrarySectionHeader` as Meals / Recipes / Foods, so the icon circle, title + count, search
+ * toggle, + button and chevron look and behave exactly like the rest of the Custom page.
+ */
 export function JournalSection({
   tone,
   icon,
   title,
   subtitle,
-  actions,
+  count,
+  createLabel,
+  onCreate,
+  extraActions,
+  searchLabel,
+  query,
+  setQuery,
   children,
   className = '',
-  defaultOpen = true,
 }: {
   tone: 'yellow' | 'blue' | 'red';
   icon: ReactNode;
   title: string;
   subtitle: string;
-  actions?: ReactNode;
+  count?: number;
+  createLabel?: string;
+  onCreate?: () => void;
+  extraActions?: ReactNode;
+  searchLabel?: string;
+  query?: string;
+  setQuery?: (value: string) => void;
   children: ReactNode;
   className?: string;
-  defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [open, setOpen] = usePersistentState<boolean>(`kcak_journal_${tone}_open`, true);
   const { settings } = useApp();
-  const j = useJournalText();
   return (
     <section
-      className={`journal-feature ${className}`}
+      className={`journal-feature space-y-3 ${className}`}
       data-library-section={`journal-${tone}`}
       data-tone={tone}
       data-minimal={settings.ultraMinimal || undefined}
     >
-      <header className="journal-section-heading">
-        <button
-          type="button"
-          className="journal-section-title"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-          aria-label={`${title}: ${j('expand or collapse', 'espandi o comprimi')}`}
-        >
-          <span className="journal-section-icon">{icon}</span>
-          <span>
-            <h2>{title}</h2>
-            <span className="journal-section-description">{subtitle}</span>
-          </span>
-        </button>
-        <div className="journal-heading-actions">
-          {actions}
-          <button
-            type="button"
-            className="journal-icon-button"
-            aria-label={`${j('Toggle', 'Apri o chiudi')} ${title}`}
-            onClick={() => setOpen(!open)}
-          >
-            <ChevronDown size={17} className={open ? 'journal-chevron is-open' : 'journal-chevron'} />
-          </button>
-        </div>
-      </header>
+      <LibrarySectionHeader
+        title={title}
+        tone={toneToPalette[tone]}
+        summary={subtitle}
+        icon={icon}
+        count={count}
+        createLabel={createLabel}
+        onCreate={onCreate}
+        extraActions={extraActions}
+        searchLabel={searchLabel}
+        query={query}
+        setQuery={setQuery}
+        open={open}
+        onToggle={() => setOpen(!open)}
+      />
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
           <div className="journal-section-body">{children}</div>
         </div>
       </div>
     </section>
+  );
+}
+
+/** Icon-only header button (same transparent circle as search and +). */
+export function JournalHeaderButton({
+  label,
+  active,
+  onClick,
+  children,
+}: {
+  label: string;
+  active?: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      aria-pressed={active}
+      title={label}
+      className={`${libraryIconButton} ${active ? 'opacity-100' : ''}`}
+    >
+      {children}
+    </button>
+  );
+}
+
+/** Pill chip identical to the category chips on the Foods page. */
+export function JournalChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`pressable journal-chip flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${active ? 'is-active' : ''}`}
+    >
+      {children}
+    </button>
   );
 }
 

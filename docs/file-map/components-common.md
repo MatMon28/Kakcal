@@ -10,6 +10,7 @@ Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed
 
 | File or directory | Role |
 | --- | --- |
+| `src/components/common/LibrarySectionHeader.tsx` | Section header of the Custom page (icon circle, title + count + summary, inline search toggle, optional extra icon buttons, +, chevron; Classic palettes per tone, `libraryIconButton` class). Used by `PreBuiltMealsView.tsx` (Meals, Recipes, Foods) and `journal/JournalUI.tsx` (Meal diary, Meal planner, Photo diary). |
 | `src/components/common/FoodResultRow.tsx`, `FoodMacroGrid.tsx` | Shared food-search rows, portion-scaled nutrition grids the daily secondary-nutrient row and `SecondaryNutrientCard` (one fibre / salt / sugar field, shared by the row, Today and Statistics). Fibre, salt and optional sugar use one yellow palette, with localized accessible labels for their portion icons. |
 | `src/components/common/PageSwiper.tsx` | Main-page Pointer Event navigation on the entire `<main>` (blank padding included): pointer capture, transform-only following and settling, distance/velocity commit, interruption, and dock sequencing via `kc-page-moving`. |
 | `src/components/common/Collapsible.tsx` | Collapsible settings group with an animated height, used for Appearance, Today & pages, Custom buttons and Notifications (optionally controlled with `open` / `onOpenChange`). |

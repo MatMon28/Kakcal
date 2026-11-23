@@ -1,11 +1,10 @@
 import { useMemo, useState } from 'react';
 import {
   ArrowUpRight,
-  BookOpen,
   Check,
   ChevronRight,
   Coffee,
-  Search,
+  NotebookPen,
   SlidersHorizontal,
   Star,
   Utensils,
@@ -18,7 +17,14 @@ import { calculateMacros, calculateTotalCalories } from '../../utils/calculation
 import { memoryKey, updateMealMemory, useMealJournal } from '../../utils/journalStore';
 import type { FoodItem, LoggedFoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
-import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './JournalUI';
+import {
+  JournalChip,
+  JournalEmpty,
+  JournalHeaderButton,
+  JournalSearch,
+  JournalSection,
+  journalDate,
+} from './JournalUI';
 
 interface DiaryMeal {
   date: string;
@@ -96,6 +102,7 @@ export function MealDiary() {
   const matches = meals.filter(
     (meal) => (!favorites || memories[meal.key]?.favorite) && matchesSearch(meal, query),
   );
+  const previewCount = query.trim() || favorites ? 6 : 3;
   return (
     <>
       <JournalSection
@@ -103,37 +110,31 @@ export function MealDiary() {
         className="journal-meal-diary"
         title={j('Meal diary', 'Diario dei pasti')}
         subtitle={j('Good meals are worth remembering.', 'I buoni pasti meritano di essere ricordati.')}
-        icon={<Search size={21} />}
-        actions={
-          <button
-            type="button"
-            className="journal-filter-button"
+        icon={<NotebookPen size={16} strokeWidth={2.2} />}
+        count={meals.length}
+        searchLabel={j('Search a meal or an ingredient', 'Cerca un pasto o un ingrediente')}
+        query={query}
+        setQuery={setQuery}
+        extraActions={
+          <JournalHeaderButton
+            label={j('Filter meal diary', 'Filtra diario dei pasti')}
             onClick={() => setBrowser('filters')}
-            aria-label={j('Filter meal diary', 'Filtra diario dei pasti')}
           >
-            <SlidersHorizontal size={16} />
-            <span>{j('Filters', 'Filtri')}</span>
-          </button>
+            <SlidersHorizontal size={15} />
+          </JournalHeaderButton>
         }
       >
-        <div className="journal-diary-search">
-          <JournalSearch
-            value={query}
-            onChange={setQuery}
-            placeholder={j('Search a meal or an ingredient...', 'Cerca un pasto o un ingrediente...')}
-          />
-          <button
-            type="button"
-            className={`journal-favorites-toggle ${favorites ? 'is-active' : ''}`}
-            aria-pressed={favorites}
-            onClick={() => setFavorites(!favorites)}
-          >
-            <Star size={15} fill={favorites ? 'currentColor' : 'none'} />
+        <div className="journal-chip-row" data-no-swipe>
+          <JournalChip active={!favorites} onClick={() => setFavorites(false)}>
+            {j('All', 'Tutti')}
+          </JournalChip>
+          <JournalChip active={favorites} onClick={() => setFavorites(!favorites)}>
+            <Star size={13} fill={favorites ? 'currentColor' : 'none'} />
             {j('Favorites', 'Preferiti')}
-          </button>
+          </JournalChip>
         </div>
         <div className="journal-recent-meals">
-          {matches.slice(0, 3).map((meal) => (
+          {matches.slice(0, previewCount).map((meal) => (
             <div className="journal-recent-meal" key={meal.key}>
               <button className="journal-meal-preview" type="button" onClick={() => setSelected(meal)}>
                 <span className={`journal-meal-symbol is-${meal.slot}`}>
@@ -168,13 +169,12 @@ export function MealDiary() {
                 )}
           </JournalEmpty>
         )}
-        <div className="journal-section-footer">
-          <span>{j('A journal, not a judgement.', 'Un diario, non un giudizio.')}</span>
-          <button type="button" onClick={() => setBrowser('all')}>
-            {j('Explore all meals', 'Esplora tutti i pasti')}
+        {matches.length > previewCount && (
+          <button type="button" className="journal-secondary-button journal-see-all" onClick={() => setBrowser('all')}>
+            {j('See all meals', 'Vedi tutti i pasti')}
             <ArrowUpRight size={14} />
           </button>
-        </div>
+        )}
       </JournalSection>
       {browser && (
         <DiaryBrowser
@@ -290,24 +290,14 @@ function DiaryBrowser({
             placeholder={j('Search meals, ingredients or notes', 'Cerca pasti, ingredienti o note')}
           />
           <div className="journal-browser-toolbar">
-            <button
-              type="button"
-              className="journal-text-button"
-              aria-expanded={filterOpen}
-              onClick={() => setFilterOpen(!filterOpen)}
-            >
-              <SlidersHorizontal size={15} />
+            <JournalChip active={filterOpen} onClick={() => setFilterOpen(!filterOpen)}>
+              <SlidersHorizontal size={13} />
               {j('Filters', 'Filtri')}
-            </button>
-            <button
-              type="button"
-              className="journal-text-button"
-              aria-pressed={favorites}
-              onClick={() => setFavorites(!favorites)}
-            >
-              <Star size={15} fill={favorites ? 'currentColor' : 'none'} />
+            </JournalChip>
+            <JournalChip active={favorites} onClick={() => setFavorites(!favorites)}>
+              <Star size={13} fill={favorites ? 'currentColor' : 'none'} />
               {j('Favorites only', 'Solo preferiti')}
-            </button>
+            </JournalChip>
             <button type="button" className="journal-reset-button" onClick={reset}>
               {j('Reset', 'Reimposta')}
             </button>
@@ -586,7 +576,7 @@ export function MealNoteAction({ date, slot }: { date: string; slot: MealSlotId 
           setOpen(true);
         }}
       >
-        <BookOpen size={16} />
+        <NotebookPen size={16} />
       </button>
       {open && (
         <MealDetails
@@ -605,7 +595,7 @@ export function MealNoteField({ value, onChange }: { value: string; onChange: (v
   return (
     <label className="journal-log-note">
       <span>
-        <BookOpen size={15} />
+        <NotebookPen size={15} />
         {j('Meal note (optional)', 'Nota del pasto (facoltativa)')}
       </span>
       <textarea
@@ -624,7 +614,7 @@ export function InlineMealNote({ date, slot }: { date: string; slot: MealSlotId 
   const note = memories[memoryKey(date, slot)]?.note;
   return note ? (
     <div className="journal-inline-memory">
-      <BookOpen size={15} />
+      <NotebookPen size={15} />
       <p>{note}</p>
     </div>
   ) : null;

@@ -9,7 +9,9 @@
 ## Meal planner
 
 - Custom contains a blue planner immediately below Recipes. It uses the same blue as Today's carbs in Classic; other styles inherit their existing shapes, ink, borders and surfaces.
-- Select a starting date, 1-90 days, and only the meal slots to plan. Both built-in and advanced-layout meal slots are supported.
+- The section header is the shared `LibrarySectionHeader` (icon circle, title + count, search, +, chevron), exactly like Meals / Recipes / Foods. Its search icon filters all planned meals by name, note, food or meal (results list the date); the open/closed state is remembered (`kcak_journal_blue_open`).
+- Select a starting date, 1-90 days, and only the meal slots to plan (3-column meal chips, as in Foods > Log). Both built-in and advanced-layout meal slots are supported.
+- **Same meal for all / Different for each:** as soon as more than one day/meal is selected a two-option switch appears. *Same for all* shows one food/note editor applied to every selected day and meal. *Different for each* lists every day + meal as a row (`Tue 24 Nov · Lunch`, with the chosen meal or *Choose a meal*): tap a row, pick a meal below with the same search/amount editor, tap the next row (or **Next meal**, which jumps to the next empty one). Switching to *Different for each* pre-fills every row with the meal already chosen for all, so only the exceptions need changing. A counter shows *n of N meals chosen*; Save is enabled once every row has a meal, and saves one independent plan per row. Editing an existing plan works the same way.
 - Choose saved meals, recipes or individual foods with editable gram/ml amounts, or write a free-form food note. Planning never logs calories.
 - The week strip selects a date; a plan can be reopened, edited or deleted. Each repeated date/slot gets an independent plan.
 - Week dates have full localized accessible labels and a selected state, not just ambiguous single-letter weekday labels.
@@ -19,7 +21,8 @@
 
 ## Meal diary
 
-- The yellow Meal diary is the first Custom field, with Search and Filter icons. It derives meals from existing day logs rather than copying nutrition data.
+- The yellow Meal diary is the first Custom field. Its icon is a notebook-with-pen (the same icon marks diary notes in Today and in Settings; the open book stays reserved for Foods). The header has the shared Search and + style icon buttons plus a Filter icon, and an All / Favorites chip row (same chips as the Foods categories) sits under it. It derives meals from existing day logs rather than copying nutrition data.
+- The header search icon opens the same inline search field as Meals / Recipes; **See all meals** opens the full browser with every filter.
 - Search matches the meal-slot name, ingredient names and saved notes. Filters cover date range, weekday, meal slot, favourites, calorie range, and a selected nutrient's gram range (carbs, protein, fat, fibre, salt or sugar).
 - Ingredient searches also follow the stored recipe ingredient links, including nested recipes, with cycle protection. If a source recipe has been removed, the original logged food name and nutrition still remain searchable/usable.
 - Stars are per date/meal, independent of food favourites. Open a meal to inspect ingredients, save a note, or log its food again on the selected Today date.
@@ -28,6 +31,7 @@
 
 ## Photo diary (opt-in)
 
+- The Photo diary header is the shared one too: search icon (inline note search over the previews), + (add a photo) and count; **See all photos** opens the full gallery.
 - Enable Photo diary in Settings > Today & pages. When off, every photo field, attachment and camera action is hidden without deleting stored photos.
 - A meal's camera action opens the device camera on mobile, or a permission-based live camera on desktop. Choosing an existing image works as a fallback. Camera tracks stop when closing or capturing.
 - A blank note becomes `Meal, date`. Photos appear above logged foods in their matching Today meal. The red Custom field opens a searchable full gallery, with meal/date filters, full-size viewing, editable notes and confirmed deletion.
@@ -36,6 +40,11 @@
 - The attachment action lives inside each saved meal/recipe's expanded details to keep the collapsed library uncluttered.
 - Imported photos are decoded and resized to at most 1200 px, re-encoded as JPEG (also strips EXIF/location metadata), and saved locally. Inputs are limited to 25 MB. Unsupported images and storage quota errors have explicit messages.
 - Photos share the browser's localStorage quota with the journal. Export backups regularly; the gallery allows deleting older photos. No photo is uploaded or sent to a server.
+
+## Consistency with the rest of Custom
+
+- All three journal sections render through `JournalSection` -> `LibrarySectionHeader` (`src/components/common/LibrarySectionHeader.tsx`, extracted from `PreBuiltMealsView.tsx`), with the same radius (24 px), padding, title/count/summary, transparent circle buttons, inline search and ultra-minimal behaviour as Meals, Recipes and Foods. The old footers ("A journal, not a judgement", "n planned this week") were removed; the only footer left is a full-width *See all* secondary button.
+- Search fields (`.journal-search`), chips (`JournalChip`), meal chips, segmented switch, secondary and primary buttons copy the app's `rounded-2xl` fields, Foods category chips, Foods > Log meal chips and `kc-primary-btn` styling (green in Classic, theme intake colours in the other styles).
 
 ## Implementation files
 
@@ -50,8 +59,9 @@ Desktop fields align at their own content height rather than stretching a short 
 | `src/types/journal.ts` | Versioned plan, photo and meal-memory contracts. |
 | `src/utils/journalStore.ts` | Reactive local-first persistence, normalization, cross-tab updates and backup helpers. |
 | `src/i18n/journal.ts` | English/Italian copy selector for the journal additions. |
-| `src/components/journal/JournalUI.tsx` | Shared accessible themed section, search, empty state and date formatter. |
-| `src/components/journal/MealPlanner.tsx` | Week browser, repeat-range editor and Today / food-batch suggestions. |
+| `src/components/journal/JournalUI.tsx` | Shared themed section (built on `LibrarySectionHeader`), header icon button, filter chip, search field, empty state and date formatter. |
+| `src/components/journal/MealPlanner.tsx` | Week browser with plan search, the plan editor (same-for-all / different-for-each, `EntryEditor`) and Today / food-batch suggestions. |
+| `src/components/common/LibrarySectionHeader.tsx` | The collapsible section header shared by Meals, Recipes, Foods and the journal sections. |
 | `src/components/journal/MealDiary.tsx` | Searchable/filterable meal history, favourites, notes, detail dialog and inline Today/logging controls. |
 | `src/components/journal/PhotoDiary.tsx` | Camera/import composer, searchable gallery, lightbox, saved-meal/recipe attachments and Today photos. |
 | `src/components/journal/JournalChrome.tsx` | Responsive desktop navigation, help, existing Settings/Profile entry points and Custom heading/create menu. |

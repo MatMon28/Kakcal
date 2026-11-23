@@ -8,6 +8,8 @@ A local-first nutrition, activity and wellness journal built with React 19, Type
 
 **Meal journal:** Custom now includes a yellow searchable/filterable Meal diary, a blue selected-day / selected-meal planner below Recipes, and an optional red Photo diary. Plans and read-acknowledgeable notes flow into Today and Log food. Enable Photo diary and Meal notes in Today in Settings > Today & pages; both default to off. Saved meal/recipe photo attachments, local photos and meal memories are included in JSON backups. Existing themes and mobile navigation are preserved, with a two-column Custom layout / sidebar on desktop. See [docs/meal-journal.md](docs/meal-journal.md) for workflows, file roles, storage limits and verification.
 
+**Journal consistency round:** Meal diary, Meal planner and Photo diary now use the same section header (new `LibrarySectionHeader.tsx`), search, chips and buttons as Meals, Recipes and Foods; the Meal diary icon is a notebook; and the planner offers *Same for all* or *Different for each* when several days / meals are selected.
+
 ## Quick start
 
 ```sh
