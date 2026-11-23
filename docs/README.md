@@ -18,6 +18,7 @@
 | Understand header / dialogs | [journal-shell.md](journal-shell.md) |
 | Understand a page (Today, Food, Movement, Custom, Statistics, Period, Settings), or how the meal is preselected by the time of day | [journal-pages.md](journal-pages.md) |
 | Change meal planning, meal notes, meal diary or photo diary | [meal-journal.md](meal-journal.md) |
+| Change the Custom grid in Minimal mode, header icons, photo diary pop-ups, "Go to the meal", short share links, when the share pop-up opens | [custom-photo-share-update.md](custom-photo-share-update.md) |
 | Change animations / springs / swipe feel / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |

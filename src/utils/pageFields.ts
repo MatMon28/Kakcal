@@ -27,7 +27,9 @@ export function collectPageFields(page: HTMLElement): HTMLElement[] {
 
 export function animatePageFields(page: HTMLElement | null | undefined) {
   if (!page || prefersReducedMotion()) return;
-  const fields = collectPageFields(page).slice(0, MAX_FIELDS);
+  // Fields of a container marked `data-static-fields` (the Custom page grid) are not animated one by one: they are
+  // simply there, all together, with the page.
+  const fields = collectPageFields(page).filter((f) => !f.parentElement?.hasAttribute('data-static-fields')).slice(0, MAX_FIELDS);
   fields.forEach((field, index) => {
     if (!field.animate) return;
     field.animate(

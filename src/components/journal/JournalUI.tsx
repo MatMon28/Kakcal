@@ -49,6 +49,7 @@ export function JournalSection({
       data-library-section={`journal-${tone}`}
       data-tone={tone}
       data-minimal={settings.ultraMinimal || undefined}
+      data-section-open={open}
     >
       <LibrarySectionHeader
         title={title}

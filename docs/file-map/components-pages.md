@@ -1,6 +1,10 @@
 # File map: Page components: prebuilt, database, history, period
 
-`src/components/journal/PlanTransfer.tsx`: serverless share/copy links, plain-text export/import, import preview and start-date selection.
+`src/components/journal/PlanTransfer.tsx`: serverless short share/copy links, plain-text export/import, import preview and start-date selection; opens only from a received link or a real press on the share icon.
+
+`src/components/journal/JournalPickers.tsx`: `JournalDateField` (calendar icon + date, stack or full-width bar) and `JournalMealSelect` (shows only the chosen meal, pressing lists the others) for the photo diary pop-ups.
+
+Minimal-mode Custom grid: `PreBuiltMealsView.tsx` (`journal-minimal-grid`, `data-section-open`, `data-library-id`, `kc:open-library`), `JournalUI.tsx` (`data-section-open`), `journal.css`; see [custom-photo-share-update.md](../custom-photo-share-update.md).
 
 > **Scope:** Custom (meals) page, Foods database, Statistics, Period pages.
 >

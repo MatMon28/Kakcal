@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
   ArrowUpRight,
   Camera,
-  CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
   ImagePlus,
   LockKeyhole,
-  Plus,
   Trash2,
   Upload,
   X,
@@ -17,12 +15,14 @@ import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { journalId, removeMealPhoto, saveMealPhoto, useMealJournal } from '../../utils/journalStore';
+import { revealLibraryItem, revealMealSlot } from '../../utils/journalNavigation';
 import type { MealSlotId } from '../../types';
 import type { MealPhoto } from '../../types/journal';
 import { Modal } from '../common/Modal';
 import { MealSlotIcon } from '../common/mealSlotIcon';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './JournalUI';
+import { JournalDateField, JournalMealSelect } from './JournalPickers';
 
 export function PhotoDiary() {
   const { settings, selectedDate, language } = useApp();
@@ -228,8 +228,9 @@ function PhotoComposer({
   onClose: () => void;
 }) {
   const { language } = useApp();
-  const { options, label } = useMealSlots();
+  const { label } = useMealSlots();
   const j = useJournalText();
+  const formId = useId();
   const [date, setDate] = useState(initialDate);
   const [slot, setSlot] = useState(initialSlot);
   const [note, setNote] = useState(initialNote);
@@ -314,12 +315,28 @@ function PhotoComposer({
       title={j('A meal to remember', 'Un pasto da ricordare')}
       subtitle={j('Capture the moment, not just the macros.', 'Ricorda il momento, non solo i nutrienti.')}
       maxWidth="max-w-lg"
+      footer={
+        // Always visible under the scrolling form, as wide as the pop-up fields.
+        <button type="submit" form={formId} className="journal-primary-button journal-footer-button" disabled={busy}>
+          <Check size={17} />
+          {j('Save photo', 'Salva foto')}
+        </button>
+      }
     >
       <form
+        id={formId}
         className="journal-form"
         onSubmit={(e) => {
           e.preventDefault();
-          if (!src || !date || busy) return;
+          if (busy) return;
+          if (!src) {
+            setError(j('Choose or take a photo first.', 'Scegli o scatta prima una foto.'));
+            return;
+          }
+          if (!date) {
+            setError(j('Choose a date first.', 'Scegli prima una data.'));
+            return;
+          }
           try {
             saveMealPhoto({
               id: journalId(),
@@ -341,17 +358,10 @@ function PhotoComposer({
           }
         }}
       >
-        <label className="journal-photo-date">
-          <CalendarDays size={18} aria-hidden="true" />
-          <span className="sr-only">{j('Date', 'Data')}</span>
-          <input required aria-label={j('Photo date', 'Data foto')} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-        </label>
-        <fieldset className="journal-photo-meals">
-          <legend>{j('Meal', 'Pasto')}</legend>
-          <div className="journal-slot-picker">
-            {options.map((meal) => <button type="button" key={meal.id} aria-pressed={slot === meal.id} className={slot === meal.id ? 'is-selected' : ''} onClick={() => setSlot(meal.id)}><MealSlotIcon slot={meal.id} size={17} />{meal.label}</button>)}
-          </div>
-        </fieldset>
+        <div className="journal-photo-controls">
+          <JournalDateField value={date} onChange={setDate} label={j('Photo date', 'Data foto')} />
+          <JournalMealSelect value={slot} onChange={setSlot} />
+        </div>
         <input
           ref={fileRef}
           type="file"
@@ -452,16 +462,10 @@ function PhotoComposer({
             {error}
           </p>
         )}
-        <div className="journal-form-actions">
-          <span className="journal-private-label">
-            <LockKeyhole size={13} />
-            {j('Saved on this device only', 'Salvata solo su questo dispositivo')}
-          </span>
-          <button type="submit" className="journal-primary-button" disabled={!src || busy || !date}>
-            <Check size={17} />
-            {j('Save photo', 'Salva foto')}
-          </button>
-        </div>
+        <span className="journal-private-label">
+          <LockKeyhole size={13} />
+          {j('Saved on this device only', 'Salvata solo su questo dispositivo')}
+        </span>
       </form>
     </Modal>
   );
@@ -470,13 +474,12 @@ function PhotoComposer({
 function PhotoBrowser({ onClose }: { onClose: () => void }) {
   const { photos } = useMealJournal();
   const { options } = useMealSlots();
-  const { language, selectedDate } = useApp();
+  const { language } = useApp();
   const j = useJournalText();
   const [query, setQuery] = useState('');
   const [slot, setSlot] = useState('');
   const [date, setDate] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
-  const [add, setAdd] = useState(false);
   const matching = photos
     .filter(
       (p) =>
@@ -495,18 +498,22 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
         maxWidth="max-w-3xl"
       >
         <div className="journal-form">
+          {/* Search and date fields are as wide as the pop-up. */}
           <div className="journal-gallery-search">
             <JournalSearch
               value={query}
               onChange={setQuery}
               placeholder={j('Find a photo by its note...', 'Cerca una foto dalla sua nota...')}
             />
-            <button type="button" className="journal-primary-button" onClick={() => setAdd(true)}>
-              <Plus size={16} />
-              {j('Add photo', 'Aggiungi foto')}
-            </button>
           </div>
-          <label className="journal-photo-date"><CalendarDays size={18} /><span className="sr-only">{j('Date', 'Data')}</span><input aria-label={j('Filter photo date', 'Filtra data foto')} type="date" value={date} onChange={(e) => setDate(e.target.value)} />{date && <button type="button" aria-label={j('Clear date', 'Cancella data')} onClick={() => setDate('')}><X size={14} /></button>}</label>
+          <JournalDateField
+            variant="bar"
+            value={date}
+            onChange={setDate}
+            onClear={() => setDate('')}
+            label={j('Filter photo date', 'Filtra data foto')}
+            emptyLabel={j('Any date', 'Qualsiasi data')}
+          />
           <div className="journal-slot-picker"><button type="button" aria-pressed={!slot} className={!slot ? 'is-selected' : ''} onClick={() => setSlot('')}>{j('All meals', 'Tutti i pasti')}</button>{options.map((meal) => <button type="button" key={meal.id} aria-pressed={slot === meal.id} className={slot === meal.id ? 'is-selected' : ''} onClick={() => setSlot(meal.id)}><MealSlotIcon slot={meal.id} size={16} />{meal.label}</button>)}</div>
           <div className="journal-full-photo-grid">
             {matching.map((photo) => (
@@ -534,8 +541,7 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </Modal>
-      {selected && <PhotoViewer photos={matching} selectedId={selected} onClose={() => setSelected(null)} />}
-      {add && <PhotoComposer initialDate={selectedDate} onClose={() => setAdd(false)} />}
+      {selected && <PhotoViewer photos={matching} selectedId={selected} onClose={() => setSelected(null)} onLeave={onClose} />}
     </>
   );
 }
@@ -544,11 +550,15 @@ function PhotoViewer({
   photos,
   selectedId,
   onClose,
+  onLeave,
 }: {
   photos: MealPhoto[];
   selectedId: string;
   onClose: () => void;
+  /** Closes the parents of the viewer (e.g. the gallery) when the user jumps to the meal. */
+  onLeave?: () => void;
 }) {
+  const { setActiveTab, setSelectedDate } = useApp();
   const [id, setId] = useState(selectedId);
   const index = photos.findIndex((p) => p.id === id);
   const photo = photos[index];
@@ -623,6 +633,27 @@ function PhotoViewer({
               }}
             />
           </label>
+          <button
+            type="button"
+            className="journal-secondary-button journal-go-to-meal"
+            onClick={() => {
+              // A picture attached to a saved meal / recipe opens it on Custom; every other picture opens its
+              // meal on Today, on the day it was taken.
+              if (photo.linkedId) {
+                setActiveTab('prebuilt');
+                revealLibraryItem(photo.linkedId);
+              } else {
+                setSelectedDate(photo.date);
+                setActiveTab('today');
+                revealMealSlot(photo.slot);
+              }
+              onClose();
+              onLeave?.();
+            }}
+          >
+            <ArrowUpRight size={15} />
+            {photo.linkedId ? j('Go to the meal or recipe', 'Vai al pasto o ricetta') : j('Go to the meal', 'Vai al pasto')}
+          </button>
           {error && (
             <p role="alert" className="journal-error">
               {error}

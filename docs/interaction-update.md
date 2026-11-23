@@ -21,7 +21,7 @@
 - The planner's share icon opens share/import. Share this week or all plans by self-contained link, using the device share sheet or copy/select fallback. No backend, URL shortener or new third-party API is used.
 - Links contain selected meals, food snapshots and notes in the URL fragment. Anyone with the link can read them. Read/logged state, photos and the rest of the journal are not shared.
 - Import accepts a link or readable `.txt` export, validates the bundle, previews meals and allows moving the start date before an additive save. It never logs food or replaces existing plans. Unknown meal categories map to Lunch with a warning.
-- UTF-8 text is supported. Food snapshots are deduplicated to shorten links. Payloads over 12,000 encoded characters use the readable text fallback; import sizes/counts/amounts/dates are bounded and checked.
+- UTF-8 text is supported. Food snapshots are deduplicated and links are compressed (format 2, see [custom-photo-share-update.md](custom-photo-share-update.md)). Payloads over 12,000 encoded characters use the readable text fallback; import sizes/counts/amounts/dates are bounded and checked.
 - Browser/PWA links use the current web host. APK links use the repository's existing public homepage, `https://matmon28.github.io/Kakcal/`, not the device-local origin. Self-hosters can set `VITE_PUBLIC_APP_URL` at build time.
 
 ## Pictures And Mobile

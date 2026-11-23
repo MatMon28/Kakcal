@@ -55,6 +55,16 @@ export const TodayView: React.FC = () => {
     return () => window.removeEventListener('kc:inspect-day', onInspect);
   }, []);
 
+  // "Go to the meal" from the photo viewer expands that meal (the date is already selected by the caller).
+  useEffect(() => {
+    const onOpenMeal = (event: Event) => {
+      const slot = (event as CustomEvent<unknown>).detail;
+      if (typeof slot === 'string') setOpenSlots((prev) => (prev.includes(slot as MealSlotId) ? prev : [...prev, slot as MealSlotId]));
+    };
+    window.addEventListener('kc:open-meal', onOpenMeal);
+    return () => window.removeEventListener('kc:open-meal', onOpenMeal);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Meal expansion and the chosen layout are remembered independently.
   const [openSlots, setOpenSlots] = usePersistentState<MealSlotId[]>('kcak_today_meals_open', []);
   const [layout, setLayout] = usePersistentState<MealLayout>('kcak_today_meal_layout', 'normal');

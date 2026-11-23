@@ -26,15 +26,98 @@ function bundle(plans: MealPlan[]): Bundle {
   })) };
 }
 
-export function createPlanLink(plans: MealPlan[]) {
-  const bytes = new TextEncoder().encode(JSON.stringify(bundle(plans)));
-  const encoded = btoa(Array.from(bytes, (byte) => String.fromCharCode(byte)).join('')).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+/* ---- Short links (format 2) ------------------------------------------------------------------------------
+ * Links stay serverless and work offline: no shortener, no API. They get short in four ways:
+ *  - the address is only the app address plus `#p=` (the fragment alone opens the Custom page);
+ *  - one compact positional array instead of verbose JSON keys, dates stored as day offsets;
+ *  - the text is deflate-compressed with the browser's built-in CompressionStream when available;
+ *  - base64url without padding.
+ * Older `#meal-plan=` links (format 1, plain JSON) still import. */
+type Food2 = (string | number | null)[];
+type Plan2 = [number, string, string, 0 | 1, string, [number, number][]];
+type Bundle2 = [2, string, Food2[], Plan2[]];
+const DAY = 86400000;
+const dayNumber = (date: string) => Math.floor(new Date(`${date}T12:00:00Z`).getTime() / DAY);
+const dayString = (day: number) => new Date(day * DAY + DAY / 2).toISOString().slice(0, 10);
+
+function toBytes(text: string) { return new TextEncoder().encode(text); }
+function toBase64Url(bytes: Uint8Array) {
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += 0x8000) binary += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function fromBase64Url(text: string) {
+  if (!/^[A-Za-z0-9_-]+$/.test(text) || text.length > 100000) throw new Error('invalid');
+  return Uint8Array.from(atob(text.replace(/-/g, '+').replace(/_/g, '/')), (c) => c.charCodeAt(0));
+}
+async function pipe(bytes: Uint8Array, stream: { writable: WritableStream; readable: ReadableStream }) {
+  const writer = stream.writable.getWriter();
+  void writer.write(bytes as BufferSource).then(() => writer.close()).catch(() => undefined);
+  return new Uint8Array(await new Response(stream.readable).arrayBuffer());
+}
+async function deflate(bytes: Uint8Array): Promise<Uint8Array | null> {
+  if (typeof CompressionStream === 'undefined') return null;
+  try { return await pipe(bytes, new CompressionStream('deflate-raw')); } catch { return null; }
+}
+async function inflate(bytes: Uint8Array): Promise<Uint8Array> {
+  if (typeof DecompressionStream === 'undefined') throw new Error('unsupported');
+  const out = await pipe(bytes, new DecompressionStream('deflate-raw'));
+  if (out.length > 1000000) throw new Error('too-large');
+  return out;
+}
+
+function bundle2(plans: MealPlan[]): Bundle2 {
+  const base = plans.reduce((min, p) => (p.date < min ? p.date : min), plans[0].date);
+  const baseDay = dayNumber(base);
+  const foods: Food2[] = [];
+  const indices = new Map<string, number>();
+  const compactPlans = plans.map((plan): Plan2 => [
+    dayNumber(plan.date) - baseDay, plan.slot, plan.title, plan.kind === 'note' ? 1 : 0, plan.note,
+    plan.items.map(({ food, amount }): [number, number] => {
+      const key = JSON.stringify(food);
+      let index = indices.get(key);
+      if (index === undefined) {
+        index = foods.length;
+        indices.set(key, index);
+        const f: Food2 = [food.id, food.name_en, food.name_it === food.name_en ? 0 : food.name_it, food.name_de === food.name_en ? 0 : food.name_de,
+          food.calories, food.carbs, food.protein, food.fat, food.fiber, food.salt, food.sugar ?? null, food.unit === 'ml' ? 1 : 0, food.store, food.category, food.portion ?? null];
+        while (f.length > 12 && f[f.length - 1] === null) f.pop();
+        foods.push(f);
+      }
+      return [index, amount];
+    }),
+  ]);
+  return [2, base, foods, compactPlans];
+}
+
+function bundleFrom2(raw: unknown): Bundle {
+  if (!Array.isArray(raw) || raw[0] !== 2 || typeof raw[1] !== 'string' || !Array.isArray(raw[2]) || !Array.isArray(raw[3]) || raw[2].length > 1000 || raw[3].length > MAX_PLANS) throw new Error('invalid');
+  const baseDay = dayNumber(raw[1]);
+  if (!Number.isFinite(baseDay)) throw new Error('invalid');
+  const foods = (raw[2] as Food2[]).map((f) => {
+    if (!Array.isArray(f) || f.length < 12 || typeof f[0] !== 'string' || typeof f[1] !== 'string') throw new Error('invalid');
+    const name = (value: unknown) => (value === 0 ? (f[1] as string) : (value as string));
+    return { id: f[0], name_en: f[1], name_it: name(f[2]), name_de: name(f[3]), calories: f[4] as number, carbs: f[5] as number | null, protein: f[6] as number | null,
+      fat: f[7] as number | null, fiber: f[8] as number | null, salt: f[9] as number | null, sugar: (f[10] ?? undefined) as number | undefined,
+      unit: f[11] === 1 ? 'ml' : 'g', store: f[12] as FoodItem['store'], category: f[13] as FoodItem['category'], portion: (f[14] ?? undefined) as number | undefined } as FoodItem;
+  });
+  const plans = (raw[3] as Plan2[]).map((p) => {
+    if (!Array.isArray(p) || p.length !== 6 || !Number.isInteger(p[0]) || p[0] < 0 || p[0] > 36500) throw new Error('invalid');
+    return { d: dayString(baseDay + p[0]), s: p[1], t: p[2], k: p[3] === 1 ? 'note' : 'food', n: p[4], i: p[5] } as PortablePlan;
+  });
+  return { v: 1, p: plans, f: foods };
+}
+
+export async function createPlanLink(plans: MealPlan[]) {
+  const plain = toBytes(JSON.stringify(bundle2(plans)));
+  const packed = await deflate(plain);
+  const encoded = packed && packed.length + 1 < plain.length ? `z${toBase64Url(packed)}` : `j${toBase64Url(plain)}`;
   if (encoded.length > 12000) throw new Error('too-large');
   const publicUrl = import.meta.env.VITE_PUBLIC_APP_URL || 'https://matmon28.github.io/Kakcal/';
   const url = new URL(isAndroidApp() ? publicUrl : window.location.href);
   if (!/^https?:$/.test(url.protocol)) throw new Error('unsupported-origin');
-  url.search = '?view=app&tab=custom';
-  url.hash = `meal-plan=${encoded}`;
+  url.search = '';
+  url.hash = `p=${encoded}`;
   return url.toString();
 }
 
@@ -43,17 +126,31 @@ export function createPlanText(plans: MealPlan[]) {
   return `Kakcal meal plan\n\n${overview}\n\n--- Kakcal data ---\n${JSON.stringify(bundle(plans), null, 2)}`;
 }
 
-export function parsePlanInput(input: string): MealPlan[] {
+export async function parsePlanInput(input: string): Promise<MealPlan[]> {
   if (input.length > 1000000) throw new Error('too-large');
   let json = input.trim();
-  const marker = '#meal-plan=';
-  if (json.includes(marker)) {
-    const encoded = json.slice(json.indexOf(marker) + marker.length).split(/[\s&]/)[0];
-    if (!/^[A-Za-z0-9_-]+$/.test(encoded) || encoded.length > 100000) throw new Error('invalid');
-    const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    json = new TextDecoder('utf-8', { fatal: true }).decode(Uint8Array.from(atob(base64), (c) => c.charCodeAt(0)));
-  } else if (json.includes('--- Kakcal data ---')) json = json.split('--- Kakcal data ---')[1].trim();
-  const raw = JSON.parse(json) as Bundle;
+  const short = json.indexOf('#p=');
+  const legacy = json.indexOf('#meal-plan=');
+  let raw: unknown;
+  if (short >= 0 || legacy >= 0) {
+    const useShort = short >= 0;
+    const marker = useShort ? '#p=' : '#meal-plan=';
+    const encoded = json.slice((useShort ? short : legacy) + marker.length).split(/[\s&]/)[0];
+    if (useShort) {
+      const bytes = fromBase64Url(encoded.slice(1));
+      const text = new TextDecoder('utf-8', { fatal: true }).decode(encoded[0] === 'z' ? await inflate(bytes) : bytes);
+      raw = bundleFrom2(JSON.parse(text));
+    } else {
+      raw = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(fromBase64Url(encoded)));
+    }
+  } else {
+    if (json.includes('--- Kakcal data ---')) json = json.split('--- Kakcal data ---')[1].trim();
+    raw = JSON.parse(json);
+  }
+  return validateBundle(raw as Bundle);
+}
+
+function validateBundle(raw: Bundle): MealPlan[] {
   if (!raw || raw.v !== 1 || !Array.isArray(raw.p) || !raw.p.length || raw.p.length > MAX_PLANS || !Array.isArray(raw.f) || raw.f.length > 1000) throw new Error('invalid');
   const plans = raw.p.map((p) => {
     if (!p || typeof p.t !== 'string' || p.t.length > 500 || typeof p.n !== 'string' || p.n.length > 4000 || !Array.isArray(p.i) || p.i.length > 100) throw new Error('invalid');

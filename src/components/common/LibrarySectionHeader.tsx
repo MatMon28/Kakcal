@@ -1,4 +1,4 @@
-import React, { useId, useState } from 'react';
+import React, { useId, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDown, Plus, Search, X } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
@@ -15,6 +15,41 @@ export const libraryPalettes = {
 /** Transparent circle button used in every section header (search, filter, +). */
 export const libraryIconButton =
   'pressable size-8 rounded-full bg-transparent hover:opacity-75 text-[var(--text)] flex items-center justify-center';
+
+const ICON_CIRCLE = 36; // left icon circle (size-9)
+const ROW_GAP = 8; // gap-2 between the icon button and the actions
+const BUTTON = 32; // chevron button (size-8)
+const ACTION_GAP = 6; // gap-1.5
+
+/**
+ * In Minimal mode a collapsed section is only half a row wide. The optional action buttons (search, share, filter, +)
+ * that do not fit are hidden; they come back when the section is expanded (full row). The last button (usually +)
+ * is the one kept the longest. Hiding is done on the DOM nodes so that any button passed in `extraActions` works.
+ */
+function useFitActions(row: React.RefObject<HTMLDivElement | null>, group: React.RefObject<HTMLDivElement | null>, compact: boolean, deps: unknown[]) {
+  useLayoutEffect(() => {
+    const rowEl = row.current;
+    const groupEl = group.current;
+    if (!rowEl || !groupEl) return;
+    const fit = () => {
+      const buttons = Array.from(groupEl.children).filter((c): c is HTMLElement => c instanceof HTMLElement);
+      buttons.forEach((b) => { b.style.display = ''; });
+      if (!compact) return;
+      let room = rowEl.clientWidth - ICON_CIRCLE - ROW_GAP - BUTTON - ACTION_GAP;
+      for (let i = buttons.length - 1; i >= 0; i -= 1) {
+        const width = buttons[i].offsetWidth + ACTION_GAP;
+        if (room - width >= 0) room -= width;
+        else { for (let k = i; k >= 0; k -= 1) buttons[k].style.display = 'none'; break; }
+      }
+    };
+    fit();
+    if (!compact || typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(fit);
+    observer.observe(rowEl);
+    return () => observer.disconnect();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [compact, ...deps]);
+}
 
 /**
  * Shared collapsible section header of the Custom page: icon circle, title + count + summary,
@@ -46,6 +81,9 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
     setSearchOpen(false);
     document.getElementById(`${inputId}-toggle`)?.focus();
   };
+  const rowRef = useRef<HTMLDivElement>(null);
+  const groupRef = useRef<HTMLDivElement>(null);
+  useFitActions(rowRef, groupRef, ultraMinimal && !open, [open, ultraMinimal, Boolean(onCreate), Boolean(setQuery), extraActions]);
   const palette = libraryPalettes[tone];
   // In Classic theme, only the coloured section header gets this palette; in the 6 new themes, inherit the theme tokens.
   const headerStyle =
@@ -59,7 +97,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
   const iconBtn = libraryIconButton;
   return (
     <div className="space-y-2" style={headerStyle}>
-      <div className="flex items-center justify-between gap-2">
+      <div ref={rowRef} className="flex items-center justify-between gap-2">
         {/* Title row toggles the whole section, like a meal card header on Today */}
         <button
           type="button"
@@ -82,6 +120,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
           </span>
         </button>
         <div className="flex items-center gap-1.5 shrink-0">
+          <div ref={groupRef} className="flex items-center gap-1.5">
           {setQuery && !ultraMinimal && (
             <button
               id={`${inputId}-toggle`}
@@ -108,6 +147,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
               <Plus size={16} strokeWidth={2.5} />
             </button>
           )}
+          </div>
           <button
             type="button"
             onClick={onToggle}

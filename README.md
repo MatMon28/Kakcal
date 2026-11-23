@@ -2,6 +2,8 @@
 
 ## Current Update
 
+**Custom / photo diary / short links round:** in Minimal mode the Custom fields (Meal diary and Meal planner included) compact two per row and hide the header icons that do not fit; outside Minimal every field takes the whole row; Custom fields appear together with no entrance stagger; the share pop-up opens only from a received link or a real press on the share icon; share links are much shorter (compressed, still serverless and offline); photo diary pop-ups got a calendar-icon date, a compact meal select, a footer Save button, full-width gallery search/date and a *Go to the meal* button in the viewer. See [docs/custom-photo-share-update.md](docs/custom-photo-share-update.md).
+
 Continuous Koink-style page selector, bottom-of-page swipes, cleaner Custom headers, personalized icons, readable diary actions, remembered planner entry mode, local link sharing/import, improved photo controls and picture exports. Review with `VITE_DEMO_DATA=true npm run dev`. See [docs/interaction-update.md](docs/interaction-update.md).
 > **Renamed:** the app is now called **Kakcal** everywhere the end user can see it (wordmark, intro/tour, install guide, manifest, Android launcher and widget names, page title, exported file names). Internal identifiers keep the old name on purpose so nothing breaks: the GitHub repository, `kakcalculator-*.svg` file names, `WIDGET_CHANNEL`, cache names (`kakcalculator-shell-*`), the `Kakcalculator.apk` / `Kakcalculator-Android-Studio.zip` file paths and the package id `com.kcalsync.app`. See [docs/brand.md](docs/brand.md#rename-kakcalculator--kakcal).
 

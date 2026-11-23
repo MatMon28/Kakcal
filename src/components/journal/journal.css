@@ -9,22 +9,38 @@
   gap: 18px;
   align-items: start;
 }
-.custom-library-grid > section {
+.custom-library-grid > section,
+.journal-minimal-grid > section {
   min-width: 0;
   margin: 0 !important;
-  animation: journal-arrive 0.5s both;
+  /* No entrance animation: every field of Custom is simply there, all together, like on the other pages. */
 }
-.custom-library-grid > section:nth-of-type(2) {
-  animation-delay: 0.055s;
+/* Minimal mode: collapsed fields sit two per row and fill it (a lone one takes the whole row);
+   an expanded field takes the whole row. The state comes from data-section-open on each section. */
+.journal-minimal-grid {
+  --minimal-gap: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--minimal-gap);
+  align-items: flex-start;
 }
-.custom-library-grid > section:nth-of-type(3) {
-  animation-delay: 0.1s;
+.journal-minimal-grid > section {
+  flex: 1 1 calc(50% - var(--minimal-gap) / 2);
 }
-.custom-library-grid > section:nth-of-type(4) {
-  animation-delay: 0.145s;
+.journal-minimal-grid > section[data-section-open='true'] {
+  flex-basis: 100%;
 }
-.custom-library-grid > section:nth-of-type(5) {
-  animation-delay: 0.19s;
+.journal-minimal-grid > .journal-feature {
+  padding: 8px;
+  border-radius: 24px;
+}
+@media (min-width: 640px) {
+  .journal-minimal-grid {
+    --minimal-gap: 12px;
+  }
+  .journal-minimal-grid > .journal-feature {
+    padding: 12px;
+  }
 }
 .journal-feature {
   --feature-bg: #f7e9aa;
@@ -1004,9 +1020,6 @@
   padding: 26px 0 2px;
   opacity: 0.65;
 }
-.journal-minimal-grid > .journal-feature {
-  grid-column: 1 / -1;
-}
 html[data-style]:not([data-style='classic']) .journal-feature {
   --feature-ink: var(--text);
   color: var(--text);
@@ -1049,14 +1062,7 @@ html[data-style='aurora'] .journal-photo-preview > span {
   }
 }
 @media (min-width: 760px) {
-  .custom-library-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-  .journal-meal-diary,
-  .custom-library-grid > [data-library-section='foods'] {
-    grid-column: 1 / -1;
-  }
+  /* Outside Minimal mode every field takes the whole row (a single column at every width). */
   .custom-library-grid > [data-library-section='meals'],
   .custom-library-grid > [data-library-section='recipes'] {
     padding: 19px;
@@ -1380,7 +1386,6 @@ html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark'])
   color: var(--text);
 }
 @media (prefers-reduced-motion: reduce) {
-  .custom-library-grid > section,
   .journal-filter-grid {
     animation: none;
   }
@@ -1709,4 +1714,132 @@ html[data-theme='lite-dark'] .journal-feature .journal-see-all { color: var(--te
 @media (prefers-reduced-motion: reduce) {
   .personal-icon-options { animation: none; }
   .library-browse-search { transition: none; }
+}
+
+/* ---------------------------------------------------------------------------
+   Photo diary pop-ups: date control, meal select, always-visible save button
+   --------------------------------------------------------------------------- */
+.journal-photo-controls {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-items: stretch;
+}
+.journal-date-field,
+.journal-meal-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 64px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--inset);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 700;
+}
+.journal-date-field.is-stack {
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+.journal-date-field .journal-date-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 650;
+}
+.journal-date-field.is-bar {
+  min-height: 42px;
+  justify-content: flex-start;
+  gap: 10px;
+  padding: 0 14px;
+}
+.journal-date-field.is-bar .journal-date-text {
+  flex: 1;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+}
+.journal-date-field.is-bar[data-empty] .journal-date-text {
+  color: var(--muted);
+}
+.journal-date-field svg {
+  flex-shrink: 0;
+}
+/* The native date input covers the whole control, invisible, so tapping anywhere opens the calendar. */
+.journal-form .journal-date-field > input[type='date'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  cursor: pointer;
+  appearance: none;
+}
+.journal-form .journal-date-field > input[type='date']::-webkit-calendar-picker-indicator {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.journal-date-clear {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-right: -6px;
+  border-radius: 999px;
+  color: var(--muted);
+}
+.journal-date-clear:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+.journal-date-field:focus-within,
+.journal-meal-select:focus-visible {
+  border-color: var(--muted);
+  outline: none;
+}
+.journal-meal-select {
+  gap: 8px;
+  cursor: pointer;
+}
+.journal-meal-select > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.journal-meal-select-chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+  transition: transform 150ms;
+}
+.journal-meal-select-chevron.is-open {
+  transform: rotate(180deg);
+}
+.journal-photo-controls > .journal-meal-options {
+  grid-column: 1 / -1;
+}
+.journal-footer-button {
+  width: 100%;
+}
+.journal-go-to-meal {
+  width: 100%;
+}
+.journal-gallery-search .journal-search {
+  width: 100%;
 }

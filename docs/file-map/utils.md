@@ -2,7 +2,11 @@
 
 `photoExport.ts`: local standard ZIP assembly, XMP JPEG descriptions, per-photo text notes and CSV index.
 
-`planSharing.ts`: compact UTF-8 plan-link codec, readable text export, strict import validation and download helper.
+`planSharing.ts`: short (format 2, deflate-compressed, `#p=`) plan-link codec with legacy `#meal-plan=` import, readable text export, strict import validation and download helper; `createPlanLink` / `parsePlanInput` are async.
+
+`incomingPlan.ts`: reads a received plan link once at start-up, removes it from the address bar and keeps it in memory (`startedWithPlanLink`, `peekIncomingPlan`, `clearIncomingPlan`), so the share pop-up never reopens by itself.
+
+`journalNavigation.ts`: `revealMealSlot` / `revealLibraryItem` expand a Today meal or a Custom meal/recipe card (used by the photo viewer's Go to the meal).
 
 `src/utils/pagePosition.ts`: lightweight continuous swipe-position publisher used by PageSwiper and the navigation pill.
 
@@ -36,7 +40,7 @@
 | `src/utils/mealByTime.ts` | Pure time-of-day rule for the preselected meal: `MEAL_TIME_WINDOWS`, `idealMealSlot(date)` and `mealSlotForTime(date, available)` (falls back to the closest available built-in meal). See [journal-pages.md](../journal-pages.md). |
 | (Round: left / right) `src/utils/advancedStore.ts`, `src/types/advanced.ts`, `src/i18n/advanced.ts` | `PAIRED_MEASURES`, `BODY_SIDES`, `isPairedMeasure`, `seriesKey`, `seriesKeysOf`, type `BodySide`; `normalizeBodyEntries` moves legacy un-sided values of paired measures to the right side; new `side` strings (EN / IT). |
 | `src/utils/scrollFade.ts` | Edge-fade for scrollable fields: `scrollFadeX` / `scrollFadeY` ref callbacks (and `scrollFadeRef(axis, extra)` to keep an own ref) set `data-scroll-fade`, `data-fade-start` and `data-fade-end` from the scroll position, size changes and content changes; the CSS mask lives in `index.css`. Used by `Modal.tsx`, `AddFoodModal.tsx`, `ActivitySearch.tsx`, `SettingsModal.tsx`, `FoodDatabaseView.tsx`, `PreBuiltMealsView.tsx`. |
-| `src/utils/pageFields.ts` | Page-change field entrance: `collectPageFields(page)` (advanced-layout items, else the first level with several children) and `animatePageFields(page)` (opacity 0 -> 1 + `translate` 5 px -> 0, 230 ms, 14 ms stagger capped at 9 steps, `fill: backwards`; skipped with `prefers-reduced-motion`). Called by `PageSwiper.tsx` on every tap / Back page change. |
+| `src/utils/pageFields.ts` (skips children of `data-static-fields`, the Custom grid) | Page-change field entrance: `collectPageFields(page)` (advanced-layout items, else the first level with several children) and `animatePageFields(page)` (opacity 0 -> 1 + `translate` 5 px -> 0, 230 ms, 14 ms stagger capped at 9 steps, `fill: backwards`; skipped with `prefers-reduced-motion`). Called by `PageSwiper.tsx` on every tap / Back page change. |
 | `src/utils/journalStore.ts` | Versioned meal plans, memories and photos; shared reactive localStorage state, validation, cross-tab updates, food snapshots, and JSON backup helpers. |
 
 android.ts declares the local exportFile bridge. planSharing.ts/saveLocalFile chooses browser downloads or the APK document picker; native links use the existing public homepage, configurable with VITE_PUBLIC_APP_URL.

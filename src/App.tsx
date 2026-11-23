@@ -52,6 +52,7 @@ import { useAutoMealSlot } from './utils/mealSlots';
 import { useAppReady } from './components/intro/useAppReady';
 import type { ActiveTab } from './types';
 import { DEMO_MODE } from './config/demo';
+import { startedWithPlanLink } from './utils/incomingPlan';
 
 const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'body', 'history'];
 
@@ -395,7 +396,7 @@ export function App() {
   // The guided tour is only for first-time browser visitors and can be skipped with ?view=app.
   const installed = isStandaloneApp() || import.meta.env.VITE_ANDROID_RELEASE === 'true' ||
     window.location.protocol === 'capacitor:' || isAndroidApp();
-  const showJournal = installed || view === 'app' || DEMO_MODE || window.location.hash.startsWith('#meal-plan=');
+  const showJournal = installed || view === 'app' || DEMO_MODE || startedWithPlanLink;
   // Launch intro (one of six random phase-1 animations); the app mounts underneath it.
   introPending ??= shouldShowIntro();
   const [introVisible, setIntroVisible] = useState(introPending);

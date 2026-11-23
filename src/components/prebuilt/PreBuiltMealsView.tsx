@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../../types';
 import { Modal } from '../common/Modal';
@@ -115,6 +115,18 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   );
   const toggleSection = (key: 'meals' | 'recipes' | 'foods') =>
     setSectionsOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+  // "Go to the meal" from the photo viewer: show the saved meal / recipe the picture belongs to.
+  useEffect(() => {
+    const onOpen = (event: Event) => {
+      const id = (event as CustomEvent<unknown>).detail;
+      if (typeof id !== 'string') return;
+      setSectionsOpen((prev) => ({ ...prev, meals: true, recipes: true }));
+      setOpenMeals((prev) => (prev.includes(id) ? prev : [...prev, id]));
+      setOpenRecipes((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    };
+    window.addEventListener('kc:open-library', onOpen);
+    return () => window.removeEventListener('kc:open-library', onOpen);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Delete confirmation for meals and recipes.
   const [pendingDelete, setPendingDelete] = useState<{ kind: 'meal' | 'recipe'; id: string; name: string } | null>(null);
 
@@ -428,10 +440,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
 
   return (
     <>
-    <div className={ultraMinimal ? 'journal-minimal-grid grid grid-cols-3 gap-2 sm:gap-3 items-start' : 'custom-library-grid'}>
+    <div className={ultraMinimal ? 'journal-minimal-grid' : 'custom-library-grid'} data-static-fields>
       <MealDiary />
       {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}
-      <section data-library-section="meals" className={`bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.meals ? 'col-span-3' : 'col-span-1') : ''}`}>
+      <section data-library-section="meals" className={`bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.meals}>
         <LibrarySectionHeader
           title={t.prebuilt.title}
           tone="meals"
@@ -468,6 +480,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                 <div
                   key={meal.id}
                   data-library-card
+                  data-library-id={meal.id}
                   className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}
                 >
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
@@ -588,7 +601,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       </section>
 
       {/* ============ RECIPES ============ */}
-      <section data-library-section="recipes" className={`bg-[#E2D6FF] border border-[#C9B8F2] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.recipes ? 'col-span-3' : 'col-span-1') : ''}`}>
+      <section data-library-section="recipes" className={`bg-[#E2D6FF] border border-[#C9B8F2] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.recipes}>
         <LibrarySectionHeader
           title={t.prebuilt.recipesTitle}
           tone="recipes"
@@ -620,7 +633,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
               return (
-                <div key={recipe.id} data-library-card className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
+                <div key={recipe.id} data-library-card data-library-id={recipe.id} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
                     <button
@@ -751,7 +764,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       <PhotoDiary />
 
       {/* ============ FOODS ============ */}
-      <section data-library-section="foods" className={`bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'} ${ultraMinimal ? (sectionsOpen.foods ? 'col-span-3' : 'col-span-1') : ''}`}>
+      <section data-library-section="foods" className={`bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.foods}>
         <LibrarySectionHeader
           title={t.database.title}
           tone="foods"

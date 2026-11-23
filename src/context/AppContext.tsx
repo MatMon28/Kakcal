@@ -45,6 +45,7 @@ import { allMealItems } from '../utils/mealItems';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
 import { DEFAULT_NOTIFICATION_SETTINGS, normalizeNotificationSettings } from '../utils/notifications';
+import { startedWithPlanLink } from '../utils/incomingPlan';
 import {
   createDemoPeriodData,
   DEMO_CUSTOM_BUTTONS,
@@ -995,7 +996,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Navigation tab (lifted so Settings can jump to the Foods database)
-  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => DEMO_MODE || window.location.hash.startsWith('#meal-plan=') || new URLSearchParams(window.location.search).get('tab') === 'custom' ? 'prebuilt' : 'today');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => DEMO_MODE || startedWithPlanLink || new URLSearchParams(window.location.search).get('tab') === 'custom' ? 'prebuilt' : 'today');
   const lastMainTabRef = React.useRef<ActiveTab>('today');
   const setActiveTab = (tab: ActiveTab) => {
     setActiveTabState((prev) => {
