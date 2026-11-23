@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   ArrowUpRight,
   Camera,
+  CalendarDays,
   Check,
   ChevronLeft,
   ChevronRight,
@@ -19,6 +20,7 @@ import { journalId, removeMealPhoto, saveMealPhoto, useMealJournal } from '../..
 import type { MealSlotId } from '../../types';
 import type { MealPhoto } from '../../types/journal';
 import { Modal } from '../common/Modal';
+import { MealSlotIcon } from '../common/mealSlotIcon';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './JournalUI';
 
@@ -339,6 +341,17 @@ function PhotoComposer({
           }
         }}
       >
+        <label className="journal-photo-date">
+          <CalendarDays size={18} aria-hidden="true" />
+          <span className="sr-only">{j('Date', 'Data')}</span>
+          <input required aria-label={j('Photo date', 'Data foto')} type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        </label>
+        <fieldset className="journal-photo-meals">
+          <legend>{j('Meal', 'Pasto')}</legend>
+          <div className="journal-slot-picker">
+            {options.map((meal) => <button type="button" key={meal.id} aria-pressed={slot === meal.id} className={slot === meal.id ? 'is-selected' : ''} onClick={() => setSlot(meal.id)}><MealSlotIcon slot={meal.id} size={17} />{meal.label}</button>)}
+          </div>
+        </fieldset>
         <input
           ref={fileRef}
           type="file"
@@ -418,22 +431,6 @@ function PhotoComposer({
             </div>
           </div>
         )}
-        <div className="journal-form-columns">
-          <label>
-            {j('Date', 'Data')}
-            <input required type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-          </label>
-          <label>
-            {j('Meal', 'Pasto')}
-            <select value={slot} onChange={(e) => setSlot(e.target.value as MealSlotId)}>
-              {options.map((o) => (
-                <option key={o.id} value={o.id}>
-                  {o.label}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
         <label>
           {j('A little note (optional)', 'Una nota (facoltativa)')}
           <textarea
@@ -509,23 +506,8 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
               {j('Add photo', 'Aggiungi foto')}
             </button>
           </div>
-          <div className="journal-form-columns">
-            <label>
-              {j('Meal', 'Pasto')}
-              <select value={slot} onChange={(e) => setSlot(e.target.value)}>
-                <option value="">{j('All meals', 'Tutti i pasti')}</option>
-                {options.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              {j('Date', 'Data')}
-              <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-            </label>
-          </div>
+          <label className="journal-photo-date"><CalendarDays size={18} /><span className="sr-only">{j('Date', 'Data')}</span><input aria-label={j('Filter photo date', 'Filtra data foto')} type="date" value={date} onChange={(e) => setDate(e.target.value)} />{date && <button type="button" aria-label={j('Clear date', 'Cancella data')} onClick={() => setDate('')}><X size={14} /></button>}</label>
+          <div className="journal-slot-picker"><button type="button" aria-pressed={!slot} className={!slot ? 'is-selected' : ''} onClick={() => setSlot('')}>{j('All meals', 'Tutti i pasti')}</button>{options.map((meal) => <button type="button" key={meal.id} aria-pressed={slot === meal.id} className={slot === meal.id ? 'is-selected' : ''} onClick={() => setSlot(meal.id)}><MealSlotIcon slot={meal.id} size={16} />{meal.label}</button>)}</div>
           <div className="journal-full-photo-grid">
             {matching.map((photo) => (
               <button

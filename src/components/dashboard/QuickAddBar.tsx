@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import { ActionDock, type DockAction } from '../common/ActionDock';
 import { PoopIcon } from '../common/PoopIcon';
 import { useAutoMealSlot } from '../../utils/mealSlots';
+import { TrackerIcon } from '../common/TrackerIcon';
 
 /** Food, activity and tracker shortcuts for the Today page only. */
 export function QuickAddBar() {
@@ -23,7 +24,7 @@ export function QuickAddBar() {
   if (quick.custom && settings.customButtons.length) {
     const single = settings.customButtons.length === 1 ? settings.customButtons[0] : undefined;
     actions.push({
-      id: 'custom', icon: <Sparkles size={20} />, tone: 'bg-[#F7E9AA] text-[#6E5B14]',
+      id: 'custom', icon: single ? <TrackerIcon icon={single.icon} size={20} /> : <Sparkles size={20} />, tone: 'bg-[#F7E9AA] text-[#6E5B14]',
       onClick: () => single ? setCustomButtonOpenId(single.id) : setIsCustomPickerOpen(true),
       label: single?.name ?? t.quickAdd.custom,
     });

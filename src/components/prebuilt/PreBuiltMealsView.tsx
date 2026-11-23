@@ -592,7 +592,6 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         <LibrarySectionHeader
           title={t.prebuilt.recipesTitle}
           tone="recipes"
-          summary={t.prebuilt.recipesDesc}
           icon={<ChefHatIcon size={16} />}
           count={savedRecipes.length}
           createLabel={t.prebuilt.createRecipe}
@@ -756,8 +755,8 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         <LibrarySectionHeader
           title={t.database.title}
           tone="foods"
-          summary={t.settings.foodsDesc}
           icon={<BookOpen size={16} />}
+          extraActions={<button type="button" className="library-browse-search" aria-label={t.database.browseAll} title={t.database.browseAll} onClick={() => { setTargetMealSlot(autoMealSlot()); setActiveTab('database'); }}><Search size={16} /></button>}
           createLabel={t.database.createCustom}
           onCreate={openCustomFood}
           open={sectionsOpen.foods}
@@ -796,7 +795,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             title={t.database.browseAll}
             aria-label={t.database.browseAll}
           >
-            <BookOpen size={16} className="shrink-0" />
+            <Search size={16} className="shrink-0" />
             <span className={ultraMinimal ? 'sr-only' : 'truncate'}>{t.database.browseAll}</span>
           </button>
         </div>

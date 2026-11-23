@@ -1,11 +1,15 @@
 import React, { useState } from 'react';
 import { Check, Pencil, Plus, RotateCcw, Trash2 } from 'lucide-react';
+import { IconPicker } from '../common/IconPicker';
+import { TrackerIcon } from '../common/TrackerIcon';
+import { useJournalText } from '../../i18n/journal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { useLayoutText } from '../../i18n/layout';
 import type { LayoutPageId } from '../../types/layout';
 import { addCustomMeasure } from '../../utils/advancedStore';
 import {
   addMealType,
+  setMealTypeIcon,
   removeMealType,
   resetPageLayout,
   setEditingPage,
@@ -91,6 +95,10 @@ export const LayoutToolbar: React.FC<{
   const { hidden } = useResolvedItems(page, items);
   const [adding, setAdding] = useState(false);
   const [name, setName] = useState('');
+  const [mealIcon, setMealIcon] = useState('soup');
+  const [iconCategory, setIconCategory] = useState('');
+  const { mealTypes } = useLayout();
+  const j = useJournalText();
   const [unit, setUnit] = useState('cm');
   const [confirmReset, setConfirmReset] = useState(false);
   const [pendingMeal, setPendingMeal] = useState<{ id: string; name: string } | null>(null);
@@ -110,7 +118,7 @@ export const LayoutToolbar: React.FC<{
   const done = () => { setAdding(false); setEditingPage(null); };
   const submit = () => {
     if (!name.trim()) return;
-    if (extra === 'meal') addMealType(name);
+    if (extra === 'meal') addMealType(name, mealIcon);
     if (extra === 'measure') addCustomMeasure(name, unit);
     setName('');
   };
@@ -191,6 +199,7 @@ export const LayoutToolbar: React.FC<{
               <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
                 {extra === 'meal' ? text.newMealTitle : text.newMeasureTitle}
               </span>
+              {extra === 'meal' && <IconPicker value={mealIcon} onChange={setMealIcon} />}
               <div className="flex items-end gap-1.5">
                 <input
                   type="text"
@@ -229,6 +238,13 @@ export const LayoutToolbar: React.FC<{
         </div>
       )}
 
+      {adding && extra === 'meal' && mealTypes.length > 0 && <div className="space-y-2">
+        <p className="text-xs font-bold">{j('Category icons', 'Icone categorie')}</p>
+        {mealTypes.map((meal) => <div key={meal.id}>
+          <button type="button" className="personal-icon-trigger" onClick={() => setIconCategory(iconCategory === meal.id ? '' : meal.id)}><TrackerIcon icon={meal.icon || 'soup'} size={18} /><span>{meal.name}</span><Pencil size={13} /></button>
+          {iconCategory === meal.id && <IconPicker value={meal.icon || 'soup'} onChange={(icon) => setMealTypeIcon(meal.id, icon)} />}
+        </div>)}
+      </div>}
       <ConfirmDialog
         open={confirmReset}
         title={text.resetTitle}

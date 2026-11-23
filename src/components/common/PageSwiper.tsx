@@ -4,6 +4,7 @@ import type { ActiveTab } from '../../types';
 import { prefersReducedMotion } from '../../utils/motion';
 import { animatePageFields } from '../../utils/pageFields';
 import { getOpenModalCount } from './Modal';
+import { setPagePosition } from '../../utils/pagePosition';
 
 interface PageSwiperProps {
   tabs: ActiveTab[];
@@ -72,6 +73,7 @@ export function PageSwiper(props: PageSwiperProps) {
       rail.current.style.willChange = '';
     }
     document.documentElement.classList.remove('kc-page-moving', 'kc-page-dragging');
+    setPagePosition(null);
   }, []);
 
   const rest = useCallback(() => {
@@ -89,6 +91,15 @@ export function PageSwiper(props: PageSwiperProps) {
       duration, easing: 'cubic-bezier(.2,0,0,1)', fill: 'none',
     });
     motion.current = animation;
+    const index = latest.current.tabs.indexOf(latest.current.activeTab);
+    const width = el.parentElement?.clientWidth || 1;
+    const followPill = () => {
+      if (motion.current !== animation) return;
+      const progress = Number(animation.effect?.getComputedTiming().progress ?? 0);
+      if (index >= 0) setPagePosition(index - (from / width) * (1 - progress));
+      frame.current = requestAnimationFrame(followPill);
+    };
+    followPill();
     animation.onfinish = () => { if (motion.current === animation) rest(); };
   }, [rest]);
 
@@ -173,7 +184,11 @@ export function PageSwiper(props: PageSwiperProps) {
       g.offset = g.target ? Math.max(-g.width, Math.min(g.width, damped)) : Math.max(-28, Math.min(28, resist * 0.2));
       if (!frame.current && !prefersReducedMotion()) frame.current = requestAnimationFrame(() => {
         frame.current = 0;
-        if (drag.current === g) el.style.transform = translate(g.offset);
+        if (drag.current === g) {
+          el.style.transform = translate(g.offset);
+          const index = latest.current.tabs.indexOf(latest.current.activeTab);
+          if (index >= 0) setPagePosition(index - g.offset / g.width);
+        }
       });
     };
     const up = (event: PointerEvent) => {
@@ -263,7 +278,7 @@ export function PageSwiper(props: PageSwiperProps) {
 
   const pages = peer && peer.tab !== activeTab ? [activeTab, peer.tab] : [activeTab];
   return (
-    <div className="relative overflow-x-clip" data-page-viewport>
+    <div className="relative overflow-x-clip min-h-[55dvh]" data-page-viewport>
       <div ref={rail} className="relative" data-page-rail>
         {pages.map((tab) => {
           const other = tab !== activeTab && peer;

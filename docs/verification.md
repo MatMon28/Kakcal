@@ -17,3 +17,7 @@ For repeatable web checks, prepare Android assets, run `npm run build`, install 
 **Verification status of this documentation:** the doc set was audited against repository commit `4552bf0` (see [README.md](README.md#last-audit)). The test scripts themselves were **not** re-run in that audit.
 
 **PWA manual check:** after `npm run build && npm run preview`, DevTools > Application should show a valid manifest, an activated `offline-worker.js` and cache `kakcalculator-shell-v5`; reloading with *Offline* ticked must still open the app. Full list in [pwa-setup.md](pwa-setup.md#5-verify).
+
+## Interaction Update
+
+Optional browser suite: `npm install --no-save @playwright/test && npx playwright install chromium` (minimal Linux: `npx playwright install-deps chromium`), then run the demo dev server and `node scripts/verify-interaction-update.mjs`. It covers link validation, planner mode, diary actions, photo save/export, custom icons and real mobile touch swipes. Outputs go to untracked `.test-output/`. Results and limits: interaction-update.md.

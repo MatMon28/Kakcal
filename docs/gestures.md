@@ -1,5 +1,9 @@
 # Gestures and Android Back
 
+## Continuous selector
+
+`PageSwiper` publishes its fractional page index through `utils/pagePosition.ts`, following Koink's rail/pill pattern. `Tabs` interpolates the indicator edges, label widths and pastel layers during dragging, settling and cancellation. Taps glide to their destination. Bottom-of-page blank space remains in the main swipe surface; previews must not increase the document's scroll height. Reduced motion keeps navigation functional without travel animations.
+
 > **Scope:** Which swipes switch tabs, which controls keep their own gestures, edge reservation and Back-button behaviour.
 >
 > **Read when:** you change swipe handling or Back handling in `App.tsx` / `PageSwiper.tsx`.
@@ -22,3 +26,5 @@ All numbers are named constants at the top of `PageSwiper.tsx` / inside `Modal.t
 | Swipe back from the food catalogue | 56 px |
 | Popup swipe-down starts | 2 px; dismisses past 56 px or on a flick (> 0.3 px/ms past 10 px); the handle area is taller |
 | **Today: swipe the calendar row** | `DayNavigator.tsx`: swipe left = next day, right = previous day, exactly the arrows' action (`setSelectedDate(addDaysToDateString(...))`). 20 px (or a 12 px quick flick) = one day per swipe; a swipe never also taps the calendar button; ignored while the calendar popover is open. |
+
+During rail movement the viewport clips both axes. Adjacent previews cannot enlarge scrollable document height when swiping from the bottom of Today.

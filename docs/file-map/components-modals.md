@@ -25,3 +25,5 @@
 | (Round: left / right) `src/components/modals/BodyMeasuresProfile.tsx` | Tiles of paired measures carry a small L·R badge (tracking stays one switch per measure). |
 | (Polish round) `SettingsModal.tsx` | Language is a collapsible group; the Foods database / browse button was removed; style presets show only their names; the quick-add food icon is `Utensils`. |
 | (Polish round) `WaterModal.tsx`, `PoopModal.tsx`, `AdvancedSettings.tsx`, `AddFoodModal.tsx`, `ActivitySearch.tsx` | Water: stepper above the quick buttons, `250ml`, **Save water**; Poop: *(optional)* next to *Bristol type*; Goals & limits items indented under a guide line (`data-goals-subsections`); meal chips carry `data-slot-chip` (Angular chamfer) and the chip rows / result lists use `scrollFadeX` / `scrollFadeY`. |
+
+SettingsModal delegates custom button icons to common/IconPicker.tsx. LayoutToolbar uses the same chooser for new and existing custom meal types.

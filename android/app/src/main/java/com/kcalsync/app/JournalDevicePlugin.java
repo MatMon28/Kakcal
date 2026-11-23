@@ -1,6 +1,7 @@
 package com.kcalsync.app;
 
 import android.app.Activity;
+import android.util.Base64;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import androidx.activity.result.ActivityResult;
@@ -96,6 +97,35 @@ public class JournalDevicePlugin extends Plugin {
     }
 
     @PluginMethod
+    public void exportFile(PluginCall call) {
+        String encoded = call.getString("base64");
+        String kind = call.getString("kind", "zip");
+        if (encoded == null || encoded.length() > 32000000 || !("zip".equals(kind) || "txt".equals(kind))) {
+            call.reject("Invalid export"); return;
+        }
+        File pending = null;
+        try {
+            pending = File.createTempFile("journal-backup-", "." + kind, getContext().getCacheDir());
+            try (FileOutputStream stream = new FileOutputStream(pending)) {
+                stream.write(Base64.decode(encoded, Base64.DEFAULT));
+            }
+            call.getData().remove("base64");
+            call.getData().put("pendingFile", pending.getName());
+        } catch (Exception error) {
+            if (pending != null) pending.delete();
+            call.reject("Could not prepare export"); return;
+        }
+        String filename = call.getString("filename", "kakcal-export." + kind)
+            .replaceAll("[^a-zA-Z0-9._-]", "_");
+        if (filename.length() > 120) filename = "kakcal-export." + kind;
+        Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType("zip".equals(kind) ? "application/zip" : "text/plain")
+            .putExtra(Intent.EXTRA_TITLE, filename);
+        startActivityForResult(call, save, "backupDestination");
+    }
+
+    @PluginMethod
     public void exportBackup(PluginCall call) {
         String json = call.getString("json");
         if (json == null) { call.reject("Missing backup"); return; }
@@ -118,11 +148,13 @@ public class JournalDevicePlugin extends Plugin {
     private void backupDestination(PluginCall call, ActivityResult result) {
         if (call == null) return;
         String name = call.getString("pendingFile", "");
-        if (!name.matches("journal-backup-[-0-9]+\\.json")) { call.reject("Backup expired"); return; }
+        if (!name.matches("journal-backup-[-0-9]+\\.(json|zip|txt)")) { call.reject("Backup expired"); return; }
         File pending = new File(getContext().getCacheDir(), name);
         if (result.getResultCode() != Activity.RESULT_OK || result.getData() == null || result.getData().getData() == null) {
             pending.delete();
-            call.resolve();
+            JSObject cancelled = new JSObject();
+            cancelled.put("cancelled", true);
+            call.resolve(cancelled);
             return;
         }
         bridge.execute(() -> {

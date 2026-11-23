@@ -25,3 +25,5 @@
 | `android/settings.gradle`, `android/capacitor.settings.gradle` | Pre-flight guard for `node_modules/` (see [Gradle guard](../android-gradle-guard.md)) and the generated Capacitor module mapping (three modules: android, app, local-notifications). Versions: `android/build.gradle` (AGP 8.13.0), `variables.gradle` (minSdk 24, compile/target 36), `app/build.gradle` (versionCode 3, versionName 1.1.0), wrapper Gradle 8.14.3. |
 | `android/app/src/test/.../ExampleUnitTest.java`, `androidTest/.../ExampleInstrumentedTest.java` | Unmodified Capacitor template tests (package `com.getcapacitor.myapp`). |
 | `android/BUILD_APK.md` | Android Studio build, signing and device-check guide. |
+
+JournalDevicePlugin.java now accepts bounded ZIP/text exports through its existing backup document-picker callback; cancellation is reported and temporary files are removed. No manifest/permission changes.

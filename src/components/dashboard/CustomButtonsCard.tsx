@@ -77,7 +77,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
     <TrackerCard
       title={t.quickAdd.custom}
       tone="custom"
-      icon={<Sparkles size={compact ? 15 : 16} strokeWidth={2.2} />}
+      icon={settings.customButtons.length === 1 ? <TrackerIcon icon={settings.customButtons[0].icon} size={compact ? 15 : 16} /> : <Sparkles size={compact ? 15 : 16} strokeWidth={2.2} />}
       headline={headline}
       summary={summary}
       onAdd={openAdd}

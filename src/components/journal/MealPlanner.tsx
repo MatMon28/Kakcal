@@ -30,6 +30,7 @@ import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MealSlotIcon } from '../common/mealSlotIcon';
 import { MealSummaryCard } from './MealSummaryCard';
+import { PlanTransfer } from './PlanTransfer';
 import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './JournalUI';
 
 export function MealPlanner() {
@@ -70,6 +71,7 @@ export function MealPlanner() {
         setQuery={setQuery}
         createLabel={j('Plan a meal', 'Pianifica un pasto')}
         onCreate={() => setEditing('new')}
+        extraActions={<PlanTransfer plans={plans} weekStart={weekStart} />}
       >
         {searching ? (
           <div className="journal-plan-list">
@@ -331,6 +333,7 @@ function PlanEditor({
     plan ? { kind: plan.kind, items: plan.items, title: plan.title, note: plan.note } : emptyEntry(),
   );
   const [perTarget, setPerTarget] = useState<Record<string, PlanEntry>>({});
+  const [preferredKind, setPreferredKind] = useState<PlanEntry['kind']>(plan?.kind ?? 'food');
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -347,7 +350,7 @@ function PlanEditor({
     return out;
   }, [date, days, slots, selectedSlots]);
   const eachMode = mode === 'each' && targets.length > 1;
-  const entryFor = (key: string) => perTarget[key] ?? emptyEntry();
+  const entryFor = (key: string) => perTarget[key] ?? { ...emptyEntry(), kind: preferredKind };
   const active = eachMode ? (targets.find((t) => t.key === activeKey) ?? targets[0]) : undefined;
   // The next row still to be filled (wrapping around), for the "Next meal" shortcut.
   const activeIndex = active ? targets.findIndex((t) => t.key === active.key) : -1;
@@ -364,6 +367,7 @@ function PlanEditor({
   const chooseMode = (next: 'same' | 'each') => {
     setMode(next);
     if (next === 'each') {
+      setPreferredKind(shared.kind);
       // Start every row from the meal already chosen for all, so only the exceptions need changing.
       setPerTarget((prev) => {
         const copy = { ...prev };
@@ -532,7 +536,10 @@ function PlanEditor({
                 key={active.key}
                 entry={entryFor(active.key)}
                 heading={targetLabel(active)}
-                onChange={(entry) => setPerTarget((prev) => ({ ...prev, [active.key]: entry }))}
+                onChange={(entry) => {
+                  setPreferredKind(entry.kind);
+                  setPerTarget((prev) => ({ ...prev, [active.key]: entry }));
+                }}
                 name={name}
               />
               {nextTarget && (

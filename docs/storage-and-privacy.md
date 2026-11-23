@@ -23,3 +23,11 @@ Camera scanning is optional and depends on `BarcodeDetector` and permission. Kno
 **Advanced layout:** `kcalsync_layout` (switch, per-page field order / widths / sizes / removed fields, meal types added by the user). Food logged in an added meal type lives in the normal day logs under `meals.custom_*`. Included in the JSON backup as `layout`.
 
 **Advanced personalisation:** `kcalsync_advanced` (goal/limit switches and values, body-measure switch, tracked measure ids, custom measures), `kcalsync_body` (recorded body measurements per series key and date: the measure id, or `id:left` / `id:right` for biceps, forearms, thighs and calves; older un-sided values of those measures are migrated to the right side on load / import) and the UI key `kcalsync_body_range` (selected Body page period). The JSON backup gets an `advanced` section with the first two; older backups without it import fine. See [advanced-personalisation.md](advanced-personalisation.md).
+
+Personalized tracker/category icons are local 96 px PNG data URLs and are included in existing settings/layout backups. No icon is uploaded to a service. Existing records without icons keep their defaults.
+
+Meal-plan links store selected meals/notes in the URL fragment, without a new API/backend. Anyone with the link can read it. Photo export is generated on-device as standard ZIP, JPEG XMP descriptions, text notes and CSV. Imported plans are previewed before additive save and do not log food.
+
+APK ZIP/text export reuses the existing local Android document picker. Only an internal plugin method is added: no external API or Android permission. Plan links from the APK point to the existing hosted web app rather than the device-local WebView origin. CSV note cells are protected against spreadsheet formula execution.
+
+Photo normalization/export retains legacy `/images/` references as well as base-path-aware demo images; existing JPEG/PNG/WebP data URLs remain unchanged.

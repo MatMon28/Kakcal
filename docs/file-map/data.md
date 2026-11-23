@@ -14,3 +14,5 @@
 | `src/data/activities.ts` | **Activities database** (181 entries from the 2024 Compendium of Physical Activities): MET, Compendium code, EN/IT names, categories and lookup helpers. |
 | `src/data/samplePreBuiltMeals.ts` | Empty production saved-meal list used when demo mode is disabled. |
 | `src/config/demo.ts`, `src/data/demoData.ts` | Single demo-mode switch and removable sample journal, period logs, custom trackers, meals and recipes. Normal-use default: seeding is off unless `VITE_DEMO_DATA=true`; `VITE_ANDROID_RELEASE=true` always disables it. |
+
+`src/data/journalDemo.ts`: opt-in sample meal plans, photo diary, notes and favorites. Only seeds missing journal storage in demo builds.

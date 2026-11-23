@@ -1,159 +1,101 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, PersonStanding } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
-import { ActiveTab } from '../../types';
+import type { ActiveTab } from '../../types';
 import { isPeriodShown } from '../../utils/tourPreview';
 import { useAdvanced } from '../../utils/advancedStore';
-import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, PersonStanding, ChevronLeft, ChevronRight } from 'lucide-react';
+import { getPagePosition, subscribePagePosition } from '../../utils/pagePosition';
 
-export const Tabs: React.FC = () => {
+export function Tabs() {
   const { t, activeTab, setActiveTab, settings } = useApp();
   const bodyShown = useAdvanced().body.enabled;
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const activeBtnRef = useRef<HTMLButtonElement | null>(null);
-  const [canScrollLeft, setCanScrollLeft] = useState(false);
-  const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const checkScroll = () => {
-    const el = scrollRef.current;
-    if (!el) {
-      setCanScrollLeft(false);
-      setCanScrollRight(false);
-      return;
-    }
-    setCanScrollLeft(el.scrollLeft > 4);
-    setCanScrollRight(el.scrollWidth - el.clientWidth - el.scrollLeft > 4);
-  };
-
-  useEffect(() => {
-    checkScroll();
-    // Only pan the tab strip. scrollIntoView can also move the journal underneath a sheet.
-    const nav = scrollRef.current;
-    const active = activeBtnRef.current;
-    if (nav && active && nav.scrollWidth > nav.clientWidth) {
-      const bounds = nav.getBoundingClientRect(), button = active.getBoundingClientRect();
-      const dx = Math.min(0, button.left - bounds.left) + Math.max(0, button.right - bounds.right);
-      if (dx) nav.scrollBy({ left: dx, behavior: 'instant' });
-    }
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [settings.hidePeriod, activeTab, bodyShown]);
-
-  const navItems = [
-    {
-      id: 'today' as ActiveTab,
-      label: t.nav.today,
-      icon: Flame,
-      activeClass: 'bg-[#F6D0D0] text-[#6E2326]',
-    },
-    {
-      id: 'prebuilt' as ActiveTab,
-      label: t.nav.prebuilt,
-      icon: UtensilsCrossed,
-      activeClass: 'bg-[#FAE0B4] text-[#6E4412]',
-    },
-    ...(isPeriodShown(settings.hidePeriod)
-      ? [
-          {
-            id: 'period' as ActiveTab,
-            label: t.nav.period,
-            icon: Droplet,
-            activeClass: 'bg-[#F4C6D8] text-[#6E2440]',
-          },
-        ]
-      : []),
-    // Advanced > Body measurements: the Body page sits just left of Statistics.
-    ...(bodyShown
-      ? [
-          {
-            id: 'body' as ActiveTab,
-            label: t.nav.body,
-            icon: PersonStanding,
-            activeClass: 'bg-[#E2D6FF] text-[#49346F]',
-          },
-        ]
-      : []),
-    {
-      id: 'history' as ActiveTab,
-      label: t.nav.history,
-      icon: TrendingUp,
-      activeClass: 'bg-[#CFE7FE] text-[#1A4670]',
-    },
-    ...(activeTab === 'database'
-      ? [
-          {
-            id: 'database' as ActiveTab,
-            label: t.nav.database,
-            icon: BookOpen,
-            activeClass: 'bg-[#C9EFD3] text-[#174A2B]',
-          },
-        ]
-      : []),
+  const nav = useRef<HTMLElement>(null);
+  const indicator = useRef<HTMLSpanElement>(null);
+  const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const layers = useRef<(HTMLSpanElement | null)[]>([]);
+  const shown = useRef<number | null>(null);
+  const frame = useRef(0);
+  const items = [
+    { id: 'today', label: t.nav.today, icon: Flame, color: '#F6D0D0' },
+    { id: 'prebuilt', label: t.nav.prebuilt, icon: UtensilsCrossed, color: '#FAE0B4' },
+    ...(isPeriodShown(settings.hidePeriod) ? [{ id: 'period', label: t.nav.period, icon: Droplet, color: '#F4C6D8' }] : []),
+    ...(bodyShown ? [{ id: 'body', label: t.nav.body, icon: PersonStanding, color: '#E2D6FF' }] : []),
+    { id: 'history', label: t.nav.history, icon: TrendingUp, color: '#CFE7FE' },
+    ...(activeTab === 'database' ? [{ id: 'database', label: t.nav.database, icon: BookOpen, color: '#C9EFD3' }] : []),
   ];
-
-  const handleSelect = (id: ActiveTab) => {
-    if (activeTab === id) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    } else {
-      setActiveTab(id);
-    }
-  };
-
+  const latest = useRef({ index: 0, count: 0 });
+  latest.current = { index: Math.max(0, items.findIndex((item) => item.id === activeTab)), count: items.length };
+  const draw = useCallback((value: number) => {
+    const p = Math.max(0, Math.min(latest.current.count - 1, value));
+    shown.current = p;
+    const lo = Math.floor(p), hi = Math.min(latest.current.count - 1, lo + 1), fraction = p - lo;
+    buttons.current.forEach((button, i) => {
+      button?.style.setProperty('--tab-weight', String(Math.max(0, 1 - Math.abs(p - i))));
+      const layer = layers.current[i];
+      if (layer) layer.style.opacity = i === lo ? '1' : i === hi ? String(fraction) : '0';
+    });
+    const a = buttons.current[lo], b = buttons.current[hi];
+    if (!a || !b || !indicator.current) return;
+    indicator.current.style.transform = `translate3d(${a.offsetLeft + (b.offsetLeft - a.offsetLeft) * fraction}px,0,0)`;
+    indicator.current.style.width = `${a.offsetWidth + (b.offsetWidth - a.offsetWidth) * fraction}px`;
+  }, []);
+  const glide = useCallback(() => {
+    cancelAnimationFrame(frame.current);
+    const from = shown.current ?? latest.current.index, to = latest.current.index, start = performance.now();
+    const step = (now: number) => {
+      const p = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : Math.min(1, (now - start) / 260);
+      draw(from + (to - from) * (1 - (1 - p) ** 3));
+      if (p < 1) frame.current = requestAnimationFrame(step);
+      else {
+        const strip = nav.current, active = buttons.current[to];
+        if (strip && active && strip.clientWidth && strip.scrollWidth > strip.clientWidth) {
+          strip.scrollTo({ left: Math.max(0, active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2), behavior: 'instant' });
+        }
+      }
+    };
+    frame.current = requestAnimationFrame(step);
+  }, [draw]);
+  useLayoutEffect(() => {
+    buttons.current.forEach((button) => {
+      const label = button?.querySelector('span');
+      if (button && label) button.style.setProperty('--tab-label-width', `${label.scrollWidth}px`);
+    });
+    if (getPagePosition() === null) glide();
+    else draw(getPagePosition()!);
+  });
+  useEffect(() => {
+    const unsubscribe = subscribePagePosition(() => {
+      const p = getPagePosition();
+      cancelAnimationFrame(frame.current);
+      if (p === null) glide(); else draw(p);
+    });
+    const refresh = () => {
+      buttons.current.forEach((button) => {
+        const label = button?.querySelector('span');
+        if (button && label) button.style.setProperty('--tab-label-width', `${label.scrollWidth}px`);
+      });
+      draw(shown.current ?? latest.current.index);
+    };
+    const observer = new ResizeObserver(refresh);
+    if (nav.current) observer.observe(nav.current);
+    void document.fonts.ready.then(refresh);
+    return () => { unsubscribe(); observer.disconnect(); cancelAnimationFrame(frame.current); };
+  }, [draw, glide]);
   return (
-    <div className="flex items-center justify-center pt-1.5 pb-1.5">
-      <div className="relative max-w-full">
-        <nav
-          ref={scrollRef}
-          onScroll={checkScroll}
-          aria-label="Primary"
-          className="kc-nav-pill inline-flex items-center gap-1 p-1 bg-[var(--surface)] border border-[var(--border)] rounded-full max-w-full overflow-x-auto no-scrollbar"
-        >
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-            return (
-              <button
-                key={item.id}
-                ref={isActive ? activeBtnRef : null}
-                type="button"
-                onClick={() => handleSelect(item.id)}
-                title={item.label}
-                aria-label={item.label}
-                aria-current={isActive ? 'page' : undefined}
-                className={`kc-nav-tab pressable flex items-center justify-center rounded-full text-xs sm:text-sm font-bold whitespace-nowrap ${
-                  isActive
-                    ? settings.ultraMinimal
-                      ? `kc-nav-tab-active w-8 h-8 shrink-0 ${item.activeClass}`
-                      : `kc-nav-tab-active h-8 gap-1.5 ${item.activeClass} px-3.5 sm:px-4`
-                    : 'w-8 h-8 text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--inset)]'
-                }`}
-              >
-                <Icon size={16} />
-                {isActive && !settings.ultraMinimal && <span>{item.label}</span>}
-              </button>
-            );
-          })}
-        </nav>
-        {canScrollLeft && (
-          <button
-            type="button"
-            aria-label={t.period.scrollHint}
-            onClick={() => scrollRef.current?.scrollBy({ left: -160, behavior: 'smooth' })}
-            className="pressable absolute left-1 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] flex items-center justify-center shadow-sm"
-          >
-            <ChevronLeft size={14} />
+    <div className="flex items-center justify-center py-1.5">
+      <nav ref={nav} className="kc-nav-pill kc-following-pill" aria-label="Primary">
+        <span ref={indicator} className="kc-following-indicator" aria-hidden="true">
+          {items.map((item, i) => <span key={item.id} ref={(node) => { layers.current[i] = node; }} style={{ background: item.color }} />)}
+        </span>
+        {items.map(({ id, label, icon: Icon }, i) => (
+          <button key={id} ref={(node) => { buttons.current[i] = node; }} type="button"
+            className={`kc-following-tab pressable ${settings.ultraMinimal ? 'is-ultra' : ''}`}
+            aria-label={label} title={label} aria-current={activeTab === id ? 'page' : undefined}
+            onClick={() => activeTab === id ? window.scrollTo({ top: 0, behavior: 'smooth' }) : setActiveTab(id as ActiveTab)}>
+            <Icon size={16} /><span>{label}</span>
           </button>
-        )}
-        {canScrollRight && (
-          <button
-            type="button"
-            aria-label={t.period.scrollHint}
-            onClick={() => scrollRef.current?.scrollBy({ left: 160, behavior: 'smooth' })}
-            className="pressable absolute right-1 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] flex items-center justify-center shadow-sm"
-          >
-            <ChevronRight size={14} />
-          </button>
-        )}
-      </div>
+        ))}
+      </nav>
     </div>
   );
-};
+}

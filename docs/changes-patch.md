@@ -1,6 +1,20 @@
 # Creating and applying `changes.patch`
 
-**Current patch (Today-style meals round, base `106c8a8` "Improvements on new features"):** new `src/components/common/mealSlotIcon.tsx` and `src/components/journal/MealSummaryCard.tsx`. Edited: `dashboard/MealSlotCard.tsx`, `journal/MealDiary.tsx`, `MealPlanner.tsx`, `JournalChrome.tsx` (`CustomPageHeading` removed), `journal.css`, `prebuilt/PreBuiltMealsView.tsx`, the root README and `docs/` (`meal-journal.md`, `journal-pages.md`, `changes-patch.md`, `file-map/components-{common,dashboard,pages}.md`). No package, Android, catalogue or data changes. Apply with `git apply --check changes.patch` then `git apply --index changes.patch`.
+**Current patch (interaction update, base `32841a6e85323eded337dde9e608fc015e3e6bfa`, "Improved Diary and planner"):** continuous Koink-style page pill and bottom swipes; personalized tracker/category icons; Custom header cleanup; diary/planner fixes; serverless share/import; photo controls and local ZIP/XMP export; opt-in demo data; and the existing Android document-picker plugin extended for ZIP/text. New files and verification limits are listed in [interaction-update.md](interaction-update.md).
+
+Apply from that repository revision:
+
+```sh
+git apply --check changes.patch
+git apply --index changes.patch
+npm ci
+npm run build
+```
+
+No package/config/permission change or new remote API. Rebuild the APK through the existing preparation flow for native ZIP/text export. The patch includes the three small local demo photographs, optional browser test and related docs. It excludes workspace-only `.env.local`, `src/main.tsx`, `index.html`, package files, dependencies, generated builds, screenshots, reference checkout and itself. The preview is in test mode; normal repository builds remain empty.
+
+
+**Previous patch (Today-style meals round, base `106c8a8` "Improvements on new features"):** new `src/components/common/mealSlotIcon.tsx` and `src/components/journal/MealSummaryCard.tsx`. Edited: `dashboard/MealSlotCard.tsx`, `journal/MealDiary.tsx`, `MealPlanner.tsx`, `JournalChrome.tsx` (`CustomPageHeading` removed), `journal.css`, `prebuilt/PreBuiltMealsView.tsx`, the root README and `docs/` (`meal-journal.md`, `journal-pages.md`, `changes-patch.md`, `file-map/components-{common,dashboard,pages}.md`). No package, Android, catalogue or data changes. Apply with `git apply --check changes.patch` then `git apply --index changes.patch`.
 
 **Previous patch (consistency round, base `dc6b6ff` "Added meal planning and diaries"):** new `src/components/common/LibrarySectionHeader.tsx` (extracted from `PreBuiltMealsView.tsx`). Edited: `PreBuiltMealsView.tsx`, `journal/JournalUI.tsx`, `MealDiary.tsx`, `MealPlanner.tsx`, `PhotoDiary.tsx`, `journal.css`, `modals/SettingsModal.tsx` (diary icon), the root README and `docs/` (`meal-journal.md`, `journal-pages.md`, `changes-patch.md`, `file-map/components-common.md`, `components-pages.md`). No package, Android, catalogue or data-migration changes; one new UI-only key per journal section (`kcak_journal_{yellow,blue,red}_open`). Apply with `git apply --check changes.patch` then `git apply --index changes.patch`.
 

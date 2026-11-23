@@ -32,3 +32,7 @@
 | `public/manifest.webmanifest`, `public/icons/*.png`, `public/_headers` | PWA manifest (relative `start_url`/`scope`, `start_url ./?view=app&source=pwa`, `prefer_related_applications: false`), the four PNG icons, and revalidation headers for Netlify/Cloudflare ([pwa.md](../pwa.md)). |
 | `scripts/generate-notification-icon.mjs` | Generates `res/drawable/ic_stat_kak.xml` and `public/icons/badge-96.png` from the logo geometry (poop merged into one outline, K as a hole); needs `npm i --no-save paper-jsdom sharp`; `--preview out.svg`. |
 | `scripts/render-pwa-icons.mjs` | Renders the PWA icons from the brand SVG with `sharp` (`npm i --no-save sharp`). |
+
+`public/images/demo-{breakfast,lunch,dinner}.jpg`: local Pexels photo fixtures used only by opt-in demo data (Miriam Alonso, Nadin Sh, cottonbro studio).
+
+`scripts/verify-interaction-update.mjs`: optional Playwright desktop/mobile regression suite for the interaction update; see verification.md.

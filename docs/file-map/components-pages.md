@@ -1,5 +1,7 @@
 # File map: Page components: prebuilt, database, history, period
 
+`src/components/journal/PlanTransfer.tsx`: serverless share/copy links, plain-text export/import, import preview and start-date selection.
+
 > **Scope:** Custom (meals) page, Foods database, Statistics, Period pages.
 >
 > **Read when:** you need to know which file implements something in this area (open only this file, not the others).
@@ -22,3 +24,5 @@
 | (Round: meal by time of day) `FoodDatabaseView.tsx`, `PreBuiltMealsView.tsx`, `App.tsx` | Foods and Custom pages (and the widget / tour *food* action in `App.tsx`) preselect the meal of the moment instead of `lunch` / `breakfast` / the last used meal; see [journal-pages.md](../journal-pages.md). |
 | (Round: left / right) `src/components/body/BodyView.tsx`, `BodyChart.tsx`, `BodyMeasureModal.tsx` | Paired measures (biceps, forearms, thighs, calves) show both sides: a card with two side chips and a two-line chart (`BodyChart` takes `series`), and a Left / Right switch in the update pop-up. |
 | (Round: Today-style meals) `PreBuiltMealsView.tsx`, `journal/JournalChrome.tsx`, `journal/MealDiary.tsx`, `MealPlanner.tsx`, `MealSummaryCard.tsx`, `journal.css` | Custom has no heading / tagline / *Create new* menu (`CustomPageHeading` removed with its CSS). Diary previews and planner rows use the Today slot icon and show the note instead of the foods; diary and plan details are `MealSummaryCard` views; the filter Reset is an icon. See [meal-journal.md](../meal-journal.md). |
+
+PhotoDiary: composer date control is first, followed by Today-style meal chips. MealPlanner: unfilled entries remember the last food/note editor type.

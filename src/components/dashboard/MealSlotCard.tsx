@@ -12,7 +12,7 @@ import { PlannedMeals } from '../journal/MealPlanner';
 import { InlineMealNote, MealNoteAction } from '../journal/MealDiary';
 import { MealPhotoAction, MealPhotos } from '../journal/PhotoDiary';
 import { useMealSlots } from '../../utils/mealSlots';
-import { mealSlotIcon } from '../common/mealSlotIcon';
+import { MealSlotIcon } from '../common/mealSlotIcon';
 import {
   Plus,
   Trash2,
@@ -151,7 +151,6 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   // Circle rule: the icon circle is transparent (same colour as the card, no border, no shadow),
   // so the macro pills stay the only coloured elements on a meal card. Size and round shape are kept.
   const getSlotDetails = (id: MealSlotId) => {
-    const icon = mealSlotIcon(id);
     switch (id) {
       case 'breakfast':
       case 'mid_morning':
@@ -159,15 +158,14 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
       case 'midday_snack':
       case 'dinner':
       case 'extra':
-        return { title: t.mealSlots[id], icon };
+        return { title: t.mealSlots[id] };
       default:
         // A meal type added with the advanced layout.
-        return { title: slotLabel(id), icon };
+        return { title: slotLabel(id) };
     }
   };
 
   const details = getSlotDetails(slotId);
-  const Icon = details.icon;
 
   const handleOpenAddFood = () => {
     if (dateOverride && dateOverride !== selectedDate) {
@@ -236,7 +234,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
 
   const slotBadge = (size: string, iconSize: number) => (
     <div className={`kc-meal-icon ${size} rounded-full flex items-center justify-center shrink-0 bg-transparent text-[var(--text)]`}>
-      <Icon size={iconSize} strokeWidth={2.2} />
+      <MealSlotIcon slot={slotId} size={iconSize} />
     </div>
   );
 

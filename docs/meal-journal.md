@@ -1,5 +1,12 @@
 # Meal planning and diaries
 
+## Interaction Update
+
+- Recipe and Foods headers no longer show descriptive text. Foods keeps a search shortcut while collapsed.
+- See all meals uses a high-contrast surface. Log today targets the actual current date rather than the browsed day.
+- Different for each remembers the last food/note mode for unfilled meals, without copying text or overriding existing entries.
+- Review builds open Custom directly and enable photos/notes for missing settings. Normal builds retain their empty-journal defaults.
+
 > **Scope:** meal plans, meal memories, photographs, and their Today / Custom integration.
 >
 > **Read when:** changing a planner or diary workflow.
@@ -7,6 +14,8 @@
 > **Related:** journal-pages.md, storage-and-privacy.md, file-map/components-pages.md
 
 ## Meal planner
+
+Use the share icon to share this week/all plans by self-contained link, or import a received link/text export after preview and optional start-date adjustment. Large bundles have a readable text fallback. No server or third-party API is involved; anyone with the link can read the included meals/notes. Details: interaction-update.md.
 
 - Custom contains a blue planner immediately below Recipes. It uses the same blue as Today's carbs in Classic; other styles inherit their existing shapes, ink, borders and surfaces.
 - The section header is the shared `LibrarySectionHeader` (icon circle, title + count, search, +, chevron), exactly like Meals / Recipes / Foods. Its search icon filters all planned meals by name, note, food or meal (results list the date); the open/closed state is remembered (`kcak_journal_blue_open`).
@@ -25,7 +34,7 @@
 - The header search icon opens the same inline search field as Meals / Recipes; **See all meals** opens the full browser with every filter.
 - Search matches the meal-slot name, ingredient names and saved notes. Filters cover date range, weekday, meal slot, favourites, calorie range, and a selected nutrient's gram range (carbs, protein, fat, fibre, salt or sugar).
 - Ingredient searches also follow the stored recipe ingredient links, including nested recipes, with cycle protection. If a source recipe has been removed, the original logged food name and nutrition still remain searchable/usable.
-- Stars are per date/meal, independent of food favourites. Open a meal to inspect ingredients, save a note, or log its food again on the selected Today date.
+- Stars are per date/meal, independent of food favourites. Open a meal to inspect ingredients, save a note, or log its food again on the actual current date.
 - Settings > Today & pages > Meal notes in Today enables a diary icon in meal fields and a note input while logging. Turning it off keeps saved notes and favourites intact.
 - Empty meals with saved notes remain discoverable. Long result lists have a Show more action.
 
@@ -50,7 +59,7 @@
 
 - **One meal look.** The colourless slot icon of Today (`mealSlotIcon` in `common/mealSlotIcon.tsx`: coffee, apple, utensils, sun, crossed utensils, moon, soup for added meal types) is used by Today, the Meal diary and the Meal planner. The old tinted diary icon squares are gone.
 - **Previews.** A diary preview or planner row shows date, meal name and, *only if a note was written*, the note underneath (no food list; nothing otherwise). Plan rows show the plan's note the same way.
-- **Detail views.** Pressing a diary meal or a planned meal opens the shared read-only `MealSummaryCard` (`journal/MealSummaryCard.tsx`): the Today meal field expanded, with icon, name, kcal, carbs / protein / fat pills, fibre / salt / sugar and every food with its own macros. The diary detail adds the note editor, favourite star, *Log again* and *Save note*; the plan detail adds the plan note, a delete icon, *Edit* (opens the editor) and *Add to this meal*.
+- **Detail views.** Pressing a diary meal or a planned meal opens the shared read-only `MealSummaryCard` (`journal/MealSummaryCard.tsx`): the Today meal field expanded, with icon, name, kcal, carbs / protein / fat pills, fibre / salt / sugar and every food with its own macros. The diary detail adds the note editor, favourite star, *Log today* and *Save note*; the plan detail adds the plan note, a delete icon, *Edit* (opens the editor) and *Add to this meal*.
 - **Filters.** The Reset control of the diary filter interface is an icon (`RotateCcw`, label *Reset filters*).
 - **Today.** The *+ Log Food* row at the bottom of an empty meal is removed (the header **+**, the dock and Foods already log). In Compact, the note and photo icons are part of the header bar: shown next to **+** when they fit, otherwise only once the meal is expanded (no separate row inside the field). The fit is measured by `useExtrasFit` in `MealSlotCard.tsx`.
 
@@ -84,3 +93,4 @@ The store persists before publishing; storage errors are not reported as success
 - All seven styles were exercised across Light, Lite Dark and Dark using persisted Settings and full reloads (21 combinations), with mobile viewport and overflow checks. English and Italian / Ultra minimal were checked down to 320 px. Existing mobile navigation remains available. Long localized page headings wrap rather than squeezing the creation action off a small screen.
 - Desktop camera capture was tested with Chromium's fake camera, not physical hardware. Android builds, physical Android/iOS camera/file pickers and native permissions were not tested in this environment; verify those on your devices before releasing an APK.
 - Photos are subject to localStorage capacity and included in unencrypted JSON backups. Export before clearing browser data or uninstalling. Imported backup data is normalized; old backups without the new section do not wipe it.
+Photo composer now places a compact calendar/date field first, followed by accessible three-column meal buttons matching Log food. Camera/photo selection follows those controls.

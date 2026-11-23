@@ -129,7 +129,7 @@ export function normalizeLayout(raw: unknown): LayoutState {
       const name = item.name.trim().slice(0, 30);
       if (!item.id.startsWith('custom_') || item.id.length < 8 || !name || seen.has(item.id)) continue;
       seen.add(item.id);
-      mealTypes.push({ id: item.id as CustomMealType['id'], name });
+      mealTypes.push({ id: item.id as CustomMealType['id'], name, icon: typeof item.icon === 'string' && item.icon.length < 100000 ? item.icon : undefined });
     }
   }
   return {
@@ -284,7 +284,7 @@ export function showItem(page: LayoutPageId, id: string) {
 // ----- Meal types -----
 
 /** Adds a meal type (shown on Today right after the last meal, and in every meal selection). Returns its id. */
-export function addMealType(name: string): CustomMealType['id'] | null {
+export function addMealType(name: string, icon = 'soup'): CustomMealType['id'] | null {
   const clean = name.trim().slice(0, 30);
   if (!clean) return null;
   const id: CustomMealType['id'] = `custom_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
@@ -295,10 +295,14 @@ export function addMealType(name: string): CustomMealType['id'] | null {
   order.splice(lastMeal + 1, 0, mealItemId(id));
   commit({
     ...state,
-    mealTypes: [...state.mealTypes, { id, name: clean }],
+    mealTypes: [...state.mealTypes, { id, name: clean, icon }],
     pages: { ...state.pages, today: { ...state.pages.today, order } },
   });
   return id;
+}
+
+export function setMealTypeIcon(id: string, icon: string) {
+  commit({ ...state, mealTypes: state.mealTypes.map((meal) => meal.id === id ? { ...meal, icon } : meal) });
 }
 
 /** Deletes a meal type. Food already logged in it stays in the journal and in the totals. */

@@ -1839,3 +1839,25 @@ html[data-style="aurora"]:not([data-style="classic"]) button[data-period-cell] {
 html[data-style="aurora"]:not([data-style="classic"]) span[data-period-cell] {
   border-radius: 5px !important;
 }
+
+/* Koink-style continuous selector: one indicator, cross-fading pastel layers. */
+.kc-following-pill { position: relative; display: inline-flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--border); background: var(--surface); border-radius: 99px; max-width: 100%; }
+.kc-following-indicator { position: absolute; left: 0; top: 4px; height: 32px; overflow: hidden; border-radius: 99px; pointer-events: none; will-change: transform,width; }
+.kc-following-indicator > span { position: absolute; inset: 0; border-radius: inherit; }
+.kc-following-tab { --tab-weight: 0; position: relative; z-index: 1; height: 32px; width: calc(32px + (var(--tab-label-width, 50px) + 12px) * var(--tab-weight)); display: flex; align-items: center; justify-content: center; gap: calc(6px * var(--tab-weight)); flex-shrink: 0; border-radius: 99px; color: var(--text); font-size: 12px; font-weight: 750; }
+.kc-following-tab svg { flex-shrink: 0; }
+.kc-following-tab > span { white-space: nowrap; overflow: hidden; max-width: calc(var(--tab-label-width, 50px) * var(--tab-weight)); opacity: var(--tab-weight); }
+.kc-following-tab.is-ultra { width: 32px; gap: 0; }
+.kc-following-tab.is-ultra > span { display: none; }
+
+/* Keep a tall adjacent preview from growing the document during a swipe at its bottom. */
+html.kc-page-moving [data-page-viewport] { overflow: clip; }
+
+.kc-following-tab { color: color-mix(in srgb, #3f3429 calc(var(--tab-weight) * 100%), var(--text)); }
+html[data-style]:not([data-style='classic']) .kc-following-indicator > span { background: var(--text) !important; }
+html[data-style]:not([data-style='classic']) .kc-following-tab { color: color-mix(in srgb, var(--on-text) calc(var(--tab-weight) * 100%), var(--muted)); }
+.journal-mobile-demo { margin: 0 3px 10px; color: var(--muted); font-size: 10px; letter-spacing: .03em; }
+@media (min-width: 1100px) { .journal-mobile-demo { display: none; } }
+
+.kc-following-pill { overflow-x: auto; scrollbar-width: none; }
+.kc-following-pill::-webkit-scrollbar { display: none; }

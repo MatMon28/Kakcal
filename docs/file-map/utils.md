@@ -1,5 +1,11 @@
 # File map: `src/utils/`
 
+`photoExport.ts`: local standard ZIP assembly, XMP JPEG descriptions, per-photo text notes and CSV index.
+
+`planSharing.ts`: compact UTF-8 plan-link codec, readable text export, strict import validation and download helper.
+
+`src/utils/pagePosition.ts`: lightweight continuous swipe-position publisher used by PageSwiper and the navigation pill.
+
 > **Scope:** Hooks and helpers: notifications, calculations, formatting, motion, favourites, android bridge.
 >
 > **Read when:** you need to know which file implements something in this area (open only this file, not the others).
@@ -32,3 +38,5 @@
 | `src/utils/scrollFade.ts` | Edge-fade for scrollable fields: `scrollFadeX` / `scrollFadeY` ref callbacks (and `scrollFadeRef(axis, extra)` to keep an own ref) set `data-scroll-fade`, `data-fade-start` and `data-fade-end` from the scroll position, size changes and content changes; the CSS mask lives in `index.css`. Used by `Modal.tsx`, `AddFoodModal.tsx`, `ActivitySearch.tsx`, `SettingsModal.tsx`, `FoodDatabaseView.tsx`, `PreBuiltMealsView.tsx`. |
 | `src/utils/pageFields.ts` | Page-change field entrance: `collectPageFields(page)` (advanced-layout items, else the first level with several children) and `animatePageFields(page)` (opacity 0 -> 1 + `translate` 5 px -> 0, 230 ms, 14 ms stagger capped at 9 steps, `fill: backwards`; skipped with `prefers-reduced-motion`). Called by `PageSwiper.tsx` on every tap / Back page change. |
 | `src/utils/journalStore.ts` | Versioned meal plans, memories and photos; shared reactive localStorage state, validation, cross-tab updates, food snapshots, and JSON backup helpers. |
+
+android.ts declares the local exportFile bridge. planSharing.ts/saveLocalFile chooses browser downloads or the APK document picker; native links use the existing public homepage, configurable with VITE_PUBLIC_APP_URL.

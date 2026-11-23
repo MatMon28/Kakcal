@@ -995,7 +995,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Navigation tab (lifted so Settings can jump to the Foods database)
-  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => new URLSearchParams(window.location.search).get('tab') === 'custom' ? 'prebuilt' : 'today');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => DEMO_MODE || window.location.hash.startsWith('#meal-plan=') || new URLSearchParams(window.location.search).get('tab') === 'custom' ? 'prebuilt' : 'today');
   const lastMainTabRef = React.useRef<ActiveTab>('today');
   const setActiveTab = (tab: ActiveTab) => {
     setActiveTabState((prev) => {
@@ -1075,8 +1075,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       quickAdd: { food: true, movement: true, water: true, poop: true, weight: true, custom: true },
       hidePoop: false,
       trackSugar: false,
-      photoDiary: false,
-      inlineMealNotes: false,
+      photoDiary: DEMO_MODE,
+      inlineMealNotes: DEMO_MODE,
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
       quickFoods: DEFAULT_QUICK_FOODS,

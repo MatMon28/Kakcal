@@ -1,6 +1,8 @@
 import { useSyncExternalStore } from 'react';
 import type { Language, LoggedFoodItem, MealSlotId } from '../types';
 import type { MealJournalData, MealMemory, MealPhoto, MealPlan } from '../types/journal';
+import { DEMO_MODE } from '../config/demo';
+import { makeDemoJournal } from '../data/journalDemo';
 
 export const JOURNAL_KEY = 'kcalsync_meal_journal';
 const empty = (): MealJournalData => ({ version: 1, plans: [], memories: {}, photos: [] });
@@ -45,7 +47,7 @@ export function normalizeMealJournal(raw: unknown): MealJournalData {
           validSlot(p.slot) &&
           typeof p.note === 'string' &&
           typeof p.src === 'string' &&
-          /^(data:image\/(jpeg|png|webp);base64,|\/images\/)/.test(p.src),
+          (/^data:image\/(jpeg|png|webp);base64,/.test(p.src) || ((p.src.startsWith(import.meta.env.BASE_URL + 'images/') || p.src.startsWith('/images/')) && !p.src.includes('..'))),
       )
     : [];
   const memories: Record<string, MealMemory> = {};
@@ -64,7 +66,13 @@ export function normalizeMealJournal(raw: unknown): MealJournalData {
 
 function load(): MealJournalData {
   try {
-    return normalizeMealJournal(JSON.parse(localStorage.getItem(JOURNAL_KEY) || 'null'));
+    const saved = localStorage.getItem(JOURNAL_KEY);
+    if (!saved && DEMO_MODE) {
+      const demo = makeDemoJournal();
+      localStorage.setItem(JOURNAL_KEY, JSON.stringify(demo));
+      return demo;
+    }
+    return normalizeMealJournal(JSON.parse(saved || 'null'));
   } catch {
     return empty();
   }

@@ -1627,3 +1627,86 @@ html[data-style]:not([data-style='classic']) .journal-target.is-active {
 .journal-meal-preview {
   min-width: 0;
 }
+
+/* Interaction polish stays within the journal's warm palette and two-column layout. */
+.library-browse-search { display: inline-flex; justify-content: center; align-items: center; flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; color: inherit; transition: background .18s, transform .18s; }
+.library-browse-search:hover { background: #ffffff65; transform: translateY(-1px); }
+.journal-see-all { color: var(--text) !important; background: color-mix(in srgb, var(--bg) 97%, var(--text)) !important; border: 1px solid color-mix(in srgb, var(--text) 10%, transparent) !important; font-size: 12px; min-height: 38px; padding: 9px 14px; font-weight: 750; }
+.journal-feature .journal-see-all { color: var(--feature-ink) !important; }
+html[data-theme='dark'] .journal-feature .journal-see-all,
+html[data-theme='lite-dark'] .journal-feature .journal-see-all { color: var(--text) !important; }
+.journal-photo-date { display: flex !important; align-items: center; gap: 9px; width: fit-content; max-width: 100%; padding: 7px 12px; border: 1px solid var(--border); background: var(--inset); border-radius: 12px; color: var(--text); }
+.journal-form .journal-photo-date input { width: 153px; min-height: 27px; border: 0; padding: 0; border-radius: 0; background: transparent; font-size: 13px; }
+.journal-photo-meals { border: 0; padding: 0; min-width: 0; }
+.journal-photo-meals legend { font-size: 12px; font-weight: 700; margin-bottom: 9px; }
+.journal-slot-picker { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+.journal-slot-picker > button { display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 43px; padding: 8px 4px; border: 1px solid var(--border); border-radius: 12px; background: var(--inset); font-size: 11px; font-weight: 650; color: var(--muted); }
+.journal-slot-picker > button.is-selected { background: var(--text); color: var(--on-text); border-color: var(--text); }
+.journal-slot-picker > button svg { flex-shrink: 0; }
+.personal-icon-trigger { display: flex; align-items: center; gap: 11px; width: 100%; min-height: 43px; padding: 10px 13px; background: var(--inset); border: 1px solid var(--border); border-radius: 12px; font-size: 12px; font-weight: 650; color: var(--text); }
+.personal-icon-trigger > span { flex: 1; text-align: left; }
+.personal-icon-options { margin-top: 8px; padding: 12px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); animation: journal-arrive .2s both; }
+.personal-icon-grid { display: grid; grid-template-columns: repeat(6,minmax(0,1fr)); gap: 6px; margin-bottom: 11px; }
+.personal-icon-grid button { position: relative; display: flex; align-items: center; justify-content: center; min-height: 38px; border-radius: 9px; color: var(--muted); transition: background .15s, color .15s; }
+.personal-icon-grid button:hover, .personal-icon-grid button.is-selected { background: var(--inset); color: var(--text); }
+.personal-icon-check { position: absolute; right: 2px; top: 2px; }
+.personal-icon-options > p { margin-top: 8px; font-size: 10px; color: var(--muted); line-height: 1.6; }
+.backup-photo-button { display: flex; align-items: center; gap: 11px; width: 100%; padding: 13px 14px; margin-top: 10px; border-radius: 12px; border: 1px solid var(--border); background: var(--inset); text-align: left; }
+.backup-photo-button > span { flex: 1; display: grid; gap: 3px; }
+.backup-photo-button strong { font-size: 12px; font-weight: 750; }
+.backup-photo-button small { font-size: 10px; color: var(--muted); }
+.backup-photo-button:disabled { opacity: .5; cursor: not-allowed; }
+.plan-transfer-count { font-size: 13px; font-weight: 750; }
+.plan-transfer-privacy { display: flex; align-items: flex-start; gap: 10px; color: var(--muted); font-size: 11px; line-height: 1.8; }
+.plan-transfer-privacy svg { flex-shrink: 0; margin-top: 3px; }
+.plan-transfer-actions { display: flex; flex-wrap: wrap; gap: 9px; }
+.plan-transfer-hint { color: var(--muted); font-size: 11px; line-height: 1.8; }
+.plan-import-preview { max-height: 230px; overflow: auto; border-block: 1px solid var(--border); }
+.plan-import-preview > div { display: flex; align-items: center; gap: 13px; padding: 13px 4px; }
+.plan-import-preview > div + div { border-top: 1px solid var(--border); }
+.plan-import-preview span { display: grid; gap: 4px; }
+.plan-import-preview small { font-size: 10px; color: var(--muted); }
+.plan-import-preview strong { font-size: 12px; }
+.plan-transfer-success { display: flex; align-items: center; gap: 9px; padding: 12px; border-radius: 11px; color: #24533a; background: #deeee1; font-size: 12px; line-height: 1.7; }
+.journal-demo-label { display: inline-flex; align-items: center; white-space: nowrap; gap: 6px; font-size: 10px; color: var(--muted); }
+.journal-demo-label > i { width: 5px; height: 5px; border-radius: 50%; background: #9a8c46; }
+@media (min-width: 1100px) {
+  .journal-desktop-selector { position: absolute; left: calc(50% + 112px); transform: translateX(-50%); }
+  .journal-desktop-selector .kc-following-pill { background: transparent; }
+  .journal-sidebar { width: 224px; }
+  .journal-sidebar-brand { width: 140px; margin-top: 2px; }
+  .journal-nav-link { font-size: 12px; padding-block: 13px; }
+  .journal-desktop-topbar { margin-left: 224px; height: 79px; }
+  .journal-desktop-topbar > div { font-size: 11px; gap: 13px; }
+  .journal-topbar-date { font-size: 10px; }
+  .journal-main-container { padding-top: 25px; }
+  .custom-library-grid { gap: 19px; }
+  .custom-library-grid > section { border-radius: 20px; }
+  html[data-style='classic'] .custom-library-grid > [data-library-section='meals'] { background: #f9e6c6; border-color: #ebd2ab; }
+  html[data-style='classic'] .custom-library-grid > [data-library-section='recipes'] { background: #e9e1f7; border-color: #d7c8ee; }
+  html[data-style='classic'] .custom-library-grid > [data-library-section='foods'] { background: #dbeee0; border-color: #bfdec8; }
+  html[data-style='classic'] .journal-feature[data-tone='yellow'] { --feature-bg: #f8ecbe; --feature-border: #ead99a; }
+  html[data-style='classic'] .journal-feature[data-tone='blue'] { --feature-bg: #dceaf8; --feature-border: #c2d8ed; }
+  html[data-style='classic'] .journal-feature[data-tone='red'] { --feature-bg: #f4dedb; --feature-border: #e9c9c5; }
+  .custom-library-grid [data-library-card] { padding: 12px 14px; row-gap: 6px; border-radius: 12px; }
+  .custom-library-grid [data-library-card] h3 { font-size: 12px !important; font-weight: 750; }
+  .custom-library-grid [data-library-card] [data-macro-pills] { flex: 0 0 auto; width: auto; margin-left: auto; }
+  .custom-library-grid [data-library-card] [data-macro] { min-width: 48px; padding: 5px 9px; border-radius: 6px; }
+  .journal-recent-meal { padding-top: 13px; padding-bottom: 9px; border-radius: 13px; }
+  .journal-plan-list { max-height: 260px; overflow-y: auto; }
+  .journal-plan-row { min-height: 63px; padding: 10px 13px; }
+  .journal-plan-row small { font-size: 9px; }
+  .journal-plan-row strong { font-size: 12px; }
+  .journal-photo-grid { gap: 11px; }
+  .journal-photo-preview > span { border-radius: 13px; }
+  .journal-photo-preview strong { font-size: 11px; line-height: 1.6; margin-top: 9px; }
+}
+@media (min-width: 1100px) and (max-width: 1290px) {
+  .journal-desktop-topbar .journal-demo-label { display: none; }
+  .journal-desktop-selector { left: calc(50% + 120px); }
+  .journal-topbar-date { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .personal-icon-options { animation: none; }
+  .library-browse-search { transition: none; }
+}

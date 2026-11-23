@@ -1,5 +1,7 @@
 # File map: `src/components/common/`
 
+`IconPicker.tsx`: shared built-in/local-image chooser for custom trackers and meal categories, with image resizing and validation.
+
 Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed sections/search; `JournalChrome.tsx` supplies the desktop sidebar/topbar and Custom create menu. `journal.css` contains their responsive and theme-aware styles. The original `Header.tsx` retains the mobile header and is hidden only above 1100 px. See [meal journal](../meal-journal.md).
 
 > **Scope:** Shared UI: modal, header, tabs, swiper, icons, amount selectors, backup, brand.
@@ -38,3 +40,7 @@ Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed
 | `src/components/common/Modal.tsx`, `SaveBeforeCloseDialog.tsx` | The dialog body (`data-dialog-scroll`) uses the edge-fade ref `scrollFadeY`. *Don't save* has no bin icon. |
 | (Round: page-change polish) `src/components/common/PageSwiper.tsx` | A tap / Back page change slides the rail 10 px in 180 ms (transform only) and calls `animatePageFields` (`src/utils/pageFields.ts`) so the fields rise in with a tiny stagger. Swipes are unchanged (the page follows the finger, no extra entrance). |
 | (Round: Today-style meals) `src/components/common/mealSlotIcon.tsx` | `mealSlotIcon(slot)` / `MealSlotIcon`: the one colourless icon per meal slot used by `MealSlotCard`, `MealDiary` and `MealPlanner`. |
+
+Continuous selector: `Tabs.tsx` keeps labels mounted and blends pastel indicator layers from `utils/pagePosition.ts`; `PageSwiper.tsx` publishes progress throughout the gesture and settlement.
+
+DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. JournalChrome.tsx also displays the continuous page pill on desktop and marks demo builds as Test mode.

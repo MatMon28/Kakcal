@@ -19,6 +19,8 @@ import { useJournalText } from '../../i18n/journal';
 import { useAdvanced } from '../../utils/advancedStore';
 import { isPeriodShown } from '../../utils/tourPreview';
 import type { ActiveTab } from '../../types';
+import { DEMO_MODE } from '../../config/demo';
+import { Tabs } from '../common/Tabs';
 import { Wordmark } from '../common/Brand';
 import { Modal } from '../common/Modal';
 import { journalDate } from './JournalUI';
@@ -118,7 +120,9 @@ export function JournalChrome() {
               : links.find((l) => l.id === activeTab)?.title}
           </strong>
         </div>
+        <div className="journal-desktop-selector"><Tabs /></div>
         <div>
+          {DEMO_MODE && <span className="journal-demo-label"><i />{j('Test mode', 'Modalita test')}</span>}
           <button className="journal-topbar-date" type="button" onClick={() => setActiveTab('today')}>
             <CalendarDays size={15} />
             {journalDate(selectedDate, language, { weekday: 'short', day: 'numeric', month: 'long' })}

@@ -73,3 +73,5 @@ Original widths are Tailwind spans on a 6-column grid (`LayoutItem.span`): Intak
 - **Meals:** the calorie text of a meal hides (`invisible absolute`, still measured) when its room is smaller than the text plus, in the Normal layout, the room of the three macro pills (`useCramped` in `MealSlotCard.tsx`); it returns when the field is widened.
 - **Fields that cannot show anything** (water shortcut off, no custom buttons, poop not tracked) are not listed as fields.
 - **Header:** the top row of the page header is only clipped while it collapses; fully shown it is not, so the Pop shadows of Profile / Settings are whole (`Header.tsx`).
+
+Custom meal types have optional built-in or uploaded icons. Choose an icon when adding a type in Today > Edit > Add, or edit an existing category icon there. Icons appear in Today, diary/planner details and photo meal selection. Multiple custom trackers retain the generic dock picker.

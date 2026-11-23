@@ -51,6 +51,7 @@ import { whenIdle } from './utils/idle';
 import { useAutoMealSlot } from './utils/mealSlots';
 import { useAppReady } from './components/intro/useAppReady';
 import type { ActiveTab } from './types';
+import { DEMO_MODE } from './config/demo';
 
 const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'body', 'history'];
 
@@ -356,6 +357,7 @@ function MainContent() {
       <JournalChrome />
       <main data-journal-surface className="flex-1 min-w-0">
         <div className={`journal-main-container w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}>
+          {DEMO_MODE && <p className="journal-mobile-demo">Test mode / sample journal</p>}
           <PageSwiper
             tabs={visibleTabs}
             activeTab={activeTab}
@@ -393,7 +395,7 @@ export function App() {
   // The guided tour is only for first-time browser visitors and can be skipped with ?view=app.
   const installed = isStandaloneApp() || import.meta.env.VITE_ANDROID_RELEASE === 'true' ||
     window.location.protocol === 'capacitor:' || isAndroidApp();
-  const showJournal = installed || view === 'app';
+  const showJournal = installed || view === 'app' || DEMO_MODE || window.location.hash.startsWith('#meal-plan=');
   // Launch intro (one of six random phase-1 animations); the app mounts underneath it.
   introPending ??= shouldShowIntro();
   const [introVisible, setIntroVisible] = useState(introPending);

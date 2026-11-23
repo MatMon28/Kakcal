@@ -51,3 +51,5 @@ npx cap open android                    # or: cd android && ./gradlew assembleDe
 ```
 
 The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Re-run `prepare-android.mjs` after every web-app change or Capacitor plugin change; Android Studio never runs `cap sync` itself. Native Java/XML edits only need a Gradle rebuild.
+
+For a self-hosted APK, optionally set `VITE_PUBLIC_APP_URL=https://your-existing-host/app/` during the Android preparation build. It is only a share-link origin, not an API. The default is the repository homepage. Rebuild the native plugin after this interaction update for ZIP/text export.

@@ -1,5 +1,7 @@
 # Run the web preview / guided tour
 
+Review builds now open Custom directly. This workspace opts in using an untracked `.env.local` with `VITE_DEMO_DATA=true`, excluded from the patch. Sample seeding does not replace existing journals.
+
 > **Scope:** Dev server, browser build, URL switches (`?view=`, `?tour=1`, `?intro=`), demo data and offline caching of the browser build.
 >
 > **Read when:** you run or build the browser version, or need a URL parameter or env flag.

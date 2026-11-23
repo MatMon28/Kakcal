@@ -1,3 +1,4 @@
+import { IconPicker } from '../common/IconPicker';
 import React, { useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
@@ -25,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
-import { TrackerIcon, TRACKER_ICONS } from '../common/TrackerIcon';
+import { TrackerIcon } from '../common/TrackerIcon';
 import { DataBackup } from '../common/DataBackup';
 import { InstallApp } from '../common/InstallApp';
 import { DeleteAllData } from '../common/DeleteAllData';
@@ -622,30 +623,7 @@ export const SettingsModal: React.FC = () => {
                     className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
                   />
 
-                  {/* Icon picker */}
-                  <div>
-                    <span className="block text-[11px] font-bold text-[var(--muted)] mb-1">
-                      {t.settings.chooseIcon}
-                    </span>
-                    <div className="grid grid-cols-6 gap-1.5">
-                      {TRACKER_ICONS.map((ic) => (
-                        <button
-                          key={ic}
-                          type="button"
-                          onClick={() => setNewBtnIcon(ic)}
-                          aria-label={ic}
-                          aria-pressed={newBtnIcon === ic}
-                          className={`pressable h-9 rounded-xl flex items-center justify-center border ${
-                            newBtnIcon === ic
-                              ? 'kc-chip-active bg-[#E2D6FF] border-[#C9B8F2] text-[#4D3582]'
-                              : 'bg-[var(--inset)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]'
-                          }`}
-                        >
-                          <TrackerIcon icon={ic} size={16} />
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                  <IconPicker value={newBtnIcon} onChange={setNewBtnIcon} />
 
                   <div className="grid grid-cols-2 gap-1.5">
                     <button

@@ -43,6 +43,7 @@ export interface PageLayout {
 export interface CustomMealType {
   id: `custom_${string}`;
   name: string;
+  icon?: string;
 }
 
 export interface LayoutState {

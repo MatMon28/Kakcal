@@ -13,6 +13,7 @@ import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { calculateMacros, calculateTotalCalories } from '../../utils/calculations';
+import { getTodayDateString } from '../../utils/formatters';
 import { memoryKey, updateMealMemory, useMealJournal } from '../../utils/journalStore';
 import type { FoodItem, LoggedFoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
@@ -460,7 +461,7 @@ function DiaryBrowser({
 }
 
 function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }) {
-  const { language, selectedDate, logItemsToSlot } = useApp();
+  const { language, logItemsToSlot } = useApp();
   const { label } = useMealSlots();
   const { memories } = useMealJournal();
   const j = useJournalText();
@@ -518,12 +519,12 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
               disabled={copied}
               className="journal-secondary-button"
               onClick={() => {
-                logItemsToSlot(meal.slot, meal.items, selectedDate);
+                logItemsToSlot(meal.slot, meal.items, getTodayDateString());
                 setCopied(true);
               }}
             >
               {copied ? <Check size={15} /> : <Utensils size={15} />}
-              {copied ? j('Added', 'Aggiunto') : j('Log again', 'Registra di nuovo')}
+              {copied ? j('Logged today', 'Registrato oggi') : j('Log today', 'Registra oggi')}
             </button>
           )}
           <button
