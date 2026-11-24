@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { MealSlotId, LoggedFoodItem } from '../../types';
 import { calculateMacros, calculateTotalCalories } from '../../utils/calculations';
@@ -21,72 +21,6 @@ import {
   Check,
   ChevronDown,
 } from 'lucide-react';
-
-/** Room (px) the three macro pills need next to the calories in the Normal layout: 3 pills of ~34 px, 2 gaps of 6 px, 12 px gap. */
-const PILLS_RESERVE = 3 * 34 + 2 * 6 + 12;
-
-/**
- * True while `target` (the calories) does not fit in `room` plus the space that has to stay free (`reserve`). Used to make
- * the calorie text disappear when a meal field is resized so narrow that it would be cut off or squeeze the macro pills.
- * The target is hidden with `invisible absolute`, not removed, so it can still be measured and comes back when there is room.
- */
-function useCramped(room: React.RefObject<HTMLElement | null>, target: React.RefObject<HTMLElement | null>, reserve: number, watch: unknown) {
-  const [cramped, setCramped] = useState(false);
-  useLayoutEffect(() => {
-    const roomEl = room.current;
-    const targetEl = target.current;
-    if (!roomEl || !targetEl) return undefined;
-    const check = () => setCramped(roomEl.clientWidth < targetEl.offsetWidth + reserve);
-    check();
-    const observer = new ResizeObserver(check);
-    observer.observe(roomEl);
-    observer.observe(targetEl);
-    return () => observer.disconnect();
-  }, [room, target, reserve, watch]);
-  return cramped;
-}
-
-/**
- * True when the note / photo icons (`extras`) fit in the one-line header of a compact meal next to the other controls.
- * Everything is measured from the DOM (the extras are always rendered, only hidden with `invisible absolute`), so the
- * answer does not depend on whether they are currently shown and cannot flip back and forth. Without any icon enabled
- * (no `extras` width) the answer is simply true.
- */
-function useExtrasFit(
-  row: React.RefObject<HTMLElement | null>,
-  kcalRoom: React.RefObject<HTMLElement | null>,
-  kcal: React.RefObject<HTMLElement | null>,
-  extras: React.RefObject<HTMLElement | null>,
-  watch: unknown,
-) {
-  const [fits, setFits] = useState(false);
-  useLayoutEffect(() => {
-    const rowEl = row.current;
-    const roomEl = kcalRoom.current;
-    const kcalEl = kcal.current;
-    const extrasEl = extras.current;
-    if (!rowEl || !roomEl || !kcalEl || !extrasEl) return undefined;
-    const check = () => {
-      const extrasWidth = extrasEl.getBoundingClientRect().width;
-      if (extrasWidth === 0) {
-        setFits(true);
-        return;
-      }
-      const gap = parseFloat(getComputedStyle(rowEl).columnGap) || 0;
-      const others = Array.from(rowEl.children).filter((child) => child !== roomEl && child !== extrasEl);
-      const fixed = others.reduce((sum, child) => sum + child.getBoundingClientRect().width, 0);
-      // others + calories + extras, with a gap between every pair of items.
-      const needed = fixed + kcalEl.getBoundingClientRect().width + extrasWidth + gap * (others.length + 1);
-      setFits(rowEl.clientWidth >= needed);
-    };
-    check();
-    const observer = new ResizeObserver(check);
-    observer.observe(rowEl);
-    observer.observe(extrasEl);
-    return () => observer.disconnect();
-  }, [row, kcalRoom, kcal, extras, watch]);
-  return fits;
-}
 
 interface MealSlotCardProps {
   slotId: MealSlotId;
@@ -140,14 +74,6 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   const items: LoggedFoodItem[] = dayLog.meals[slotId] || [];
   const slotCalories = calculateTotalCalories(items);
   const slotMacros = calculateMacros(items);
-
-  // The calories disappear when the card is too narrow for them (a meal field resized in the advanced layout).
-  const kcalRoom = useRef<HTMLDivElement>(null);
-  const kcalRef = useRef<HTMLSpanElement>(null);
-  const compactRow = useRef<HTMLDivElement>(null);
-  const extrasRef = useRef<HTMLDivElement>(null);
-  const extrasFit = useExtrasFit(compactRow, kcalRoom, kcalRef, extrasRef, `${compact}:${formatKcal(slotCalories)}`);
-  const kcalCramped = useCramped(kcalRoom, kcalRef, compact ? 0 : PILLS_RESERVE, `${compact}:${formatKcal(slotCalories)}:${items.length}`);
 
   // Circle rule: the icon circle is transparent (same colour as the card, no border, no shadow),
   // so the macro pills stay the only coloured elements on a meal card. Size and round shape are kept.
@@ -217,12 +143,11 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
     </div>
   );
 
+  // `.kc-meal-kcal` is hidden by a container query when the card is too narrow (src/styles/performance.css); no JS measuring.
   const kcalLabel = (
     <span
-      ref={kcalRef}
       data-calories
-      data-cramped={kcalCramped ? '' : undefined}
-      className={`inline-flex shrink-0 items-baseline gap-1 tabular-nums whitespace-nowrap ${kcalCramped ? 'invisible absolute left-0 top-0 pointer-events-none' : ''}`}
+      className="inline-flex shrink-0 items-baseline gap-1 tabular-nums whitespace-nowrap kc-meal-kcal"
       aria-label={`${formatKcal(slotCalories)} kcal`}
       title={`${formatKcal(slotCalories)} kcal`}
     >
@@ -272,16 +197,13 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
       {compact ? (
         <>
           {/* Row 1: icon · kcal · add · chevron (meal name hidden in compact) */}
-          <div ref={compactRow} className="relative flex items-center gap-2 max-[359px]:gap-1 w-full">
+          <div className="relative flex items-center gap-2 max-[359px]:gap-1 w-full">
             {slotBadge('size-8 max-[359px]:size-7', 15)}
-            <div ref={kcalRoom} className="relative min-w-0 flex-1 self-stretch flex items-center">{kcalLabel}</div>
-            {/* Note and photo icons: next to + when they fit in the bar, otherwise only once the meal is expanded.
-                Always rendered (so they can be measured) and hidden with `invisible absolute` while they are not shown. */}
+            <div className="relative min-w-0 flex-1 self-stretch flex items-center">{kcalLabel}</div>
+            {/* Note and photo icons: hidden by a container query (`.kc-meal-extras`, src/styles/performance.css) when the card is too narrow for them. */}
             <div
-              ref={extrasRef}
               data-compact-extras
-              data-shown={extrasFit || open ? '' : undefined}
-              className={`flex items-center shrink-0 ${extrasFit || open ? '' : 'invisible absolute right-0 top-0 pointer-events-none'}`}
+              className="flex items-center shrink-0 kc-meal-extras"
               onClick={(e) => e.stopPropagation()}
             >
               <MealNoteAction date={activeDate} slot={slotId} />
@@ -315,7 +237,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
               className={`${compact ? 'max-[359px]:size-3' : ''} shrink-0 text-[var(--muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
             />
           </div>
-          <div ref={kcalRoom} data-nutrition-row className="relative flex items-center gap-3 w-full min-w-0">
+          <div data-nutrition-row className="relative flex items-center gap-3 w-full min-w-0">
             {kcalLabel}
             {items.length > 0 ? macroArea : (
               <span className="text-xs font-medium text-[var(--muted)]">{t.mealSlots.emptySlot}</span>

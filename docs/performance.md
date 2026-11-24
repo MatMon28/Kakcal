@@ -6,6 +6,8 @@
 >
 > **Related:** [startup-performance.md](startup-performance.md) (app start), [motion.md](motion.md) (the page-change animation itself), [verification.md](verification.md#page-change-benchmark)
 >
+> **Three rounds:** the third, [*Meal card container queries*](#meal-card-container-queries), removes the mount-time measuring of the Today meal cards.
+>
 > **Two rounds:** the first (sections below, up to *Not changed*) removed the big costs; the second, [*Follow-up round: stop paying twice*](#follow-up-round-stop-paying-twice), removes what the first one still left on the first frame of a page change.
 
 ## The problem
@@ -71,7 +73,7 @@ The first round got Today -> Custom from 1000-1250 ms to 260-320 ms **in the bes
 
 **Not changed on purpose**
 
-- `MealSlotCard`'s `useCramped` / `useExtrasFit` (mount-time `clientWidth` / `getBoundingClientRect` reads on Today). They compare the *intrinsic* width of the calorie text and the icon group with the room left, which a plain CSS container query cannot express without redesigning the row; it needs its own visual check on every theme. Still the next structural item (listed in [known-gaps.md](known-gaps.md)).
+- ~~`MealSlotCard`'s `useCramped` / `useExtrasFit`~~ (mount-time layout reads on Today): **done** in the next round, see [Meal card container queries](#meal-card-container-queries).
 - Replacing the ghost with a snapshot (fade-in only, or `document.startViewTransition`), a virtualised "See all" list, splitting `UiSlice` into navigation vs dialog flags, `React.memo` on `MealSlotCard` / `JournalSection` (their props, `onToggle` and `children`, are new on every parent render, so a memo would do nothing until the parents are stabilised) and moving `TodayView` / `MealSlotCard` off `useApp()` (they need `selectedDate` and dialog setters from the UI slice, whose value changes on every dialog) are not done. The ghost now lives 110 ms and is contained, which is the cheap part of that idea.
 - `flushSync` calls in `PageSwiper` stay (see [search-and-animation-performance.md](search-and-animation-performance.md)); only *what* is mounted inside them changed.
 
@@ -84,12 +86,42 @@ The first round got Today -> Custom from 1000-1250 ms to 260-320 ms **in the bes
 
 **Rules added**
 
+- **Fitting decisions that only depend on the width of a card are a CSS `@container` query** (`[data-meal-slot]`), not a `ResizeObserver` / layout effect. Measure the widths (`scripts/measure-meal-card.mjs`), do not guess them.
 - **Never put a JSX node (or any value created per render) in a dependency list** of an effect that reads layout. Pass a scalar.
 - **Do the measuring after the commit** (`requestAnimationFrame`, `ResizeObserver`, `afterPaint()`); a layout read in a commit is a forced layout of the page that was just mounted.
 - **A hook that needs one string (language, labels) subscribes to `useSettings()`**, not `useApp()`.
 - **Section bodies that may be open on the first render use `<LazyBody open defer>`.**
 - **Anything indexed by a key that a list render asks for belongs in the store as an O(1) lookup** (`usePhotosFor...`, `foodById`), not in a `filter` inside the card.
 - **Do not keep the outgoing page longer than its own animation.**
+
+## Meal card container queries
+
+**Problem.** Every `MealSlotCard` ran two layout effects on mount (`useCramped`, `useExtrasFit`) that read `clientWidth` / `offsetWidth` / `getBoundingClientRect()` and called `setState` before the first paint. Today builds up to ~10 cards, so entering Today did a forced whole-document layout (a trace of Custom -> Today shows it as the first, largest `Layout` of the entry: ~830 dirty nodes) and a re-render of the cards, on every entry.
+
+**Fix (round: "remove Today's mount-time measurement").** The card is now a size container and CSS decides, with no JS and no layout read:
+
+| Piece | Where |
+| --- | --- |
+| `[data-meal-slot] { container-type: inline-size }` | `src/styles/performance.css` |
+| `.kc-meal-kcal` (the calorie figure) is hidden by `@container`; `.kc-meal-extras` (note / photo icons of the Compact header) likewise; without container-query support the extras are hidden and the figure shown | `src/styles/performance.css` |
+| `useCramped`, `useExtrasFit`, `PILLS_RESERVE`, the four refs, `data-cramped`, `data-shown` and the `invisible absolute` classes are gone; the markup carries the two class names | `src/components/dashboard/MealSlotCard.tsx` |
+
+**Measured widths** (`node scripts/measure-meal-card.mjs`; Chromium 159, 1,234 kcal, the widest figure a meal realistically has). A container query measures the content box of the whole card (the card has a 1 px border; padding, icon and gaps are inside), so the widths are *card* widths, not the 126 px of the old `PILLS_RESERVE`. `max-width` = last width that fits - 2 px border + margin.
+
+| Rule | Last fit (card) | `@container` max-width |
+| --- | --- | --- |
+| Normal: figure next to the three pills | 210 px | **216 px** (+8) |
+| Compact, viewport >= 359 px: figure in the header row | 166 px | **168 px** (+4) |
+| Compact, viewport < 359 px (`max-[359px]` sizes: smaller icon, gaps, text) | 135 px | **135 px** (+2) |
+| Compact: note / photo icons next to the figure | 202 px | **208 px** (+8) |
+
+Two things differ from the first guess (`148 px` / `210 px`): (1) one width cannot serve Normal and Compact (Normal needs the pills too: `148` would have clipped them below ~210 px), and the Compact header row changes size below a 359 px viewport (Tailwind emits `max-[359px]` as `not all and (min-width:359px)`, so the media queries copy that); (2) the margin is smaller where a default card is close to the limit: a 2-column Compact card is **173 px at 390 px** and **138 px at 320 px**, so +8 would hide the figure on every phone. Re-run the script if a font, padding or icon size of the card changes.
+
+**Result** (4x CPU, Chromium, the 500-day journal of `bench-page-change.mjs`, `collapsed`; one run each, so +-15 %): the longest task of every `X -> Today` change went from a mean of **369 ms (277-434)** to **239 ms (203-299)** (`Custom -> Today` 402 -> 261, `Period -> Today` 369 -> 215, `Statistics -> Today` 335 -> 241). Trace of the tap into Today: the old build has the forced whole-page layout from the meal cards plus a second one; the new build has one. Layout count in the first two frames, 6 cards: 5.8 -> 5.0 (one fewer; the "~10" of the task needs more cards than the test journal has: all effects of one commit share one layout). Pixel comparison of the Today meal grid, old vs new build, Normal / Compact / Expanded at 320 / 390 / 768 px in light and dark: identical, except the Compact cards below.
+
+**Known differences.** The old code measured the real width of the figure; CSS only knows the card. (1) A Compact card with a *short* figure ("0" for an empty meal, "8") used to show the note / photo icons on a phone (they fitted); they now appear only when the card is >= 210 px wide (e.g. an opened Compact meal, which spans the row, or a tablet). (2) A short figure ("350") is hidden at the same width as "1,234", i.e. a little earlier than before; a five-digit figure (12,345) overflows its room by up to ~3 px in the narrowest default card. (3) The old rule showed the extras of an *open* narrow card; the open prop no longer matters for them (an open Compact card is full-width on phones). Per-digit widths (a `data-digits` attribute set in React, still no measuring) would remove (1) and (2); not done.
+
+**Rollback.** Revert `MealSlotCard.tsx` and `performance.css`; the hooks were self-contained.
 
 ## Not changed (older ideas, status updated)
 

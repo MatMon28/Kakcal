@@ -48,6 +48,7 @@ const wanted = process.env.KC_SCENARIO && process.env.KC_SCENARIO !== 'both' ? [
 const BUDGET_MS = Number(process.env.KC_BUDGET_MS || 250);
 const THROTTLE = Number(process.env.KC_THROTTLE || 4);
 const failures = [];
+const rows = [];
 
 for (const scenario of wanted) {
 const ctx = await browser.newContext({ viewport: { width: 412, height: 860 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 });
@@ -95,7 +96,6 @@ await page.evaluate(() => {
     requestAnimationFrame(loop);
   };
 });
-const rows = [];
 const nav = (l) => `nav[aria-label="Primary"] button[aria-label="${l}"]`;
 async function tap(name, label) {
   await page.evaluate(() => window.__start());

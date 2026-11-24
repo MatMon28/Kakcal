@@ -46,3 +46,5 @@
 `public/offline-worker.js` now holds `__BUILD_ID__` / `__PRECACHE_ASSETS__` placeholders that `vite.config.ts` fills in; `public/_headers` caches `/assets/*` as immutable; `scripts/smoke.bundle.js` is no longer tracked; `scripts/prepare-android.mjs` type-checks and verifies the synced `assets/*`.
 
 (Round: page-change follow-up) `scripts/bench-page-change.mjs` now runs two scenarios (`KC_SCENARIO=collapsed|open|both`; `open` = 5 sections and 10 cards open) and exits with code 1 when Today -> Custom exceeds `KC_BUDGET_MS` (default 250 ms, only at 4x throttle or more). See [../verification.md](../verification.md#page-change-benchmark).
+
+(Round: container queries) `scripts/measure-meal-card.mjs`: Playwright script that forces the Today meal card to every width, with the container-query hiding off, and prints the last width at which the calorie figure / the note and photo icons fit and the `@container` max-width to use (see [../performance.md](../performance.md#meal-card-container-queries)). `scripts/bench-page-change.mjs`: `rows` is now declared before the scenario loop (it crashed with `ReferenceError` before printing the table).

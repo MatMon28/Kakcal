@@ -28,7 +28,7 @@
 | Speed up app start | [startup-performance.md](startup-performance.md) |
 | See what the performance / storage / tooling review changed, and what is still open | [performance-review.md](performance-review.md) |
 | Typing in a food search lags, the 130,000-product catalogue is searched, result caches, the catalogue Web Worker, dialogs close slowly / clone the DOM, `dialogExit.ts` | [search-and-animation-performance.md](search-and-animation-performance.md) |
-| Page change / swipe lags, the Custom page is slow with lots of data, lazy-mounted accordions, deferred section bodies (`LazyBody defer`), the contained leaving page, swipe placeholder, layout reads in effects, narrow `useSettings()` subscriptions, the page-change benchmark and its budget | [performance.md](performance.md) |
+| Page change / swipe lags, the Custom page is slow with lots of data, lazy-mounted accordions, deferred section bodies (`LazyBody defer`), the contained leaving page, swipe placeholder, layout reads in effects, narrow `useSettings()` subscriptions, the page-change benchmark and its budget, the Today meal card's container queries (calorie figure / note and photo icons hiding, `scripts/measure-meal-card.mjs`) | [performance.md](performance.md) |
 | Add or rename a stored key, backup, network behaviour | [storage-and-privacy.md](storage-and-privacy.md) |
 | JSON export / import: what the backup contains, the pictures warning, backup version 2, how a new stored key must be added to the backup, the Android APK export writing a 0 B file or failing on Downloads (staging, `ExportStore`, read-back verification, cleanup rule, recovery, `saveLocalFile`, the Robolectric test) | [backup-update.md](backup-update.md) |
 | Calorie maths, colours | [calculations-colors.md](calculations-colors.md) |
@@ -63,7 +63,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | Advanced layout (editable grid, pencil toolbar, layout store, meal types) | [advanced-layout.md](advanced-layout.md), `file-map/components-common.md`, `file-map/components-dashboard.md`, `file-map/components-pages.md`, `file-map/components-modals.md`, `file-map/utils.md` |
 | Page behaviour or Settings layout | [journal-pages.md](journal-pages.md) / [journal-shell.md](journal-shell.md) |
 | Animation constants | [motion.md](motion.md), [launch-intro.md](launch-intro.md) |
-| Mount / render / layout cost of a page, collapsible bodies, benchmark script | [performance.md](performance.md), [verification.md](verification.md#page-change-benchmark), `file-map/components-common.md`, `file-map/scripts-public.md` |
+| Mount / render / layout cost of a page, collapsible bodies, benchmark script, container-query fitting of a card | [performance.md](performance.md), [verification.md](verification.md#page-change-benchmark), `file-map/components-common.md`, `file-map/scripts-public.md` |
 | Food/activity data or counts | [data-activities.md](data-activities.md), [data-nutrition.md](data-nutrition.md), [data-off-catalogue.md](data-off-catalogue.md) |
 | Where the APK is published / the download button | [apk-download.md](apk-download.md), [pwa-setup.md](pwa-setup.md) §6 |
 | Android version, permissions, modules | `android/BUILD_APK.md`, [android-apk.md](android-apk.md), [file-map/android-native.md](file-map/android-native.md) |

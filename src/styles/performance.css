@@ -15,3 +15,44 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 240px;
 }
+
+/* Meal card fitting without JS measurement (was useCramped / useExtrasFit in MealSlotCard.tsx). The card is a size
+   container, so the decisions below cost no layout read at all. The widths were MEASURED in Chromium: the card width at
+   which the element last fits (for a four-digit calorie figure such as 1,234 kcal), minus the card's 2 px border (a
+   query measures the content box), plus a margin. See docs/performance.md#meal-card-container-queries. A query
+   measures the whole card (padding, icon, gaps included), so these are not the 126 px of the old PILLS_RESERVE. */
+[data-meal-slot] {
+  container-type: inline-size;
+}
+
+/* Normal layout: the calorie figure sits next to the three macro pills. Last fits at a 210 px card = 208 px, +8. */
+@container (max-width: 216px) {
+  [data-nutrition-row] .kc-meal-kcal { display: none; }
+}
+
+/* Compact layout: the figure shares the header row with icon, + and arrow (the extras are already hidden at that
+   width). The row's sizes change below 359 px of viewport (Tailwind max-[359px], emitted as
+   `not all and (min-width:359px)`), so the limit does too. >= 359 px: last fits at a 166 px card = 164 px, +4 (not +8:
+   a 2-column card is 173 px wide at 390 px and the figure must stay visible there, as before). < 359 px: last fits at
+   a 135 px card = 133 px, +2 (the card is 138 px = 136 px of content at 320 px). */
+@media (min-width: 359px) {
+  @container (max-width: 168px) {
+    .kc-meal-kcal { display: none; }
+  }
+}
+@media not all and (min-width: 359px) {
+  @container (max-width: 135px) {
+    .kc-meal-kcal { display: none; }
+  }
+}
+
+/* The card is too narrow for the note / photo icons in the compact header. They last fit next to the figure at a
+   202 px card = 200 px, +8. Always rendered (no hidden measuring copy); note and photo are also in the expanded body. */
+@container (max-width: 208px) {
+  .kc-meal-extras { display: none; }
+}
+
+/* WebViews without container queries: behave like the old default (kcal shown, extras hidden). */
+@supports not (container-type: inline-size) {
+  .kc-meal-extras { display: none; }
+}
