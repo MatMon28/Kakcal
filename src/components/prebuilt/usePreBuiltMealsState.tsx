@@ -46,6 +46,9 @@ export function usePreBuiltMealsState() {
   const ultraMinimal = settings.ultraMinimal;
 
   const savedRecipes = useMemo(() => allFoods.filter((f) => f.isRecipe), [allFoods]);
+  // id -> food, built once per change of the food list. The Custom page used to run `allFoods.find(...)` (a scan of
+  // every bundled food) for each ingredient of each card on every render.
+  const foodById = useMemo(() => new Map(allFoods.map((f) => [f.id, f])), [allFoods]);
 
   // section searches (type-to-search, fuzzy — identical to Add Food)
   const [mealQuery, setMealQuery] = useState('');
@@ -114,7 +117,7 @@ export function usePreBuiltMealsState() {
   const calculateMealNutrition = (ingredients: PreBuiltMealIngredient[]) => {
     let totalKcal = 0, carbs = 0, protein = 0, fat = 0, fiber = 0, salt = 0, sugar = 0;
     for (const ing of ingredients) {
-      const food = allFoods.find((f) => f.id === ing.foodId);
+      const food = foodById.get(ing.foodId);
       if (!food) continue;
       const factor = ing.amount / 100;
       totalKcal += food.calories * factor;
@@ -137,7 +140,13 @@ export function usePreBuiltMealsState() {
   };
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const newMealNutrition = useMemo(() => calculateMealNutrition(newIngredients), [newIngredients, allFoods]);
+  const newMealNutrition = useMemo(() => calculateMealNutrition(newIngredients), [newIngredients, foodById]);
+  // Nutrition of every saved meal, computed once per change of the meals / foods (not on each render of the page).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const mealNutrition = useMemo(
+    () => new Map(preBuiltMeals.map((m) => [m.id, calculateMealNutrition(m.ingredients)])),
+    [preBuiltMeals, foodById],
+  );
 
   const openNewMealModal = () => {
     setEditingMealId(null);
@@ -276,14 +285,14 @@ export function usePreBuiltMealsState() {
     const q = query.trim();
     if (q.length !== 1) return [];
     return favoriteIds
-      .map((id) => allFoods.find((f) => f.id === id))
+      .map((id) => foodById.get(id))
       .filter((f): f is FoodItem => Boolean(f) && matchesFirstChar(f as FoodItem, q));
   };
 
   const recipeTotals = useMemo(() => {
     let g = 0, kcal = 0, c = 0, p = 0, f = 0, fib = 0, salt = 0, sugar = 0;
     for (const ing of recipeIngs) {
-      const food = allFoods.find((x) => x.id === ing.foodId);
+      const food = foodById.get(ing.foodId);
       if (!food) continue;
       const k = ing.amount / 100;
       g += ing.amount;
@@ -306,7 +315,7 @@ export function usePreBuiltMealsState() {
       salt100: Math.round(salt * per100 * 100) / 100,
       sugar100: Math.round(sugar * per100 * 10) / 10,
     };
-  }, [recipeIngs, allFoods]);
+  }, [recipeIngs, foodById]);
 
   const openRecipeModal = () => {
     setEditingRecipeId(null);
@@ -508,6 +517,8 @@ export function usePreBuiltMealsState() {
     setPendingDelete,
     nameOf,
     calculateMealNutrition,
+    mealNutrition,
+    foodById,
     newMealNutrition,
     openNewMealModal,
     openEditMealModal,

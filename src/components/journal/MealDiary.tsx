@@ -46,11 +46,17 @@ function useMealSearch() {
     seen.add(food.id);
     return `${food.name_en} ${food.name_it} ${food.name_de} ${(food.recipeIngredients || []).map((i) => ingredientNames(byId.get(i.foodId), seen)).join(' ')}`;
   };
-  return (meal: DiaryMeal, query: string) =>
-    `${label(meal.slot)} ${meal.items.map((i) => `${i.name} ${ingredientNames(byId.get(i.foodId))}`).join(' ')} ${memories[meal.key]?.note || ''}`
+  return (meal: DiaryMeal, query: string) => {
+    // No search text: every meal matches. Building the haystack (all names, the recipe ingredients, the note, then
+    // lower-casing it) for every logged meal on every render was the main cost of the Meal diary with a long history.
+    if (!query.trim()) return true;
+    return `${label(meal.slot)} ${meal.items.map((i) => `${i.name} ${ingredientNames(byId.get(i.foodId))}`).join(' ')} ${memories[meal.key]?.note || ''}`
       .toLowerCase()
       .includes(query.trim().toLowerCase());
+  };
 }
+
+const SLOT_ORDER = ['breakfast', 'mid_morning', 'lunch', 'midday_snack', 'dinner', 'extra'];
 
 function useDiaryMeals() {
   const { allDayLogs } = useApp();
@@ -74,9 +80,7 @@ function useDiaryMeals() {
       }
     return [...rows.values()].sort(
       (a, b) =>
-        b.date.localeCompare(a.date) ||
-        ['breakfast', 'mid_morning', 'lunch', 'midday_snack', 'dinner', 'extra'].indexOf(a.slot) -
-          ['breakfast', 'mid_morning', 'lunch', 'midday_snack', 'dinner', 'extra'].indexOf(b.slot),
+        b.date.localeCompare(a.date) || SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot),
     );
   }, [allDayLogs, memories]);
 }
@@ -245,9 +249,12 @@ function DiaryBrowser({
   const [macroMax, setMacroMax] = useState('');
   const [limit, setLimit] = useState(20);
   const [selected, setSelected] = useState<DiaryMeal | null>(null);
+  const needsKcal = calMin !== '' || calMax !== '';
+  const needsMacro = macroMin !== '' || macroMax !== '';
   const matches = meals.filter((meal) => {
-    const kcal = calculateTotalCalories(meal.items);
-    const value = calculateMacros(meal.items)[macro];
+    // Only add up calories / macros when a filter on them is set.
+    const kcal = needsKcal ? calculateTotalCalories(meal.items) : 0;
+    const value = needsMacro ? calculateMacros(meal.items)[macro] : 0;
     return (
       matchesSearch(meal, query) &&
       (!favorites || memories[meal.key]?.favorite) &&

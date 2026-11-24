@@ -5,13 +5,14 @@ import { UtensilsCrossed, Plus, Trash2, Edit2, ChevronDown } from 'lucide-react'
 import { MacroPills } from '../common/MacroPills';
 import { LibraryPhoto } from '../journal/PhotoDiary';
 import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
+import { LazyBody } from '../common/LazyBody';
 import type { LibraryState } from './usePreBuiltMealsState';
 
 export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
   const {
-    preBuiltMeals, allFoods, t, slotLabel, ultraMinimal, mealQuery, setMealQuery, openMeals,
+    preBuiltMeals, t, slotLabel, ultraMinimal, mealQuery, setMealQuery, openMeals,
     setOpenMeals, sectionsOpen, toggleSection, setPendingDelete, nameOf, calculateMealNutrition,
-    openNewMealModal, openEditMealModal, handleOpenLogModal, visibleMeals,
+    openNewMealModal, openEditMealModal, handleOpenLogModal, visibleMeals, mealNutrition, foodById,
   } = s;
   return (
     <>
@@ -32,6 +33,7 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
 
         <div className="accordion-grid" data-open={sectionsOpen.meals} inert={!sectionsOpen.meals}>
         <div className="accordion-inner">
+        <LazyBody open={sectionsOpen.meals}>
         {preBuiltMeals.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="kc-section-empty text-xs font-medium text-[#7D4E14] px-1 py-1">
@@ -45,13 +47,14 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 items-start">
             {visibleMeals.map((meal) => {
-              const nut = calculateMealNutrition(meal.ingredients);
+              const nut = mealNutrition.get(meal.id) ?? calculateMealNutrition(meal.ingredients);
               const isOpen = openMeals.includes(meal.id);
               return (
                 <div
                   key={meal.id}
                   data-library-card
                   data-library-id={meal.id}
+                  data-card-open={isOpen}
                   className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}
                 >
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
@@ -133,6 +136,7 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
 
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
+                      <LazyBody open={isOpen}>
                       <div className="pt-1 space-y-3 border-t border-[var(--border)]">
                         <LibraryPhoto linkedId={meal.id} title={meal.name} slot={meal.slot} />
                         {meal.description && !ultraMinimal && (
@@ -142,7 +146,7 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
 
                         <div data-library-ingredients className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                           {meal.ingredients.map((ing, idx) => {
-                            const food = allFoods.find((f) => f.id === ing.foodId);
+                            const food = foodById.get(ing.foodId);
                             return (
                               <div
                                 key={idx}
@@ -160,6 +164,7 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
                           })}
                         </div>
                       </div>
+                      </LazyBody>
                     </div>
                   </div>
                 </div>
@@ -167,6 +172,7 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
             })}
           </div>
         )}
+        </LazyBody>
         </div>
         </div>
       </section>

@@ -22,6 +22,10 @@ For repeatable web checks, prepare Android assets, run `npm run build`, install 
 
 Optional browser suite: `npm install --no-save @playwright/test && npx playwright install chromium` (minimal Linux: `npx playwright install-deps chromium`), then run the demo dev server and `node scripts/verify-interaction-update.mjs`. It covers link validation, planner mode, diary actions, photo save/export, custom icons and real mobile touch swipes. Outputs go to untracked `.test-output/`. Results and limits: interaction-update.md.
 
+## Page change benchmark
+
+`scripts/bench-page-change.mjs` (needs `playwright`) seeds a large journal (500 logged days, 60 meals, 30 recipes, 14 photos), throttles the CPU 4x (`KC_THROTTLE=1` for none) and taps Today -> every other page -> Today three times, printing the longest main-thread block and the longest frame of each change. Compare before / after a change on the same machine; a long task above ~100 ms is felt as a freeze. Reference numbers and the reasoning are in [performance.md](performance.md).
+
 ## Page transition check
 
 `scripts/check-page-transition.mjs` (needs `playwright` like the other scripts) loads the production `dist/` at 390x844 with touch and records one sample per animation frame while the page changes by tap, Back and the food catalogue. It fails on: a frame with nothing drawn, two pages both clearly visible, horizontal overflow, more than one document-height change per page change (a leftover old page stretching the document), a page left behind, running animations, rail / page `transform` or `style` left over, `kc-page-moving` left on `<html>`, a wrong scroll position, a tap lost during a transition, rapid taps ending on the wrong page, a second page or a fade under reduced motion, and page errors. `KC_REPORT_ONLY=1` prints the metrics without asserting (used to compare with the previous build); `KC_VIEWPORT=1280x800` runs it with the desktop layout. Known pre-existing failure, unrelated: `check-journal.mjs` stops after its second block at the Settings step (`Track sugar intake` button no longer exists); the swipe and sheet blocks before it pass.

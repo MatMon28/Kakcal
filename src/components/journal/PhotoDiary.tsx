@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { OPEN_PHOTO_DIARY_EVENT } from './CustomShortcuts';
 import {
   ArrowUpRight,
@@ -41,10 +41,12 @@ export function PhotoDiary() {
     window.addEventListener(OPEN_PHOTO_DIARY_EVENT, open);
     return () => window.removeEventListener(OPEN_PHOTO_DIARY_EVENT, open);
   }, [settings.photoDiary]);
-  if (!settings.photoDiary) return null;
-  const ordered = [...photos].sort(
-    (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
+  // Sorted once per change of the photos, not on every render (the list can hold many photos).
+  const ordered = useMemo(
+    () => [...photos].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
+    [photos],
   );
+  if (!settings.photoDiary) return null;
   const q = query.trim().toLowerCase();
   const shown = q ? ordered.filter((p) => p.note.toLowerCase().includes(q)) : ordered;
   return (
@@ -70,7 +72,7 @@ export function PhotoDiary() {
               onClick={() => setSelected(photo.id)}
             >
               <span>
-                <img src={photo.src} alt={photo.note} loading="lazy" />
+                <img src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
               </span>
               <strong>{photo.note}</strong>
               <small>{journalDate(photo.date, language)}</small>
@@ -136,7 +138,7 @@ export function MealPhotos({ date, slot }: { date: string; slot: MealSlotId }) {
       <div className="journal-meal-photos">
         {matching.map((p) => (
           <button type="button" key={p.id} onClick={() => setSelected(p.id)}>
-            <img src={p.src} alt="" />
+            <img src={p.src} alt="" decoding="async" />
             <span>{p.note}</span>
             <ChevronRight size={14} />
           </button>
@@ -167,7 +169,7 @@ export function LibraryPhoto({
     <div className="journal-library-photo">
       {matching.length ? (
         <button type="button" onClick={() => setView(true)}>
-          <img src={matching[0].src} alt={matching[0].note} />
+          <img src={matching[0].src} alt={matching[0].note} decoding="async" />
           <span>
             <Camera size={13} />
             {j('View photo', 'Vedi foto')}
@@ -573,7 +575,7 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
                 onClick={() => setSelected(photo.id)}
               >
                 <span>
-                  <img src={photo.src} alt={photo.note} loading="lazy" />
+                  <img src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
                 </span>
                 <strong>{photo.note}</strong>
                 <small>{journalDate(photo.date, language)}</small>

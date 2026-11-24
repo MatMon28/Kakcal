@@ -55,11 +55,18 @@ export function Tabs() {
     };
     frame.current = requestAnimationFrame(step);
   }, [draw]);
+  // The label widths only change with the label texts / the Ultra Minimal mode (fonts and resizes are handled by the
+  // ResizeObserver below). This used to run after *every* render of Tabs, and `scrollWidth` forces a synchronous layout
+  // of the whole document: on a tab change that meant laying out the freshly mounted page inside a layout effect,
+  // before the first frame. See docs/performance.md.
+  const labelKey = `${settings.ultraMinimal ? 'u' : 'n'}|${items.map((item) => item.label).join('|')}`;
   useLayoutEffect(() => {
     buttons.current.forEach((button) => {
       const label = button?.querySelector('span');
       if (button && label) button.style.setProperty('--tab-label-width', `${label.scrollWidth}px`);
     });
+  }, [labelKey]);
+  useLayoutEffect(() => {
     if (getPagePosition() === null) glide();
     else draw(getPagePosition()!);
   });

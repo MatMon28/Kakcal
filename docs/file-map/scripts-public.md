@@ -37,3 +37,5 @@
 `public/images/demo-{breakfast,lunch,dinner}.jpg`: local Pexels photo fixtures used only by opt-in demo data (Miriam Alonso, Nadin Sh, cottonbro studio).
 
 `scripts/verify-interaction-update.mjs`: optional Playwright desktop/mobile regression suite for the interaction update; see verification.md.
+
+`scripts/bench-page-change.mjs`: Playwright benchmark of the page-change cost with a large seeded journal and a throttled CPU (see [../verification.md](../verification.md#page-change-benchmark), [../performance.md](../performance.md)).

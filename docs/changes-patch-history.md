@@ -6,6 +6,13 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+**Earlier patch (page-transition round, base `74cc7ccf7e313fd9a1fa63fa1c84f06228715d5d`):** no `package.json` change, no data / Android / permission change. The tap / Back page change was reworked (details in [motion.md](motion.md)):
+
+- **New:** `src/utils/pageTransition.ts` (fade-through timings and `playPageChange`), `scripts/check-page-transition.mjs` (frame-by-frame artifact check, see [verification.md](verification.md#page-transition-check)).
+- **Edited:** `src/components/common/PageSwiper.tsx` (keeps the page it is leaving mounted as `leaving`, plays the transition, unmounts it before `kc-page-moving` is removed), `src/components/prebuilt/PreBuiltMealsView.tsx` (the unused `data-static-fields` attribute removed).
+- **Deleted:** `src/utils/pageFields.ts` (the field stagger it provided is replaced by the page-level transition).
+- **Docs:** `README.md`, `docs/README.md`, `motion.md`, `verification.md`, `custom-photo-share-update.md`, `changelog/rounds-ui-brand.md`, `file-map/{components-common,utils,scripts-public}.md`, this file and `changes-patch-history.md`.
+
 **Earlier patch (file-organisation round, base `cee71f462cf1656872acd035f9d6a12df4b5c79b`, \"Fixes\"):** no behaviour change, no `package.json` change. The largest source and documentation files were split into small single-topic files (details and the verification in [file-organisation.md](file-organisation.md)):
 
 - **CSS:** `src/index.css` -> `src/styles/*.css` (11 parts, still imported in the original order); `src/components/journal/journal.css` -> `src/components/journal/css/*.css` (8 parts). Both entry files are now lists of `@import`s.

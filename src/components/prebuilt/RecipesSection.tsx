@@ -5,11 +5,12 @@ import { Plus, Trash2, Edit2, ChefHat as ChefHatIcon, ChevronDown } from 'lucide
 import { MacroPills } from '../common/MacroPills';
 import { LibraryPhoto } from '../journal/PhotoDiary';
 import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
+import { LazyBody } from '../common/LazyBody';
 import type { LibraryState } from './usePreBuiltMealsState';
 
 export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
   const {
-    allFoods, t, autoMealSlot, ultraMinimal, savedRecipes, recipeQuery, setRecipeQuery,
+    foodById, t, autoMealSlot, ultraMinimal, savedRecipes, recipeQuery, setRecipeQuery,
     setActiveRecipeToLog, setRecipeLogSlot, setRecipeLogAmount, openRecipes, setOpenRecipes,
     sectionsOpen, toggleSection, setPendingDelete, nameOf, openRecipeModal, openEditRecipeModal,
     visibleRecipes,
@@ -33,6 +34,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
 
         <div className="accordion-grid" data-open={sectionsOpen.recipes} inert={!sectionsOpen.recipes}>
         <div className="accordion-inner">
+        <LazyBody open={sectionsOpen.recipes}>
         {savedRecipes.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="kc-section-empty text-xs font-medium text-[#4D3582] px-1 py-1">
@@ -48,7 +50,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
             {visibleRecipes.map((recipe) => {
               const isOpen = openRecipes.includes(recipe.id);
               return (
-                <div key={recipe.id} data-library-card data-library-id={recipe.id} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
+                <div key={recipe.id} data-library-card data-library-id={recipe.id} data-card-open={isOpen} className={`bg-[var(--surface)] border border-[var(--border)] rounded-2xl ${ultraMinimal ? 'p-2.5 gap-2' : 'p-3.5 gap-2.5'} flex flex-col`}>
                   {/* Title/actions first; calories and number-only macros share the full-width row below. */}
                   <div className="flex items-start justify-between gap-2">
                     <button
@@ -125,6 +127,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
 
                   <div className="accordion-grid" data-open={isOpen} inert={!isOpen}>
                     <div className="accordion-inner">
+                      <LazyBody open={isOpen}>
                       <div className="pt-1 space-y-2.5 border-t border-[var(--border)]">
                         <LibraryPhoto linkedId={recipe.id} title={nameOf(recipe)} />
                         <div className="pt-2"><FoodMacroGrid food={recipe} amount={100} mode={ultraMinimal ? 'minimal' : 'facts'} /></div>
@@ -139,7 +142,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
                           {recipe.recipeIngredients && recipe.recipeIngredients.length > 0 ? (
                             <div data-library-ingredients className="bg-[var(--surface)] rounded-2xl p-2.5 divide-y divide-[var(--border)]">
                               {recipe.recipeIngredients.map((ing, idx) => {
-                                const food = allFoods.find((f) => f.id === ing.foodId);
+                                const food = foodById.get(ing.foodId);
                                 const kcal = food ? Math.round((food.calories * ing.amount) / 100) : null;
                                 return (
                                   <div key={idx} className="py-1.5 flex items-center justify-between gap-2 text-xs">
@@ -164,6 +167,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
                           )}
                         </div>
                       </div>
+                      </LazyBody>
                     </div>
                   </div>
                 </div>
@@ -171,6 +175,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
             })}
           </div>
         )}
+        </LazyBody>
         </div>
         </div>
       </section>

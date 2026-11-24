@@ -12,6 +12,7 @@ import { RecipesSection } from './RecipesSection';
 import { LogMealToSlotModal, LogRecipeToSlotModal } from './LogToSlotModals';
 import { CreateMealModal } from './CreateMealModal';
 import { RecipeBuilderModal } from './RecipeBuilderModal';
+import { LazyBody } from '../common/LazyBody';
 import { usePreBuiltMealsState } from './usePreBuiltMealsState';
 
 export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
@@ -48,6 +49,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         />
         <div className="accordion-grid" data-open={sectionsOpen.foods} inert={!sectionsOpen.foods}>
         <div className="accordion-inner space-y-3">
+        <LazyBody open={sectionsOpen.foods}>
         {/* Recent and favourite foods: one tap to log them. */}
         <CustomFoodsQuick />
         <div className="grid grid-cols-2 gap-2">
@@ -85,6 +87,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             <span className={ultraMinimal ? 'sr-only' : 'truncate'}>{t.database.browseAll}</span>
           </button>
         </div>
+        </LazyBody>
         </div>
         </div>
       </section>

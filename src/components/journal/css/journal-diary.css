@@ -427,3 +427,12 @@ html[data-style='pop'] .journal-feature {
 html[data-style='aurora'] .journal-photo-preview > span {
   border-radius: 14px;
 }
+
+/* Performance: a collapsed saved meal / recipe card that is off screen is neither laid out nor painted
+   (content-visibility). Showing the Custom page with dozens of cards used to lay out every one of them before the first
+   frame. The size is only an estimate until the card has been shown once (`auto` then remembers the real one); an
+   expanded card is always rendered, so "Go to the meal" and the open animation are unaffected. See docs/performance.md. */
+[data-library-card][data-card-open='false'] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 118px;
+}

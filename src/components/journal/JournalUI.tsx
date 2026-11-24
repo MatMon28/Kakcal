@@ -4,6 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { LibrarySectionHeader, libraryIconButton } from '../common/LibrarySectionHeader';
+import { LazyBody } from '../common/LazyBody';
 
 const toneToPalette = { yellow: 'diary', blue: 'planner', red: 'photos' } as const;
 
@@ -68,7 +69,9 @@ export function JournalSection({
       />
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
-          <div className="journal-section-body">{children}</div>
+          <LazyBody open={open}>
+            <div className="journal-section-body">{children}</div>
+          </LazyBody>
         </div>
       </div>
     </section>
