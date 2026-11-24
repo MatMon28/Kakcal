@@ -10,10 +10,15 @@ import android.os.ParcelFileDescriptor;
 import android.provider.OpenableColumns;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * A stand-in for a Storage Access Framework provider (Downloads, Drive...). Documents are plain files in a
@@ -31,13 +36,18 @@ public class StubDocumentsProvider extends ContentProvider {
     static long reportedSize = -1;
     /** When true the size column is absent from the answer (provider that does not report sizes). */
     static boolean reportNoSize;
+    /** openFile() throws FileNotFoundException for these modes (a cloud provider that refuses "wt"). */
+    static final Set<String> failModes = new HashSet<>();
+    /** When >= 0, a read ("r") open serves only the first N bytes of the document (a provider that lost data). */
+    static long serveOnlyFirst = -1;
     static final List<String> openModes = new ArrayList<>();
     static final List<String> deleted = new ArrayList<>();
     static final Map<String, File> documents = new HashMap<>();
 
     static void reset(File directory) {
         root = directory;
-        failOpens = 0; denyDelete = false; reportedSize = -1; reportNoSize = false;
+        failOpens = 0; denyDelete = false; reportedSize = -1; reportNoSize = false; serveOnlyFirst = -1;
+        failModes.clear();
         openModes.clear(); deleted.clear(); documents.clear();
     }
 
@@ -57,8 +67,20 @@ public class StubDocumentsProvider extends ContentProvider {
     public ParcelFileDescriptor openFile(Uri uri, String mode) throws FileNotFoundException {
         openModes.add(mode);
         if (failOpens > 0) { failOpens--; throw new FileNotFoundException("simulated provider failure"); }
+        if (failModes.contains(mode)) throw new FileNotFoundException("simulated refusal of mode " + mode);
         File file = fileOf(uri);
         if (file == null || !file.exists()) throw new FileNotFoundException("no such document " + uri);
+        if ("r".equals(mode) && serveOnlyFirst >= 0) {
+            try {
+                File partial = File.createTempFile("partial", ".bin", root);
+                partial.deleteOnExit();
+                byte[] all = Files.readAllBytes(file.toPath());
+                Files.write(partial.toPath(), Arrays.copyOf(all, (int) Math.min(serveOnlyFirst, all.length)));
+                return ParcelFileDescriptor.open(partial, ParcelFileDescriptor.MODE_READ_ONLY);
+            } catch (IOException error) {
+                throw new FileNotFoundException(error.getMessage());
+            }
+        }
         return ParcelFileDescriptor.open(file, ParcelFileDescriptor.parseMode(mode));
     }
 

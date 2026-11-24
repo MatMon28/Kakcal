@@ -6,14 +6,14 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md), [changes-patch-history.md](changes-patch-history.md) (what earlier patches contained)
 
-**Current patch (Android export fix round 2, "0 B files", base `933e27ef8a230c50b27e689390a0e89875f0e229`):** no `package.json` / lock-file change (no `npm ci` needed), no new permission or remote API, **the APK must be rebuilt** (`node scripts/prepare-android.mjs && npx cap open android`): the web part alone does not fix it. `android/app/build.gradle` gains Robolectric test dependencies only. Details: [backup-update.md](backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix-round-2).
+**Current patch (Android export fix round 3, "false failure on Downloads", base `757527edb0c32e59769acfa5f1e134d756c24d97`):** no `package.json` / lock-file change (no `npm ci` needed), no `src/` change, no new permission or remote API, **the APK must be rebuilt** (`node scripts/prepare-android.mjs && npx cap open android`): native code only. Details: [backup-update.md](backup-update.md#round-3-the-false-failure-on-downloads-and-the-deleted-good-file).
 
-- **New:** `android/app/src/main/java/com/kcalsync/app/ExportStore.java`, `android/app/src/test/java/com/kcalsync/app/{ExportStoreTest,StubDocumentsProvider}.java`, `src/utils/nativeExport.ts`.
-- **Edited (code):** `android/app/src/main/java/com/kcalsync/app/{JournalDevicePlugin,MainActivity}.java`, `android/app/build.gradle`, `src/utils/{android,planSharing}.ts`, `src/components/common/DataBackup.tsx`, `tests/backup-android.test.tsx`.
-- **Edited (docs):** `README.md`, `docs/README.md`, `backup-update.md`, `verification.md`, `known-gaps.md`, `storage-and-privacy.md`, `changes-patch.md`, `changes-patch-history.md`, `file-map/{android-native,utils,components-common}.md`, `android/BUILD_APK.md`.
-- **Deleted:** nothing (the `@ActivityCallback backupDestination` method and the `"wt"` / `"w"` retry loop are removed from `JournalDevicePlugin.java`).
-- **Summary:** stage in `filesDir`; key pending exports by id with their absolute path; finish or clean them in `onCreate`; write bytes in one pass and verify the count before resolving; return `{ cancelled, bytes }` from every JS export path; log the real exception instead of swallowing it. The `"wt"` / `"w"` retry is not a fix.
-- **Verified:** `tsc`, lint (0 errors), `npm test` (86 tests) and `ExportStoreTest` (16 Robolectric tests, run on JDK 21 with the Gradle-resolved classpath; the Gradle `testDebugUnitTest` task itself was not run to the end in the authoring sandbox: 2 GB of RAM, the daemon was killed). **Not verified:** anything on a real device (picker, Drive, process death): run the acceptance list in [verification.md](verification.md).
+- **New:** `changes.patch` is regenerated; no new source file.
+- **Edited (code):** `android/app/src/main/java/com/kcalsync/app/ExportStore.java` (read-back verification instead of the `SIZE` column, `documentIsEmpty()` cleanup rule, `keepStaged()`, `"wt"` > `"w"` open fallback, class comment), `android/app/src/test/java/com/kcalsync/app/{ExportStoreTest,StubDocumentsProvider}.java` (4 new tests, 1 replaced, `failOpens = 2` where a failed open is forced).
+- **Edited (docs):** `README.md`, `docs/README.md`, `backup-update.md`, `verification.md`, `known-gaps.md`, `changes-patch.md`, `changes-patch-history.md`, `file-map/android-native.md`.
+- **Deleted:** nothing (`verifySize()` and `querySize()` are replaced by `readBack()`).
+- **Summary:** the provider's `SIZE` column is stale on MediaStore-backed Downloads and reported 0 for complete files, so every export was written, failed verification and was deleted together with its staged copy. The write is now proven by reading it back; only a provably empty document is deleted; staged bytes survive a failure after the write.
+- **Verified:** read through only. **Not verified:** `ExportStoreTest` was not compiled or run (no JDK / Android SDK in the authoring sandbox): run `cd android && ./gradlew :app:testDebugUnitTest`, then the device acceptance list in [verification.md](verification.md) (Downloads, Drive, a custom folder).
 
 Apply from that repository revision (the base commit above):
 

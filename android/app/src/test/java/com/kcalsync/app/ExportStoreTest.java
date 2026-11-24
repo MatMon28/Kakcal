@@ -13,6 +13,7 @@ import androidx.test.core.app.ApplicationProvider;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
 import org.junit.Before;
@@ -84,8 +85,7 @@ public class ExportStoreTest {
         assertEquals(ExportStore.Outcome.SAVED, outcome.status);
         assertEquals(data.length, outcome.bytes);
         assertArrayEquals(data, Files.readAllBytes(StubDocumentsProvider.fileOf(target).toPath()));
-        assertEquals("exactly one open, no mode retry", 1, StubDocumentsProvider.openModes.size());
-        assertEquals("wt", StubDocumentsProvider.openModes.get(0));
+        assertEquals("one open for writing (no mode retry) and one read-back", Arrays.asList("wt", "r"), StubDocumentsProvider.openModes);
         assertNull("record is gone", store.load(pending.id));
         assertFalse("staged bytes are gone", new File(pending.path).exists());
     }
@@ -93,7 +93,7 @@ public class ExportStoreTest {
     @Test
     public void firstOpenFailsThenDeleteAndRecreateSucceeds() throws Exception {
         byte[] data = payload(20_000);
-        StubDocumentsProvider.failOpens = 1;
+        StubDocumentsProvider.failOpens = 2; // "wt" and the "w" fallback both fail
         ExportStore.Pending first = store.stage("json", "backup.json", data);
         Uri broken = StubDocumentsProvider.createEmptyDocument("backup.json");
 
@@ -105,7 +105,7 @@ public class ExportStoreTest {
         assertTrue(failed.detail, failed.detail.contains("[the empty document was removed]"));
         assertEquals("the empty document is gone, no 0 B file survives", 1, StubDocumentsProvider.deleted.size());
         assertNull(StubDocumentsProvider.fileOf(broken));
-        assertEquals("a failed open is not retried with another mode", 1, StubDocumentsProvider.openModes.size());
+        assertEquals("a failed open is retried once with \"w\" and then given up", Arrays.asList("wt", "w"), StubDocumentsProvider.openModes);
         assertNull(store.load(first.id));
 
         // the user presses Export again: new stage, new document from the picker
@@ -120,7 +120,7 @@ public class ExportStoreTest {
 
     @Test
     public void deleteBeingDeniedIsSaidSoAndRetriedOnNextStart() throws Exception {
-        StubDocumentsProvider.failOpens = 1;
+        StubDocumentsProvider.failOpens = 2;
         StubDocumentsProvider.denyDelete = true;
         ExportStore.Pending pending = store.stage("xlsx", "data.xlsx", payload(5000));
         Uri target = StubDocumentsProvider.createEmptyDocument("data.xlsx");
@@ -137,16 +137,95 @@ public class ExportStoreTest {
     }
 
     @Test
-    public void providerThatKeepsFewerBytesThanWrittenIsAFailure() throws Exception {
-        StubDocumentsProvider.reportedSize = 0; // provider says 0 B although the stream accepted everything
-        ExportStore.Pending pending = store.stage("zip", "pictures.zip", payload(4096));
+    public void staleZeroSizeColumnOfAMediaStoreProviderIsNotProofOfAFailure() throws Exception {
+        StubDocumentsProvider.reportedSize = 0; // Downloads: cached SIZE says 0 B for a complete file
+        byte[] data = payload(4096);
+        ExportStore.Pending pending = store.stage("zip", "pictures.zip", data);
         Uri target = StubDocumentsProvider.createEmptyDocument("pictures.zip");
 
         ExportStore.Outcome outcome = store.complete(pending.id, target);
 
+        assertEquals(outcome.detail, ExportStore.Outcome.SAVED, outcome.status);
+        assertEquals(data.length, outcome.bytes);
+        assertTrue("nothing is deleted", StubDocumentsProvider.deleted.isEmpty());
+        assertArrayEquals(data, Files.readAllBytes(StubDocumentsProvider.fileOf(target).toPath()));
+        assertNull(store.load(pending.id));
+        assertFalse(new File(pending.path).exists());
+    }
+
+    @Test
+    public void providerThatServesOnlyHalfTheBytesFailsButKeepsTheDocumentAndTheStagedFile() throws Exception {
+        StubDocumentsProvider.reportedSize = 0; // and its SIZE column is no help either
+        StubDocumentsProvider.serveOnlyFirst = 2048;
+        byte[] data = payload(4096);
+        ExportStore.Pending pending = store.stage("json", "backup.json", data);
+        Uri target = StubDocumentsProvider.createEmptyDocument("backup.json");
+
+        ExportStore.Outcome outcome = store.complete(pending.id, target);
+
         assertEquals(ExportStore.Outcome.FAILED, outcome.status);
-        assertTrue(outcome.detail, outcome.detail.contains("the provider reports 0 bytes, expected 4096"));
-        assertNull(StubDocumentsProvider.fileOf(target));
+        assertTrue(outcome.detail, outcome.detail.contains("the document holds 2048 of 4096 bytes"));
+        assertTrue(outcome.detail, outcome.detail.contains("[the document was left in place"));
+        assertTrue("the document is not deleted", StubDocumentsProvider.deleted.isEmpty());
+        assertNotNull(StubDocumentsProvider.fileOf(target));
+        assertTrue("the staged file is kept", new File(pending.path).isFile());
+        ExportStore.Pending kept = store.load(pending.id);
+        assertNotNull("and so is its record", kept);
+        assertNull("the picker target is cleared so recover() does not loop", kept.target);
+
+        // the next start neither rewrites nor deletes anything
+        StubDocumentsProvider.openModes.clear();
+        assertTrue(new ExportStore(context).recover().isEmpty());
+        assertTrue(StubDocumentsProvider.openModes.isEmpty());
+        assertTrue(StubDocumentsProvider.deleted.isEmpty());
+        assertTrue(new File(pending.path).isFile());
+    }
+
+    @Test
+    public void aNonEmptyDocumentIsNeverDeletedWhenTheOpenFails() throws Exception {
+        ExportStore.Pending pending = store.stage("json", "backup.json", payload(4096));
+        Uri target = StubDocumentsProvider.createEmptyDocument("backup.json");
+        Files.write(StubDocumentsProvider.fileOf(target).toPath(), new byte[100]); // bytes from an earlier, interrupted write
+        StubDocumentsProvider.failModes.add("wt");
+        StubDocumentsProvider.failModes.add("w");
+
+        ExportStore.Outcome outcome = store.complete(pending.id, target);
+
+        assertEquals(ExportStore.Outcome.FAILED, outcome.status);
+        assertTrue(outcome.detail, outcome.detail.contains("[the document was left in place: it is not empty]"));
+        assertTrue(StubDocumentsProvider.deleted.isEmpty());
+        assertNotNull(StubDocumentsProvider.fileOf(target));
+    }
+
+    @Test
+    public void whenWtIsRefusedTheWModeIsUsedAndTheExportIsSaved() throws Exception {
+        StubDocumentsProvider.failModes.add("wt"); // a cloud provider that does not know "wt"
+        byte[] data = payload(30_000);
+        ExportStore.Pending pending = store.stage("json", "backup.json", data);
+        Uri target = StubDocumentsProvider.createEmptyDocument("backup.json");
+
+        ExportStore.Outcome outcome = store.complete(pending.id, target);
+
+        assertEquals(outcome.detail, ExportStore.Outcome.SAVED, outcome.status);
+        assertEquals(data.length, outcome.bytes);
+        assertEquals("wt, then w, then the read-back", Arrays.asList("wt", "w", "r"), StubDocumentsProvider.openModes);
+        assertArrayEquals(data, Files.readAllBytes(StubDocumentsProvider.fileOf(target).toPath()));
+        assertTrue(StubDocumentsProvider.deleted.isEmpty());
+    }
+
+    @Test
+    public void aDocumentThatCannotBeReadBackIsAcceptedButNeverFallsBackToTheSizeColumn() throws Exception {
+        StubDocumentsProvider.failModes.add("r"); // write-only grant
+        StubDocumentsProvider.reportedSize = 0;   // the stale column must not turn this into a failure
+        byte[] data = payload(4096);
+        ExportStore.Pending pending = store.stage("json", "backup.json", data);
+        Uri target = StubDocumentsProvider.createEmptyDocument("backup.json");
+
+        ExportStore.Outcome outcome = store.complete(pending.id, target);
+
+        assertEquals(outcome.detail, ExportStore.Outcome.SAVED, outcome.status);
+        assertEquals(data.length, outcome.bytes);
+        assertTrue(StubDocumentsProvider.deleted.isEmpty());
     }
 
     @Test

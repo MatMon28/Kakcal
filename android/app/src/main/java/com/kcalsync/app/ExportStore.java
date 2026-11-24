@@ -11,8 +11,10 @@ import android.util.Log;
 import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +44,11 @@ import org.json.JSONObject;
  *   <li>{@link #recover()} (called from MainActivity.onCreate) finishes or cleans every record that has a target;</li>
  *   <li>the finished outcome is kept ({@link #addLast}) so the web layer can show it even when its call is gone.</li>
  * </ul>
- * There is deliberately no open-mode retry: for SAF providers "w" and "wt" are the same call.
+ * The write is proven by reading the document back and comparing every byte, never by the provider's SIZE column
+ * (a cached value on MediaStore-backed providers such as Downloads: it reports 0 for complete files). A document that
+ * received bytes is never deleted, and its staged copy is kept; only a provably empty document is removed.
+ * The only open-mode retry is "wt" -> "w" after a FileNotFoundException at the open (some cloud providers refuse
+ * "wt"); that is safe because a failed open truncates nothing.
  */
 final class ExportStore {
     static final String TAG = "KakcalExport";
@@ -124,7 +130,15 @@ final class ExportStore {
 
     /** A failed write; the message already carries mode, exception class and message. */
     static final class ExportException extends IOException {
-        ExportException(String message, Throwable cause) { super(message, cause); }
+        /** True when the document had already been handed bytes: it must then never be deleted. */
+        final boolean wroteBytes;
+
+        ExportException(String message, Throwable cause) { this(message, cause, false); }
+
+        ExportException(String message, Throwable cause, boolean wroteBytes) {
+            super(message, cause);
+            this.wroteBytes = wroteBytes;
+        }
     }
 
     private final Context context;
@@ -246,8 +260,10 @@ final class ExportStore {
     /**
      * Copies the staged bytes into the chosen document. Never throws. Order: record the target (so a crash is
      * resumable), read the bytes (the target is not opened before they are in memory), open the target, write in one
-     * pass, flush, sync, close, verify the size the provider reports. On any failure the empty document is removed on
-     * a best-effort basis (the grant may not allow it) and the outcome says whether that worked.
+     * pass, flush, sync, close, then read the document back and compare the bytes. A failure before any byte reached the
+     * document removes the document only when it is provably empty (best effort, the grant may not allow it) and
+     * drops the staged copy. A failure after bytes were written leaves the document in place and keeps the staged
+     * copy (so a retry is possible). The outcome says what happened.
      *
      * @return the outcome, or null when this id is already being written by this process.
      */
@@ -256,7 +272,7 @@ final class ExportStore {
         Pending pending = load(id);
         try {
             if (pending == null) {
-                String cleanup = discard(target);
+                String cleanup = cleanUpEmpty(target);
                 return failed(id, null, "Export record is missing: mode=" + WRITE_MODE + " " + describeProvider(target) + cleanup);
             }
             markTarget(pending, target);
@@ -272,12 +288,29 @@ final class ExportStore {
         } catch (Throwable error) {
             String message = error instanceof ExportException ? error.getMessage() : describe(target, error);
             Log.e(TAG, message, error);
-            String cleanup = discard(target);
-            forget(id);
+            String cleanup;
+            if (error instanceof ExportException && ((ExportException) error).wroteBytes) {
+                cleanup = " [the document was left in place: bytes had been written to it; the staged copy was kept]";
+                keepStaged(pending);
+            } else {
+                cleanup = cleanUpEmpty(target);
+                forget(id);
+            }
             return failed(id, pending != null ? pending.filename : null, message + cleanup);
         } finally {
             synchronized (ACTIVE) { ACTIVE.remove(id); }
         }
+    }
+
+    /**
+     * Keeps the staged bytes after a failure that happened once the document had received data. The picker target is
+     * cleared from the record so recover() does not rewrite the same document on every start; the record is dropped
+     * as stale after STALE_MS like any other export that is never finished.
+     */
+    private void keepStaged(Pending pending) {
+        if (pending == null) return;
+        if (!new File(pending.path).isFile()) { forget(pending.id); return; }
+        save(new Pending(pending.id, pending.path, pending.kind, pending.filename, pending.size, pending.createdAt, null));
     }
 
     private Outcome failed(String id, String filename, String detail) {
@@ -290,12 +323,15 @@ final class ExportStore {
         return data;
     }
 
-    /** Opens the target once, writes everything, flushes, syncs, closes and checks the size. Returns the byte count. */
+    /**
+     * Opens the target, writes everything, flushes, syncs, closes and reads the document back to compare the bytes.
+     * Returns the verified byte count. The provider's SIZE column is never used as proof (stale on MediaStore).
+     */
     long write(Uri target, byte[] data) throws IOException {
         ContentResolver resolver = context.getContentResolver();
         long written = 0;
         try {
-            try (OutputStream out = resolver.openOutputStream(target, WRITE_MODE)) {
+            try (OutputStream out = openForWrite(resolver, target)) {
                 if (out == null) throw new IOException("the provider returned no output stream");
                 for (int offset = 0; offset < data.length; offset += CHUNK) {
                     int count = Math.min(CHUNK, data.length - offset);
@@ -309,37 +345,50 @@ final class ExportStore {
                 }
             } // close() errors are raised here, before the count is trusted
             if (written != data.length) throw new IOException("short write: " + written + " of " + data.length + " bytes");
-            verifySize(resolver, target, data.length);
-            return written;
+            return readBack(resolver, target, data); // verified bytes
         } catch (IOException | RuntimeException error) {
             if (error instanceof ExportException) throw (ExportException) error;
-            throw new ExportException(describe(target, error), error);
+            throw new ExportException(describe(target, error), error, written > 0);
         }
     }
 
-    /**
-     * Asks the provider for the document size. A provider that reports a different size than we wrote has lost data.
-     * A provider that reports nothing (null column, query error) cannot be checked: that is accepted and logged.
-     * Slow providers get three short chances to catch up.
-     */
-    private void verifySize(ContentResolver resolver, Uri target, long expected) throws IOException {
-        long reported = -1;
-        for (int attempt = 0; attempt < 3; attempt++) {
-            reported = querySize(resolver, target);
-            if (reported < 0 || reported == expected) break;
-            try { Thread.sleep(60); } catch (InterruptedException interrupted) { Thread.currentThread().interrupt(); break; }
+    /** "wt" first; a FileNotFoundException at the open (cloud providers) retries once with "w". Nothing was truncated. */
+    private static OutputStream openForWrite(ContentResolver resolver, Uri target) throws IOException {
+        try {
+            return resolver.openOutputStream(target, WRITE_MODE);
+        } catch (FileNotFoundException error) {
+            Log.w(TAG, "open with mode " + WRITE_MODE + " failed for " + target + " (" + error.getMessage() + "), trying mode w");
+            return resolver.openOutputStream(target, "w");
         }
-        if (reported < 0) Log.w(TAG, "size of " + target + " could not be verified (provider reports none)");
-        else if (reported != expected) throw new IOException("the provider reports " + reported + " bytes, expected " + expected);
     }
 
-    private static long querySize(ContentResolver resolver, Uri target) {
-        try (Cursor cursor = resolver.query(target, new String[] { OpenableColumns.SIZE }, null, null, null)) {
-            if (cursor == null || !cursor.moveToFirst() || cursor.isNull(0)) return -1;
-            return cursor.getLong(0);
-        } catch (RuntimeException error) {
-            return -1;
+    /** Prove the write by reading it back. The provider's SIZE column is stale on MediaStore providers. */
+    private static long readBack(ContentResolver resolver, Uri target, byte[] expected) throws IOException {
+        InputStream opened;
+        try {
+            opened = resolver.openInputStream(target);
+        } catch (IOException | RuntimeException error) {
+            // Write-only grant or a provider that cannot be read: the write itself succeeded, so accept it.
+            // The SIZE column is never a fallback.
+            Log.w(TAG, "could not read " + target + " back to verify it: " + error.getClass().getSimpleName() + ": " + error.getMessage());
+            return expected.length;
         }
+        long total = 0;
+        try (InputStream in = opened) {
+            if (in == null) throw new IOException("the provider returned no input stream");
+            byte[] buffer = new byte[CHUNK];
+            int n;
+            while ((n = in.read(buffer)) > 0) {
+                for (int i = 0; i < n; i++) {
+                    int at = (int) total + i;
+                    if (at >= expected.length) throw new IOException("the document is longer than the staged file");
+                    if (buffer[i] != expected[at]) throw new IOException("the document content differs from the staged file");
+                }
+                total += n;
+            }
+        }
+        if (total != expected.length) throw new IOException("the document holds " + total + " of " + expected.length + " bytes");
+        return total;
     }
 
     // ---- diagnostics ---------------------------------------------------------------------------------------------
@@ -359,6 +408,18 @@ final class ExportStore {
      * provider supports deleting. The caller is told which one happened. A failure is remembered and retried on the
      * next start.
      */
+    /** Removes the document only when the provider says it is empty (0 B); anything else is left alone. */
+    private String cleanUpEmpty(Uri target) {
+        return documentIsEmpty(target) ? discard(target) : " [the document was left in place: it is not empty]";
+    }
+
+    private boolean documentIsEmpty(Uri target) {
+        if (target == null) return false;
+        try (Cursor c = context.getContentResolver().query(target, new String[] { OpenableColumns.SIZE }, null, null, null)) {
+            return c != null && c.moveToFirst() && !c.isNull(0) && c.getLong(0) == 0L;
+        } catch (RuntimeException e) { return false; }
+    }
+
     private String discard(Uri target) {
         if (target == null) return "";
         if (deleteQuietly(target)) return " [the empty document was removed]";

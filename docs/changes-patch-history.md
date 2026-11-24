@@ -6,6 +6,15 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+**Earlier patch (Android export fix round 2, "0 B files", base `933e27ef8a230c50b27e689390a0e89875f0e229`):** no `package.json` / lock-file change (no `npm ci` needed), no new permission or remote API, **the APK must be rebuilt** (`node scripts/prepare-android.mjs && npx cap open android`): the web part alone does not fix it. `android/app/build.gradle` gains Robolectric test dependencies only. Details: [backup-update.md](backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix-round-2).
+
+- **New:** `android/app/src/main/java/com/kcalsync/app/ExportStore.java`, `android/app/src/test/java/com/kcalsync/app/{ExportStoreTest,StubDocumentsProvider}.java`, `src/utils/nativeExport.ts`.
+- **Edited (code):** `android/app/src/main/java/com/kcalsync/app/{JournalDevicePlugin,MainActivity}.java`, `android/app/build.gradle`, `src/utils/{android,planSharing}.ts`, `src/components/common/DataBackup.tsx`, `tests/backup-android.test.tsx`.
+- **Edited (docs):** `README.md`, `docs/README.md`, `backup-update.md`, `verification.md`, `known-gaps.md`, `storage-and-privacy.md`, `changes-patch.md`, `changes-patch-history.md`, `file-map/{android-native,utils,components-common}.md`, `android/BUILD_APK.md`.
+- **Deleted:** nothing (the `@ActivityCallback backupDestination` method and the `"wt"` / `"w"` retry loop are removed from `JournalDevicePlugin.java`).
+- **Summary:** stage in `filesDir`; key pending exports by id with their absolute path; finish or clean them in `onCreate`; write bytes in one pass and verify the count before resolving; return `{ cancelled, bytes }` from every JS export path; log the real exception instead of swallowing it. The `"wt"` / `"w"` retry is not a fix.
+- **Verified:** `tsc`, lint (0 errors), `npm test` (86 tests) and `ExportStoreTest` (16 Robolectric tests, run on JDK 21 with the Gradle-resolved classpath; the Gradle `testDebugUnitTest` task itself was not run to the end in the authoring sandbox: 2 GB of RAM, the daemon was killed). **Not verified:** anything on a real device (picker, Drive, process death): run the acceptance list in [verification.md](verification.md).
+
 **Earlier patch (page-change follow-up round "stop paying twice", base `88141edad0804338b8584959d4c96cef9b4dc184`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission, storage-key or remote API change, no APK rebuild needed beyond the normal web build. Details: [performance.md](performance.md#follow-up-round-stop-paying-twice).
 
 - **New:** `src/components/common/DeferredBody.tsx`, `src/styles/performance.css`, `tests/page-change.test.tsx`.
