@@ -9,6 +9,7 @@ import {
   Pencil,
   Plus,
   Trash2,
+  ArrowUpRight,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
@@ -28,6 +29,8 @@ import { MealSlotIcon } from '../common/mealSlotIcon';
 import { MealSummaryCard } from './MealSummaryCard';
 import { PlanTransfer } from './PlanTransfer';
 import { PlanWizard } from './PlannerWizard';
+import { PlanLibrary } from './PlanLibrary';
+import type { PlanGroupView } from '../../utils/planGroups';
 import { OPEN_PLANNER_EVENT } from './CustomShortcuts';
 import { JournalEmpty, JournalSection, journalDate } from './JournalUI';
 
@@ -42,6 +45,9 @@ export function MealPlanner() {
   // A plan that is open for reading (the Today-style meal view); Edit opens the editor.
   const [viewing, setViewing] = useState<MealPlan | null>(null);
   const [query, setQuery] = useState('');
+  // "See all plans", and the two ways of opening a saved plan in the planner: edit it as a whole, or reuse it.
+  const [library, setLibrary] = useState(false);
+  const [wizard, setWizard] = useState<{ mode: 'edit' | 'reuse'; group: PlanGroupView } | null>(null);
   // The Custom page shortcut button opens the planner.
   useEffect(() => {
     const open = () => setEditing('new');
@@ -148,6 +154,10 @@ export function MealPlanner() {
                 dayPlans.map((plan) => <PlanRow key={plan.id} plan={plan} onOpen={() => setViewing(plan)} />)
               )}
             </div>
+            <button type="button" className="journal-secondary-button journal-see-all" data-see-all-plans onClick={() => setLibrary(true)}>
+              {j('See all plans', 'Vedi tutti i programmi')}
+              <ArrowUpRight size={14} />
+            </button>
           </>
         )}
       </JournalSection>
@@ -166,6 +176,31 @@ export function MealPlanner() {
           initialDate={date}
           plan={editing === 'new' ? undefined : editing}
           onClose={() => setEditing(null)}
+        />
+      )}
+      {library && (
+        <PlanLibrary
+          onClose={() => setLibrary(false)}
+          onEdit={(group) => {
+            setLibrary(false);
+            setWizard({ mode: 'edit', group });
+          }}
+          onReuse={(group) => {
+            setLibrary(false);
+            setWizard({ mode: 'reuse', group });
+          }}
+          onOpenMeal={(plan) => {
+            setLibrary(false);
+            setViewing(plan);
+          }}
+        />
+      )}
+      {wizard && (
+        <PlanWizard
+          initialDate={date}
+          group={wizard.mode === 'edit' ? wizard.group : undefined}
+          reuse={wizard.mode === 'reuse' ? wizard.group : undefined}
+          onClose={() => setWizard(null)}
         />
       )}
     </>

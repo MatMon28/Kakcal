@@ -1,0 +1,65 @@
+/* "See all plans" (PlanLibrary.tsx), the plan name field and the Shopping list (ShoppingLists.tsx). Theme variables only,
+   so every style and the dark modes inherit. */
+
+/* Cards: a plan in the library, a plan in the shopping-list picker, a shopping list in the Custom page. */
+.journal-plan-cards { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.journal-plan-card {
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--inset);
+  color: var(--text);
+  overflow: hidden;
+}
+.journal-plan-card.is-past { opacity: 0.88; }
+.journal-plan-card-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 11px 12px;
+  text-align: left;
+  color: inherit;
+}
+.journal-plan-card-main:hover { background: var(--hover); }
+.journal-plan-card-main > span:nth-child(2) { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 2px; }
+.journal-plan-card-main strong { font-size: 13px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-plan-card-main small { font-size: 11px; font-weight: 650; color: var(--muted); }
+.journal-plan-card-main > svg { flex-shrink: 0; color: var(--muted); }
+.journal-plan-card-actions { display: flex; gap: 8px; padding: 0 12px 11px; }
+.journal-plan-card-actions .journal-secondary-button { padding: 8px 12px; font-size: 12px; }
+.journal-plan-card-actions [data-plan-reuse] { flex: 1; }
+
+/* Plan name (page 1 of the planner). */
+.journal-plan-name > small { margin-top: -2px; }
+
+/* Shopping list: progress bar on the Custom page card. */
+.journal-shopping-progress { display: block; height: 5px; margin-top: 4px; border-radius: 999px; background: var(--border); overflow: hidden; }
+.journal-shopping-progress > i { display: block; height: 100%; border-radius: inherit; background: var(--text); transition: width 0.25s; }
+
+/* Shopping list dialog. */
+.journal-shopping-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid var(--border); border-radius: 16px; background: var(--inset); overflow: hidden; }
+.journal-shopping-items > li + li { border-top: 1px solid var(--border); }
+.journal-shopping-items li { display: flex; align-items: center; gap: 10px; padding: 0 12px; min-height: 46px; }
+.journal-shopping-items label { display: flex; flex-direction: row; align-items: center; gap: 12px; width: 100%; min-height: 46px; cursor: pointer; font-size: 13px; }
+.journal-shopping-items input[type='checkbox'] { appearance: auto; width: 20px; height: 20px; flex-shrink: 0; padding: 0; accent-color: var(--text); cursor: pointer; }
+.journal-shopping-name { flex: 1; min-width: 0; font-size: 13px; font-weight: 700; overflow-wrap: anywhere; }
+.journal-shopping-qty { flex-shrink: 0; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); }
+.journal-shopping-items li.is-checked .journal-shopping-name { text-decoration: line-through; opacity: 0.5; }
+.journal-shopping-items li.is-checked .journal-shopping-qty { opacity: 0.5; }
+.journal-shopping-remove { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 999px; color: var(--text-warn); flex-shrink: 0; }
+.journal-shopping-remove:hover { background: var(--hover); }
+.journal-shopping-add { display: grid; grid-template-columns: minmax(0, 1fr) 72px 64px; gap: 8px; }
+.journal-shopping-add > .journal-primary-button { grid-column: 1 / -1; }
+.journal-shopping-notice {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #cfe7fe;
+  color: #183b5e;
+  font-size: 12px;
+  font-weight: 700;
+}
+.journal-shopping-notice button { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; border-radius: 999px; background: #183b5e; color: #fff; font-size: 12px; font-weight: 800; flex-shrink: 0; }

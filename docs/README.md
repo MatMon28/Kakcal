@@ -21,6 +21,7 @@
 | Planner wizard (days, weekdays, specific days), Excel export, *Add to Meals*, recipe portion, protein per kg, intake / burned target, water in Statistics, Custom shortcuts, photo time range, recent / favourite foods | [new-features-update.md](new-features-update.md) |
 | Change the Custom grid in Minimal mode, header icons, photo diary pop-ups, "Go to the meal", short share links, when the share pop-up opens | [custom-photo-share-update.md](custom-photo-share-update.md) |
 | Custom bottom bar (Plan / Photo diary), planner first / last day, planner drafts, earlier-plan and quick-food shortcuts, Foods pills, header icon order, removed taglines, deleted Next.js leftovers | [planner-dock-update.md](planner-dock-update.md) |
+| Plan name on planner page 1, planner colours, *See all plans* (current / past, edit, reuse), shopping list per plan, "5 recent foods + ..." chips | [plans-shopping-update.md](plans-shopping-update.md) |
 | Change animations / springs / swipe feel / the page-change (tap / Back) transition / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
@@ -67,6 +68,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | Android version, permissions, modules | `android/BUILD_APK.md`, [android-apk.md](android-apk.md), [file-map/android-native.md](file-map/android-native.md) |
 | CSS parts (`src/styles/`, `journal/css/`), translations split, `AppContext` helpers, Custom page parts | [file-organisation.md](file-organisation.md), the matching `file-map/*.md` row |
 | A finished round (history) | move its paragraph from [changes-patch.md](changes-patch.md) to [changes-patch-history.md](changes-patch-history.md); add the round to `changelog/*.md` and, if you audited, to [audit-log.md](audit-log.md) |
+| Plans, plan groups, shopping lists, recent-food chips (`PlanLibrary.tsx`, `ShoppingLists.tsx`, `RecentChips.tsx`, `planGroups.ts`, `shoppingList.ts`) | [plans-shopping-update.md](plans-shopping-update.md), [meal-journal.md](meal-journal.md), [storage-and-privacy.md](storage-and-privacy.md), `file-map/components-pages.md`, `file-map/components-common.md`, `file-map/utils.md` |
 | Storage layer (`src/storage/`), contexts, lazy screens, service worker, CI, lint | [performance-review.md](performance-review.md), [storage-and-privacy.md](storage-and-privacy.md), [pwa.md](pwa.md), [verification.md](verification.md) |
 | Food search (`fuzzy.ts`, `foodSearchIndex.ts`, `catalogueSearch.ts`, `useCatalogueSearch.ts`, `src/workers/`), dialog exit (`Modal.tsx`, `dialogExit.ts`) | [search-and-animation-performance.md](search-and-animation-performance.md), [performance-review.md](performance-review.md), `file-map/utils.md`, `file-map/components-common.md`, [verification.md](verification.md#search-and-dialog-check) |
 | Docs structure itself | this file and the root `README.md` |

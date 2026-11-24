@@ -18,13 +18,14 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
-import { addDaysToDateString } from '../../utils/formatters';
+import { addDaysToDateString, getTodayDateString } from '../../utils/formatters';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
 import { catalogueScore } from '../../data/offCatalog';
-import { journalId, removeMealPlan, saveMealPlans, useMealJournal } from '../../utils/journalStore';
+import { journalId, removeMealPlan, removePlanGroup, saveMealPlans, savePlanGroup, useMealJournal } from '../../utils/journalStore';
+import { copyName, type PlanGroupView } from '../../utils/planGroups';
 import {
   clearPlannerDraft,
   draftPlannedCount,
@@ -38,6 +39,7 @@ import type { MealPlan, PlannedFood } from '../../types/journal';
 import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { SaveBeforeCloseDialog } from '../common/SaveBeforeCloseDialog';
+import { RecentChips, RECENT_MORE, RECENT_SHOWN } from '../common/RecentChips';
 import { MealSlotIcon } from '../common/mealSlotIcon';
 import { AmountSelector } from '../common/AmountSelector';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
@@ -81,33 +83,69 @@ const weekdayOf = (date: string) => new Date(`${date}T12:00:00`).getDay();
  *    move to the previous / next meal, and pressing any meal closes the open one and opens that one.
  * Closing a plan that is half way asks: save as a draft, discard, or keep editing. Opening an existing plan skips the
  * setup and edits that single meal.
+ *
+ * The plan gets ONE name, asked on page 1 (never per meal; a meal's own title is derived from its foods). Three more
+ * ways in, all fed by "See all plans":
+ * - `group`: edit a saved plan as a whole (opens on page 2; name, days and meals can still be changed on page 1);
+ * - `reuse`: start a new plan from a saved one. Page 1 is already filled in (name, same number of days, skipped days,
+ *   meals) and page 2 holds the same foods day by day. Choosing more days than the original leaves the extra days
+ *   empty; fewer days drops the last ones.
  */
-export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string; plan?: MealPlan; onClose: () => void }) {
+export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initialDate: string; plan?: MealPlan; group?: PlanGroupView; reuse?: PlanGroupView; onClose: () => void }) {
   const { language } = useApp();
   const { options: slots, label } = useMealSlots();
   const { plans } = useMealJournal();
   const j = useJournalText();
-  // The unfinished plan saved earlier (only offered when planning something new).
-  const [draft, setDraft] = useState<PlannerDraft | null>(() => (plan ? null : loadPlannerDraft()));
+  // A saved plan being edited as a whole, or being reused as the starting point of a new one.
+  const source = group ?? reuse;
+  // The unfinished plan saved earlier (only offered when planning something new from scratch).
+  const [draft, setDraft] = useState<PlannerDraft | null>(() => (plan || source ? null : loadPlannerDraft()));
   const [fromDraft, setFromDraft] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
 
-  const [step, setStep] = useState<'setup' | 'plan'>(plan ? 'plan' : 'setup');
-  const [startDate, setStartDate] = useState(plan?.date ?? initialDate);
-  const [endDate, setEndDate] = useState(() => addDaysToDateString(plan?.date ?? initialDate, DEFAULT_SPAN - 1));
+  const [step, setStep] = useState<'setup' | 'plan'>(plan || group ? 'plan' : 'setup');
+  // The one name of the plan, asked on page 1.
+  const [name, setName] = useState(() => (group ? group.name : reuse ? copyName(reuse.name, language) : ''));
+  // A reused plan starts today (or on the browsed day when that is still ahead); an edited plan keeps its days.
+  const [startDate, setStartDate] = useState(() => (group ? group.start : plan?.date ?? (reuse ? (initialDate < getTodayDateString() ? getTodayDateString() : initialDate) : initialDate)));
+  const [endDate, setEndDate] = useState(() => {
+    const first = group ? group.start : plan?.date ?? (reuse ? (initialDate < getTodayDateString() ? getTodayDateString() : initialDate) : initialDate);
+    return addDaysToDateString(first, source ? dayDiff(source.start, source.end) : DEFAULT_SPAN - 1);
+  });
   const [skippedWeekdays, setSkippedWeekdays] = useState<number[]>([]);
-  // Single days switched on / off by hand, on top of the skipped weekdays.
-  const [overrides, setOverrides] = useState<Record<string, boolean>>({});
-  const [selectedSlots, setSelectedSlots] = useState<MealSlotId[]>([plan?.slot ?? 'lunch']);
+  // Single days switched on / off by hand, on top of the skipped weekdays. A saved plan's own day pattern lives here.
+  const [overrides, setOverrides] = useState<Record<string, boolean>>(() => {
+    if (!source) return {};
+    const first = group ? group.start : initialDate < getTodayDateString() ? getTodayDateString() : initialDate;
+    const planned = new Set(source.plans.map((p) => p.date));
+    const out: Record<string, boolean> = {};
+    for (let i = 0; i <= dayDiff(source.start, source.end); i += 1) out[addDaysToDateString(first, i)] = planned.has(addDaysToDateString(source.start, i));
+    return out;
+  });
+  const [selectedSlots, setSelectedSlots] = useState<MealSlotId[]>(() => (source ? [...new Set(source.plans.map((p) => p.slot))] : [plan?.slot ?? 'lunch']));
 
-  const [entries, setEntries] = useState<Record<string, PlanEntry>>(() =>
-    plan ? { [`${plan.date}|${plan.slot}`]: { kind: plan.kind, items: plan.items, title: plan.title, note: plan.note } } : {},
-  );
+  const [entries, setEntries] = useState<Record<string, PlanEntry>>(() => {
+    if (source) {
+      // The same foods, day by day (day 1 of the saved plan = the first day here).
+      const first = group ? group.start : initialDate < getTodayDateString() ? getTodayDateString() : initialDate;
+      const out: Record<string, PlanEntry> = {};
+      for (const p of source.plans)
+        out[`${addDaysToDateString(first, dayDiff(source.start, p.date))}|${p.slot}`] = {
+          kind: p.kind,
+          items: p.items.map((i) => ({ ...i })),
+          title: p.title,
+          note: p.note,
+          ...(group ? { planId: p.id, loggedAt: p.loggedAt, read: p.read } : {}),
+        };
+      return out;
+    }
+    return plan ? { [`${plan.date}|${plan.slot}`]: { kind: plan.kind, items: plan.items, title: plan.title, note: plan.note } } : {};
+  });
   const [preferredKind, setPreferredKind] = useState<PlanEntry['kind']>(plan?.kind ?? 'food');
   const [activeKey, setActiveKey] = useState<string | null>(plan ? `${plan.date}|${plan.slot}` : null);
   const [error, setError] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const name = (f: PlannedFood['food']) => (language === 'it' ? f.name_it : f.name_en) || f.name_de;
+  const foodName = (f: PlannedFood['food']) => (language === 'it' ? f.name_it : f.name_en) || f.name_de;
 
   // ----- Setup -----
   const span = useMemo(() => {
@@ -118,6 +156,24 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
   const lastAllowed = addDaysToDateString(startDate, MAX_DAYS - 1);
   const changeStart = (value: string) => {
     if (!value) return;
+    if (source) {
+      // A saved plan moves as a whole: its end, day pattern and foods keep their place relative to the first day.
+      const delta = dayDiff(startDate, value);
+      if (delta === 0) return;
+      const move = (date: string) => addDaysToDateString(date, delta);
+      setStartDate(value);
+      setEndDate((prev) => (move(prev) > addDaysToDateString(value, MAX_DAYS - 1) ? addDaysToDateString(value, MAX_DAYS - 1) : move(prev)));
+      setOverrides((prev) => Object.fromEntries(Object.entries(prev).map(([date, on]) => [move(date), on])));
+      setEntries((prev) =>
+        Object.fromEntries(
+          Object.entries(prev).map(([key, entry]) => {
+            const cut = key.indexOf('|');
+            return [`${move(key.slice(0, cut))}${key.slice(cut)}`, entry];
+          }),
+        ),
+      );
+      return;
+    }
     setStartDate(value);
     // The last day never comes before the first day, and a plan covers at most 90 days.
     setEndDate((prev) => (prev < value ? value : prev > addDaysToDateString(value, MAX_DAYS - 1) ? addDaysToDateString(value, MAX_DAYS - 1) : prev));
@@ -126,7 +182,8 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
   const changeEnd = (value: string) => {
     if (!value) return;
     setEndDate(value < startDate ? startDate : value > lastAllowed ? lastAllowed : value);
-    setOverrides({});
+    // A saved plan keeps its day pattern when it gets longer (the new days are simply empty).
+    if (!source) setOverrides({});
   };
   const dayOn = (date: string) => overrides[date] ?? !skippedWeekdays.includes(weekdayOf(date));
   const plannedDays = plan ? [plan.date] : span.filter(dayOn);
@@ -158,7 +215,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
     entry.title.trim() ||
     (entry.kind === 'note'
       ? entry.note.trim().split('\n')[0]
-      : entry.items.map((item) => name(item.food)).slice(0, 2).join(' + '));
+      : entry.items.map((item) => foodName(item.food)).slice(0, 2).join(' + '));
   const targetLabel = (t: PlanTarget) =>
     `${journalDate(t.date, language, { weekday: 'short', day: 'numeric', month: 'short' })} · ${label(t.slot)}`;
 
@@ -187,13 +244,13 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
   };
   const copyToEmpty = () => {
     if (!active) return;
-    const source = entryFor(active.key);
-    if (!entryValid(source)) return;
+    const from = entryFor(active.key);
+    if (!entryValid(from)) return;
     setEntries((prev) => {
       const copy = { ...prev };
       for (const t of targets)
         if (!entryValid(copy[t.key] ?? emptyEntry()))
-          copy[t.key] = { ...source, items: source.items.map((i) => ({ ...i })) };
+          copy[t.key] = { kind: from.kind, title: from.title, note: from.note, items: from.items.map((i) => ({ ...i })) };
       return copy;
     });
   };
@@ -215,7 +272,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
       .sort((a, b) => b.date.localeCompare(a.date))
       .forEach((o) => add(`draft-${o.key}`, o.date, entryFor(o.key)));
     plans
-      .filter((p) => p.slot === target.slot && p.date < target.date && p.id !== plan?.id)
+      .filter((p) => p.slot === target.slot && p.date < target.date && p.id !== plan?.id && (!group || p.groupId !== group.id))
       .sort((a, b) => b.date.localeCompare(a.date))
       .forEach((p) => add(`saved-${p.id}`, p.date, { kind: p.kind, items: p.items, title: p.title, note: p.note }));
     return found.slice(0, 6);
@@ -223,10 +280,18 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
 
   // ----- Draft and closing -----
   const hasContent = (e: PlanEntry) => e.items.length > 0 || e.note.trim().length > 0 || e.title.trim().length > 0;
-  const hasWork = !plan && (step === 'plan' || Object.values(entries).some(hasContent));
-  const requestClose = () => (hasWork ? setConfirmClose(true) : onClose());
+  const hasWork = !plan && !group && (step === 'plan' || (!reuse && Object.values(entries).some(hasContent)));
+  // Editing a whole saved plan: closing after a change asks before the change is thrown away.
+  const snapshot = () => JSON.stringify({ name, startDate, endDate, overrides, selectedSlots, entries });
+  const [initialSnapshot] = useState(snapshot);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
+  const requestClose = () => {
+    if (hasWork) setConfirmClose(true);
+    else if (group && snapshot() !== initialSnapshot) setConfirmDiscard(true);
+    else onClose();
+  };
   const saveDraft = () => {
-    const kept = savePlannerDraft({ step, startDate, endDate, skippedWeekdays, overrides, selectedSlots, entries, preferredKind, activeKey });
+    const kept = savePlannerDraft({ step, name, startDate, endDate, skippedWeekdays, overrides, selectedSlots, entries, preferredKind, activeKey });
     setConfirmClose(false);
     if (kept) onClose();
     else setError(j('Not enough device storage to keep the draft. Export a backup and free some space.', 'Spazio insufficiente per la bozza. Esporta un backup e libera spazio.'));
@@ -238,6 +303,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
     onClose();
   };
   const continueDraft = (d: PlannerDraft) => {
+    setName(d.name ?? '');
     setStartDate(d.startDate);
     setEndDate(d.endDate);
     setSkippedWeekdays(d.skippedWeekdays);
@@ -255,25 +321,31 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
     setDraft(null);
   };
 
+  // The plan's name; a plan saved without one (an old draft) gets its dates as name.
+  const planName = (name.trim() || `${journalDate(startDate, language)} - ${journalDate(endDate, language)}`).slice(0, 80);
   const save = () => {
     const next: MealPlan[] = targets
       .filter((t) => entryValid(entryFor(t.key)))
       .map((t) => {
         const entry = entryFor(t.key);
         return {
-          id: plan && t.key === `${plan.date}|${plan.slot}` ? plan.id : journalId(),
+          id: plan && t.key === `${plan.date}|${plan.slot}` ? plan.id : entry.planId ?? journalId(),
           date: t.date,
           slot: t.slot,
           kind: entry.kind,
           title: summary(entry),
           note: entry.note.trim(),
           items: entry.kind === 'food' ? entry.items : [],
-          read: false,
+          read: entry.read ?? false,
+          ...(entry.loggedAt ? { loggedAt: entry.loggedAt } : {}),
+          // Editing a single meal keeps its plan; a new, reused or edited plan is saved as one named group below.
+          ...(plan?.groupId ? { groupId: plan.groupId } : {}),
         };
       });
     if (next.length === 0) return;
     try {
-      saveMealPlans(next, plan?.id);
+      if (plan) saveMealPlans(next, plan.id);
+      else savePlanGroup({ id: group?.id ?? journalId(), name: planName, createdAt: group?.createdAt || new Date().toISOString() }, next);
       if (fromDraft) clearPlannerDraft();
       onClose();
     } catch {
@@ -282,8 +354,10 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
   };
 
   const nextButton = (
-    <button type="button" className="journal-primary-button" disabled={targets.length === 0} onClick={startPlanning}>
-      {targets.length === 0
+    <button type="button" className="journal-primary-button" disabled={targets.length === 0 || !name.trim()} onClick={startPlanning}>
+      {!name.trim()
+        ? j('Choose a name for the plan', 'Scegli un nome per il programma')
+        : targets.length === 0
         ? j('Choose at least one day and meal', 'Scegli almeno un giorno e un pasto')
         : j(`Next · ${targets.length} meals`, `Avanti · ${targets.length} pasti`)}
       <ArrowRight size={16} />
@@ -312,15 +386,19 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
         </div>
       )}
       <div className="journal-form-actions">
-        {plan && (
+        {(plan || group) && (
           <button type="button" className="journal-secondary-button journal-danger-button" onClick={() => setConfirmDelete(true)}>
             <Trash2 size={16} />
-            {j('Delete plan', 'Elimina programma')}
+            {group ? j('Delete whole plan', 'Elimina tutto il programma') : j('Delete plan', 'Elimina programma')}
           </button>
         )}
         <button type="button" className="journal-primary-button" disabled={planned === 0} onClick={save}>
           <Check size={17} />
-          {planned > 1 ? j(`Save ${planned} plans`, `Salva ${planned} programmi`) : j('Save plan', 'Salva programma')}
+          {group
+            ? j('Save changes', 'Salva modifiche')
+            : planned > 1
+              ? j(`Save ${planned} meals`, `Salva ${planned} pasti`)
+              : j('Save plan', 'Salva programma')}
         </button>
       </div>
     </div>
@@ -331,10 +409,12 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
       <Modal
         isOpen
         onClose={requestClose}
-        title={plan ? j('Edit meal plan', 'Modifica programma') : j('Plan meals', 'Pianifica i pasti')}
+        title={plan ? j('Edit meal plan', 'Modifica programma') : group ? group.name : reuse ? j('Reuse a plan', 'Riusa un programma') : j('Plan meals', 'Pianifica i pasti')}
         subtitle={
           plan
             ? undefined
+            : group && step === 'plan'
+              ? j('Edit the plan · meals, days and name', 'Modifica il programma · pasti, giorni e nome')
             : step === 'setup'
               ? j('Step 1 of 2 · Choose the days and meals', 'Passo 1 di 2 · Scegli giorni e pasti')
               : j('Step 2 of 2 · Plan each meal', 'Passo 2 di 2 · Pianifica ogni pasto')
@@ -361,6 +441,20 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
                 </button>
               </div>
             )}
+
+            <label className="journal-plan-name">
+              <span>{j('Name of the plan', 'Nome del programma')}</span>
+              <input
+                type="text"
+                value={name}
+                maxLength={60}
+                autoComplete="off"
+                data-plan-name
+                placeholder={j('e.g. Cutting week, Holiday menu', 'es. Settimana light, Menu delle vacanze')}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <small>{j('Asked once for the whole plan, not for every meal.', 'Lo chiediamo una volta per tutto il programma, non per ogni pasto.')}</small>
+            </label>
 
             <div className="journal-date-pair" role="group" aria-label={j('First and last day', 'Primo e ultimo giorno')}>
               <JournalDateField
@@ -445,7 +539,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
               <div className="journal-plan-top">
                 <button type="button" className="journal-secondary-button" onClick={() => setStep('setup')}>
                   <ChevronLeft size={15} />
-                  {j('Days and meals', 'Giorni e pasti')}
+                  {group ? j('Name, days and meals', 'Nome, giorni e pasti') : j('Days and meals', 'Giorni e pasti')}
                 </button>
                 <span className="journal-result-count" aria-live="polite">
                   {j(`${planned} of ${targets.length} planned`, `${planned} di ${targets.length} pianificati`)}
@@ -458,7 +552,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
                 const done = entryValid(entry);
                 const open = activeKey === t.key;
                 const newDay = index === 0 || targets[index - 1].date !== t.date;
-                const already = plans.filter((p) => p.date === t.date && p.slot === t.slot && p.id !== plan?.id).length;
+                const already = plans.filter((p) => p.date === t.date && p.slot === t.slot && p.id !== plan?.id && (!group || p.groupId !== group.id)).length;
                 return (
                   <div key={t.key} className="journal-plan-item">
                     {newDay && !plan && (
@@ -496,7 +590,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
                               setPreferredKind(next.kind);
                               setEntries((prev) => ({ ...prev, [t.key]: next }));
                             }}
-                            name={name}
+                            name={foodName}
                           />
                           {targets.length > 1 && done && targets.some((o) => !entryValid(entryFor(o.key))) && (
                             <button type="button" className="journal-secondary-button" onClick={copyToEmpty}>
@@ -528,10 +622,25 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
       />
       <ConfirmDialog
         open={confirmDelete}
-        message={j('Delete this meal plan? Your logged food will not be changed.', 'Eliminare il programma? Gli alimenti registrati non cambieranno.')}
+        message={
+          group
+            ? j('Delete this whole plan with all its meals and its shopping list? Your logged food will not be changed.', 'Eliminare tutto il programma con i suoi pasti e la lista della spesa? Gli alimenti registrati non cambieranno.')
+            : j('Delete this meal plan? Your logged food will not be changed.', 'Eliminare il programma? Gli alimenti registrati non cambieranno.')
+        }
         onCancel={() => setConfirmDelete(false)}
         onConfirm={() => {
-          if (plan) removeMealPlan(plan.id);
+          if (group) removePlanGroup(group.id);
+          else if (plan) removeMealPlan(plan.id);
+          onClose();
+        }}
+      />
+      <ConfirmDialog
+        open={confirmDiscard}
+        message={j('Discard your changes to this plan?', 'Eliminare le modifiche a questo programma?')}
+        confirmLabel={j('Discard', 'Elimina')}
+        onCancel={() => setConfirmDiscard(false)}
+        onConfirm={() => {
+          setConfirmDiscard(false);
           onClose();
         }}
       />
@@ -599,7 +708,7 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
     () => settings.quickFoods.map((id) => allFoods.find((f) => f.id === id)).filter((f): f is FoodItem => Boolean(f)),
     [settings.quickFoods, allFoods],
   );
-  // Foods logged most recently in this meal.
+  // Foods logged most recently in this meal: 5 are shown, the "..." chip reveals 10 more.
   const recent = useMemo(() => {
     const byId = new Map(allFoods.map((f) => [f.id, f]));
     const seen = new Set<string>();
@@ -611,9 +720,9 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
         const found = byId.get(item.foodId);
         if (found) out.push(found);
       }
-      if (out.length >= 8) break;
+      if (out.length >= RECENT_SHOWN + RECENT_MORE) break;
     }
-    return out.slice(0, 8);
+    return out.slice(0, RECENT_SHOWN + RECENT_MORE);
   }, [allDayLogs, allFoods, slot]);
   const slotMeals = useMemo(() => preBuiltMeals.filter((m) => !m.slot || m.slot === slot).slice(0, 8), [preBuiltMeals, slot]);
   const sameKind = suggestions.filter((s) => s.entry.kind === kind);
@@ -662,7 +771,8 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
       <span className="journal-quick-label"><History size={12} /> {j('Planned on earlier days', 'Pianificati nei giorni scorsi')}</span>
       <div className="journal-plan-suggestions">
         {sameKind.map((s) => (
-          <button key={s.key} type="button" className="journal-plan-suggestion" onClick={() => applySuggestion(s)}>
+          <button key={s.key} type="button" className="journal-plan-suggestion is-past" onClick={() => applySuggestion(s)}>
+            <History size={14} className="journal-plan-suggestion-icon" />
             <span>
               <strong>{entrySummary(s.entry)}</strong>
               <small>{journalDate(s.date, language, { weekday: 'short', day: 'numeric', month: 'short' })}{s.entry.kind === 'food' ? ` · ${entryKcal(s.entry)} kcal` : ''}</small>
@@ -733,9 +843,9 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
                     <button type="button" key={meal.id} onClick={() => addMeal(meal)}>
                       <span>
                         <strong>{meal.name}</strong>
-                        <small>{j('Saved meal', 'Pasto salvato')}</small>
+                        <small className="journal-tone-badge is-meal">{j('Saved meal', 'Pasto salvato')}</small>
                       </span>
-                      <UtensilsCrossed size={16} />
+                      <span className="journal-tone-circle is-meal"><UtensilsCrossed size={13} /></span>
                     </button>
                   ))}
                   {results.foods.map((food) => (
@@ -767,7 +877,8 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
                       <span className="journal-quick-label"><UtensilsCrossed size={12} /> {j('Saved meals', 'Pasti salvati')}</span>
                       <div className="journal-food-chips">
                         {slotMeals.map((meal) => (
-                          <button key={meal.id} type="button" className="journal-food-chip" onClick={() => addMeal(meal)}>
+                          <button key={meal.id} type="button" className="journal-food-chip is-meal" onClick={() => addMeal(meal)}>
+                            <UtensilsCrossed size={12} />
                             {meal.name}
                           </button>
                         ))}
@@ -777,13 +888,17 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
                   {recent.length > 0 && (
                     <div>
                       <span className="journal-quick-label"><Clock size={12} /> {j('Recent', 'Recenti')}</span>
-                      <div className="journal-food-chips">
-                        {recent.map((food) => (
-                          <button key={food.id} type="button" className="journal-food-chip" onClick={() => pick(food)}>
+                      <RecentChips
+                        items={recent}
+                        getKey={(food) => food.id}
+                        className="journal-food-chips"
+                        toggleClassName="journal-food-chip journal-recent-more"
+                        renderChip={(food) => (
+                          <button type="button" className={`journal-food-chip${food.isRecipe ? ' is-recipe' : ''}`} onClick={() => pick(food)}>
                             {name(food)}
                           </button>
-                        ))}
-                      </div>
+                        )}
+                      />
                     </div>
                   )}
                 </div>

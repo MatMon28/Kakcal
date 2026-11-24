@@ -1,5 +1,7 @@
 # File map: `src/components/common/`
 
+(Plans round) `RecentChips.tsx` (new): the 5 recent foods + "..." chip that reveals 10 more, used by Log food and the planner. `LibrarySectionHeader.tsx`: palette `shopping` (teal). See [plans-shopping-update.md](../plans-shopping-update.md).
+
 (New features round) `DataBackup.tsx`: *Export to Excel* button; `GoalBadge.tsx`: passes the profile weight to `goalState` so a per-kg protein goal works.
 
 `IconPicker.tsx`: shared built-in/local-image chooser for custom trackers and meal categories, with image resizing and validation.

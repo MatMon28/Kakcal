@@ -10,6 +10,7 @@ export const libraryPalettes = {
   diary: { text: '#5D4911', muted: '#7A6320', border: '#E9D68F' },
   planner: { text: '#183F66', muted: '#3A6590', border: '#B9D7F2' },
   photos: { text: '#702D32', muted: '#8F4A50', border: '#E8B9BA' },
+  shopping: { text: '#0F4A47', muted: '#2D6C68', border: '#A9DBD5' },
 };
 
 /** Transparent circle button used in every section header (search, filter, +). */

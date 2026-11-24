@@ -67,6 +67,11 @@
   --feature-ink: #702d32;
   --feature-border: #e8b9ba;
 }
+.journal-feature[data-tone='teal'] {
+  --feature-bg: #cdeeea;
+  --feature-ink: #0f4a47;
+  --feature-border: #a9dbd5;
+}
 .journal-icon-button {
   display: inline-flex;
   justify-content: center;

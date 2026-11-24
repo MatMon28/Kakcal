@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Plans and shopping-list round:** the planner's first page asks for **one plan name** (never one per meal); Log food and the planner show **5 recent foods plus a `...` chip** that reveals 10 more; the planner uses the **same colours as Log food** for saved meals, recipes and meals planned on earlier days; the expanded planner has **See all plans** (current and past plans: edit one, or **reuse** it as the starting point of a new plan, e.g. 7 days stretched to 14 with the extra days empty); and Custom has a new teal **Shopping list** section below the planner: pick a plan, get every food with its total quantity, tick what was bought, and use the pencil to remove or add items. Stored inside the existing meal-journal record (also in JSON backups). See [docs/plans-shopping-update.md](docs/plans-shopping-update.md).
+
+### Previous update
+
 **Search and animation performance round (no new screens):** typing in a food search no longer does heavy work on the main thread: food names are tokenized once and finished queries are cached (`src/utils/foodSearchIndex.ts`, faster `src/utils/fuzzy.ts` with identical results), the 130,000-product catalogue is searched in a Web Worker with a cache and a short debounce (`src/workers/offCatalogSearch.worker.ts`, `src/utils/catalogueSearch.ts`, `useCatalogueSearch.ts`; main-thread fallback), and result lists use deferred rendering. Closing a dialog no longer clones it: each `Modal` renders into a host (`src/components/common/dialogExit.ts`) that lets the live dialog play its exit and removes it afterwards, with all measurements read once before the first write. The `flushSync` calls in `PageSwiper` were examined and deliberately left alone. Typing "nutella" with a 6x throttled CPU went from 9 long tasks (longest 246 ms) to 3 (longest 62 ms). See [docs/search-and-animation-performance.md](docs/search-and-animation-performance.md) (review points 5 and 9 in [docs/performance-review.md](docs/performance-review.md)).
 
 ### Earlier update

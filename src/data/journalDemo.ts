@@ -13,6 +13,8 @@ export function makeDemoJournal(): MealJournalData {
       { id: 'demo-plan-dinner', date: today, slot: 'dinner', title: 'Something good together', kind: 'note', items: [], note: 'Homemade pasta with the family.', read: false },
       ...Array.from({ length: 5 }, (_, i) => ({ id: `demo-plan-next-${i}`, date: addDaysToDateString(today, i + 1), slot: 'lunch' as const, title: ['A colorful lunch', 'Leftovers, reimagined', 'A little meal prep', 'Keep it simple', 'Make something you love'][i], kind: 'note' as const, items: [], note: ['Roasted vegetables & a grain bowl.', 'Add fresh greens to last night\'s dinner.', 'Make an extra portion for tomorrow.', 'Soup and a good slice of bread.', 'Try that recipe you saved.'][i], read: false })),
     ],
+    planGroups: [],
+    shoppingLists: [],
     memories: {
       [`${today}:breakfast`]: { favorite: true, note: 'A slow morning, my favorite bowl.' },
       [`${today}:lunch`]: { favorite: false, note: 'Fresh, colorful, and just what I needed.' },

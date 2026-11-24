@@ -30,6 +30,7 @@ import {
 import { scrollFadeRef, scrollFadeX } from '../../utils/scrollFade';
 import { PlannedMeals } from '../journal/MealPlanner';
 import { MealNoteField } from '../journal/MealDiary';
+import { RecentChips, RECENT_MORE, RECENT_SHOWN } from '../common/RecentChips';
 import { memoryKey, updateMealMemory, updateMealPlan, useMealJournal } from '../../utils/journalStore';
 import type { MealPlan } from '../../types/journal';
 
@@ -39,6 +40,9 @@ interface QueuedEntry {
   amount: number;
   planId?: string;
 }
+
+const RECENT_CHIP_CLASS =
+  'pressable px-3 py-1.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-xs font-bold text-[var(--text)]';
 
 export const AddFoodModal: React.FC = () => {
   const {
@@ -171,7 +175,7 @@ export const AddFoodModal: React.FC = () => {
     [preBuiltMeals, targetMealSlot]
   );
 
-  // Recent foods/recipes logged in this slot over the last 7 days, up to 20
+  // Recent foods/recipes logged in this slot over the last 7 days, up to 15 (5 shown, the "..." chip reveals 10 more)
   const recentItems = useMemo(() => {
     const seen = new Map<string, FoodItem>();
     for (let i = 1; i <= 7; i++) {
@@ -184,7 +188,7 @@ export const AddFoodModal: React.FC = () => {
         }
       }
     }
-    return [...seen.values()].slice(0, 20);
+    return [...seen.values()].slice(0, RECENT_SHOWN + RECENT_MORE);
   }, [allDayLogs, selectedDate, targetMealSlot, allFoods]);
 
   const previousMeals = useMemo(() => {
@@ -684,24 +688,22 @@ export const AddFoodModal: React.FC = () => {
                 </div>
               )}
 
-              {/* Recent items in this slot (last 7 days, up to 20) */}
+              {/* Recent items in this slot (last 7 days): 5, then "..." for 10 more */}
               {recentItems.length > 0 && (
                 <div className="space-y-1.5">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] px-1 block">
                     {t.foodModal.recentItems}
                   </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {recentItems.map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => handlePickFood(f)}
-                        className="pressable px-3 py-1.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-xs font-bold text-[var(--text)]"
-                      >
+                  <RecentChips
+                    items={recentItems}
+                    getKey={(f) => f.id}
+                    toggleClassName={RECENT_CHIP_CLASS}
+                    renderChip={(f) => (
+                      <button type="button" onClick={() => handlePickFood(f)} className={RECENT_CHIP_CLASS}>
                         {nameOf(f)}
                       </button>
-                    ))}
-                  </div>
+                    )}
+                  />
                 </div>
               )}
 

@@ -1,0 +1,47 @@
+/* Planner colours = Log food colours: saved meals amber, recipes purple, meals planned / eaten on earlier days blue.
+   (Log food uses the same fixed pastels in every theme: #FAE0B4 / #F7D69E, #E2D6FF, #CFE7FE / #BDDDFC.) */
+.journal-food-chip { display: inline-flex; align-items: center; gap: 5px; }
+.journal-food-chip.is-meal {
+  background: #fae0b4;
+  border-color: #fae0b4;
+  color: #2d1e0b;
+}
+.journal-food-chip.is-meal:hover { background: #f7d69e; }
+.journal-food-chip.is-meal svg { color: #7d4e14; flex-shrink: 0; }
+.journal-food-chip.is-recipe {
+  background: #e2d6ff;
+  border-color: #e2d6ff;
+  color: #4d3582;
+}
+.journal-food-chip.is-recipe:hover { background: #d8c9fb; }
+.journal-recent-more { justify-content: center; min-width: 40px; font-weight: 800; letter-spacing: 1px; }
+
+.journal-plan-suggestion.is-past {
+  background: #cfe7fe;
+  border-color: #cfe7fe;
+  color: #183b5e;
+  justify-content: flex-start;
+}
+.journal-plan-suggestion.is-past:hover { background: #bddcfc; }
+.journal-plan-suggestion.is-past strong { color: #183b5e; }
+.journal-plan-suggestion.is-past small { color: #396088; }
+.journal-plan-suggestion.is-past svg { color: #1a4670; }
+.journal-plan-suggestion.is-past > .journal-plan-suggestion-icon { margin-right: -2px; }
+.journal-plan-suggestion.is-past > svg:last-child { margin-left: auto; }
+
+/* A saved meal found by search: amber icon circle and badge, like the Log food result row. */
+.journal-tone-circle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.journal-tone-circle.is-meal { background: #fae0b4; color: #7d4e14; }
+.journal-tone-badge { display: inline-block; width: fit-content; padding: 2px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; }
+.journal-tone-badge.is-meal { background: #fae0b4; color: #7d4e14 !important; }
+
+/* Plan name field (page 1 of the planner). */
+.journal-plan-name > span { font-size: 12px; font-weight: 800; }

@@ -13,6 +13,7 @@
 | `src/components/modals/NotificationSettings.tsx` | Settings > Notifications: water interval and hours, one switch + time per meal, custom buttons, weight and log reminders, permission banner and test button. Can be opened remotely by the tour (`requestOpenNotificationSettings`). |
 | `src/components/modals/AddFoodModal.tsx`, `CustomFoodModal.tsx`, `BarcodeLookupModal.tsx` | Food logging (catalogue search rows with weight and macros, default weight), custom food creation, and barcode lookup (own foods, then the offline catalogue, then Open Food Facts online; keeps sugar and the classic portion). |
 | `src/components/journal/MealDiary.tsx` | Meal-detail / note editor, complete meal-history filter dialog, and the optional note field shared with Add food. |
+| (Plans round) `AddFoodModal.tsx` | Recent foods of the slot: 5 chips + a "..." chip for 10 more (`common/RecentChips.tsx`). |
 | (Meal journal) `AddFoodModal.tsx`, `SettingsModal.tsx` | Planned-food suggestions join the existing batch; optional per-meal notes save on Log all. Today & pages adds opt-in Photo diary and Meal notes in Today switches. |
 | `src/components/modals/LogActivityModal.tsx` | Activity dialog: Walk / Run / Other / Custom, duration step and live energy estimate for database activities. |
 | `src/components/modals/ActivitySearch.tsx` | Activity → Other search page: saved custom activities first, fuzzy search, category chips (incl. My activities), favourites pinned first. |

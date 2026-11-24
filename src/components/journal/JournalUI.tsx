@@ -6,7 +6,7 @@ import { usePersistentState } from '../../utils/usePersistentState';
 import { LibrarySectionHeader, libraryIconButton } from '../common/LibrarySectionHeader';
 import { LazyBody } from '../common/LazyBody';
 
-const toneToPalette = { yellow: 'diary', blue: 'planner', red: 'photos' } as const;
+const toneToPalette = { yellow: 'diary', blue: 'planner', red: 'photos', teal: 'shopping' } as const;
 
 /**
  * Journal section (Meal diary, Meal planner, Photo diary). It deliberately uses the same
@@ -28,7 +28,7 @@ export function JournalSection({
   children,
   className = '',
 }: {
-  tone: 'yellow' | 'blue' | 'red';
+  tone: 'yellow' | 'blue' | 'red' | 'teal';
   icon: ReactNode;
   title: string;
   summary?: string;

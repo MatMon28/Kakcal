@@ -296,6 +296,7 @@ html[data-theme='lite-dark'] .journal-feature .journal-see-all { color: var(--te
   html[data-style='classic'] .journal-feature[data-tone='yellow'] { --feature-bg: #f8ecbe; --feature-border: #ead99a; }
   html[data-style='classic'] .journal-feature[data-tone='blue'] { --feature-bg: #dceaf8; --feature-border: #c2d8ed; }
   html[data-style='classic'] .journal-feature[data-tone='red'] { --feature-bg: #f4dedb; --feature-border: #e9c9c5; }
+  html[data-style='classic'] .journal-feature[data-tone='teal'] { --feature-bg: #d6ece9; --feature-border: #b5d9d4; }
   .custom-library-grid [data-library-card] { padding: 12px 14px; row-gap: 6px; border-radius: 12px; }
   .custom-library-grid [data-library-card] h3 { font-size: 12px !important; font-weight: 750; }
   .custom-library-grid [data-library-card] [data-macro-pills] { flex: 0 0 auto; width: auto; margin-left: auto; }

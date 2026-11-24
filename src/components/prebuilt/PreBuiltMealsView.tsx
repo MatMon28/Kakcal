@@ -4,6 +4,7 @@ import { UtensilsCrossed, Plus, Search, ChefHat as ChefHatIcon, BookOpen, ScanBa
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MealDiary } from '../journal/MealDiary';
 import { MealPlanner } from '../journal/MealPlanner';
+import { ShoppingLists } from '../journal/ShoppingLists';
 import { CustomFoodsQuick } from './CustomFoodsQuick';
 import { PhotoDiary } from '../journal/PhotoDiary';
 import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
@@ -33,6 +34,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       <RecipesSection s={s} />
 
       <MealPlanner />
+      <ShoppingLists />
       <PhotoDiary />
 
       {/* ============ FOODS ============ */}

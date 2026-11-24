@@ -7,6 +7,10 @@ export interface PlanEntry {
   items: PlannedFood[];
   title: string;
   note: string;
+  /** Set while a saved plan is being edited: keeps the meal's id and its "already logged" mark. Never copied to other meals. */
+  planId?: string;
+  loggedAt?: string;
+  read?: boolean;
 }
 
 /**
@@ -17,6 +21,8 @@ export interface PlannerDraft {
   version: 1;
   savedAt: string;
   step: 'setup' | 'plan';
+  /** Name of the plan (asked once on page 1). */
+  name?: string;
   startDate: string;
   endDate: string;
   skippedWeekdays: number[];
@@ -62,6 +68,7 @@ export function loadPlannerDraft(): PlannerDraft | null {
       version: 1,
       savedAt: typeof d.savedAt === 'string' ? d.savedAt : new Date().toISOString(),
       step: d.step === 'plan' ? 'plan' : 'setup',
+      name: typeof d.name === 'string' ? d.name.slice(0, 80) : '',
       startDate: d.startDate,
       endDate: d.endDate,
       skippedWeekdays: Array.isArray(d.skippedWeekdays) ? d.skippedWeekdays.filter((n) => Number.isInteger(n) && n >= 0 && n <= 6) : [],

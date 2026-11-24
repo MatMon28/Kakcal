@@ -1,6 +1,8 @@
 # File map: `src/utils/`
 
 
+(Plans round) `planGroups.ts` (new): `planGroupViews`, `splitPlans`, `isCurrentPlan`, `copyName`, `UNGROUPED_PLAN_ID`. `shoppingList.ts` (new): `buildShoppingItems` (totals, recipes broken into ingredients), `createShoppingList`, `syncShoppingList`, `removeShoppingItem`, `addCustomShoppingItem`, `toggleShoppingItem`, `isShoppingListOutdated`, `formatQuantity`. `journalStore.ts`: `savePlanGroup`, `removePlanGroup`, `saveShoppingList`, `removeShoppingList`, normalising of `planGroups` / `shoppingLists`. `plannerDraft.ts`: `PlanEntry.planId / loggedAt / read`, `PlannerDraft.name`. See [plans-shopping-update.md](../plans-shopping-update.md).
+
 (Planner / dock round) `plannerDraft.ts`: the unfinished planner draft (`PlanEntry`, `PlannerDraft`, `loadPlannerDraft` with validation, `savePlannerDraft`, `clearPlannerDraft`, `draftPlannedCount`), stored under `kcak_planner_draft`.
 (New features round) `excelExport.ts`: local `.xlsx` workbook builder (`buildWorkbook`, `buildExcelExport`) on top of the `zip` of `photoExport.ts`; `advancedStore.ts`: `balance` target (`updateBalance`), protein `perKg` (`goalValue`, `goalState(..., weightKg)`); `amountMemory.ts`: a recipe's standard portion wins in `getDefaultAmount`; `planSharing.ts` / `android.ts`: `xlsx` export kind.
 

@@ -8,7 +8,7 @@
 
 | File | Rounds inside |
 | --- | --- |
-| [rounds-journal.md](rounds-journal.md) | New features, Custom / photo diary / short links, interaction update, journal consistency, Today-style meals. |
+| [rounds-journal.md](rounds-journal.md) | Plans / shopping list round (see [../plans-shopping-update.md](../plans-shopping-update.md)), New features, Custom / photo diary / short links, interaction update, journal consistency, Today-style meals. |
 | [rounds-advanced.md](rounds-advanced.md) | Advanced personalisation, advanced layout, drag and drop, free placement, edit round, polish, quick-add / pencil, settings / layout-editor. |
 | [rounds-ui-brand.md](rounds-ui-brand.md) | Meal totals, logo-click poop, meal by time of day, new logo, meal nutrients + left / right, Log food / water polish, tidy-up, Android handoff. |
 

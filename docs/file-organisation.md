@@ -31,6 +31,8 @@
 | `journal-photo-controls.css` | Photo date / meal controls, native date input, footer and go-to buttons. |
 | `journal-planner-wizard.css` | Photo range and the planner wizard pages (days, weekdays, compressed meals, footer, food chips). |
 | `journal-planner-dock.css` | Planner date pair, saved draft, quick foods, Custom > Foods pills. |
+| `journal-planner-tones.css` | Planner colours that match Log food (saved meals, recipes, earlier days), the "..." recent chip. |
+| `journal-plans-shopping.css` | Plan name field, plan cards (*See all plans*, shopping-list picker), shopping-list dialog. |
 
 `scripts/generate-splash-themes.mjs` reads the `--bg` values from `index.css` **and** the `./styles/*.css` parts it imports (it inlines `@import "./styles/..."` lines). Keep that import syntax if you add a part.
 

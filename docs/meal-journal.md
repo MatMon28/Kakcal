@@ -15,6 +15,8 @@
 
 ## Meal planner
 
+**Named plans, plan library, shopping list (plans round).** Page 1 of the wizard asks for one plan name (never one per meal); the meals saved together form a `PlanGroup`. Expanded, the planner offers **See all plans** (current and past plans: press one to edit it, **Reuse** it as the starting point of a new plan). A teal **Shopping list** section below the planner makes one list per plan with total quantities, tick boxes and an edit mode. The planner's saved-meal / recipe / earlier-day colours match Log food, and Log food and the planner show 5 recent foods with a **...** chip for 10 more. Details and files: [plans-shopping-update.md](plans-shopping-update.md).
+
 **Two-page wizard (new features round).** The planner editor is now `journal/PlannerWizard.tsx`: page 1 chooses the start date, the number of days (**-** / **+**, 1-90), the weekdays to skip, single days to add or remove, and the meals; page 2 is a scrolling list of every day + meal where only one meal is open (compressed rows show planned / still to plan), with previous / next arrows in the footer and a *Copy to the meals still to plan* action. The *Same for all / Different for each* switch described below was replaced by this flow. Details and file list: [new-features-update.md](new-features-update.md).
 
 Use the share icon to share this week/all plans by self-contained link, or import a received link/text export after preview and optional start-date adjustment. Large bundles have a readable text fallback. No server or third-party API is involved; anyone with the link can read the included meals/notes. Details: interaction-update.md.

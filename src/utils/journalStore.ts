@@ -1,13 +1,13 @@
 import { useSyncExternalStore } from 'react';
 import type { Language, LoggedFoodItem, MealSlotId } from '../types';
-import type { MealJournalData, MealMemory, MealPhoto, MealPlan } from '../types/journal';
+import type { MealJournalData, MealMemory, MealPhoto, MealPlan, PlanGroup, ShoppingItem, ShoppingList } from '../types/journal';
 import { DEMO_MODE } from '../config/demo';
 import { makeDemoJournal } from '../data/journalDemo';
 import { deletePhotoBlob, isPhotoRef, migrateInlinePhotos, photoIdOf, photosForBackup, photosFromBackup, PHOTO_REF_PATTERN, putPhotoBlob, photoRef } from '../storage/photoStore';
 import { scheduleWrite } from '../storage/writeQueue';
 
 export const JOURNAL_KEY = 'kcalsync_meal_journal';
-const empty = (): MealJournalData => ({ version: 1, plans: [], memories: {}, photos: [] });
+const empty = (): MealJournalData => ({ version: 1, plans: [], planGroups: [], shoppingLists: [], memories: {}, photos: [] });
 const validDate = (v: unknown): v is string =>
   typeof v === 'string' &&
   /^\d{4}-\d{2}-\d{2}$/.test(v) &&
@@ -63,7 +63,32 @@ export function normalizeMealJournal(raw: unknown): MealJournalData {
         };
     }
   }
-  return { version: 1, plans, photos, memories };
+  const planGroups: PlanGroup[] = Array.isArray(data.planGroups)
+    ? data.planGroups
+        .filter((g) => g && typeof g.id === 'string' && typeof g.name === 'string' && g.name.trim())
+        .map((g) => ({ id: g.id, name: g.name.slice(0, 80), createdAt: typeof g.createdAt === 'string' ? g.createdAt : '' }))
+    : [];
+  const shoppingLists: ShoppingList[] = Array.isArray(data.shoppingLists)
+    ? data.shoppingLists
+        .filter((l) => l && typeof l.planId === 'string' && Array.isArray(l.items))
+        .map((l) => ({
+          planId: l.planId,
+          updatedAt: typeof l.updatedAt === 'string' ? l.updatedAt : '',
+          dismissed: Array.isArray(l.dismissed) ? l.dismissed.filter((k): k is string => typeof k === 'string') : [],
+          items: l.items
+            .filter((i): i is ShoppingItem => Boolean(i) && typeof i.id === 'string' && typeof i.name === 'string' && i.name.trim().length > 0)
+            .map((i) => ({
+              id: i.id,
+              name: i.name.slice(0, 120),
+              amount: typeof i.amount === 'number' && Number.isFinite(i.amount) && i.amount > 0 ? i.amount : null,
+              unit: i.unit === 'ml' ? 'ml' : i.unit === 'g' ? 'g' : '',
+              foodId: typeof i.foodId === 'string' ? i.foodId : undefined,
+              checked: i.checked === true,
+              custom: i.custom === true ? true : undefined,
+            })),
+        }))
+    : [];
+  return { version: 1, plans, planGroups, shoppingLists, photos, memories };
 }
 
 function load(): MealJournalData {
@@ -138,6 +163,29 @@ export const saveMealPlans = (plans: MealPlan[], replacing?: string) =>
   commit({ ...snapshot, plans: [...snapshot.plans.filter((p) => p.id !== replacing), ...plans] });
 export const removeMealPlan = (id: string) =>
   commit({ ...snapshot, plans: snapshot.plans.filter((p) => p.id !== id) });
+/**
+ * Saves a named plan: its meals replace every meal that already belongs to the group (so meals taken out of the plan
+ * disappear) and the group itself is created or renamed.
+ */
+export const savePlanGroup = (group: PlanGroup, plans: MealPlan[]) =>
+  commit({
+    ...snapshot,
+    plans: [...snapshot.plans.filter((p) => p.groupId !== group.id), ...plans.map((p) => ({ ...p, groupId: group.id }))],
+    planGroups: [...snapshot.planGroups.filter((g) => g.id !== group.id), group],
+  });
+/** Deletes a named plan with all its meals and its shopping list. Logged food is not touched. */
+export const removePlanGroup = (id: string) =>
+  commit({
+    ...snapshot,
+    plans: snapshot.plans.filter((p) => p.groupId !== id),
+    planGroups: snapshot.planGroups.filter((g) => g.id !== id),
+    shoppingLists: snapshot.shoppingLists.filter((l) => l.planId !== id),
+  });
+/** Creates or replaces the shopping list of one plan (one list per plan). */
+export const saveShoppingList = (list: ShoppingList) =>
+  commit({ ...snapshot, shoppingLists: [...snapshot.shoppingLists.filter((l) => l.planId !== list.planId), list] });
+export const removeShoppingList = (planId: string) =>
+  commit({ ...snapshot, shoppingLists: snapshot.shoppingLists.filter((l) => l.planId !== planId) });
 export const updateMealPlan = (id: string, partial: Partial<Pick<MealPlan, 'read' | 'loggedAt'>>) =>
   commit({ ...snapshot, plans: snapshot.plans.map((p) => (p.id === id ? { ...p, ...partial } : p)) });
 export const updateMealMemory = (date: string, slot: MealSlotId, partial: MealMemory) => {

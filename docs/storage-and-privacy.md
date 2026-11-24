@@ -1,6 +1,6 @@
 # Storage, backup, network and privacy
 
-**Meal journal:** `kcalsync_meal_journal` stores versioned meal plans (including food snapshots), date/meal favourites and notes, and compressed JPEG photos with their notes/date/meal/optional recipe or saved-meal link. Settings adds opt-in `photoDiary` and `inlineMealNotes` booleans, both false by default. JSON backups include this store as `mealJournal`; older backups without it leave existing meal-journal data untouched. Photos are local, unencrypted, share the browser quota, and never uploaded. The existing Delete all data flow removes the store too. See [meal-journal.md](meal-journal.md).
+**Meal journal:** `kcalsync_meal_journal` stores versioned meal plans (including food snapshots; since the plans round each meal may carry a `groupId`, and the record also holds `planGroups` = plan names and `shoppingLists` = one list per plan, see [plans-shopping-update.md](plans-shopping-update.md)), date/meal favourites and notes, and compressed JPEG photos with their notes/date/meal/optional recipe or saved-meal link. Settings adds opt-in `photoDiary` and `inlineMealNotes` booleans, both false by default. JSON backups include this store as `mealJournal`; older backups without it leave existing meal-journal data untouched. Photos are local, unencrypted, share the browser quota, and never uploaded. The existing Delete all data flow removes the store too. See [meal-journal.md](meal-journal.md).
 
 > **Scope:** localStorage keys, what the JSON backup contains, camera/barcode and network use.
 >
