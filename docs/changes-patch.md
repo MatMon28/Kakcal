@@ -6,12 +6,12 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md), [changes-patch-history.md](changes-patch-history.md) (what earlier patches contained)
 
-**Current patch (plans and shopping-list round, base `1ac8336e81bb4e31f8892b84bc4bce4ec0f27342`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission or new-key change, no remote API. Details: [plans-shopping-update.md](plans-shopping-update.md).
+**Current patch (full backup round, base `284239a8cb5fe34cf823c4e49f754de99ddff912`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission or new-key change, no remote API. Details: [backup-update.md](backup-update.md).
 
-- **New:** `src/components/common/RecentChips.tsx`, `src/components/journal/{PlanLibrary,ShoppingLists}.tsx`, `src/components/journal/css/{journal-planner-tones,journal-plans-shopping}.css`, `src/utils/{planGroups,shoppingList}.ts`, `tests/{plans-shopping,planner-wizard}.test.tsx`, `docs/plans-shopping-update.md`.
-- **Edited:** `src/components/modals/AddFoodModal.tsx`, `src/components/journal/{PlannerWizard,MealPlanner,JournalUI}.tsx`, `src/components/common/LibrarySectionHeader.tsx`, `src/components/prebuilt/PreBuiltMealsView.tsx`, `src/components/journal/journal.css`, `src/components/journal/css/{journal-base,journal-shared-ui}.css`, `src/types/journal.ts`, `src/utils/{journalStore,plannerDraft}.ts`, `src/data/journalDemo.ts`, docs (`README.md`, `docs/README.md`, `meal-journal.md`, `storage-and-privacy.md`, `file-organisation.md`, `verification.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/README.md`, `file-map/{components-common,components-modals,components-pages,utils}.md`).
+- **New:** `src/utils/backupFormat.ts`, `tests/{backup,backup-ui}.test.tsx`, `docs/backup-update.md`.
+- **Edited:** `src/context/AppContext.tsx` (`exportDataJson` / `importDataJson`), `src/components/common/DataBackup.tsx`, `src/utils/{journalStore,amountMemory,plannerDraft}.ts`, docs (`README.md`, `docs/README.md`, `storage-and-privacy.md`, `meal-journal.md`, `verification.md`, `known-gaps.md`, `planner-dock-update.md`, `interaction-update.md`, `performance-review.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/rounds-journal.md`, `file-map/{utils,components-common,app-shell}.md`).
 - **Deleted:** nothing.
-- **Behaviour you can see:** 5 recent foods + `...` in Log food and the planner; one plan name on planner page 1; Log-food colours in the planner; *See all plans* with edit / reuse / delete; a Shopping list section on Custom. The journal record gains `planGroups` and `shoppingLists` (older data loads unchanged; meals planned before this round are listed as "Single meals").
+- **Behaviour you can see:** Settings > Data Backup > *Export* writes a `version: "2.0"` file with all user data and **no pictures**, and warns about it (permanent notice, confirmation when pictures exist, message after export). *Import* reads version 2 and the old 1.x files, re-attaches picture notes to pictures already on the device, reports skipped notes, and refuses files from a newer major version.
 
 Apply from that repository revision (the base commit above):
 

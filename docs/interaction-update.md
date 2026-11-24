@@ -28,7 +28,7 @@
 
 - Photo composer and gallery put a compact calendar/date control above Today-style meal buttons. Camera/image selection follows these controls in the composer.
 - Settings > Data backup > Export meal pictures creates a standard ZIP containing JPG/PNG/WebP pictures, dated filenames, per-picture `.txt` notes and a CSV index. JPEG notes are additionally embedded as standard XMP descriptions. PNG/WebP notes use sidecars.
-- The ZIP is a readable export, not a restore file. JSON remains the full restorable backup. Spreadsheet-formula prefixes are escaped in CSV; picture metadata and text notes retain the original note.
+- The ZIP is a readable export, not a restore file. JSON remains the full restorable backup of all data except the pictures (see [backup-update.md](backup-update.md)). Spreadsheet-formula prefixes are escaped in CSV; picture metadata and text notes retain the original note.
 - Browser/PWA files download normally. The APK uses the existing JournalDevice plugin/document picker, extended for bounded ZIP/text exports with cancellation reporting and cache cleanup. No Android permission or remote API is added. Rebuild the APK to include the updated local plugin.
 
 ## Test Mode

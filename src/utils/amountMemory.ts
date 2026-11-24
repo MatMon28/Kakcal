@@ -15,6 +15,24 @@ function read(): Record<string, number> {
   return cache!;
 }
 
+/** The remembered portions, for the JSON backup. */
+export function exportLastAmounts(): Record<string, number> {
+  return { ...read() };
+}
+
+/** Restores remembered portions from a backup (invalid entries are dropped) and refreshes the cache. */
+export function importLastAmounts(raw: unknown) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return;
+  const next: Record<string, number> = {};
+  for (const [id, v] of Object.entries(raw as Record<string, unknown>)) {
+    if (typeof v === 'number' && Number.isFinite(v) && v > 0 && id.length <= 200) next[id] = v;
+  }
+  cache = next;
+  try {
+    localStorage.setItem(KEY, JSON.stringify(next));
+  } catch { /* storage full: the portions stay in memory for this session */ }
+}
+
 /** Last portion used for a key (food id, or `activity:<id>` for activity minutes). */
 export function getLastAmount(foodId: string, fallback = 100): number {
   const v = read()[foodId];

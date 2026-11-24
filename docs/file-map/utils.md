@@ -1,6 +1,8 @@
 # File map: `src/utils/`
 
 
+(Backup round) `backupFormat.ts` (new): backup version constants (`BACKUP_VERSION` 2.0, `isSupportedBackup`), picture notes without images (`journalWithoutPictures`, `readPhotoNotes`, `mergePictureNotes`), interface preferences (`collectPreferences`, `applyPreferences`, `isPreferenceKey`) and the import report (`getLastImportReport`); `amountMemory.ts`: `exportLastAmounts` / `importLastAmounts`; `plannerDraft.ts`: `parsePlannerDraft` (validation shared with the backup); `journalStore.ts`: `exportMealJournalForBackup` has no pictures, `prepareMealJournalImport` handles old and new files. See [../backup-update.md](../backup-update.md).
+
 (Plans round) `planGroups.ts` (new): `planGroupViews`, `splitPlans`, `isCurrentPlan`, `copyName`, `UNGROUPED_PLAN_ID`. `shoppingList.ts` (new): `buildShoppingItems` (totals, recipes broken into ingredients), `createShoppingList`, `syncShoppingList`, `removeShoppingItem`, `addCustomShoppingItem`, `toggleShoppingItem`, `isShoppingListOutdated`, `formatQuantity`. `journalStore.ts`: `savePlanGroup`, `removePlanGroup`, `saveShoppingList`, `removeShoppingList`, normalising of `planGroups` / `shoppingLists`. `plannerDraft.ts`: `PlanEntry.planId / loggedAt / read`, `PlannerDraft.name`. See [plans-shopping-update.md](../plans-shopping-update.md).
 
 (Planner / dock round) `plannerDraft.ts`: the unfinished planner draft (`PlanEntry`, `PlannerDraft`, `loadPlannerDraft` with validation, `savePlannerDraft`, `clearPlannerDraft`, `draftPlannedCount`), stored under `kcak_planner_draft`.
@@ -50,7 +52,8 @@
 | (Round: left / right) `src/utils/advancedStore.ts`, `src/types/advanced.ts`, `src/i18n/advanced.ts` | `PAIRED_MEASURES`, `BODY_SIDES`, `isPairedMeasure`, `seriesKey`, `seriesKeysOf`, type `BodySide`; `normalizeBodyEntries` moves legacy un-sided values of paired measures to the right side; new `side` strings (EN / IT). |
 | `src/utils/scrollFade.ts` | Edge-fade for scrollable fields: `scrollFadeX` / `scrollFadeY` ref callbacks (and `scrollFadeRef(axis, extra)` to keep an own ref) set `data-scroll-fade`, `data-fade-start` and `data-fade-end` from the scroll position, size changes and content changes; the CSS mask lives in `index.css`. Used by `Modal.tsx`, `AddFoodModal.tsx`, `ActivitySearch.tsx`, `SettingsModal.tsx`, `FoodDatabaseView.tsx`, `PreBuiltMealsView.tsx`. |
 | `src/utils/pageTransition.ts` | Page-change transition (replaces the deleted `pageFields.ts`): `canAnimatePages()` (feature + `prefers-reduced-motion`), `playPageChange(incoming, outgoing, side)` (outgoing 110 ms fade + 8 px drift, incoming 240 ms fade + 14 px slide after 60 ms, opacity / transform only) and the timing constants `PAGE_OUT_MS`, `PAGE_IN_MS`, `PAGE_IN_DELAY_MS`. Called by `PageSwiper.tsx` on every tap / Back page change. |
-| `src/utils/journalStore.ts` | Versioned meal plans, memories and photos; shared reactive localStorage state, validation, cross-tab updates, food snapshots, and JSON backup helpers. |
+| `src/utils/journalStore.ts` | Versioned meal plans, memories and photos; shared reactive localStorage state, validation, cross-tab updates, food snapshots, and JSON backup helpers (backup without pictures, import of old and new files). |
+| `src/utils/backupFormat.ts` | Format of the JSON backup version 2: version check, picture notes (no images), interface preferences, import report. Pure helpers, covered by `tests/backup.test.tsx` (and `tests/backup-ui.test.tsx` for the Settings UI). |
 
 android.ts declares the local exportFile bridge. planSharing.ts/saveLocalFile chooses browser downloads or the APK document picker; native links use the existing public homepage, configurable with VITE_PUBLIC_APP_URL.
 

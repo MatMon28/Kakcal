@@ -6,6 +6,13 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+**Earlier patch (plans and shopping-list round, base `1ac8336e81bb4e31f8892b84bc4bce4ec0f27342`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission or new-key change, no remote API. Details: [plans-shopping-update.md](plans-shopping-update.md).
+
+- **New:** `src/components/common/RecentChips.tsx`, `src/components/journal/{PlanLibrary,ShoppingLists}.tsx`, `src/components/journal/css/{journal-planner-tones,journal-plans-shopping}.css`, `src/utils/{planGroups,shoppingList}.ts`, `tests/{plans-shopping,planner-wizard}.test.tsx`, `docs/plans-shopping-update.md`.
+- **Edited:** `src/components/modals/AddFoodModal.tsx`, `src/components/journal/{PlannerWizard,MealPlanner,JournalUI}.tsx`, `src/components/common/LibrarySectionHeader.tsx`, `src/components/prebuilt/PreBuiltMealsView.tsx`, `src/components/journal/journal.css`, `src/components/journal/css/{journal-base,journal-shared-ui}.css`, `src/types/journal.ts`, `src/utils/{journalStore,plannerDraft}.ts`, `src/data/journalDemo.ts`, docs (`README.md`, `docs/README.md`, `meal-journal.md`, `storage-and-privacy.md`, `file-organisation.md`, `verification.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/README.md`, `file-map/{components-common,components-modals,components-pages,utils}.md`).
+- **Deleted:** nothing.
+- **Behaviour you can see:** 5 recent foods + `...` in Log food and the planner; one plan name on planner page 1; Log-food colours in the planner; *See all plans* with edit / reuse / delete; a Shopping list section on Custom. The journal record gains `planGroups` and `shoppingLists` (older data loads unchanged; meals planned before this round are listed as "Single meals").
+
 **Earlier patch (search and animation performance round, base `b7118379bd083b679b0abddd6ccd6fe7f5ef4675`):** no `package.json` / lock-file change (so no `npm ci` is needed), no Android native, permission or data-format change, no new remote API. Fixes review points 5 and 9 ([performance-review.md](performance-review.md), details and numbers in [search-and-animation-performance.md](search-and-animation-performance.md)):
 
 - **New:** `src/utils/{foodSearchIndex,catalogueSearch,useCatalogueSearch}.ts`, `src/workers/offCatalogSearch.worker.ts` (Vite emits it to `dist/assets/` and the service worker precaches it automatically), `src/components/common/dialogExit.ts`, `tests/{fuzzy.test.ts,catalogueSearch.test.tsx,dialogExit.test.tsx}`, `scripts/check-search-and-dialog.mjs`, `docs/search-and-animation-performance.md`.

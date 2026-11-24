@@ -12,6 +12,9 @@ import { whenIdle } from '../utils/idle';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
 import { exportLayout, importLayout } from '../utils/layoutStore';
 import { exportMealJournalForBackup, importMealJournal, prepareMealJournalImport } from '../utils/journalStore';
+import { applyPreferences, backupMajorVersion, BACKUP_FORMAT, BACKUP_VERSION, collectPreferences, isSupportedBackup, setLastImportReport } from '../utils/backupFormat';
+import { exportLastAmounts, importLastAmounts } from '../utils/amountMemory';
+import { loadPlannerDraft, parsePlannerDraft, savePlannerDraft } from '../utils/plannerDraft';
 import { bootedDays } from '../storage/boot';
 import { persistDayChanges, replaceAllDays } from '../storage/dayStore';
 import { usePersistLocal } from '../storage/usePersist';
@@ -816,31 +819,44 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
-  // Export JSON. Async because photos live in IndexedDB and are embedded as data URLs so a backup is self-contained.
+  // Export JSON (backup version 2, see utils/backupFormat.ts): everything the user saved EXCEPT the pictures.
+  // The top-level keys of version 1.2 are unchanged, so the new sections only add to them. Still async (the Promise
+  // type is part of the context contract and the Android bridge awaits it).
   const exportDataJson = async (): Promise<string> => {
     const data = {
-      version: '1.2',
+      format: BACKUP_FORMAT,
+      version: BACKUP_VERSION,
       exportedAt: new Date().toISOString(),
+      picturesIncluded: false, // picture files are never part of the backup (only their notes)
+      language,
       userProfile,
       customFoods,
       usedFoods,
       dayLogs,
-      preBuiltMeals,
-      settings,
+      preBuiltMeals, // meals and recipes
+      settings, // includes favourite foods / activities, quick foods, custom buttons, notifications, theme
       periodData,
       customActivities,
       advanced: exportAdvanced(), // goals/limits + body measures (Settings > Advanced)
       layout: exportLayout(), // advanced layout: field order/sizes/removed fields + added meal types
-      mealJournal: await exportMealJournalForBackup(),
+      mealJournal: exportMealJournalForBackup(), // plans, plan names, shopping lists, meal notes/favourites, picture notes
+      lastAmounts: exportLastAmounts(), // remembered portions
+      plannerDraft: loadPlannerDraft(), // unfinished meal plan
+      preferences: collectPreferences(), // which cards / sections are open, selected ranges and tabs
     };
     return JSON.stringify(data, null, 2);
   };
 
-  // Import JSON. Photos are stored FIRST: when the device is full this returns false and nothing else has changed.
+  // Import JSON: backup version 2 (no pictures) and the older 1.x files (pictures embedded). Files from a newer app are
+  // refused. Pictures of an old file are stored FIRST: when the device is full this returns false and nothing else has
+  // changed. Details for the user (notes without a picture...) are left in `getLastImportReport()`.
   const importDataJson = async (jsonStr: string): Promise<boolean> => {
+    setLastImportReport(null);
     try {
       const data = JSON.parse(jsonStr);
-      const journal = await prepareMealJournalImport(data.mealJournal);
+      if (!isSupportedBackup(data)) return false;
+      const prepared = await prepareMealJournalImport(data.mealJournal);
+      const journal = prepared?.journal;
       const importedDays = data.dayLogs && typeof data.dayLogs === 'object' && !Array.isArray(data.dayLogs)
         ? normalizeDayLogs(data.dayLogs) : null;
       if (importedDays) await replaceAllDays(importedDays);
@@ -886,6 +902,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       importAdvanced(data.advanced);
       importLayout(data.layout);
       if (journal) importMealJournal(journal);
+      // Version 2 sections (absent in older files, which then leave the current values untouched).
+      if (data.language === 'en' || data.language === 'it') setLanguage(data.language);
+      if (data.lastAmounts !== undefined) importLastAmounts(data.lastAmounts);
+      const draft = parsePlannerDraft(data.plannerDraft);
+      if (draft) savePlannerDraft(draft);
+      applyPreferences(data.preferences);
       if (data.periodData && typeof data.periodData === 'object') {
         try {
           savePeriodData(normalizePeriodData(data.periodData));
@@ -893,6 +915,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           console.error('Failed to import period data', e);
         }
       }
+      setLastImportReport({
+        version: backupMajorVersion(data),
+        picturesInFile: prepared?.picturesInFile ?? false,
+        notesRestored: prepared?.notesRestored ?? 0,
+        notesWithoutPicture: prepared?.notesWithoutPicture ?? 0,
+      });
       return true;
     } catch (err) {
       console.error('Import error:', err);

@@ -21,7 +21,7 @@
 
 ## Storage
 
-New UI-only key `kcak_planner_draft` (the draft, device only, not part of JSON backups). No other keys, packages, permissions or remote APIs.
+New UI-only key `kcak_planner_draft` (the draft, device only; since the backup round it is also exported in the JSON backup as `plannerDraft`). No other keys, packages, permissions or remote APIs.
 
 ## Verification limits
 

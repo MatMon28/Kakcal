@@ -50,12 +50,11 @@ function cleanEntry(raw: unknown): PlanEntry | null {
   return { kind: e.kind, items, title: typeof e.title === 'string' ? e.title : '', note: typeof e.note === 'string' ? e.note : '' };
 }
 
-/** The saved draft, or `null` when there is none (or it is unreadable). */
-export function loadPlannerDraft(): PlannerDraft | null {
+/** Validates an unknown value (stored draft or the draft of a JSON backup); `null` when it is not a usable draft. */
+export function parsePlannerDraft(input: unknown): PlannerDraft | null {
   try {
-    const raw = localStorage.getItem(PLANNER_DRAFT_KEY);
-    if (!raw) return null;
-    const d = JSON.parse(raw) as Partial<PlannerDraft>;
+    if (!input || typeof input !== 'object') return null;
+    const d = input as Partial<PlannerDraft>;
     if (!d || d.version !== 1 || !isDate(d.startDate) || !isDate(d.endDate)) return null;
     const entries: Record<string, PlanEntry> = {};
     for (const [key, value] of Object.entries(d.entries ?? {})) {
@@ -78,6 +77,16 @@ export function loadPlannerDraft(): PlannerDraft | null {
       preferredKind: d.preferredKind === 'note' ? 'note' : 'food',
       activeKey: typeof d.activeKey === 'string' ? d.activeKey : null,
     };
+  } catch {
+    return null;
+  }
+}
+
+/** The saved draft, or `null` when there is none (or it is unreadable). */
+export function loadPlannerDraft(): PlannerDraft | null {
+  try {
+    const raw = localStorage.getItem(PLANNER_DRAFT_KEY);
+    return raw ? parsePlannerDraft(JSON.parse(raw)) : null;
   } catch {
     return null;
   }

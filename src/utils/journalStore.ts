@@ -3,7 +3,8 @@ import type { Language, LoggedFoodItem, MealSlotId } from '../types';
 import type { MealJournalData, MealMemory, MealPhoto, MealPlan, PlanGroup, ShoppingItem, ShoppingList } from '../types/journal';
 import { DEMO_MODE } from '../config/demo';
 import { makeDemoJournal } from '../data/journalDemo';
-import { deletePhotoBlob, isPhotoRef, migrateInlinePhotos, photoIdOf, photosForBackup, photosFromBackup, PHOTO_REF_PATTERN, putPhotoBlob, photoRef } from '../storage/photoStore';
+import { deletePhotoBlob, isPhotoRef, migrateInlinePhotos, photoIdOf, photosFromBackup, PHOTO_REF_PATTERN, putPhotoBlob, photoRef } from '../storage/photoStore';
+import { journalWithoutPictures, mergePictureNotes, readPhotoNotes, type PhotoNote } from './backupFormat';
 import { scheduleWrite } from '../storage/writeQueue';
 
 export const JOURNAL_KEY = 'kcalsync_meal_journal';
@@ -138,15 +139,41 @@ export const journalId = () =>
   globalThis.crypto?.randomUUID?.() ?? `journal-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const memoryKey = (date: string, slot: MealSlotId) => `${date}:${slot}`;
 export const exportMealJournal = () => snapshot;
-/** Backup form: photo references are replaced by self-contained data URLs. */
-export async function exportMealJournalForBackup(): Promise<MealJournalData> {
-  return { ...snapshot, photos: await photosForBackup(snapshot.photos) };
+/**
+ * Backup form (backup version 2): the whole journal WITHOUT any picture data. The notes of the pictures are kept in
+ * `photoNotes` so they can be re-attached to pictures that are still on the device. See `utils/backupFormat.ts`.
+ */
+export function exportMealJournalForBackup(): MealJournalData & { photoNotes: PhotoNote[] } {
+  return journalWithoutPictures(snapshot);
 }
-/** Converts the photos of a backup into blobs BEFORE anything else is imported, so a failure changes nothing. */
-export async function prepareMealJournalImport(data: unknown): Promise<MealJournalData | undefined> {
+export interface PreparedJournalImport {
+  journal: MealJournalData;
+  /** The file embedded pictures (a version 1.x backup). */
+  picturesInFile: boolean;
+  /** Picture notes re-attached to pictures already on this device. */
+  notesRestored: number;
+  /** Picture notes whose picture is not on this device. */
+  notesWithoutPicture: number;
+}
+/**
+ * Prepares the journal of a backup BEFORE anything else is imported, so a failure changes nothing.
+ * - Version 1.x file: embedded pictures (data URLs) become blobs, exactly as before.
+ * - Version 2 file: no pictures; `photoNotes` are merged onto the pictures that are on this device, and the device's
+ *   other pictures are kept.
+ */
+export async function prepareMealJournalImport(data: unknown): Promise<PreparedJournalImport | undefined> {
   if (data === undefined) return undefined;
   const normalized = normalizeMealJournal(data);
-  return { ...normalized, photos: await photosFromBackup(normalized.photos) };
+  const restored = await photosFromBackup(normalized.photos);
+  const notes = readPhotoNotes((data as { photoNotes?: unknown } | null)?.photoNotes);
+  if (!notes) return { journal: { ...normalized, photos: restored }, picturesInFile: restored.length > 0, notesRestored: 0, notesWithoutPicture: 0 };
+  const merged = mergePictureNotes(notes, snapshot.photos, restored);
+  return {
+    journal: { ...normalized, photos: merged.photos },
+    picturesInFile: restored.length > 0,
+    notesRestored: merged.matched,
+    notesWithoutPicture: merged.missing,
+  };
 }
 export const importMealJournal = (data: unknown) => {
   if (data !== undefined) commit(normalizeMealJournal(data));

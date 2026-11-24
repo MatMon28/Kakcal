@@ -33,6 +33,6 @@
 
 - A red notice appears when a save fails (full storage, blocked storage).
 - Settings > Backup shows storage usage and can ask the browser to keep the data.
-- Backups are now version `1.2` and contain photos as data URLs; importing a backup stores photos first and changes nothing if that fails.
+- Backups were made version `1.2` with photos as data URLs; importing a backup stores photos first and changes nothing if that fails. (Superseded: since the backup round, version `2.0` exports contain no pictures and `1.x` files still import this way, see [backup-update.md](backup-update.md).)
 - `exportDataJson` / `importDataJson` are async (`AppContextType`).
 - The guided tour is opt-in: `?view=tour`.
