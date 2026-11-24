@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, PersonStanding } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useShell } from '../../context/AppContext';
 import type { ActiveTab } from '../../types';
 import { isPeriodShown } from '../../utils/tourPreview';
 import { useAdvanced } from '../../utils/advancedStore';
 import { getPagePosition, subscribePagePosition } from '../../utils/pagePosition';
 
 export function Tabs() {
-  const { t, activeTab, setActiveTab, settings } = useApp();
+  // Navigation + settings only: no journal data, so a logged meal does not re-render the tab bar.
+  const { t, activeTab, setActiveTab, settings } = useShell();
   const bodyShown = useAdvanced().body.enabled;
   const nav = useRef<HTMLElement>(null);
   const indicator = useRef<HTMLSpanElement>(null);
@@ -66,10 +67,13 @@ export function Tabs() {
       if (button && label) button.style.setProperty('--tab-label-width', `${label.scrollWidth}px`);
     });
   }, [labelKey]);
+  // Follow the active tab. This used to have NO dependency list (ran after every render of Tabs and read offsetLeft /
+  // offsetWidth through `draw`, a whole-document forced layout). It only has to run when the target tab or the tab
+  // geometry changes; page-position changes during a swipe come from `subscribePagePosition` below.
   useLayoutEffect(() => {
     if (getPagePosition() === null) glide();
     else draw(getPagePosition()!);
-  });
+  }, [labelKey, activeTab, items.length, settings.ultraMinimal, draw, glide]);
   useEffect(() => {
     const unsubscribe = subscribePagePosition(() => {
       const p = getPagePosition();

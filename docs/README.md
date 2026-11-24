@@ -28,7 +28,7 @@
 | Speed up app start | [startup-performance.md](startup-performance.md) |
 | See what the performance / storage / tooling review changed, and what is still open | [performance-review.md](performance-review.md) |
 | Typing in a food search lags, the 130,000-product catalogue is searched, result caches, the catalogue Web Worker, dialogs close slowly / clone the DOM, `dialogExit.ts` | [search-and-animation-performance.md](search-and-animation-performance.md) |
-| Page change / swipe lags, the Custom page is slow with lots of data, lazy-mounted accordions, layout reads in effects | [performance.md](performance.md) |
+| Page change / swipe lags, the Custom page is slow with lots of data, lazy-mounted accordions, deferred section bodies (`LazyBody defer`), the contained leaving page, swipe placeholder, layout reads in effects, narrow `useSettings()` subscriptions, the page-change benchmark and its budget | [performance.md](performance.md) |
 | Add or rename a stored key, backup, network behaviour | [storage-and-privacy.md](storage-and-privacy.md) |
 | JSON export / import: what the backup contains, the pictures warning, backup version 2, how a new stored key must be added to the backup, the Android APK export writing a 0 B file | [backup-update.md](backup-update.md) |
 | Calorie maths, colours | [calculations-colors.md](calculations-colors.md) |

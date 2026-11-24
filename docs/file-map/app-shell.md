@@ -41,3 +41,5 @@ Meal-journal additions: `App.tsx` mounts `JournalChrome`; `index.css` imports `c
 | `eslint.config.mjs` | **Now real** (replaces the Next.js leftover): typescript-eslint, react, react-hooks, `no-unstable-nested-components`. |
 | `vite.config.ts`, `tests/`, `.github/workflows/ci.yml` | No single-file plugin, `base: './'`, worker stamping, Vitest config; the regression suite (`tests/`: storage, context, midnight, `fuzzy.test.ts`, `catalogueSearch.test.tsx`, `dialogExit.test.tsx`); required CI checks. |
 | `docs/performance-review.md` | Status of the 20-point review. |
+
+(Round: page-change follow-up) `src/App.tsx`: `MainContent` memoises the page elements (`pageElements` / `renderMainTab`) and scrolls to the top only once on start (the scroll reset of a page change is in `PageSwiper`). `src/styles/performance.css` (new, last `@import` of `src/index.css`): `.kc-body-skeleton` and `content-visibility` for expanded cards. `src/i18n/{journal,advanced,layout}.ts`: the text hooks subscribe to the settings slice only.

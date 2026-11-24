@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Page-change follow-up round ("stop paying twice", no new screens):** a tab change still paid for both page trees and paid again on every visit to Custom. Now the page that is left is contained and unmounted after its own 110 ms fade-out (it used to stay about 300 ms), Custom's seven sections are **closed by default** (a section left open builds its body just after the first paint, `LazyBody defer` + `DeferredBody`), the swipe neighbour is an empty placeholder until the drag is 60 % of the way, `Tabs` / section headers / the scroll reset no longer force a layout inside the commit, four small text hooks (`useJournalText`, `useMealSlots`, `useAdvancedText`, `useLayoutText`, about 85 call sites) no longer re-render on every tab change, the Meal diary filter / search index is memoised and cached, photo and plan lookups are O(1). New `src/components/common/DeferredBody.tsx`, `src/styles/performance.css`, `tests/page-change.test.tsx`; `scripts/bench-page-change.mjs` has a second scenario and a 250 ms budget. **Not yet measured** (the numbers have to be taken on a machine that can run Chromium). See [docs/performance.md](docs/performance.md#follow-up-round-stop-paying-twice).
+
+### Previous update (Android export fix round)
+
 **Android export fix round:** *Export JSON* from the Android APK produced a **0 B** file (the PWA was fine). The native save in `JournalDevicePlugin.java` is hardened: the staged file is found even when Capacitor lost the call, `xlsx` is accepted, the copy retries with another open mode and checks the byte count, a failed write removes the empty document and rejects instead of hanging, and an empty payload is refused. The app shows the saved size and no longer says "saved" when you close the picker. **Rebuild the APK.** See [docs/backup-update.md](docs/backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix).
 
 ### Previous update (full backup round)

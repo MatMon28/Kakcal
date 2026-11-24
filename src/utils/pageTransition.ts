@@ -28,15 +28,20 @@ const shift = (px: number) => `translate3d(${px}px,0,0)`;
 
 /**
  * Plays the change. `side` is 1 when the incoming page belongs to the right of the outgoing one (forward / catalogue),
- * -1 for the left. Returns the incoming page's animation (the longest one); its `finish` marks the end of the change.
+ * -1 for the left. Returns BOTH animations: the incoming page's (the longest one; its `finish` marks the end of the
+ * change) and the outgoing page's (its `finish`, after `PAGE_OUT_MS`, is the moment the invisible old page can be
+ * unmounted - it must not be kept for the whole incoming animation, see docs/performance.md).
  */
-export function playPageChange(incoming: HTMLElement, outgoing: HTMLElement | null, side: number): Animation {
-  outgoing?.animate(
+export interface PageChangeAnimations { incoming: Animation; outgoing: Animation | null }
+
+export function playPageChange(incoming: HTMLElement, outgoing: HTMLElement | null, side: number): PageChangeAnimations {
+  const out = outgoing?.animate(
     [{ opacity: 1, transform: shift(0) }, { opacity: 0, transform: shift(-side * SHIFT_OUT) }],
     { duration: PAGE_OUT_MS, easing: EASE_IN, fill: 'forwards' },
-  );
-  return incoming.animate(
+  ) ?? null;
+  const into = incoming.animate(
     [{ opacity: 0, transform: shift(side * SHIFT_IN) }, { opacity: 1, transform: shift(0) }],
     { duration: PAGE_IN_MS, delay: outgoing ? PAGE_IN_DELAY_MS : 0, easing: EASE_OUT, fill: 'backwards' },
   );
+  return { incoming: into, outgoing: out };
 }

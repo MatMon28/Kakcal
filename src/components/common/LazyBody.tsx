@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from 'react';
+import { DeferredBody } from './DeferredBody';
 
 /**
  * `true` from the first moment `open` is true, and from then on for good.
@@ -15,7 +16,16 @@ export function useMountedOnce(open: boolean): boolean {
   return open || seen;
 }
 
-/** Renders `children` only after `open` has been true at least once (see `useMountedOnce`). */
-export function LazyBody({ open, children }: { open: boolean; children: ReactNode }) {
-  return useMountedOnce(open) ? <>{children}</> : null;
+/**
+ * Renders `children` only after `open` has been true at least once (see `useMountedOnce`).
+ *
+ * `defer`: when the body is already open on the very first render of this component (the page is being shown and the
+ * user had left the section open), mount it after the first paint behind a skeleton (`DeferredBody`) so it does not
+ * sit in the page-change frame. A body opened later, by a tap, is mounted immediately as before. Whether a body
+ * defers is decided once, on the first render, so the tree never changes shape afterwards.
+ */
+export function LazyBody({ open, defer = false, children }: { open: boolean; defer?: boolean; children: ReactNode }) {
+  const [openedWithPage] = useState(open);
+  if (!useMountedOnce(open)) return null;
+  return defer && openedWithPage ? <DeferredBody>{children}</DeferredBody> : <>{children}</>;
 }

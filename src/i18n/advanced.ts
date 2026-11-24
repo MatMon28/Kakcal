@@ -1,4 +1,4 @@
-import { useApp } from '../context/AppContext';
+import { useSettings } from '../context/AppContext';
 import type { Language } from '../types';
 
 /**
@@ -167,5 +167,5 @@ export type AdvancedText = typeof advancedText.en;
 export const getAdvancedText = (language: Language): AdvancedText => (advancedText[language] ?? advancedText.en) as AdvancedText;
 
 export function useAdvancedText(): AdvancedText {
-  return getAdvancedText(useApp().language);
+  return getAdvancedText(useSettings().language);
 }

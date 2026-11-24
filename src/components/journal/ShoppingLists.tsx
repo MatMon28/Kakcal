@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Check, ChevronRight, Pencil, Plus, RefreshCw, ShoppingCart, Trash2 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useToday } from '../../utils/useToday';
 import { journalId, removeShoppingList, saveShoppingList, useMealJournal } from '../../utils/journalStore';
@@ -24,7 +24,7 @@ import { planRange } from './PlanLibrary';
 
 /** Looks a food up by id (all foods, recipes and the offline index the app already keeps in memory). */
 function useFoodLookup() {
-  const { allFoods } = useApp();
+  const { allFoods } = useJournalData();
   return useMemo(() => {
     const byId = new Map<string, FoodItem>(allFoods.map((f) => [f.id, f]));
     return (id: string) => byId.get(id);
@@ -37,7 +37,7 @@ function useFoodLookup() {
  * bought; the pencil switches to editing, where lines can be removed and new ones added.
  */
 export function ShoppingLists() {
-  const { language } = useApp();
+  const { language } = useSettings();
   const { plans, planGroups, shoppingLists } = useMealJournal();
   const j = useJournalText();
   const today = useToday();
@@ -148,7 +148,7 @@ export function ShoppingLists() {
 }
 
 function ShoppingListModal({ group, onClose }: { group: PlanGroupView; onClose: () => void }) {
-  const { language } = useApp();
+  const { language } = useSettings();
   const { shoppingLists } = useMealJournal();
   const j = useJournalText();
   const foodById = useFoodLookup();

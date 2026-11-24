@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Search, X } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { LibrarySectionHeader, libraryIconButton } from '../common/LibrarySectionHeader';
@@ -42,8 +42,9 @@ export function JournalSection({
   children: ReactNode;
   className?: string;
 }) {
-  const [open, setOpen] = usePersistentState<boolean>(`kcak_journal_${tone}_open`, true);
-  const { settings } = useApp();
+  const [open, setOpen] = // Closed unless the user opened it (then the choice is remembered): a section is a header row until it is needed.
+  usePersistentState<boolean>(`kcak_journal_${tone}_open`, false);
+  const { settings } = useSettings();
   return (
     <section
       className={`journal-feature space-y-3 ${className}`}
@@ -69,7 +70,7 @@ export function JournalSection({
       />
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
-          <LazyBody open={open}>
+          <LazyBody open={open} defer>
             <div className="journal-section-body">{children}</div>
           </LazyBody>
         </div>

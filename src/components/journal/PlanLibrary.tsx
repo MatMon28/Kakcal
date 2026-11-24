@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { CalendarDays, ChevronRight, Copy, Trash2 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { useToday } from '../../utils/useToday';
@@ -34,7 +34,7 @@ export function PlanLibrary({
   onReuse: (group: PlanGroupView) => void;
   onOpenMeal: (plan: MealPlan) => void;
 }) {
-  const { language } = useApp();
+  const { language } = useSettings();
   const { label } = useMealSlots();
   const { plans, planGroups } = useMealJournal();
   const j = useJournalText();

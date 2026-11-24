@@ -44,3 +44,5 @@
 ## Added in the performance, storage and tooling round
 
 `public/offline-worker.js` now holds `__BUILD_ID__` / `__PRECACHE_ASSETS__` placeholders that `vite.config.ts` fills in; `public/_headers` caches `/assets/*` as immutable; `scripts/smoke.bundle.js` is no longer tracked; `scripts/prepare-android.mjs` type-checks and verifies the synced `assets/*`.
+
+(Round: page-change follow-up) `scripts/bench-page-change.mjs` now runs two scenarios (`KC_SCENARIO=collapsed|open|both`; `open` = 5 sections and 10 cards open) and exits with code 1 when Today -> Custom exceeds `KC_BUDGET_MS` (default 250 ms, only at 4x throttle or more). See [../verification.md](../verification.md#page-change-benchmark).

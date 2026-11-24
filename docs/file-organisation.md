@@ -20,6 +20,7 @@
 | `themed-chrome.css` | Rules shared by all style themes: header, navigation pill, Intake / Burned cards, macro cards, nutrient pills. |
 | `themed-cards.css` | Meal slot / tracker / Custom cards, item fields, Period page, action dock, modals. |
 | `themed-overrides.css` | Angular chamfers, Pop elevation, the continuous page selector (`.kc-following-*`), page-moving rule. |
+| `performance.css` | `.kc-body-skeleton` (placeholder of `DeferredBody`) and `content-visibility` for expanded off-screen cards. Last in the `@import` list. |
 
 | Part (`src/components/journal/css/`) | Contents |
 | --- | --- |

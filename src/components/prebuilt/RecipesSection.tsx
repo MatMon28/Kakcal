@@ -34,7 +34,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
 
         <div className="accordion-grid" data-open={sectionsOpen.recipes} inert={!sectionsOpen.recipes}>
         <div className="accordion-inner">
-        <LazyBody open={sectionsOpen.recipes}>
+        <LazyBody open={sectionsOpen.recipes} defer>
         {savedRecipes.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="kc-section-empty text-xs font-medium text-[#4D3582] px-1 py-1">

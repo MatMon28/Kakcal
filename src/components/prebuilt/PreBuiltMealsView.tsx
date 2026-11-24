@@ -51,7 +51,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         />
         <div className="accordion-grid" data-open={sectionsOpen.foods} inert={!sectionsOpen.foods}>
         <div className="accordion-inner space-y-3">
-        <LazyBody open={sectionsOpen.foods}>
+        <LazyBody open={sectionsOpen.foods} defer>
         {/* Recent and favourite foods: one tap to log them. */}
         <CustomFoodsQuick />
         <div className="grid grid-cols-2 gap-2">

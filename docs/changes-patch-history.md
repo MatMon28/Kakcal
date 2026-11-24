@@ -6,6 +6,13 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+**Earlier patch (Android export fix round, base `7323df46a57a78b9e402caaae5edec39801c6c94`):** no `package.json` / lock-file change (no `npm ci` needed), no new permission, storage key or remote API. **Rebuild the APK** (the fix is in the native plugin). Details: [backup-update.md](backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix).
+
+- **New:** `tests/backup-android.test.tsx`.
+- **Edited:** `android/app/src/main/java/com/kcalsync/app/JournalDevicePlugin.java` (export section), `src/utils/android.ts`, `src/components/common/DataBackup.tsx`, docs (`README.md`, `docs/README.md`, `backup-update.md`, `storage-and-privacy.md`, `interaction-update.md`, `verification.md`, `known-gaps.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/rounds-journal.md`, `file-map/android-native.md`, `file-map/utils.md`, `file-map/components-common.md`, `android/BUILD_APK.md`).
+- **Deleted:** nothing.
+- **Behaviour you can see:** in the APK, Settings > Data Backup > *Export JSON* (and *Export to Excel* / *Export meal pictures*) no longer leaves a 0 B file: the file is written (the size is shown), a write failure leaves no empty file and shows the error, and closing the picker shows no "saved" message.
+
 **Earlier patch (full backup round, base `284239a8cb5fe34cf823c4e49f754de99ddff912`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission or new-key change, no remote API. Details: [backup-update.md](backup-update.md).
 
 - **New:** `src/utils/backupFormat.ts`, `tests/{backup,backup-ui}.test.tsx`, `docs/backup-update.md`.

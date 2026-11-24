@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import type { LoggedFoodItem, MealSlotId } from '../../types';
 import { calculateMacros, calculateTotalCalories } from '../../utils/calculations';
 import { formatKcal } from '../../utils/formatters';
@@ -34,7 +34,7 @@ export function MealSummaryCard({
   emptyText?: string;
   children?: ReactNode;
 }) {
-  const { settings } = useApp();
+  const { settings } = useSettings();
   const ultraMinimal = Boolean(settings.ultraMinimal);
   const kcal = calculateTotalCalories(items);
   const macros = calculateMacros(items);

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
 import {
   ArrowUpRight,
   Check,
@@ -9,7 +9,7 @@ import {
   Star,
   Utensils,
 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { calculateMacros, calculateTotalCalories } from '../../utils/calculations';
@@ -36,30 +36,64 @@ interface DiaryMeal {
   key: string;
 }
 
-function useMealSearch() {
-  const { allFoods } = useApp();
-  const { label } = useMealSlots();
+type MealSearch = (meal: DiaryMeal, query: string) => boolean;
+
+/**
+ * `(meal, query) => boolean` for the diary search.
+ *
+ * The haystack of a meal (every item name, the names of the ingredients of a recipe, the note) is built ONCE per meal
+ * and kept in `cache`, not once per meal per keystroke: typing used to rebuild and lower-case N strings, walking the
+ * recipe ingredients recursively for each. The cache is renewed when the diary (`meals`), the foods or the notes
+ * change. The meal-type label is the only part that depends on the language / meal types, so it is added at query
+ * time (`label + ' ' + haystack`, the same text as before). The returned function keeps its identity, so a `useMemo`
+ * that filters with it is not invalidated by every render; `labelKey` renews it when a label changes.
+ */
+function useMealSearch(meals: DiaryMeal[]): MealSearch {
+  const { allFoods } = useJournalData();
+  const { language } = useSettings();
+  const { label, options } = useMealSlots();
   const { memories } = useMealJournal();
   const byId = useMemo(() => new Map(allFoods.map((food) => [food.id, food])), [allFoods]);
-  const ingredientNames = (food: FoodItem | undefined, seen = new Set<string>()): string => {
-    if (!food || seen.has(food.id)) return '';
-    seen.add(food.id);
-    return `${food.name_en} ${food.name_it} ${food.name_de} ${(food.recipeIngredients || []).map((i) => ingredientNames(byId.get(i.foodId), seen)).join(' ')}`;
-  };
-  return (meal: DiaryMeal, query: string) => {
-    // No search text: every meal matches. Building the haystack (all names, the recipe ingredients, the note, then
-    // lower-casing it) for every logged meal on every render was the main cost of the Meal diary with a long history.
-    if (!query.trim()) return true;
-    return `${label(meal.slot)} ${meal.items.map((i) => `${i.name} ${ingredientNames(byId.get(i.foodId))}`).join(' ')} ${memories[meal.key]?.note || ''}`
-      .toLowerCase()
-      .includes(query.trim().toLowerCase());
-  };
+  const latestLabel = useRef(label);
+  latestLabel.current = label;
+  const labelKey = `${language}|${options.map((o) => `${o.id}:${o.label}`).join('|')}`;
+  // `meals` renews the cache when the diary changes (a new array whenever the day logs or the notes change).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const cache = useMemo(() => new Map<string, string>(), [meals, byId, memories]);
+  return useCallback((meal, query) => {
+    // No search text: every meal matches (and nothing is built).
+    const needle = query.trim().toLowerCase();
+    if (!needle) return true;
+    let body = cache.get(meal.key);
+    if (body === undefined) {
+      body = `${meal.items.map((i) => `${i.name} ${ingredientNames(byId.get(i.foodId), byId)}`).join(' ')} ${memories[meal.key]?.note || ''}`
+        .toLowerCase();
+      cache.set(meal.key, body);
+    }
+    return `${latestLabel.current(meal.slot).toLowerCase()} ${body}`.includes(needle);
+    // `labelKey` is not read inside: it renews the function (and every memo that filters with it) when a label changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cache, byId, memories, labelKey]);
+}
+
+function ingredientNames(food: FoodItem | undefined, byId: Map<string, FoodItem>, seen = new Set<string>()): string {
+  if (!food || seen.has(food.id)) return '';
+  seen.add(food.id);
+  return `${food.name_en} ${food.name_it} ${food.name_de} ${(food.recipeIngredients || []).map((i) => ingredientNames(byId.get(i.foodId), byId, seen)).join(' ')}`;
 }
 
 const SLOT_ORDER = ['breakfast', 'mid_morning', 'lunch', 'midday_snack', 'dinner', 'extra'];
+const SLOT_RANK = new Map(SLOT_ORDER.map((slot, index) => [slot, index]));
+
+/** Newest day first, then the order of the day. Dates are `YYYY-MM-DD`, so a plain comparison orders them like
+ * `localeCompare` did - without ICU collation on every comparison of an N log N sort. */
+function newestFirst(a: DiaryMeal, b: DiaryMeal): number {
+  if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+  return (SLOT_RANK.get(a.slot) ?? -1) - (SLOT_RANK.get(b.slot) ?? -1);
+}
 
 function useDiaryMeals() {
-  const { allDayLogs } = useApp();
+  const { allDayLogs } = useJournalData();
   const { memories } = useMealJournal();
   return useMemo(() => {
     const rows = new Map<string, DiaryMeal>();
@@ -78,10 +112,7 @@ function useDiaryMeals() {
         const [date, slot] = key.split(':');
         rows.set(key, { date, slot: slot as MealSlotId, items: [], key });
       }
-    return [...rows.values()].sort(
-      (a, b) =>
-        b.date.localeCompare(a.date) || SLOT_ORDER.indexOf(a.slot) - SLOT_ORDER.indexOf(b.slot),
-    );
+    return [...rows.values()].sort(newestFirst);
   }, [allDayLogs, memories]);
 }
 
@@ -97,21 +128,28 @@ function useMealNote() {
 }
 
 export function MealDiary() {
-  const { language } = useApp();
+  const { language } = useSettings();
   const { label } = useMealSlots();
   const { memories } = useMealJournal();
   const meals = useDiaryMeals();
-  const matchesSearch = useMealSearch();
+  const matchesSearch = useMealSearch(meals);
   const noteOf = useMealNote();
   const j = useJournalText();
   const [query, setQuery] = useState('');
   const [favorites, setFavorites] = useState(false);
   const [browser, setBrowser] = useState<'all' | 'filters' | null>(null);
   const [selected, setSelected] = useState<DiaryMeal | null>(null);
-  const matches = meals.filter(
-    (meal) => (!favorites || memories[meal.key]?.favorite) && matchesSearch(meal, query),
+  // The input shows `query` at once; the filtering of the whole history follows with the deferred value.
+  const searched = useDeferredValue(query);
+  // Nothing typed and no favourites filter: the matches ARE the diary (no copy, no pass over the history), and the
+  // section shows its first 3 rows. The filter is memoised, so an unrelated re-render (a dialog opens, the date
+  // changes) does not run it again.
+  const noFilter = !searched.trim() && !favorites;
+  const matches = useMemo(
+    () => (noFilter ? meals : meals.filter((meal) => (!favorites || memories[meal.key]?.favorite) && matchesSearch(meal, searched))),
+    [meals, noFilter, favorites, memories, matchesSearch, searched],
   );
-  const previewCount = query.trim() || favorites ? 6 : 3;
+  const previewCount = noFilter ? 3 : 6;
   return (
     <>
       <JournalSection
@@ -186,6 +224,8 @@ export function MealDiary() {
       </JournalSection>
       {browser && (
         <DiaryBrowser
+          meals={meals}
+          matchesSearch={matchesSearch}
           initialQuery={query}
           initialFavorites={favorites}
           showFilters={browser === 'filters'}
@@ -216,21 +256,24 @@ export function FavoriteMeal({ date, slot }: { date: string; slot: MealSlotId })
 }
 
 function DiaryBrowser({
+  meals,
+  matchesSearch,
   initialQuery,
   initialFavorites,
   showFilters,
   onClose,
 }: {
+  /** The one diary index of `MealDiary` (not walked and sorted a second time here). */
+  meals: DiaryMeal[];
+  matchesSearch: MealSearch;
   initialQuery: string;
   initialFavorites: boolean;
   showFilters: boolean;
   onClose: () => void;
 }) {
-  const { language } = useApp();
+  const { language } = useSettings();
   const { label, options } = useMealSlots();
   const { memories } = useMealJournal();
-  const meals = useDiaryMeals();
-  const matchesSearch = useMealSearch();
   const noteOf = useMealNote();
   const j = useJournalText();
   const [query, setQuery] = useState(initialQuery);
@@ -251,12 +294,15 @@ function DiaryBrowser({
   const [selected, setSelected] = useState<DiaryMeal | null>(null);
   const needsKcal = calMin !== '' || calMax !== '';
   const needsMacro = macroMin !== '' || macroMax !== '';
-  const matches = meals.filter((meal) => {
+  const searched = useDeferredValue(query);
+  // Memoised on the whole filter state: a re-render that changes none of it (and a keystroke still being typed, which
+  // only moves `query`, not `searched`) does not walk the history again.
+  const matches = useMemo(() => meals.filter((meal) => {
     // Only add up calories / macros when a filter on them is set.
     const kcal = needsKcal ? calculateTotalCalories(meal.items) : 0;
     const value = needsMacro ? calculateMacros(meal.items)[macro] : 0;
     return (
-      matchesSearch(meal, query) &&
+      matchesSearch(meal, searched) &&
       (!favorites || memories[meal.key]?.favorite) &&
       (!from || meal.date >= from) &&
       (!to || meal.date <= to) &&
@@ -267,7 +313,7 @@ function DiaryBrowser({
       (macroMin === '' || value >= Number(macroMin)) &&
       (macroMax === '' || value <= Number(macroMax))
     );
-  });
+  }), [meals, matchesSearch, searched, favorites, memories, from, to, slot, weekday, calMin, calMax, macro, macroMin, macroMax, needsKcal, needsMacro]);
   const reset = () => {
     setFrom('');
     setTo('');
@@ -464,7 +510,8 @@ function DiaryBrowser({
 }
 
 function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }) {
-  const { language, logItemsToSlot } = useApp();
+  const { language } = useSettings();
+  const { logItemsToSlot } = useJournalData();
   const { label } = useMealSlots();
   const { memories } = useMealJournal();
   const j = useJournalText();
@@ -555,7 +602,8 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
 }
 
 export function MealNoteAction({ date, slot }: { date: string; slot: MealSlotId }) {
-  const { settings, allDayLogs } = useApp();
+  const { settings } = useSettings();
+  const { allDayLogs } = useJournalData();
   const j = useJournalText();
   const [open, setOpen] = useState(false);
   if (!settings.inlineMealNotes) return null;
@@ -584,7 +632,7 @@ export function MealNoteAction({ date, slot }: { date: string; slot: MealSlotId 
 }
 
 export function MealNoteField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  const { settings } = useApp();
+  const { settings } = useSettings();
   const j = useJournalText();
   if (!settings.inlineMealNotes) return null;
   return (

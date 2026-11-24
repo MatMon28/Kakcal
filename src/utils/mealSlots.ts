@@ -1,4 +1,4 @@
-import { useApp } from '../context/AppContext';
+import { useSettings } from '../context/AppContext';
 import type { MealSlotId } from '../types';
 import { BUILT_IN_MEAL_SLOTS } from './mealItems';
 import { mealItemId, useLayout } from './layoutStore';
@@ -15,7 +15,7 @@ export interface MealSlotOption {
  * the user added. `label(id)` gives the name of any slot, removed or not.
  */
 export function useMealSlots(): { options: MealSlotOption[]; label: (id: MealSlotId) => string } {
-  const { t } = useApp();
+  const { t } = useSettings();
   const layout = useLayout();
   const custom = new Map(layout.mealTypes.map((m) => [m.id as string, m.name]));
   const label = (id: MealSlotId): string =>

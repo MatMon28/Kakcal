@@ -1,6 +1,6 @@
-import React, { useId, useLayoutEffect, useRef, useState } from 'react';
+import React, { Children, useId, useLayoutEffect, useRef, useState } from 'react';
 import { ChevronDown, Plus, Search, X } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 
 export const libraryPalettes = {
   meals: { text: '#7D4E14', muted: '#8A5617', border: '#E8C68E' },
@@ -43,11 +43,18 @@ function useFitActions(row: React.RefObject<HTMLDivElement | null>, group: React
         else { for (let k = i; k >= 0; k -= 1) buttons[k].style.display = 'none'; break; }
       }
     };
-    fit();
-    if (!compact || typeof ResizeObserver === 'undefined') return;
-    const observer = new ResizeObserver(fit);
+    if (!compact) {
+      // Nothing to measure: only undo an earlier hiding. A write, no layout read, so no forced reflow in the commit.
+      Array.from(groupEl.children).forEach((c) => { if (c instanceof HTMLElement) c.style.display = ''; });
+      return;
+    }
+    // Measuring (`clientWidth` / `offsetWidth`) happens in the next animation frame, which still runs before that
+    // frame is painted (no flicker) but is no longer a forced layout inside the React commit of a page change.
+    let frame = requestAnimationFrame(fit);
+    if (typeof ResizeObserver === 'undefined') return () => cancelAnimationFrame(frame);
+    const observer = new ResizeObserver(() => { cancelAnimationFrame(frame); frame = requestAnimationFrame(fit); });
     observer.observe(rowEl);
-    return () => observer.disconnect();
+    return () => { observer.disconnect(); cancelAnimationFrame(frame); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [compact, ...deps]);
 }
@@ -73,7 +80,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
   open: boolean;
   onToggle: () => void;
 }) {
-  const { settings, t } = useApp();
+  const { settings, t } = useSettings();
   const ultraMinimal = settings.ultraMinimal;
   const [searchOpen, setSearchOpen] = useState(false);
   const inputId = useId();
@@ -84,7 +91,10 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
   };
   const rowRef = useRef<HTMLDivElement>(null);
   const groupRef = useRef<HTMLDivElement>(null);
-  useFitActions(rowRef, groupRef, ultraMinimal && !open, [open, ultraMinimal, Boolean(onCreate), Boolean(setQuery), extraActions]);
+  // A scalar, not `extraActions` itself: that element is created anew on every parent render, which re-ran this effect
+  // (and its layout reads) in every section header on every render of Custom.
+  const extraActionCount = Children.toArray(extraActions).length;
+  useFitActions(rowRef, groupRef, ultraMinimal && !open, [open, ultraMinimal, Boolean(onCreate), Boolean(setQuery), extraActionCount]);
   const palette = libraryPalettes[tone];
   // In Classic theme, only the coloured section header gets this palette; in the 6 new themes, inherit the theme tokens.
   const headerStyle =

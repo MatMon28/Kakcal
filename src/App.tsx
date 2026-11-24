@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp, useShell } from './context/AppContext';
 import { Header } from './components/common/Header';
@@ -289,26 +289,39 @@ function MainContent() {
     if (!bodyShown && activeTab === 'body') setActiveTab('today');
   }, [bodyShown, activeTab, setActiveTab]);
 
-  useLayoutEffect(() => {
+  // The scroll reset of a page CHANGE lives in PageSwiper (swipe: same commit; tap: after the first frame, so it is
+  // no forced layout of the new page). Only the first screen needs it here.
+  useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
-  }, [activeTab]);
+  }, []);
 
   // Download the optional screens in the background once the first screen is done (item 2).
   useEffect(() => whenIdle(preloadOptionalScreens), []);
 
   const visibleTabs = MAIN_TABS.filter((tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown));
-  const renderMainTab = (tab: ActiveTab) => <Suspense fallback={null}>{renderTabContent(tab)}</Suspense>;
-  const renderTabContent = (tab: ActiveTab) => {
-    switch (tab) {
-      case 'today': return <TodayView />;
-      case 'prebuilt': return <PreBuiltMealsView hideDock={tab !== activeTab} />;
-      case 'period': return periodShown ? <PeriodView hideDock={tab !== activeTab} /> : null;
-      case 'database': return <FoodDatabaseView />;
-      case 'body': return bodyShown ? <BodyView hideDock={tab !== activeTab} /> : null;
-      case 'history': return <HistoryView />;
-      default: return null;
+  // The page elements are memoised: `useShell()` changes whenever ANY dialog opens, which re-renders MainContent and
+  // PageSwiper; with a fresh element per render React would re-render both whole pages for it. With these stable
+  // elements (they depend only on the active tab and the two optional pages) it skips them. `hideDock` is the only
+  // prop, and it is true exactly for the page that is not the active one.
+  const pageElements = useMemo(() => {
+    const page = (tab: ActiveTab) => {
+      switch (tab) {
+        case 'today': return <TodayView />;
+        case 'prebuilt': return <PreBuiltMealsView hideDock={tab !== activeTab} />;
+        case 'period': return periodShown ? <PeriodView hideDock={tab !== activeTab} /> : null;
+        case 'database': return <FoodDatabaseView />;
+        case 'body': return bodyShown ? <BodyView hideDock={tab !== activeTab} /> : null;
+        case 'history': return <HistoryView />;
+        default: return null;
+      }
+    };
+    const elements = new Map<ActiveTab, ReactElement>();
+    for (const tab of ['today', 'prebuilt', 'period', 'database', 'body', 'history'] as ActiveTab[]) {
+      elements.set(tab, <Suspense fallback={null}>{page(tab)}</Suspense>);
     }
-  };
+    return elements;
+  }, [activeTab, periodShown, bodyShown]);
+  const renderMainTab = useCallback((tab: ActiveTab) => pageElements.get(tab) ?? null, [pageElements]);
 
   // A single history guard lets browser/Android Back dismiss the actual top dialog,
   // including dialogs opened locally in Meals or the food catalog.

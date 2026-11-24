@@ -5,6 +5,8 @@
 > **Read when:** a page change or a swipe stutters, you add something to the Custom page, a section / card list, or a `useLayoutEffect` that reads layout.
 >
 > **Related:** [startup-performance.md](startup-performance.md) (app start), [motion.md](motion.md) (the page-change animation itself), [verification.md](verification.md#page-change-benchmark)
+>
+> **Two rounds:** the first (sections below, up to *Not changed*) removed the big costs; the second, [*Follow-up round: stop paying twice*](#follow-up-round-stop-paying-twice), removes what the first one still left on the first frame of a page change.
 
 ## The problem
 
@@ -23,7 +25,7 @@ Causes, found with a CPU profile of the tap (biggest first):
 | Change | File |
 | --- | --- |
 | New `LazyBody` / `useMountedOnce`: a collapsed body is mounted the first time it opens and then stays mounted (closing animation, state and *Go to the meal* keep working). Used for every meal / recipe card body, the Meals / Recipes / Foods sections and `JournalSection` (Meal diary, planner, Photo diary). | `components/common/LazyBody.tsx`, `prebuilt/MealsSection.tsx`, `RecipesSection.tsx`, `PreBuiltMealsView.tsx`, `journal/JournalUI.tsx` |
-| The tab label widths are measured only when the labels change (labels / Ultra Minimal); the ResizeObserver still handles resizes and fonts. The page-follow `glide` / `draw` effect is separate and unchanged. No more layout read after every render. | `common/Tabs.tsx` |
+| The tab label widths are measured only when the labels change (labels / Ultra Minimal); the ResizeObserver still handles resizes and fonts. The page-follow `glide` / `draw` effect was separate and unchanged in this first round; the follow-up round gave it a dependency list too. No more layout read after every render. | `common/Tabs.tsx` |
 | `foodById` (`Map`) replaces `allFoods.find`; `mealNutrition` (`Map`, memoised) holds every saved meal's nutrition. | `prebuilt/usePreBuiltMealsState.tsx`, `MealsSection.tsx`, `RecipesSection.tsx` |
 | No search text -> no haystack is built; kcal / macros are summed only when their filter is set; the slot order array is a constant. | `journal/MealDiary.tsx` |
 | Photos sorted in `useMemo`; saved-photo `<img>` use `decoding="async"`. | `journal/PhotoDiary.tsx` |
@@ -49,6 +51,46 @@ What is left is one unavoidable layout of the incoming page and the React render
 - **Do not filter / sort / format the whole history in render** without `useMemo`, and skip the work when no filter is set.
 - Long lists of cards: keep `content-visibility: auto` on collapsed ones.
 
-## Not changed (ideas)
+## Follow-up round: stop paying twice
 
-`AppContext.Provider` passes a new `value` object on every render, so every `useApp()` consumer re-renders on any state change; memoising the value (or splitting the context) would cut re-renders app-wide but touches every consumer, so it was left alone. Today's `MealSlotCard` measures its width in layout effects (`useCramped`, `useExtrasFit`) and causes a second layout when Custom -> Today.
+The first round got Today -> Custom from 1000-1250 ms to 260-320 ms **in the best case** (collapsed cards, nothing opened yet). What was left is an accounting problem: a tab change paid for *both* page trees, and paid again on every visit to Custom, because a section left open is rebuilt from scratch (Custom is unmounted when you leave it). Three structural facts drove it: (1) the outgoing page stayed mounted and laid out for the whole ~300 ms animation while the incoming one was laid out too; (2) every Custom section was open by default, so `LazyBody` never deferred anything on the first render; (3) `LazyBody`'s "once opened, stays mounted" rule cannot help a page that is unmounted on leaving.
+
+| # | Problem | Fix (this round) | Where |
+| --- | --- | --- | --- |
+| P1 | Two full pages mounted; the ghost was switched to `position: absolute` (a second full layout) and kept ~190 ms after its own fade-out. | The ghost / swipe neighbour gets `[contain:layout_paint]` and `will-change: opacity`. `playPageChange` now returns **both** animations; the old page is unmounted when **its** fade-out ends (`PAGE_OUT_MS`, 110 ms), not when the incoming one ends (~300 ms). The incoming `onfinish` still clears the swipe peer and the `kc-page-moving` class. | `PageSwiper.tsx`, `utils/pageTransition.ts` |
+| P2 | All seven Custom sections were open by default, so all seven bodies were built in the tab-change commit. | Default **closed** for Meals / Recipes / Foods and the four journal sections (a header row each). Nothing to migrate: the value is stored only when the user toggles, so everyone who ever opened or closed a section keeps their choice. A section that **is** open when the page is shown mounts its body after the first paint behind a fixed-height skeleton: `<LazyBody open defer>` -> `DeferredBody` (`whenIdle`, at most 150 ms). A body opened by a tap is mounted at once (no skeleton): "defer" applies only to bodies that were open on the first render of their page. | `JournalUI.tsx`, `usePreBuiltMealsState.tsx`, `common/LazyBody.tsx`, new `common/DeferredBody.tsx`, new `styles/performance.css` |
+| P2 | `MealDiary` built `matches` over the whole history on every render. | With no search text and no favourites filter `matches` *is* the diary (no copy, no pass); the 3-row preview is O(1). The filter is a `useMemo`. The history sort uses a plain `YYYY-MM-DD` comparison and a slot-rank `Map` instead of `localeCompare` / `indexOf`. | `journal/MealDiary.tsx` |
+| P3 | `DiaryBrowser` filtered unmemoised on every keystroke, rebuilt a haystack per meal per keystroke and walked + sorted the history a second time (`useDiaryMeals()` was called twice). | One `useDiaryMeals()` (the browser receives `meals` and the search function as props). `useDeferredValue(query)` in both. Haystack built **once per meal** and cached (`Map<mealKey, string>`, renewed when the diary, the foods or the notes change; the meal-type label is added at query time so the text searched is identical). The ten-clause filter is a `useMemo` on the complete filter state. | `journal/MealDiary.tsx` |
+| P4a | `Tabs` had a layout effect with **no dependency list**: `draw()` read `offsetLeft` / `offsetWidth` after every render (a whole-document forced layout). | Dependency list `[labelKey, activeTab, items.length, ultraMinimal, draw, glide]`; page-position changes during a swipe still come from `subscribePagePosition`. `Tabs` uses `useShell()` (no journal data). | `common/Tabs.tsx` |
+| P4b | `LibrarySectionHeader` passed a JSX node (`extraActions`) in the deps of `useFitActions`: seven headers re-measured on every render of Custom. | The dependency is the scalar `extraActionCount`; the measuring (`clientWidth` / `offsetWidth`) happens in a `requestAnimationFrame` / `ResizeObserver` callback, only when the header is compact; otherwise the effect just clears `display` (a write, no read). | `common/LibrarySectionHeader.tsx` |
+| P4c | `window.scrollTo` in a layout effect right after the DOM changed (forced layout). | Moved into `PageSwiper`, which knows the kind of change: nothing is done if the page was not scrolled (the scroll is read while rendering, before the DOM changes); a **tap** resets it after the first frame (`afterPaint()`; the incoming page is still invisible during its 60 ms delay and the old page is shifted up by the scroll it had, as before); a **swipe** (both pages under the finger) and the no-animation / reduced-motion path reset it in the same commit as before. `App.tsx` scrolls only once, on start. A passive effect would not do: React flushes the effects of a discrete event (a tap) before the browser paints. | `PageSwiper.tsx`, `utils/idle.ts` (`afterPaint`), `App.tsx` |
+| P5 | `useJournalText`, `useMealSlots`, `useAdvancedText`, `useLayoutText` called `useApp()` for one string: ~85 call sites re-rendered on every tab change / dialog. | They use `useSettings()` (re-render only when a setting changes). `LibrarySectionHeader`, `Tabs`, `JournalSection`, `MealDiary`, `PhotoDiary`, `PlanLibrary`, `ShoppingLists`, `MealPlanner`, `MealSummaryCard` moved to the narrow hooks. The page elements in `MainContent` are memoised (`pageElements`, keyed on the active tab and the two optional pages), so a dialog opening (which changes `useShell()`) no longer re-renders both whole pages. | `i18n/{journal,advanced,layout}.ts`, `utils/mealSlots.ts`, `App.tsx`, the components above |
+| P6 | Every expanded card ran `photos.filter(...)`; expanded off-screen cards were fully laid out. | `usePhotosForLinked(linkedId)` / `usePhotosForSlot(date, slot)`: an index built once per `photos` array (`WeakMap`), arrays keep their identity until a photo changes. `content-visibility: auto` + `contain-intrinsic-size: auto 240px` also for expanded cards (`[data-card-open='true']`). | `utils/journalStore.ts`, `journal/PhotoDiary.tsx`, `styles/performance.css` |
+| P7 | The swipe neighbour was mounted (rendered and laid out) inside the pointer event at the 6 px lock: the page "caught" under the finger. | At the lock the neighbour is an **empty placeholder panel** (`peer.placeholder`); the real page is mounted once, when the drag has covered 60 % of the commit distance (`PREVIEW_AT`). A swipe that commits earlier (a quick flick) mounts it in the commit, like a tap. | `common/PageSwiper.tsx` |
+| - | `planGroupViews` was O(groups x plans) (`plans.filter` per group). | One pass into a `Map<groupId, MealPlan[]>`; ISO-date comparison in the per-group sort. Same result (test against the old implementation). | `utils/planGroups.ts` |
+
+**Not changed on purpose**
+
+- `MealSlotCard`'s `useCramped` / `useExtrasFit` (mount-time `clientWidth` / `getBoundingClientRect` reads on Today). They compare the *intrinsic* width of the calorie text and the icon group with the room left, which a plain CSS container query cannot express without redesigning the row; it needs its own visual check on every theme. Still the next structural item (listed in [known-gaps.md](known-gaps.md)).
+- Replacing the ghost with a snapshot (fade-in only, or `document.startViewTransition`), a virtualised "See all" list, splitting `UiSlice` into navigation vs dialog flags, `React.memo` on `MealSlotCard` / `JournalSection` (their props, `onToggle` and `children`, are new on every parent render, so a memo would do nothing until the parents are stabilised) and moving `TodayView` / `MealSlotCard` off `useApp()` (they need `selectedDate` and dialog setters from the UI slice, whose value changes on every dialog) are not done. The ghost now lives 110 ms and is contained, which is the cheap part of that idea.
+- `flushSync` calls in `PageSwiper` stay (see [search-and-animation-performance.md](search-and-animation-performance.md)); only *what* is mounted inside them changed.
+
+**Result.** The numbers below are **not measured yet**: the sandbox this round was written in cannot start Chromium (missing system libraries), so `scripts/bench-page-change.mjs` was updated but not run. Run it before and after applying the patch on the same machine (see [verification.md](verification.md#page-change-benchmark)) and write the figures here. The 250 ms budget in the script is the documented best-case of the first round, not a measured result of this one. Verified by `tsc`, the existing 63 tests and the new `tests/page-change.test.tsx` (9 tests).
+
+| Change (4x CPU, 500 days) | First round | This round |
+| --- | --- | --- |
+| Today -> Custom, collapsed page | 260-320 ms | to be measured |
+| Today -> Custom, 5 sections + 10 cards open | to be measured | to be measured |
+
+**Rules added**
+
+- **Never put a JSX node (or any value created per render) in a dependency list** of an effect that reads layout. Pass a scalar.
+- **Do the measuring after the commit** (`requestAnimationFrame`, `ResizeObserver`, `afterPaint()`); a layout read in a commit is a forced layout of the page that was just mounted.
+- **A hook that needs one string (language, labels) subscribes to `useSettings()`**, not `useApp()`.
+- **Section bodies that may be open on the first render use `<LazyBody open defer>`.**
+- **Anything indexed by a key that a list render asks for belongs in the store as an O(1) lookup** (`usePhotosFor...`, `foodById`), not in a `filter` inside the card.
+- **Do not keep the outgoing page longer than its own animation.**
+
+## Not changed (older ideas, status updated)
+
+The shared context **is** memoised: the three slices (`UiContext`, `SettingsContext`, `JournalDataContext`) are `useMemo`'d in `AppContext.tsx` and every action has a stable identity (`useStableActions`). What remains is *broad subscriptions*: after this round `useApp()` is called from 66 places in 58 files (it was 97 in 73 files), plus the ~85 call sites that reached it through `useJournalText` / `useMealSlots` / `useAdvancedText` / `useLayoutText`, which no longer do. The remaining ones read UI-slice values (`selectedDate`, dialog flags) or several slices at once; moving them needs the UI slice split into navigation and dialog flags first. `MealSlotCard`'s mount-time layout effects are scheduled, not accepted: see *Not changed on purpose* above.

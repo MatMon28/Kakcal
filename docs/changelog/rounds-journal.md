@@ -6,6 +6,8 @@
 >
 > **Related:** [../meal-journal.md](../meal-journal.md), [../new-features-update.md](../new-features-update.md), [../custom-photo-share-update.md](../custom-photo-share-update.md), [../planner-dock-update.md](../planner-dock-update.md), [../interaction-update.md](../interaction-update.md)
 
+**Page-change follow-up round:** the leaving page is contained and removed after its own fade-out, Custom's sections are closed by default (open ones mount after the first paint), swipe neighbour placeholder, no forced layouts in `Tabs` / section headers / scroll reset, four text hooks on `useSettings()`, cached diary search, O(1) photo and plan lookups, benchmark scenario + budget. See [../performance.md](../performance.md#follow-up-round-stop-paying-twice).
+
 **Android export fix round:** the APK's *Export JSON* wrote a 0 B file (PWA fine); the native save (`JournalDevicePlugin.java`) was hardened and the app shows the saved size. See [../backup-update.md](../backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix).
 
 **Full backup round:** the JSON export saves everything except the pictures (backup version 2.0) and warns about it; the import reads version 2 and the old 1.x files. See [../backup-update.md](../backup-update.md).

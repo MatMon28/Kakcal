@@ -24,7 +24,11 @@ Optional browser suite: `npm install --no-save @playwright/test && npx playwrigh
 
 ## Page change benchmark
 
-`scripts/bench-page-change.mjs` (needs `playwright`) seeds a large journal (500 logged days, 60 meals, 30 recipes, 14 photos), throttles the CPU 4x (`KC_THROTTLE=1` for none) and taps Today -> every other page -> Today three times, printing the longest main-thread block and the longest frame of each change. Compare before / after a change on the same machine; a long task above ~100 ms is felt as a freeze. Reference numbers and the reasoning are in [performance.md](performance.md).
+`scripts/bench-page-change.mjs` (needs `playwright` and its Chromium system libraries) seeds a large journal (500 logged days, 60 meals, 30 recipes, 14 photos), throttles the CPU 4x (`KC_THROTTLE=1` for none) and taps Today -> every other page -> Today three times, printing the longest main-thread block and the longest frame of each change. Compare before / after a change on the same machine; a long task above ~100 ms is felt as a freeze. Reference numbers and the reasoning are in [performance.md](performance.md).
+
+It runs **two scenarios** (`KC_SCENARIO=collapsed|open|both`, default both): `collapsed` (a fresh install, everything closed) and `open` (the real-world case: Meals, Recipes, Meal diary, Meal planner and Photo diary open, 5 meal and 5 recipe cards expanded). **Budget:** the longest main-thread block of Today -> Custom must stay below `KC_BUDGET_MS` (default 250 ms) at the default 4x throttle in every scenario, otherwise the script prints the offenders and exits with code 1, so it can be used as a CI gate (CI needs a runner that can start Chromium). The budget is not enforced when `KC_THROTTLE` is below 4.
+
+Regression tests that need no browser: `tests/page-change.test.tsx` (a settings-only consumer of the four text hooks is not re-rendered by a tab change or a dialog, `LazyBody defer`, photo lookups, `planGroupViews` against the old implementation, `playPageChange` returning both animations, `afterPaint`).
 
 ## Page transition check
 

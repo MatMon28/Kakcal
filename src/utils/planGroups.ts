@@ -19,7 +19,10 @@ export interface PlanGroupView {
   ungrouped: boolean;
 }
 
-const byDateThenSlot = (a: MealPlan, b: MealPlan) => a.date.localeCompare(b.date) || a.slot.localeCompare(b.slot);
+// Dates are `YYYY-MM-DD`: a plain comparison orders them like `localeCompare` without ICU collation on every step of
+// the sort. Meals of the same day still compare by slot name with `localeCompare`, as before.
+const byDateThenSlot = (a: MealPlan, b: MealPlan) =>
+  (a.date === b.date ? 0 : a.date < b.date ? -1 : 1) || a.slot.localeCompare(b.slot);
 
 function view(id: string, name: string, createdAt: string, plans: MealPlan[], ungrouped: boolean): PlanGroupView {
   const sorted = [...plans].sort(byDateThenSlot);
@@ -40,13 +43,21 @@ function view(id: string, name: string, createdAt: string, plans: MealPlan[], un
  * virtual group, `UNGROUPED_PLAN_ID`, which is always returned last.
  */
 export function planGroupViews(plans: MealPlan[], groups: PlanGroup[]): PlanGroupView[] {
+  // One pass over the plans into a Map (it was `plans.filter` once per group: groups x plans comparisons).
   const known = new Set(groups.map((g) => g.id));
+  const byGroup = new Map<string, MealPlan[]>();
+  const loose: MealPlan[] = [];
+  for (const plan of plans) {
+    if (plan.groupId && known.has(plan.groupId)) {
+      const list = byGroup.get(plan.groupId);
+      if (list) list.push(plan); else byGroup.set(plan.groupId, [plan]);
+    } else loose.push(plan);
+  }
   const out: PlanGroupView[] = [];
   for (const group of groups) {
-    const own = plans.filter((p) => p.groupId === group.id);
-    if (own.length) out.push(view(group.id, group.name, group.createdAt, own, false));
+    const own = byGroup.get(group.id);
+    if (own?.length) out.push(view(group.id, group.name, group.createdAt, own, false));
   }
-  const loose = plans.filter((p) => !p.groupId || !known.has(p.groupId));
   if (loose.length) out.push(view(UNGROUPED_PLAN_ID, '', '', loose, true));
   return out;
 }

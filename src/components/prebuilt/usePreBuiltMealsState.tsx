@@ -93,7 +93,8 @@ export function usePreBuiltMealsState() {
   // Whole-section collapse (Meals / Recipes / Foods), remembered like the Today layout.
   const [sectionsOpen, setSectionsOpen] = usePersistentState<Record<'meals' | 'recipes' | 'foods', boolean>>(
     'kcak_custom_sections_open',
-    { meals: true, recipes: true, foods: true }
+    // Closed by default: only a header row is built for each section until the user opens it (remembered after that).
+    { meals: false, recipes: false, foods: false }
   );
   const toggleSection = (key: 'meals' | 'recipes' | 'foods') =>
     setSectionsOpen((prev) => ({ ...prev, [key]: !prev[key] }));

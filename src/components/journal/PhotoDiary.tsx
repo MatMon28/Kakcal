@@ -12,11 +12,11 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings, useUiState } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString, getTodayDateString } from '../../utils/formatters';
-import { addMealPhoto, journalId, removeMealPhoto, saveMealPhoto, useMealJournal } from '../../utils/journalStore';
+import { addMealPhoto, journalId, removeMealPhoto, saveMealPhoto, useMealJournal, usePhotosForLinked, usePhotosForSlot } from '../../utils/journalStore';
 import { classifyStorageError } from '../../storage/status';
 import { usePhotoSrc } from '../../storage/photoStore';
 import { revealLibraryItem, revealMealSlot } from '../../utils/journalNavigation';
@@ -29,7 +29,8 @@ import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './Jour
 import { JournalDateField, JournalMealSelect } from './JournalPickers';
 
 export function PhotoDiary() {
-  const { settings, selectedDate, language } = useApp();
+  const { settings, language } = useSettings();
+  const { selectedDate } = useUiState();
   const { photos } = useMealJournal();
   const j = useJournalText();
   const [add, setAdd] = useState(false);
@@ -106,7 +107,7 @@ export function PhotoDiary() {
 }
 
 export function MealPhotoAction({ date, slot }: { date: string; slot: MealSlotId }) {
-  const { settings } = useApp();
+  const { settings } = useSettings();
   const j = useJournalText();
   const [open, setOpen] = useState(false);
   if (!settings.photoDiary) return null;
@@ -130,10 +131,9 @@ export function MealPhotoAction({ date, slot }: { date: string; slot: MealSlotId
 }
 
 export function MealPhotos({ date, slot }: { date: string; slot: MealSlotId }) {
-  const { settings } = useApp();
-  const { photos } = useMealJournal();
+  const { settings } = useSettings();
+  const matching = usePhotosForSlot(date, slot);
   const [selected, setSelected] = useState<string | null>(null);
-  const matching = photos.filter((p) => p.date === date && p.slot === slot && !p.linkedId);
   if (!settings.photoDiary || !matching.length) return null;
   return (
     <>
@@ -160,13 +160,13 @@ export function LibraryPhoto({
   title: string;
   slot?: MealSlotId;
 }) {
-  const { settings, selectedDate, language } = useApp();
-  const { photos } = useMealJournal();
+  const { settings, language } = useSettings();
+  const { selectedDate } = useUiState();
+  const matching = usePhotosForLinked(linkedId);
   const j = useJournalText();
   const [add, setAdd] = useState(false);
   const [view, setView] = useState(false);
   if (!settings.photoDiary) return null;
-  const matching = photos.filter((p) => p.linkedId === linkedId);
   return (
     <div className="journal-library-photo">
       {matching.length ? (
@@ -256,7 +256,7 @@ function PhotoComposer({
   initialNote?: string;
   onClose: () => void;
 }) {
-  const { language } = useApp();
+  const { language } = useSettings();
   const { label } = useMealSlots();
   const j = useJournalText();
   const formId = useId();
@@ -515,7 +515,7 @@ function PhotoComposer({
 function PhotoBrowser({ onClose }: { onClose: () => void }) {
   const { photos } = useMealJournal();
   const { options } = useMealSlots();
-  const { language } = useApp();
+  const { language } = useSettings();
   const j = useJournalText();
   const [query, setQuery] = useState('');
   const [slot, setSlot] = useState('');
@@ -641,11 +641,11 @@ function PhotoViewer({
   /** Closes the parents of the viewer (e.g. the gallery) when the user jumps to the meal. */
   onLeave?: () => void;
 }) {
-  const { setActiveTab, setSelectedDate } = useApp();
+  const { setActiveTab, setSelectedDate } = useUiState();
   const [id, setId] = useState(selectedId);
   const index = photos.findIndex((p) => p.id === id);
   const photo = photos[index];
-  const { language } = useApp();
+  const { language } = useSettings();
   const { label } = useMealSlots();
   const j = useJournalText();
   const [note, setNote] = useState(photo?.note || '');

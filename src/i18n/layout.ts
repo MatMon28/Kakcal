@@ -1,4 +1,4 @@
-import { useApp } from '../context/AppContext';
+import { useSettings } from '../context/AppContext';
 import type { Language } from '../types';
 
 /**
@@ -131,5 +131,5 @@ export type LayoutText = typeof layoutText.en;
 export const getLayoutText = (language: Language): LayoutText => (layoutText[language] ?? layoutText.en) as LayoutText;
 
 export function useLayoutText(): LayoutText {
-  return getLayoutText(useApp().language);
+  return getLayoutText(useSettings().language);
 }

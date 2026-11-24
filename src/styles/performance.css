@@ -1,0 +1,17 @@
+/* Placeholder shown by DeferredBody for the one or two frames before an open section body is mounted
+   (src/components/common/DeferredBody.tsx). The fixed height keeps the page from jumping when the body arrives.
+   See docs/performance.md. */
+.kc-body-skeleton {
+  min-height: 120px;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--border, currentColor) 30%, transparent);
+  contain: layout paint;
+}
+
+/* An expanded card that is scrolled off screen is not laid out or painted either (the collapsed ones have the rule
+   in journal-diary.css). `auto` remembers the real size once the card has been shown. Cards that are being opened
+   by the user are on screen, so the animation and "Go to the meal" are unaffected. */
+[data-library-card][data-card-open='true'] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}

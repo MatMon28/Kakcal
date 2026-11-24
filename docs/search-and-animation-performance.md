@@ -56,7 +56,7 @@ While the 60-110 ms exit runs, the dialog's own content has been unmounted by Re
 
 ## 3. Not changed on purpose
 
-- **`flushSync` in `PageSwiper.tsx`** (page-change end, peer page mount when a swipe starts, swipe commit): not touched. Each one keeps the DOM and the gesture in the same frame (an invisible old page must not stretch the document for one frame; the destination page must exist under the finger on the first move; the swipe commit must swap pages in the same layout pass as the scroll-to-top). They were not profiled on a device in this round; before changing one, run `scripts/bench-page-change.mjs` and `scripts/check-page-transition.mjs` ([verification.md](verification.md)).
+- **`flushSync` in `PageSwiper.tsx`** (page-change end, peer page mount when a swipe starts [since the page-change follow-up round this mounts an empty placeholder, and the real page at 60 % of the commit distance], swipe commit): the calls themselves are not touched. Each one keeps the DOM and the gesture in the same frame (an invisible old page must not stretch the document for one frame; the destination page must exist under the finger on the first move; the swipe commit must swap pages in the same layout pass as the scroll-to-top). They were not profiled on a device in this round; before changing one, run `scripts/bench-page-change.mjs` and `scripts/check-page-transition.mjs` ([verification.md](verification.md)).
 - **Other measurement code** (`MealSlotCard.tsx` fitting, `EditableGrid.tsx` layout editor, `LibrarySectionHeader.tsx` action fitting, `poopAnimations.ts` forced reflow to restart keyframes): outside gestures or one-off; not examined further.
 - `fuzzy.ts` scoring rules, `offCatalog.ts` search rules and the FOOD DATABASE page: unchanged.
 

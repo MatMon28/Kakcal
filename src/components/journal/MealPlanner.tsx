@@ -11,7 +11,7 @@ import {
   Trash2,
   ArrowUpRight,
 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings, useUiState } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString } from '../../utils/formatters';
@@ -35,7 +35,8 @@ import { OPEN_PLANNER_EVENT } from './CustomShortcuts';
 import { JournalEmpty, JournalSection, journalDate } from './JournalUI';
 
 export function MealPlanner() {
-  const { selectedDate, language } = useApp();
+  const { selectedDate } = useUiState();
+  const { language } = useSettings();
   const { label } = useMealSlots();
   const { plans } = useMealJournal();
   const j = useJournalText();
@@ -212,7 +213,7 @@ export function MealPlanner() {
  * (only when the plan has a note) the note underneath.
  */
 function PlanRow({ plan, onOpen }: { plan: MealPlan; onOpen: () => void }) {
-  const { language } = useApp();
+  const { language } = useSettings();
   const { label } = useMealSlots();
   const note = plan.note.trim();
   return (
@@ -232,7 +233,8 @@ function PlanRow({ plan, onOpen }: { plan: MealPlan; onOpen: () => void }) {
 
 /** Opens a plan the way Today opens a meal: the same meal card (icon, kcal, macros, foods), with the plan note inside. */
 function PlanDetails({ plan, onClose, onEdit }: { plan: MealPlan; onClose: () => void; onEdit: () => void }) {
-  const { language, logItemsToSlot } = useApp();
+  const { language } = useSettings();
+  const { logItemsToSlot } = useJournalData();
   const { label } = useMealSlots();
   const j = useJournalText();
   const [error, setError] = useState('');
@@ -339,7 +341,8 @@ export function PlannedMeals({
   onQueue?: (plan: MealPlan) => void;
   queuedIds?: string[];
 }) {
-  const { language, logItemsToSlot } = useApp();
+  const { language } = useSettings();
+  const { logItemsToSlot } = useJournalData();
   const { plans } = useMealJournal();
   const j = useJournalText();
   const [error, setError] = useState('');

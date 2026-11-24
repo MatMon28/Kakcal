@@ -1,0 +1,21 @@
+import { useEffect, useState, type ReactNode } from 'react';
+import { whenIdle } from '../../utils/idle';
+
+/**
+ * Mounts `children` a moment AFTER the first paint instead of in the same commit as the page.
+ *
+ * A section that is open when the Custom page is shown (the user left it open) used to build its whole body - the
+ * Meal diary walks and sorts the history, the planner / shopping list group the plans, the Photo diary sorts the
+ * photos - before the first frame of the page change. Here the first frame only gets a skeleton of about the same
+ * height (`.kc-body-skeleton`, src/styles/performance.css), and the real body follows when the browser is idle
+ * (at most `MAX_WAIT_MS` later). Use it through `<LazyBody defer>`, which applies it only to bodies that are open
+ * on the first render of their page: a body the user opens by tapping is mounted at once, with no skeleton.
+ * See docs/performance.md.
+ */
+const MAX_WAIT_MS = 150;
+
+export function DeferredBody({ children }: { children: ReactNode }) {
+  const [ready, setReady] = useState(false);
+  useEffect(() => whenIdle(() => setReady(true), MAX_WAIT_MS), []);
+  return ready ? <>{children}</> : <div className="kc-body-skeleton" aria-hidden="true" />;
+}

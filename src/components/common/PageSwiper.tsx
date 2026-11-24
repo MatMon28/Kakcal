@@ -3,6 +3,7 @@ import { flushSync } from 'react-dom';
 import type { ActiveTab } from '../../types';
 import { prefersReducedMotion } from '../../utils/motion';
 import { canAnimatePages, playPageChange } from '../../utils/pageTransition';
+import { afterPaint } from '../../utils/idle';
 import { getOpenModalCount } from './Modal';
 import { setPagePosition } from '../../utils/pagePosition';
 
@@ -15,12 +16,13 @@ interface PageSwiperProps {
   onSwipeBack?: () => void;
 }
 
-type Peer = { tab: ActiveTab; side: number; top: number };
+// `placeholder`: the swipe neighbour has only been announced (an empty panel); the real page is mounted later.
+type Peer = { tab: ActiveTab; side: number; top: number; placeholder?: boolean };
 // The page a tap / Back change is leaving: kept mounted (inert, in place) while it fades out.
 type Leaving = { tab: ActiveTab; top: number };
 type Drag = {
   id: number; origin: Element; startX: number; startY: number; startTime: number; scrollY: number;
-  width: number; locked: boolean; side: number; target?: ActiveTab; offset: number;
+  width: number; locked: boolean; side: number; target?: ActiveTab; offset: number; placeholder: boolean;
   x: number; time: number; velocity: number;
 };
 
@@ -46,6 +48,10 @@ const COMMIT_RATIO = 0.14;
 const FLICK_SPEED = 0.22; // px/ms
 const FLICK_MIN = 24;
 const BACK_DISTANCE = 56; // swipe right out of the food catalogue
+// The neighbour is an empty panel until the drag has covered this share of the commit distance; only then is the real
+// page (the costly part) mounted. Mounting it at the 6 px lock stalled the page under the finger.
+const PREVIEW_AT = 0.6;
+const commitDistance = (width: number) => Math.min(COMMIT_MAX, Math.max(COMMIT_MIN, width * COMMIT_RATIO));
 
 const translate = (px: number) => `translate3d(${px}px,0,0)`;
 
@@ -59,6 +65,7 @@ export function PageSwiper(props: PageSwiperProps) {
   const frame = useRef(0);
   const previous = useRef(activeTab);
   const swipeDestination = useRef<ActiveTab | null>(null);
+  const scrollAtChange = useRef(0);
   const [peer, setPeer] = useState<Peer | null>(null);
   const [leaving, setLeaving] = useState<Leaving | null>(null);
   const [shownTab, setShownTab] = useState(activeTab);
@@ -69,8 +76,11 @@ export function PageSwiper(props: PageSwiperProps) {
   if (shownTab !== activeTab) {
     const handedOver = swipeDestination.current === activeTab || peer?.tab === shownTab;
     setShownTab(activeTab);
-    // The window is scrolled to the top in the same commit, so the old page is shifted up by the scroll it had.
-    setLeaving(handedOver || !canAnimatePages() ? null : { tab: shownTab, top: -window.scrollY });
+    // The scroll the window had before this change (read now, while layout is still clean). The reset to the top is
+    // done in the layout effect below, or - for a tap - after the first frame (no forced layout in the commit); until
+    // then the old page simply stays where it was (`top: 0`) and is shifted up by that scroll when the reset happens.
+    scrollAtChange.current = window.scrollY;
+    setLeaving(handedOver || !canAnimatePages() ? null : { tab: shownTab, top: 0 });
   }
 
   const cancelMotion = useCallback(() => {
@@ -122,8 +132,13 @@ export function PageSwiper(props: PageSwiperProps) {
     const old = previous.current;
     previous.current = activeTab;
     if (old === activeTab) return;
+    const scrolled = scrollAtChange.current;
+    scrollAtChange.current = 0;
+    const toTop = () => window.scrollTo({ top: 0, behavior: 'instant' });
     if (swipeDestination.current === activeTab) {
       swipeDestination.current = null;
+      // A swipe shows both pages under the finger: the offsets must be right in this very frame.
+      if (scrolled > 0) toTop();
       return;
     }
     drag.current = null;
@@ -136,13 +151,27 @@ export function PageSwiper(props: PageSwiperProps) {
     const pages = Array.from(rail.current?.children ?? []).filter((el): el is HTMLElement => el instanceof HTMLElement);
     const incoming = pages.find((el) => el.dataset.journalPage === activeTab);
     const outgoing = pages.find((el) => el.dataset.journalPage === old) ?? null;
-    if (!incoming || !canAnimatePages()) { rest(); return; }
+    if (!incoming || !canAnimatePages()) { if (scrolled > 0) toTop(); rest(); return; }
+    // Writing the scroll position forces a layout of the freshly mounted page, so a tap does it after the first frame.
+    // The incoming page is still invisible then (opacity 0 during its delay) and the old page is moved up by the scroll
+    // it had, which looks exactly like the old synchronous reset. Nothing to do when the page was not scrolled.
+    if (scrolled > 0) {
+      afterPaint(() => {
+        toTop();
+        if (outgoing?.isConnected) outgoing.style.top = `${-scrolled}px`;
+      });
+    }
     // Fade through: the old page fades out, the new one fades in while sliding 14 px (src/utils/pageTransition.ts).
     document.documentElement.classList.add('kc-page-moving');
-    const animation = playPageChange(incoming, outgoing, side);
+    const { incoming: animation, outgoing: leavingAnimation } = playPageChange(incoming, outgoing, side);
     motion.current = animation;
-    // Unmount the (already invisible) old page in the same frame in which the clipping class is removed: removing the
-    // class first would let the old page stretch the document for one frame.
+    // The old page is invisible once ITS fade-out has finished (110 ms): unmount it then, not when the incoming
+    // animation ends (~300 ms). It used to stay laid out for ~190 ms of nothing. Removing it while the clipping class
+    // is still on cannot stretch the document (the class is removed with the incoming animation, below).
+    if (leavingAnimation) {
+      leavingAnimation.onfinish = () => { if (motion.current === animation) setLeaving(null); };
+    }
+    // The clipping class goes (and the swipe neighbour, if any, with it) when the incoming page has landed.
     animation.onfinish = () => {
       if (motion.current !== animation) return;
       flushSync(() => { setPeer(null); setLeaving(null); });
@@ -173,7 +202,7 @@ export function PageSwiper(props: PageSwiperProps) {
       const origin = event.target;
       if (!(origin instanceof Element) || origin.closest('[data-no-swipe], [role="dialog"], textarea, [contenteditable="true"], input[type="range"]')) return;
       drag.current = { id: event.pointerId, origin, startX: event.clientX, startY: event.clientY, startTime: event.timeStamp,
-        scrollY: window.scrollY, width: viewport.clientWidth, locked: false, side: 0, offset: 0,
+        scrollY: window.scrollY, width: viewport.clientWidth, locked: false, side: 0, offset: 0, placeholder: false,
         x: event.clientX, time: event.timeStamp, velocity: 0 };
     };
     const move = (event: PointerEvent) => {
@@ -199,7 +228,14 @@ export function PageSwiper(props: PageSwiperProps) {
         const index = latest.current.tabs.indexOf(latest.current.activeTab);
         g.target = index < 0 ? undefined : latest.current.tabs[index + side];
         const tab = g.target;
-        if (!prefersReducedMotion()) flushSync(() => setPeer(tab ? { tab, side, top: g.scrollY } : null));
+        g.placeholder = Boolean(tab);
+        if (!prefersReducedMotion()) flushSync(() => setPeer(tab ? { tab, side, top: g.scrollY, placeholder: true } : null));
+      }
+      // Far enough that the neighbour is about to be needed: mount the real page now, once.
+      if (g.placeholder && g.target && Math.abs(dx) > commitDistance(g.width) * PREVIEW_AT) {
+        g.placeholder = false;
+        const { target: tab, side } = g;
+        if (!prefersReducedMotion()) flushSync(() => setPeer({ tab, side, top: g.scrollY }));
       }
       const dt = event.timeStamp - g.time;
       if (dt > 0) g.velocity = (event.clientX - g.x) / dt;
@@ -231,7 +267,7 @@ export function PageSwiper(props: PageSwiperProps) {
       const totalDt = Math.max(1, event.timeStamp - g.startTime);
       const avgSpeed = dist / totalDt;
       const velocity = event.timeStamp - g.time < 120 ? -g.velocity * g.side : 0;
-      const minDistance = Math.min(COMMIT_MAX, Math.max(COMMIT_MIN, g.width * COMMIT_RATIO));
+      const minDistance = commitDistance(g.width);
       const cross = dist > minDistance ||
         (dist > Math.max(FLICK_MIN, g.width * 0.06) && (velocity > FLICK_SPEED || avgSpeed > FLICK_SPEED));
       const { activeTab: old, onChange, onSwipeBack } = latest.current;
@@ -305,8 +341,8 @@ export function PageSwiper(props: PageSwiperProps) {
 
   // The page that is not the active one: the swipe neighbour (beside the rail) or the page a tap just left (in place).
   const other = peer && peer.tab !== activeTab
-    ? { tab: peer.tab, style: { left: `${peer.side * 100}%`, top: peer.top } }
-    : leaving && leaving.tab !== activeTab ? { tab: leaving.tab, style: { left: 0, top: leaving.top } } : null;
+    ? { tab: peer.tab, placeholder: Boolean(peer.placeholder), style: { left: `${peer.side * 100}%`, top: peer.top } }
+    : leaving && leaving.tab !== activeTab ? { tab: leaving.tab, placeholder: false, style: { left: 0, top: leaving.top } } : null;
   const pages = other ? [activeTab, other.tab] : [activeTab];
   return (
     <div className="relative overflow-x-clip min-h-[55dvh]" data-page-viewport>
@@ -315,9 +351,9 @@ export function PageSwiper(props: PageSwiperProps) {
           const ghost = other && tab !== activeTab ? other : null;
           return (
             <div key={tab} data-journal-page={tab} inert={Boolean(ghost)} aria-hidden={ghost ? true : undefined}
-              className={ghost ? 'pointer-events-none absolute w-full' : undefined}
+              className={ghost ? 'pointer-events-none absolute w-full [contain:layout_paint] will-change-[opacity]' : undefined}
               style={ghost?.style}>
-              {renderTab(tab)}
+              {ghost?.placeholder ? <div className="min-h-[55dvh]" /> : renderTab(tab)}
             </div>
           );
         })}

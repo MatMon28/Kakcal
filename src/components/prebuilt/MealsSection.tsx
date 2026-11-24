@@ -33,7 +33,7 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
 
         <div className="accordion-grid" data-open={sectionsOpen.meals} inert={!sectionsOpen.meals}>
         <div className="accordion-inner">
-        <LazyBody open={sectionsOpen.meals}>
+        <LazyBody open={sectionsOpen.meals} defer>
         {preBuiltMeals.length === 0 ? (
           ultraMinimal ? <div className="min-h-2" aria-hidden="true" /> :
           <p className="kc-section-empty text-xs font-medium text-[#7D4E14] px-1 py-1">

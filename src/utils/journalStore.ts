@@ -138,6 +138,42 @@ export function useMealJournal() {
 export const journalId = () =>
   globalThis.crypto?.randomUUID?.() ?? `journal-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export const memoryKey = (date: string, slot: MealSlotId) => `${date}:${slot}`;
+
+/**
+ * Photo lookups in O(1). Every expanded meal / recipe card asks "which photos belong to me?" and every meal card of
+ * Today asks "which photos belong to this day and meal?"; with `photos.filter(...)` in each of them that was
+ * cards x photos comparisons on every render. The index is built once per `photos` array (a new array is made by
+ * every change, so a `WeakMap` keyed on it is always current) and the arrays it returns keep their identity until
+ * a photo changes. Order is the order of `photos`, exactly as the filters gave it.
+ */
+interface PhotoIndex { byLinked: Map<string, MealPhoto[]>; bySlot: Map<string, MealPhoto[]> }
+const photoIndexes = new WeakMap<MealPhoto[], PhotoIndex>();
+const NO_PHOTOS: MealPhoto[] = [];
+
+function photoIndex(photos: MealPhoto[]): PhotoIndex {
+  let index = photoIndexes.get(photos);
+  if (!index) {
+    index = { byLinked: new Map(), bySlot: new Map() };
+    for (const photo of photos) {
+      const map = photo.linkedId ? index.byLinked : index.bySlot;
+      const key = photo.linkedId ? photo.linkedId : memoryKey(photo.date, photo.slot);
+      const list = map.get(key);
+      if (list) list.push(photo); else map.set(key, [photo]);
+    }
+    photoIndexes.set(photos, index);
+  }
+  return index;
+}
+
+/** The photos attached to a saved meal / recipe (`linkedId`). */
+export function usePhotosForLinked(linkedId: string): MealPhoto[] {
+  return photoIndex(useMealJournal().photos).byLinked.get(linkedId) ?? NO_PHOTOS;
+}
+
+/** The photos of one day and meal that are not attached to a saved meal / recipe. */
+export function usePhotosForSlot(date: string, slot: MealSlotId): MealPhoto[] {
+  return photoIndex(useMealJournal().photos).bySlot.get(memoryKey(date, slot)) ?? NO_PHOTOS;
+}
 export const exportMealJournal = () => snapshot;
 /**
  * Backup form (backup version 2): the whole journal WITHOUT any picture data. The notes of the pictures are kept in
