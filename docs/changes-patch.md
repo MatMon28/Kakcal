@@ -13,6 +13,10 @@
 - **Deleted:** nothing.
 - **Behaviour you can see:** 5 recent foods + `...` in Log food and the planner; one plan name on planner page 1; Log-food colours in the planner; *See all plans* with edit / reuse / delete; a Shopping list section on Custom. The journal record gains `planGroups` and `shoppingLists` (older data loads unchanged; meals planned before this round are listed as "Single meals").
 
+## Handing work back when an LLM does the coding
+
+If an LLM or coding assistant makes changes, it must create and provide the user with a downloadable `changes.patch` file containing the completed changes. It should state the base commit, describe the changes and report any checks it ran. The user is responsible for applying the patch and updating the GitHub repository themselves; the assistant must not assume it has committed or pushed anything.
+
 Apply from that repository revision (the base commit above):
 
 ```sh
