@@ -1,5 +1,7 @@
 # File map: Page components: prebuilt, database, history, period
 
+(New features round) `src/components/journal/PlannerWizard.tsx`: two-page meal planner editor (`PlanWizard`: start date, day stepper, skipped weekdays, single days, meals; then the scrolling list with one open meal, footer arrows, copy to empty meals) and `MealEntryEditor` (search / favourites / recent / saved meals / amount + macros). `journal/CustomShortcuts.tsx`: Plan meals / Photo diary buttons at the top of Custom (`kc:open-planner`, `kc:open-photo-diary`). `journal/SaveAsMeal.tsx`: *Add to Meals*. `prebuilt/CustomFoodsQuick.tsx`: Recent / Favourites list in Custom > Foods. `history/WaterStatsCard.tsx`: Statistics water card. `PhotoDiary.tsx` (`PhotoBrowser`) has the From / To range; `PreBuiltMealsView.tsx` has the recipe *Standard portion* field. See [new-features-update.md](../new-features-update.md).
+
 `src/components/journal/PlanTransfer.tsx`: serverless short share/copy links, plain-text export/import, import preview and start-date selection; opens only from a received link or a real press on the share icon.
 
 `src/components/journal/JournalPickers.tsx`: `JournalDateField` (calendar icon + date, stack or full-width bar) and `JournalMealSelect` (shows only the chosen meal, pressing lists the others) for the photo diary pop-ups.

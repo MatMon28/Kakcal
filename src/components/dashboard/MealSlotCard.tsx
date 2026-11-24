@@ -9,6 +9,7 @@ import { MacroPills } from '../common/MacroPills';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { MealNutrientTotals } from './MealNutrientTotals';
 import { PlannedMeals } from '../journal/MealPlanner';
+import { SaveAsMeal } from '../journal/SaveAsMeal';
 import { InlineMealNote, MealNoteAction } from '../journal/MealDiary';
 import { MealPhotoAction, MealPhotos } from '../journal/PhotoDiary';
 import { useMealSlots } from '../../utils/mealSlots';
@@ -442,6 +443,9 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
                   </div>
                 );
               })}
+              <div className="py-2.5 flex justify-end">
+                <SaveAsMeal slot={slotId} date={activeDate} items={items} variant="row" />
+              </div>
               </>
             )}
           </div>

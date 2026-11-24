@@ -53,8 +53,8 @@ function Container({ shape }: { shape: Shape }) {
 export function GoalBadge({ goal, amount, className = '' }: { goal: GoalKey; amount: number; className?: string }) {
   const config = useAdvanced();
   const text = useAdvancedText();
-  const { settings } = useApp();
-  const state = goalState(config, goal, amount);
+  const { settings, userProfile } = useApp();
+  const state = goalState(config, goal, amount, userProfile.weightKg);
   if (!state || !state.reached) return null;
 
   const look = STYLE_LOOK[settings.themeStyle] ?? STYLE_LOOK.classic;

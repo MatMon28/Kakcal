@@ -1,5 +1,7 @@
 # File map: `src/components/common/`
 
+(New features round) `DataBackup.tsx`: *Export to Excel* button; `GoalBadge.tsx`: passes the profile weight to `goalState` so a per-kg protein goal works.
+
 `IconPicker.tsx`: shared built-in/local-image chooser for custom trackers and meal categories, with image resizing and validation.
 
 Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed sections/search; `JournalChrome.tsx` supplies the desktop sidebar/topbar and Custom create menu. `journal.css` contains their responsive and theme-aware styles. The original `Header.tsx` retains the mobile header and is hidden only above 1100 px. See [meal journal](../meal-journal.md).

@@ -22,6 +22,7 @@ import {
   Minimize2,
   Candy,
   Camera,
+  CalendarDays,
   NotebookPen,
   X,
 } from 'lucide-react';
@@ -509,6 +510,8 @@ export const SettingsModal: React.FC = () => {
           <div className="space-y-1.5" data-journal-settings>
             {[
               { key: 'photoDiary' as const, icon: Camera, title: j('Photo diary', 'Diario fotografico'), description: j('Keep a visual memory of your meals. Photos stay on this device.', 'Ricorda i tuoi pasti con una foto. Le foto restano sul dispositivo.') },
+              { key: 'showPlannerButton' as const, icon: CalendarDays, title: j('Meal planner button', 'Pulsante pianifica pasti'), description: j('Show a shortcut to the meal planner at the top of Custom.', 'Mostra in cima a Custom una scorciatoia per pianificare i pasti.') },
+              { key: 'showPhotoButton' as const, icon: Camera, title: j('Photo diary button', 'Pulsante diario fotografico'), description: j('Show a shortcut to the photo diary at the top of Custom (needs the Photo diary).', 'Mostra in cima a Custom una scorciatoia al diario fotografico (richiede il diario).') },
               { key: 'inlineMealNotes' as const, icon: NotebookPen, title: j('Meal notes in Today', 'Note dei pasti in Oggi'), description: j('Add a diary note in a meal field or while logging food.', 'Aggiungi note dai pasti in Oggi o mentre registri alimenti.') },
             ].map(({ key, icon: Icon, title, description }) => <button type="button" key={key} role="switch" aria-checked={settings[key]} aria-label={title} className="journal-settings-toggle" onClick={() => updateSettings({ [key]: !settings[key] })}><span><Icon size={18} /><span><strong>{title}</strong><small>{description}</small></span></span><SwitchVisual on={settings[key]} /></button>)}
           </div>

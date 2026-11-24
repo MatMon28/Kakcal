@@ -24,7 +24,7 @@ interface JournalDevicePlugin {
   }): Promise<void>;
   exportBackup(data: { json: string }): Promise<void>;
   /** Local document-picker export, using the same native backup destination handler. */
-  exportFile(data: { base64: string; filename: string; kind: 'zip' | 'txt' }): Promise<{ cancelled?: boolean }>;
+  exportFile(data: { base64: string; filename: string; kind: 'zip' | 'txt' | 'xlsx' }): Promise<{ cancelled?: boolean }>;
   /** Tells the native launch surfaces (system launch screen, window, WebView) the current app background `#rrggbb`. */
   setLaunchBackground(data: { color: string }): Promise<void>;
 }

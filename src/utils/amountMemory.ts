@@ -31,10 +31,12 @@ export function setLastAmount(foodId: string, amount: number) {
 }
 
 /**
- * The portion to offer for a food: the last weight the user logged for it, otherwise the
+ * The portion to offer for a food: the standard portion of a recipe, otherwise the last weight the user logged for it, otherwise the
  * product's classic portion (when the data has one), otherwise 100 g/ml.
  */
-export function getDefaultAmount(food: { id: string; portion?: number }): number {
+export function getDefaultAmount(food: { id: string; portion?: number; isRecipe?: boolean }): number {
+  // A recipe with a standard portion (Custom > Recipes > Standard portion) always starts from that portion.
+  if (food.isRecipe && typeof food.portion === 'number' && food.portion > 0) return food.portion;
   const last = read()[food.id];
   if (typeof last === 'number' && last > 0) return last;
   return typeof food.portion === 'number' && food.portion > 0 ? food.portion : 100;

@@ -15,6 +15,8 @@
 
 ## Meal planner
 
+**Two-page wizard (new features round).** The planner editor is now `journal/PlannerWizard.tsx`: page 1 chooses the start date, the number of days (**-** / **+**, 1-90), the weekdays to skip, single days to add or remove, and the meals; page 2 is a scrolling list of every day + meal where only one meal is open (compressed rows show planned / still to plan), with previous / next arrows in the footer and a *Copy to the meals still to plan* action. The *Same for all / Different for each* switch described below was replaced by this flow. Details and file list: [new-features-update.md](new-features-update.md).
+
 Use the share icon to share this week/all plans by self-contained link, or import a received link/text export after preview and optional start-date adjustment. Large bundles have a readable text fallback. No server or third-party API is involved; anyone with the link can read the included meals/notes. Details: interaction-update.md.
 
 - Custom contains a blue planner immediately below Recipes. It uses the same blue as Today's carbs in Classic; other styles inherit their existing shapes, ink, borders and surfaces.

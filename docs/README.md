@@ -18,6 +18,7 @@
 | Understand header / dialogs | [journal-shell.md](journal-shell.md) |
 | Understand a page (Today, Food, Movement, Custom, Statistics, Period, Settings), or how the meal is preselected by the time of day | [journal-pages.md](journal-pages.md) |
 | Change meal planning, meal notes, meal diary or photo diary | [meal-journal.md](meal-journal.md) |
+| Planner wizard (days, weekdays, specific days), Excel export, *Add to Meals*, recipe portion, protein per kg, intake / burned target, water in Statistics, Custom shortcuts, photo time range, recent / favourite foods | [new-features-update.md](new-features-update.md) |
 | Change the Custom grid in Minimal mode, header icons, photo diary pop-ups, "Go to the meal", short share links, when the share pop-up opens | [custom-photo-share-update.md](custom-photo-share-update.md) |
 | Change animations / springs / swipe feel / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |

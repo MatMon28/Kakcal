@@ -189,6 +189,6 @@ export async function saveLocalFile(blob: Blob, name: string): Promise<boolean> 
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
-  const result = await JournalDevice.exportFile({ base64, filename: name, kind: name.endsWith('.zip') ? 'zip' : 'txt' });
+  const result = await JournalDevice.exportFile({ base64, filename: name, kind: name.endsWith('.zip') ? 'zip' : name.endsWith('.xlsx') ? 'xlsx' : 'txt' });
   return !result.cancelled;
 }

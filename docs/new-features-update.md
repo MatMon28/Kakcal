@@ -1,0 +1,31 @@
+# New features round (planner wizard, Excel, balance target, ...)
+
+> **Scope:** the twelve features added on top of commit `783b9bd` ("Other various improvements"): photo diary time range, recent / favourite foods in Custom, standard recipe portion, the two-page meal planner, Excel export, *Add to Meals*, protein per kg, water in Statistics, intake / burned target and the Custom shortcut buttons.
+>
+> **Read when:** changing any of those features or looking for the file that implements one.
+>
+> **Related:** [meal-journal.md](meal-journal.md), [advanced-personalisation.md](advanced-personalisation.md), [storage-and-privacy.md](storage-and-privacy.md), [changes-patch.md](changes-patch.md)
+
+| Feature | Where the user finds it | Files |
+| --- | --- | --- |
+| **Photo diary time range** | Custom > Photo diary > *See all photos*: *From* / *To* date bars (either may stay empty), quick ranges (all time, 7 days, 30 days, 3 months, 1 year) and an "n of N photos" counter. | `journal/PhotoDiary.tsx` (`PhotoBrowser`), `journal.css` (`.journal-range`) |
+| **Recent and favourite foods in Custom** | Custom > Foods: *Recent* / *Favourites* chips above the barcode / custom-food buttons. Recent = latest logged foods (newest first, up to 20); Favourites = starred foods. Tapping a food opens the quick-log pop-up (meal chips, amount, macros). The chosen tab is remembered (`kcak_custom_foods_tab`). | `prebuilt/CustomFoodsQuick.tsx`, `prebuilt/PreBuiltMealsView.tsx` |
+| **Standard recipe portion** | Custom > Recipes > create / edit: *Standard portion* field (grams) with 1/2, 1/3, 1/4, 1/6, 1/8 quick chips computed from the recipe weight. Stored as the recipe's `portion`. Logging a recipe (Custom, Add food, Foods, planner) starts from that portion instead of 100 g; the last used amount no longer overrides it. | `prebuilt/PreBuiltMealsView.tsx`, `utils/amountMemory.ts` (`getDefaultAmount`) |
+| **Meal planner in two pages, specific days** | Custom > Meal planner > **+** (or the shortcut button). Page 1: start date, number of days with **-** / **+** buttons, weekdays to skip, a grid of every day where a single day can be added or removed, and the meals. Page 2: one scrolling list of every day + meal; planned and still-to-plan meals are compressed rows, only the meal being planned is open (search with favourites and the offline catalogue, favourites / recent / saved-meal chips, amount + macros, like the food log). Arrows at the bottom go to the previous / next meal; tapping any compressed meal closes the open one and opens that one. *Copy to the meals still to plan* repeats the open meal. Editing an existing plan opens page 2 with that single meal. | `journal/PlannerWizard.tsx` (new), `journal/MealPlanner.tsx`, `journal.css` |
+| **Excel export** | Settings > Backup > *Export to Excel*: a real `.xlsx` with the sheets Days (intake, burned, BMR, activity, TEF, difference, macros, water, weight), Foods, Activities, Water and Meal plans. Built locally with the store-only ZIP writer of the photo export, nothing is uploaded. Android saves it through the existing document picker (new `xlsx` kind). | `utils/excelExport.ts` (new), `utils/photoExport.ts` (`zip` exported), `common/DataBackup.tsx`, `utils/planSharing.ts`, `utils/android.ts`, `JournalDevicePlugin.java` |
+| **Add a logged meal to Meals** | *Add to Meals* in an expanded Today meal and in a Meal diary meal: asks for a name (default "Lunch · 24 Nov"), saves the foods with the amounts eaten as a saved meal of that slot. Foods that no longer exist are skipped and counted. | `journal/SaveAsMeal.tsx` (new), `dashboard/MealSlotCard.tsx`, `journal/MealDiary.tsx` |
+| **Protein target per kg** | Settings > Advanced > Goals & limits > Protein: *Grams per day* or *Per kg of body weight* (g/kg x the profile weight). Badges on Today and food forms use the resulting grams. Stored as `perKg` on the protein goal. | `types/advanced.ts`, `utils/advancedStore.ts` (`goalState`, `goalValue`), `common/GoalBadge.tsx`, `modals/AdvancedSettings.tsx` |
+| **Water in Statistics** | Statistics: a Water card (average per day, litres, days on target, one bar per day; tap a bar to open the day). Hidden when the water shortcut is off. It is a field of the advanced layout (`water`). | `history/WaterStatsCard.tsx` (new), `history/HistoryView.tsx` |
+| **Intake / burned target, deficit and surplus** | Settings > Advanced > Goals & limits > *Intake / burned difference*: switch, *Deficit* or *Surplus*, kcal. Today and Statistics show a card with the current (or average) difference, a progress bar and what is left / how far beyond the target. Both directions use the same logic. It is a field of the advanced layout (`balance`). | `dashboard/BalanceTargetCard.tsx` (new), `dashboard/EnergyBalanceCards.tsx`, `dashboard/TodayView.tsx`, `history/HistoryView.tsx`, `utils/advancedStore.ts` (`balance`) |
+| **Custom shortcut buttons** | Top of Custom: *Plan meals* and *Photo diary* buttons. Settings > Today & pages: *Meal planner button* and *Photo diary button* switches hide them (the photo button is also hidden while the Photo diary is off). They talk to the sections through the window events `kc:open-planner` and `kc:open-photo-diary`. | `journal/CustomShortcuts.tsx` (new), `modals/SettingsModal.tsx`, `context/AppContext.tsx`, `types/index.ts` |
+
+## Storage
+
+- `kcalsync_settings` gains `showPlannerButton` and `showPhotoButton` (both default `true`; included in JSON backups).
+- `kcalsync_advanced` gains `balance` (`{ enabled, kind: 'deficit' | 'surplus', kcal }`) and `goals.protein.perKg`; both are normalised on load and import.
+- Recipes (`kcalsync_custom_foods`) keep the standard portion in the existing `portion` field.
+- UI-only key `kcak_custom_foods_tab`. No other keys, packages, permissions or remote APIs.
+
+## Verification limits
+
+`npx tsc --noEmit` (the only reported errors are the three older ones in `common/Toast.tsx`) and `npm run build` pass. The generated `.xlsx` was opened with a spreadsheet reader (sheets, dates, numbers, text). The planner wizard, shortcut buttons, photo range and the new cards were **not** exercised in a live browser or on a device (no browser in the authoring environment): check them with `VITE_DEMO_DATA=true npm run dev`, and rebuild the APK so the native `xlsx` export kind is included.

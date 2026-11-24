@@ -31,3 +31,5 @@ Meal-plan links store selected meals/notes in the URL fragment, without a new AP
 APK ZIP/text export reuses the existing local Android document picker. Only an internal plugin method is added: no external API or Android permission. Plan links from the APK point to the existing hosted web app rather than the device-local WebView origin. CSV note cells are protected against spreadsheet formula execution.
 
 Photo normalization/export retains legacy `/images/` references as well as base-path-aware demo images; existing JPEG/PNG/WebP data URLs remain unchanged.
+
+**New features round:** `kcalsync_settings` also stores `showPlannerButton` / `showPhotoButton`; `kcalsync_advanced` stores the intake / burned `balance` target and the protein `perKg` flag; recipes keep their standard portion in `portion`; UI-only key `kcak_custom_foods_tab`. The Excel export is built in the browser and saved locally; nothing is sent anywhere. See [new-features-update.md](new-features-update.md).

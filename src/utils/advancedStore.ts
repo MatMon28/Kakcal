@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react';
 import type {
   AdvancedSettings,
+  BalanceTarget,
   BodyEntries,
   BodyEntry,
   BodyGroup,
@@ -84,6 +85,14 @@ const DEFAULT_GOALS: GoalsConfig = {
   water: { enabled: false, mode: 'objective', value: 2000 },
 };
 
+/** Intake - burned target (off by default): a deficit of 500 kcal until the user changes it. */
+export const DEFAULT_BALANCE: BalanceTarget = { enabled: false, kind: 'deficit', kcal: 500 };
+export const BALANCE_MAX = 5000;
+
+/** Largest protein value per kg of body weight. */
+export const PROTEIN_PER_KG_MAX = 10;
+export const DEFAULT_PROTEIN_PER_KG = 1.6;
+
 // ---------------------------------------------------------------------------------------------
 // Body measures
 // ---------------------------------------------------------------------------------------------
@@ -123,6 +132,7 @@ export function groupOfMeasure(id: string): BodyGroup {
 const DEFAULT_SETTINGS: AdvancedSettings = {
   goalsEnabled: false,
   goals: DEFAULT_GOALS,
+  balance: DEFAULT_BALANCE,
   body: { enabled: false, tracked: [], custom: [] },
 };
 
@@ -144,9 +154,16 @@ function normalizeGoals(raw: unknown): GoalsConfig {
       enabled: item.enabled === true,
       mode: item.mode && choices.includes(item.mode) ? item.mode : base.mode,
       value: typeof item.value === 'number' && Number.isFinite(item.value) && item.value >= 0 ? item.value : base.value,
+      ...(key === 'protein' && item.perKg === true ? { perKg: true } : {}),
     };
   }
   return out;
+}
+
+function normalizeBalance(raw: unknown): BalanceTarget {
+  const src = isObject(raw) ? raw : {};
+  const kcal = typeof src.kcal === 'number' && Number.isFinite(src.kcal) && src.kcal >= 0 ? Math.min(src.kcal, BALANCE_MAX) : DEFAULT_BALANCE.kcal;
+  return { enabled: src.enabled === true, kind: src.kind === 'surplus' ? 'surplus' : 'deficit', kcal };
 }
 
 function normalizeCustom(raw: unknown): CustomMeasure[] {
@@ -174,6 +191,7 @@ export function normalizeAdvanced(raw: unknown): AdvancedSettings {
   return {
     goalsEnabled: src.goalsEnabled === true,
     goals: normalizeGoals(src.goals),
+    balance: normalizeBalance(src.balance),
     body: { enabled: body.enabled === true, tracked, custom },
   };
 }
@@ -272,6 +290,10 @@ export function setGoalsEnabled(enabled: boolean) {
   commitSettings({ ...settings, goalsEnabled: enabled });
 }
 
+export function updateBalance(partial: Partial<BalanceTarget>) {
+  commitSettings({ ...settings, balance: normalizeBalance({ ...settings.balance, ...partial }) });
+}
+
 export function updateGoal(key: GoalKey, partial: Partial<GoalSetting>) {
   commitSettings({ ...settings, goals: { ...settings.goals, [key]: { ...settings.goals[key], ...partial } } });
 }
@@ -286,17 +308,25 @@ export interface GoalState {
 }
 
 /** Pure helper: the state of one goal for an amount, or `null` when goals are off / this goal is off. */
-export function goalState(config: AdvancedSettings, key: GoalKey, amount: number): GoalState | null {
+export function goalState(config: AdvancedSettings, key: GoalKey, amount: number, weightKg?: number): GoalState | null {
   if (!config.goalsEnabled) return null;
   const goal = config.goals[key];
   if (!goal.enabled || !(goal.value > 0)) return null;
+  const value = goalValue(goal, weightKg);
+  if (!(value > 0)) return null;
   const eps = 1e-6;
   return {
     mode: goal.mode,
-    value: goal.value,
-    reached: amount + eps >= goal.value,
-    exceeded: goal.mode === 'limit' && amount > goal.value + eps,
+    value,
+    reached: amount + eps >= value,
+    exceeded: goal.mode === 'limit' && amount > value + eps,
   };
+}
+
+/** The goal in its own unit: grams per kg times the body weight for a weight-based protein goal, else the value itself. */
+export function goalValue(goal: GoalSetting, weightKg?: number): number {
+  if (!goal.perKg) return goal.value;
+  return typeof weightKg === 'number' && weightKg > 0 ? Math.round(goal.value * weightKg) : 0;
 }
 
 /** Hook used by the small goal icons: returns the goal state only when the goal is reached. */

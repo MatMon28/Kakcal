@@ -19,6 +19,7 @@ import type { FoodItem, LoggedFoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
 import { MealSlotIcon } from '../common/mealSlotIcon';
 import { MealSummaryCard } from './MealSummaryCard';
+import { SaveAsMeal } from './SaveAsMeal';
 import {
   JournalChip,
   JournalEmpty,
@@ -527,6 +528,7 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
               {copied ? j('Logged today', 'Registrato oggi') : j('Log today', 'Registra oggi')}
             </button>
           )}
+          <SaveAsMeal slot={meal.slot} date={meal.date} items={meal.items} />
           <button
             type="button"
             className="journal-primary-button"

@@ -3,6 +3,7 @@ import { ArrowDownLeft, Flame } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { formatKcal } from '../../utils/formatters';
 import { GoalBadge } from '../common/GoalBadge';
+import { TodayBalanceTarget } from './BalanceTargetCard';
 
 /** Numbers shared by the Intake and Burned cards. */
 function useEnergy() {
@@ -107,8 +108,12 @@ export const BurnedCard: React.FC<{ compact?: boolean }> = ({ compact = false })
 };
 
 export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = false }) => (
-  <div data-energy-overview className="grid grid-cols-2 gap-3 sm:gap-4">
-    <IntakeCard compact={compact} />
-    <BurnedCard compact={compact} />
-  </div>
+  <>
+    <div data-energy-overview className="grid grid-cols-2 gap-3 sm:gap-4">
+      <IntakeCard compact={compact} />
+      <BurnedCard compact={compact} />
+    </div>
+    {/* Settings > Advanced: wanted intake / burned difference (renders nothing while off). */}
+    <TodayBalanceTarget />
+  </>
 );

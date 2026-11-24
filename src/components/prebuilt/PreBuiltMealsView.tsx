@@ -5,7 +5,7 @@ import { Modal } from '../common/Modal';
 import { ActionDock } from '../common/ActionDock';
 import { AmountSelector } from '../common/AmountSelector';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
-import { getDefaultAmount, getLastAmount, setLastAmount } from '../../utils/amountMemory';
+import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { FoodResultRow } from '../common/FoodResultRow';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { useOffCatalog } from '../../utils/useOffCatalog';
@@ -30,10 +30,13 @@ import {
 import { usePersistentState } from '../../utils/usePersistentState';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MacroPills } from '../common/MacroPills';
+import { NumericInput } from '../common/NumericInput';
 import { scrollFadeX, scrollFadeY } from '../../utils/scrollFade';
 import { useJournalText } from '../../i18n/journal';
 import { MealDiary } from '../journal/MealDiary';
 import { MealPlanner } from '../journal/MealPlanner';
+import { CustomFoodsQuick } from './CustomFoodsQuick';
+import { CustomShortcuts } from '../journal/CustomShortcuts';
 import { LibraryPhoto, PhotoDiary } from '../journal/PhotoDiary';
 import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
 
@@ -99,6 +102,8 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   const [recipePendingFood, setRecipePendingFood] = useState<FoodItem | null>(null);
   const [recipePendingAmt, setRecipePendingAmt] = useState<number>(100);
   const [recipeSearch, setRecipeSearch] = useState('');
+  // Standard portion of the recipe in g (0 = none): the amount offered when the recipe is logged.
+  const [recipePortion, setRecipePortion] = useState(0);
 
   // Log a saved recipe to a slot (amount selectable)
   const [activeRecipeToLog, setActiveRecipeToLog] = useState<FoodItem | null>(null);
@@ -332,6 +337,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   const openRecipeModal = () => {
     setEditingRecipeId(null);
     setRecipeName('');
+    setRecipePortion(0);
     setRecipeIngs([]);
     setRecipePendingFood(null);
     setRecipeSearch('');
@@ -347,6 +353,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   const openEditRecipeModal = (recipe: FoodItem) => {
     setEditingRecipeId(recipe.id);
     setRecipeName(nameOf(recipe));
+    setRecipePortion(recipe.portion && recipe.portion > 0 ? recipe.portion : 0);
     setRecipeIngs(recipe.recipeIngredients ? [...recipe.recipeIngredients] : []);
     setRecipePendingFood(null);
     setRecipeSearch('');
@@ -379,6 +386,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
       isCustom: true,
       isRecipe: true,
       recipeIngredients: validIngs,
+      portion: recipePortion > 0 ? Math.round(recipePortion * 10) / 10 : undefined,
       source: existing?.source,
     };
     addCustomFood(payload); // upsert by id: keeps an edited recipe's identity
@@ -441,6 +449,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   return (
     <>
     <div className={ultraMinimal ? 'journal-minimal-grid' : 'custom-library-grid'} data-static-fields>
+      <CustomShortcuts />
       <MealDiary />
       {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}
       <section data-library-section="meals" className={`bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.meals}>
@@ -682,7 +691,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                         onClick={() => {
                           setActiveRecipeToLog(recipe);
                           setRecipeLogSlot(autoMealSlot());
-                          setRecipeLogAmount(getLastAmount(recipe.id));
+                          setRecipeLogAmount(getDefaultAmount(recipe));
                         }}
                         title={t.prebuilt.logRecipe}
                         aria-label={`${t.prebuilt.logRecipe}: ${nameOf(recipe)}`}
@@ -776,7 +785,9 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
           onToggle={() => toggleSection('foods')}
         />
         <div className="accordion-grid" data-open={sectionsOpen.foods} inert={!sectionsOpen.foods}>
-        <div className="accordion-inner">
+        <div className="accordion-inner space-y-3">
+        {/* Recent and favourite foods: one tap to log them. */}
+        <CustomFoodsQuick />
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
@@ -1260,6 +1271,47 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
                   <span data-nutrient="fiber" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.fiber} {recipeTotals.fib100}g</span>
                   <span data-nutrient="salt" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}g</span>
                   {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {recipeTotals.sugar100}g</span>}
+                </div>
+                {/* Standard portion: e.g. a 1000 g recipe with a 250 g portion is logged as 250 g by default. */}
+                <div data-recipe-portion className="rounded-xl bg-[var(--surface)] px-3 py-2.5 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="block text-xs font-extrabold text-[var(--text)]">{j('Standard portion', 'Porzione standard')}</span>
+                      <span className="block text-[10px] font-medium text-[var(--muted)]">
+                        {j(`Logged by default instead of 100 g (recipe: ${recipeTotals.grams} g).`, `Registrata di default al posto di 100 g (ricetta: ${recipeTotals.grams} g).`)}
+                      </span>
+                    </span>
+                    <div className="w-28 shrink-0">
+                      <NumericInput
+                        ariaLabel={j('Standard portion in grams', 'Porzione standard in grammi')}
+                        value={recipePortion}
+                        onChange={setRecipePortion}
+                        unit="g"
+                        min={0}
+                        max={Math.max(recipeTotals.grams, 1) * 2}
+                        placeholder="100"
+                        className="!py-2 !text-sm"
+                      />
+                    </div>
+                  </div>
+                  {recipeTotals.grams > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {[2, 3, 4, 6, 8].map((parts) => {
+                        const grams = Math.round((recipeTotals.grams / parts) * 10) / 10;
+                        return (
+                          <button
+                            key={parts}
+                            type="button"
+                            aria-pressed={recipePortion === grams}
+                            onClick={() => setRecipePortion(recipePortion === grams ? 0 : grams)}
+                            className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold border tabular-nums ${recipePortion === grams ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F5]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)]'}`}
+                          >
+                            1/{parts} · {grams} g
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div ref={scrollFadeY} className="space-y-1.5 max-h-32 overflow-y-auto">
                   {recipeIngs.map((ing, idx) => {

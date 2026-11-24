@@ -26,6 +26,11 @@ import {
 import { allMealItems } from '../../utils/mealItems';
 import { getTrackerValue } from '../../utils/customTrackers';
 import { getPeriodStatus, phaseOfDate } from '../../utils/period';
+import { dailyWaterTargetMl } from '../../utils/waterTarget';
+import { useJournalText } from '../../i18n/journal';
+import { useAdvanced } from '../../utils/advancedStore';
+import { WaterStatsCard } from './WaterStatsCard';
+import { BalanceTargetCard } from '../dashboard/BalanceTargetCard';
 import type { ActivityLog, DayLog, PoopEntry, WaterEntry } from '../../types';
 
 type RangeKey = '7' | '30' | 'custom';
@@ -96,6 +101,8 @@ export const HistoryView: React.FC = () => {
   const { allDayLogs, userProfile, settings, periodData, language, t } = useApp();
   const layoutText = useLayoutText();
   const layoutEnabled = useLayout().enabled;
+  const j = useJournalText();
+  const advanced = useAdvanced();
   const ultraMinimal = settings.ultraMinimal;
   const todayStr = getTodayDateString();
   const bmr = calculateBMR(userProfile);
@@ -605,11 +612,25 @@ export const HistoryView: React.FC = () => {
           </div>
   );
 
+  const showWater = settings.quickAdd.water;
+  const waterNode = showWater ? (
+    <WaterStatsCard
+      days={period.days.map((day) => ({
+        date: day.date,
+        ml: day.waterEntries.reduce((sum, entry) => sum + entry.ml, 0),
+        target: dailyWaterTargetMl(userProfile, day.actExp),
+      }))}
+      onInspect={setInspectedDate}
+    />
+  ) : null;
+  const balanceNode = <BalanceTargetCard net={period.avgNet} average />;
+
   const names = layoutText.names;
   const items: LayoutItem[] = [
     { id: 'range', label: names.range, node: rangeNode, span: 'col-span-6' },
     { id: 'intake', label: names.avgIntake, node: intakeNode, span: 'col-span-3' },
     { id: 'burned', label: names.avgBurned, node: burnedNode, span: 'col-span-3' },
+    { id: 'balance', label: j('Intake vs burned', 'Introdotte vs bruciate'), node: balanceNode, span: 'col-span-6', show: advanced.balance.enabled },
     ...(['carbs', 'protein', 'fat'] as const).map((id, index): LayoutItem => ({
       id,
       label: t.macros[id],
@@ -623,6 +644,7 @@ export const HistoryView: React.FC = () => {
       span: settings.trackSugar ? 'col-span-2' : 'col-span-3',
       show: id !== 'sugar' || settings.trackSugar,
     })),
+    { id: 'water', label: j('Water', 'Acqua'), node: waterNode, span: 'col-span-6', show: showWater },
     { id: 'poop', label: names.poopStats, node: poopNode, span: 'col-span-6', show: !settings.hidePoop },
     ...trackerButtons.map((button, index): LayoutItem => ({
       id: `tracker:${button.id}`,
@@ -646,8 +668,10 @@ export const HistoryView: React.FC = () => {
             {/* Original layout (advanced layout off) */}
             {rangeNode}
             <div className="grid grid-cols-2 gap-3 sm:gap-4">{intakeNode}{burnedNode}</div>
+            {advanced.balance.enabled && balanceNode}
             <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 tabular-nums">{macroNodes}</div>
             <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />
+            {waterNode}
             {!settings.hidePoop && poopNode}
             {trackerNodes.length > 0 && <div className="space-y-2.5">{trackerNodes}</div>}
             {weightNode}

@@ -1,5 +1,7 @@
 # File map: `src/utils/`
 
+(New features round) `excelExport.ts`: local `.xlsx` workbook builder (`buildWorkbook`, `buildExcelExport`) on top of the `zip` of `photoExport.ts`; `advancedStore.ts`: `balance` target (`updateBalance`), protein `perKg` (`goalValue`, `goalState(..., weightKg)`); `amountMemory.ts`: a recipe's standard portion wins in `getDefaultAmount`; `planSharing.ts` / `android.ts`: `xlsx` export kind.
+
 `photoExport.ts`: local standard ZIP assembly, XMP JPEG descriptions, per-photo text notes and CSV index.
 
 `planSharing.ts`: short (format 2, deflate-compressed, `#p=`) plan-link codec with legacy `#meal-plan=` import, readable text export, strict import validation and download helper; `createPlanLink` / `parsePlanInput` are async.

@@ -1,5 +1,7 @@
 # File map: `src/components/modals/`
 
+(New features round) `AdvancedSettings.tsx`: protein basis switch (grams per day / per kg) and the *Intake / burned difference* row (deficit / surplus + kcal); `SettingsModal.tsx`: *Meal planner button* and *Photo diary button* switches. See [new-features-update.md](../new-features-update.md).
+
 > **Scope:** All dialogs: add food, activity, water, weight, poop, settings, profile, notifications, period sheet.
 >
 > **Read when:** you need to know which file implements something in this area (open only this file, not the others).

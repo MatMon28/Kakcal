@@ -1,4 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { OPEN_PHOTO_DIARY_EVENT } from './CustomShortcuts';
 import {
   ArrowUpRight,
   Camera,
@@ -14,6 +15,7 @@ import {
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
+import { addDaysToDateString, getTodayDateString } from '../../utils/formatters';
 import { journalId, removeMealPhoto, saveMealPhoto, useMealJournal } from '../../utils/journalStore';
 import { revealLibraryItem, revealMealSlot } from '../../utils/journalNavigation';
 import type { MealSlotId } from '../../types';
@@ -32,6 +34,13 @@ export function PhotoDiary() {
   const [browse, setBrowse] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
+  // The Custom page shortcut button opens the full gallery.
+  useEffect(() => {
+    if (!settings.photoDiary) return undefined;
+    const open = () => setBrowse(true);
+    window.addEventListener(OPEN_PHOTO_DIARY_EVENT, open);
+    return () => window.removeEventListener(OPEN_PHOTO_DIARY_EVENT, open);
+  }, [settings.photoDiary]);
   if (!settings.photoDiary) return null;
   const ordered = [...photos].sort(
     (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt),
@@ -478,14 +487,27 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
   const j = useJournalText();
   const [query, setQuery] = useState('');
   const [slot, setSlot] = useState('');
-  const [date, setDate] = useState('');
+  // Time range: both ends are optional ("from" only = since that day, "to" only = up to that day).
+  const [from, setFrom] = useState('');
+  const [to, setTo] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
+  const lo = from && to && from > to ? to : from;
+  const hi = from && to && from > to ? from : to;
+  const today = getTodayDateString();
+  const presets: { id: string; label: string; days: number }[] = [
+    { id: '7', label: j('7 days', '7 giorni'), days: 6 },
+    { id: '30', label: j('30 days', '30 giorni'), days: 29 },
+    { id: '90', label: j('3 months', '3 mesi'), days: 89 },
+    { id: '365', label: j('1 year', '1 anno'), days: 364 },
+  ];
+  const activePreset = presets.find((preset) => to === today && from === addDaysToDateString(today, -preset.days))?.id;
   const matching = photos
     .filter(
       (p) =>
         p.note.toLowerCase().includes(query.toLowerCase()) &&
         (!slot || p.slot === slot) &&
-        (!date || p.date === date),
+        (!lo || p.date >= lo) &&
+        (!hi || p.date <= hi),
     )
     .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
   return (
@@ -506,14 +528,44 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
               placeholder={j('Find a photo by its note...', 'Cerca una foto dalla sua nota...')}
             />
           </div>
-          <JournalDateField
-            variant="bar"
-            value={date}
-            onChange={setDate}
-            onClear={() => setDate('')}
-            label={j('Filter photo date', 'Filtra data foto')}
-            emptyLabel={j('Any date', 'Qualsiasi data')}
-          />
+          {/* Time range: from / to date bars plus quick ranges. */}
+          <div className="journal-range" data-photo-range>
+            <JournalDateField
+              variant="bar"
+              value={from}
+              onChange={setFrom}
+              onClear={() => setFrom('')}
+              label={j('Show photos from', 'Mostra foto dal')}
+              emptyLabel={j('From: any date', 'Dal: qualsiasi data')}
+            />
+            <JournalDateField
+              variant="bar"
+              value={to}
+              onChange={setTo}
+              onClear={() => setTo('')}
+              label={j('Show photos until', 'Mostra foto fino al')}
+              emptyLabel={j('To: any date', 'Al: qualsiasi data')}
+            />
+          </div>
+          <div className="journal-slot-picker" role="group" aria-label={j('Quick time ranges', 'Intervalli rapidi')}>
+            <button type="button" aria-pressed={!from && !to} className={!from && !to ? 'is-selected' : ''} onClick={() => { setFrom(''); setTo(''); }}>
+              {j('All time', 'Sempre')}
+            </button>
+            {presets.map((preset) => (
+              <button
+                key={preset.id}
+                type="button"
+                aria-pressed={activePreset === preset.id}
+                className={activePreset === preset.id ? 'is-selected' : ''}
+                onClick={() => { setTo(today); setFrom(addDaysToDateString(today, -preset.days)); }}
+              >
+                {preset.label}
+              </button>
+            ))}
+          </div>
+          <p className="journal-result-count" aria-live="polite">
+            {j(`${matching.length} of ${photos.length} photos`, `${matching.length} di ${photos.length} foto`)}
+          </p>
           <div className="journal-slot-picker"><button type="button" aria-pressed={!slot} className={!slot ? 'is-selected' : ''} onClick={() => setSlot('')}>{j('All meals', 'Tutti i pasti')}</button>{options.map((meal) => <button type="button" key={meal.id} aria-pressed={slot === meal.id} className={slot === meal.id ? 'is-selected' : ''} onClick={() => setSlot(meal.id)}><MealSlotIcon slot={meal.id} size={16} />{meal.label}</button>)}</div>
           <div className="journal-full-photo-grid">
             {matching.map((photo) => (

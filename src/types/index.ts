@@ -40,7 +40,7 @@ export interface FoodItem {
   salt: number | null;
   /** Sugars in g per 100 g/ml (part of carbs). Shown when Settings > Today & pages > Track sugar is on. */
   sugar?: number | null;
-  /** The product's classic serving in g/ml, when known (Open Food Facts `serving_quantity`). */
+  /** The product's classic serving in g/ml, when known (Open Food Facts `serving_quantity`). For a recipe: the standard portion set by the user. */
   portion?: number;
   source?: FoodSource;
   barcode?: string;
@@ -258,6 +258,9 @@ export interface Settings {
   photoDiary: boolean;
   /** Show the diary action in Today and a note field while logging food. */
   inlineMealNotes: boolean;
+  /** Custom page shortcut buttons (Settings > Today & pages). Both default to on. */
+  showPlannerButton: boolean;
+  showPhotoButton: boolean;
   hidePeriod: boolean;
   hidePeriodCustomized?: boolean;
   quickFoods: string[]; // food ids for the 3 quick-add shortcut buttons

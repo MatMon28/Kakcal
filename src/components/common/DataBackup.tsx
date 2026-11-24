@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle, FileSpreadsheet } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
 import { isAndroidApp, JournalDevice } from '../../utils/android';
@@ -8,15 +8,28 @@ import { useMealJournal } from '../../utils/journalStore';
 import { exportMealPictures } from '../../utils/photoExport';
 import { saveLocalFile } from '../../utils/planSharing';
 import { useJournalText } from '../../i18n/journal';
+import { buildExcelExport } from '../../utils/excelExport';
+import { useMealSlots } from '../../utils/mealSlots';
 
 /** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
 export const DataBackup: React.FC = () => {
-  const { exportDataJson, importDataJson, t } = useApp();
+  const { exportDataJson, importDataJson, allDayLogs, userProfile, t } = useApp();
+  const { label: slotLabel } = useMealSlots();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
   const { photos } = useMealJournal();
   const j = useJournalText();
   const [exportingPhotos, setExportingPhotos] = useState(false);
+  const { plans } = useMealJournal();
+  const handleExcelExport = async () => {
+    setMessage(null);
+    try {
+      const blob = buildExcelExport({ dayLogs: allDayLogs, profile: userProfile, plans, slotLabel, text: j });
+      const saved = await saveLocalFile(blob, `kakcal_data_${getTodayDateString()}.xlsx`);
+      if (!saved) return;
+      setMessage({ text: j('Excel file exported: days, foods, activities, water and meal plans.', 'File Excel esportato: giorni, alimenti, attivita, acqua e pasti pianificati.'), error: false });
+    } catch { setMessage({ text: j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'), error: true }); }
+  };
   const handlePhotoExport = async () => {
     setExportingPhotos(true); setMessage(null);
     try {
@@ -102,6 +115,11 @@ export const DataBackup: React.FC = () => {
           aria-label={t.history.importBtn}
         />
       </div>
+      <button type="button" className="backup-photo-button" onClick={() => void handleExcelExport()}>
+        <FileSpreadsheet size={18} />
+        <span><strong>{j('Export to Excel', 'Esporta in Excel')}</strong><small>{j('Days, foods, activities, water and plans (.xlsx)', 'Giorni, alimenti, attivita, acqua e piani (.xlsx)')}</small></span>
+        <Download size={16} />
+      </button>
       <button type="button" className="backup-photo-button" disabled={!photos.length || exportingPhotos} onClick={() => void handlePhotoExport()}>
         {exportingPhotos ? <LoaderCircle size={18} className="animate-spin" /> : <Images size={18} />}
         <span><strong>{j('Export meal pictures', 'Esporta le foto dei pasti')}</strong><small>{j('Standard photos + notes in a ZIP', 'Foto standard e note in uno ZIP')} ({photos.length})</small></span>

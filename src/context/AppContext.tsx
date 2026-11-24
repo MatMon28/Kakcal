@@ -1041,6 +1041,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           trackSugar: Boolean(p.trackSugar),
           photoDiary: Boolean(p.photoDiary),
           inlineMealNotes: Boolean(p.inlineMealNotes),
+          showPlannerButton: p.showPlannerButton !== false,
+          showPhotoButton: p.showPhotoButton !== false,
           hidePeriod: resolvedHidePeriod,
           hidePeriodCustomized: customized,
           quickFoods:
@@ -1078,6 +1080,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       trackSugar: false,
       photoDiary: DEMO_MODE,
       inlineMealNotes: DEMO_MODE,
+      showPlannerButton: true,
+      showPhotoButton: true,
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
       quickFoods: DEFAULT_QUICK_FOODS,

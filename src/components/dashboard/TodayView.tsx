@@ -1,5 +1,7 @@
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { BurnedCard, EnergyBalanceCards, IntakeCard } from './EnergyBalanceCards';
+import { TodayBalanceTarget } from './BalanceTargetCard';
+import { useAdvanced } from '../../utils/advancedStore';
 import { DayNavigator } from './DayNavigator';
 import { MacroCard, MacroNutrientsOverview, NutrientCard } from './MacroNutrientsOverview';
 import { MealSlotCard } from './MealSlotCard';
@@ -12,6 +14,7 @@ import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
 import { LayoutPencil, LayoutToolbar } from '../layout/LayoutToolbar';
 import { useApp } from '../../context/AppContext';
 import { useLayoutText } from '../../i18n/layout';
+import { useJournalText } from '../../i18n/journal';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { slideIn } from '../../utils/motion';
 import { mealItemId, useEditingPage, useLayout } from '../../utils/layoutStore';
@@ -176,9 +179,12 @@ export const TodayView: React.FC = () => {
       : 'col-span-6 md:col-span-3';
   const compact = displayLayout === 'compact';
   const names = layoutText.names;
+  const j = useJournalText();
+  const advanced = useAdvanced();
   const items: LayoutItem[] = [
     { id: 'intake', label: names.intake, node: <IntakeCard compact={compact} />, span: 'col-span-3' },
     { id: 'burned', label: names.burned, node: <BurnedCard compact={compact} />, span: 'col-span-3' },
+    { id: 'balance', label: j('Intake vs burned', 'Introdotte vs bruciate'), node: <TodayBalanceTarget />, span: 'col-span-6', show: advanced.balance.enabled },
     { id: 'carbs', label: t.macros.carbs, node: <MacroCard macro="carbs" />, span: 'col-span-2' },
     { id: 'protein', label: t.macros.protein, node: <MacroCard macro="protein" />, span: 'col-span-2' },
     { id: 'fat', label: t.macros.fat, node: <MacroCard macro="fat" />, span: 'col-span-2' },

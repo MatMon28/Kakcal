@@ -1,5 +1,7 @@
 # File map: `src/components/dashboard/`
 
+(New features round) `BalanceTargetCard.tsx`: intake - burned target card (deficit or surplus) used on Today (`TodayBalanceTarget`, also an advanced-layout field `balance`) and in Statistics (`BalanceTargetCard`, average); `EnergyBalanceCards.tsx` renders it under the two cards; `MealSlotCard.tsx` shows *Add to Meals* at the end of an expanded meal. See [new-features-update.md](../new-features-update.md).
+
 > **Scope:** Today page widgets: day navigator, energy, macros, meal slots, tracker cards.
 >
 > **Read when:** you need to know which file implements something in this area (open only this file, not the others).

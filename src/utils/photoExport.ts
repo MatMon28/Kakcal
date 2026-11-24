@@ -19,7 +19,7 @@ function withPhotoMetadata(bytes: Uint8Array, photo: MealPhoto) {
 }
 
 // Store-only ZIP: photos are already compressed. Standard ZIP readers need no special app.
-function zip(files: { name: string; bytes: Uint8Array }[]) {
+export function zip(files: { name: string; bytes: Uint8Array }[]) {
   const local: Uint8Array[] = [], directory: Uint8Array[] = [];
   let offset = 0;
   for (const file of files) {

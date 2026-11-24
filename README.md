@@ -2,6 +2,8 @@
 
 ## Current Update
 
+**New features round:** photo diary time range; recent and favourite foods in Custom > Foods; a standard portion for recipes (logged by default instead of 100 g); a two-page meal planner (days with +/-, weekdays to skip, specific days, then a scrolling list where only the meal being planned is open, with arrows at the bottom); Excel (.xlsx) export; *Add to Meals* for logged meals; protein target per kg of body weight; water in Statistics; a deficit / surplus target for intake minus burned; Plan meals / Photo diary shortcut buttons on Custom that can be hidden in Settings. See [docs/new-features-update.md](docs/new-features-update.md).
+
 **Custom / photo diary / short links round:** in Minimal mode the Custom fields (Meal diary and Meal planner included) compact two per row and hide the header icons that do not fit; outside Minimal every field takes the whole row; Custom fields appear together with no entrance stagger; the share pop-up opens only from a received link or a real press on the share icon; share links are much shorter (compressed, still serverless and offline); photo diary pop-ups got a calendar-icon date, a compact meal select, a footer Save button, full-width gallery search/date and a *Go to the meal* button in the viewer. See [docs/custom-photo-share-update.md](docs/custom-photo-share-update.md).
 
 Continuous Koink-style page selector, bottom-of-page swipes, cleaner Custom headers, personalized icons, readable diary actions, remembered planner entry mode, local link sharing/import, improved photo controls and picture exports. Review with `VITE_DEMO_DATA=true npm run dev`. See [docs/interaction-update.md](docs/interaction-update.md).

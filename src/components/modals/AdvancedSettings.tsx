@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Candy, Check, Droplets, Flame, LayoutDashboard, RotateCcw, Ruler, Target, User, Wheat } from 'lucide-react';
+import { Candy, Check, Droplets, Flame, LayoutDashboard, RotateCcw, Ruler, Scale, Target, User, Wheat } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAdvancedText } from '../../i18n/advanced';
+import { useJournalText } from '../../i18n/journal';
 import { useLayoutText } from '../../i18n/layout';
 import { resetLayout, setLayoutEnabled, useLayout } from '../../utils/layoutStore';
 import {
@@ -9,8 +10,13 @@ import {
   GOAL_MAX,
   GOAL_MODE_CHOICES,
   GOAL_UNITS,
+  BALANCE_MAX,
+  DEFAULT_PROTEIN_PER_KG,
+  PROTEIN_PER_KG_MAX,
+  goalValue,
   setBodyEnabled,
   setGoalsEnabled,
+  updateBalance,
   updateGoal,
   useAdvanced,
 } from '../../utils/advancedStore';
@@ -57,8 +63,9 @@ const GOAL_ICON: Record<GoalKey, React.ReactNode> = {
  * and body measurements (which adds the Body page and the Profile section).
  */
 export const AdvancedSettings: React.FC = () => {
-  const { t, settings, setIsSettingsOpen, setIsProfileOpen } = useApp();
+  const { t, settings, setIsSettingsOpen, setIsProfileOpen, userProfile } = useApp();
   const text = useAdvancedText();
+  const j = useJournalText();
   const advanced = useAdvanced();
   const layoutText = useLayoutText().settings;
   const layout = useLayout();
@@ -170,17 +177,81 @@ export const AdvancedSettings: React.FC = () => {
                           ariaLabel={`${nameOf(key)} ${goal.mode === 'objective' ? text.settings.objective : text.settings.limit}`}
                           value={goal.value}
                           onChange={(value) => updateGoal(key, { value })}
-                          unit={unit}
+                          unit={key === 'protein' && goal.perKg ? 'g/kg' : unit}
                           min={0}
-                          max={GOAL_MAX[key]}
+                          max={key === 'protein' && goal.perKg ? PROTEIN_PER_KG_MAX : GOAL_MAX[key]}
                           className="!py-2 !text-sm"
                         />
                       </div>
                     </div>
                   )}
+
+                  {/* Protein: an absolute number of grams, or grams per kg of body weight. */}
+                  {key === 'protein' && goal.enabled && (
+                    <div className="space-y-1.5">
+                      <div role="group" aria-label={j('Protein target basis', 'Base dell\'obiettivo proteine')} className="flex gap-1.5">
+                        <button type="button" aria-pressed={!goal.perKg} onClick={() => goal.perKg && updateGoal('protein', { perKg: false, value: goalValue(goal, userProfile.weightKg) || 120 })} className={seg(!goal.perKg)}>
+                          {j('Grams per day', 'Grammi al giorno')}
+                        </button>
+                        <button type="button" aria-pressed={Boolean(goal.perKg)} onClick={() => !goal.perKg && updateGoal('protein', { perKg: true, value: DEFAULT_PROTEIN_PER_KG })} className={seg(Boolean(goal.perKg))}>
+                          {j('Per kg of body weight', 'Per kg di peso corporeo')}
+                        </button>
+                      </div>
+                      {goal.perKg && (
+                        <p className="text-[10px] font-medium text-[var(--muted)] px-0.5">
+                          {j(
+                            `${goal.value} g/kg x ${userProfile.weightKg} kg (your profile weight) = ${goalValue(goal, userProfile.weightKg)} g per day.`,
+                            `${goal.value} g/kg x ${userProfile.weightKg} kg (peso del profilo) = ${goalValue(goal, userProfile.weightKg)} g al giorno.`,
+                          )}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
+
+            {/* Energy balance target: the wanted difference between intake and burned, as a deficit or a surplus. */}
+            <div className="bg-[var(--inset)] rounded-2xl px-3 py-2.5 space-y-2.5" data-balance-target>
+              <button
+                type="button"
+                aria-pressed={advanced.balance.enabled}
+                onClick={() => updateBalance({ enabled: !advanced.balance.enabled })}
+                className="w-full flex items-center justify-between gap-3 text-left"
+              >
+                <span className="flex items-center gap-2.5 min-w-0">
+                  <span className="size-7 rounded-full bg-intake text-intake-ink flex items-center justify-center shrink-0"><Scale size={14} /></span>
+                  <span className="min-w-0">
+                    <span className="block text-xs font-extrabold text-[var(--text)] truncate">{j('Intake / burned difference', 'Differenza introdotte / bruciate')}</span>
+                    <span className="block text-[10px] font-medium text-[var(--muted)]">{j('Aim for a deficit or a surplus every day.', 'Punta a un deficit o a un surplus ogni giorno.')}</span>
+                  </span>
+                </span>
+                <span className="scale-[0.85] origin-right shrink-0"><Switch on={advanced.balance.enabled} /></span>
+              </button>
+              {advanced.balance.enabled && (
+                <div className="flex items-center gap-2">
+                  <div role="group" aria-label={j('Deficit or surplus', 'Deficit o surplus')} className="flex gap-1.5 flex-1 min-w-0">
+                    <button type="button" aria-pressed={advanced.balance.kind === 'deficit'} onClick={() => updateBalance({ kind: 'deficit' })} className={seg(advanced.balance.kind === 'deficit')}>
+                      {j('Deficit', 'Deficit')}
+                    </button>
+                    <button type="button" aria-pressed={advanced.balance.kind === 'surplus'} onClick={() => updateBalance({ kind: 'surplus' })} className={seg(advanced.balance.kind === 'surplus')}>
+                      {j('Surplus', 'Surplus')}
+                    </button>
+                  </div>
+                  <div className="w-32 shrink-0">
+                    <NumericInput
+                      ariaLabel={j('Wanted difference in kcal', 'Differenza desiderata in kcal')}
+                      value={advanced.balance.kcal}
+                      onChange={(value) => updateBalance({ kcal: value })}
+                      unit="kcal"
+                      min={0}
+                      max={BALANCE_MAX}
+                      className="!py-2 !text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           </CollapseBody>
         )}

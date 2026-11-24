@@ -12,8 +12,19 @@ export interface GoalSetting {
   /** Each goal is switched on independently. */
   enabled: boolean;
   mode: GoalMode;
-  /** kcal for `calories`, grams for everything else. */
+  /** kcal for `calories`, grams for everything else (g per kg of body weight when `perKg` is on). */
   value: number;
+  /** Protein only: `value` is grams per kg of body weight instead of an absolute number of grams. */
+  perKg?: boolean;
+}
+
+/** Target for the difference between calories eaten and calories burned (Settings > Advanced). */
+export interface BalanceTarget {
+  enabled: boolean;
+  /** `deficit`: eat less than you burn. `surplus`: eat more than you burn. */
+  kind: 'deficit' | 'surplus';
+  /** Wanted difference per day in kcal, always positive. */
+  kcal: number;
 }
 
 export type GoalsConfig = Record<GoalKey, GoalSetting>;
@@ -53,6 +64,8 @@ export interface AdvancedSettings {
   /** Master switch for goals and limits. */
   goalsEnabled: boolean;
   goals: GoalsConfig;
+  /** Wanted intake - burned difference, as a deficit or a surplus. */
+  balance: BalanceTarget;
   body: BodyConfig;
 }
 

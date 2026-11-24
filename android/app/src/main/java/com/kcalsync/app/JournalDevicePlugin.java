@@ -100,7 +100,7 @@ public class JournalDevicePlugin extends Plugin {
     public void exportFile(PluginCall call) {
         String encoded = call.getString("base64");
         String kind = call.getString("kind", "zip");
-        if (encoded == null || encoded.length() > 32000000 || !("zip".equals(kind) || "txt".equals(kind))) {
+        if (encoded == null || encoded.length() > 32000000 || !("zip".equals(kind) || "txt".equals(kind) || "xlsx".equals(kind))) {
             call.reject("Invalid export"); return;
         }
         File pending = null;
@@ -120,7 +120,8 @@ public class JournalDevicePlugin extends Plugin {
         if (filename.length() > 120) filename = "kakcal-export." + kind;
         Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT)
             .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType("zip".equals(kind) ? "application/zip" : "text/plain")
+            .setType("zip".equals(kind) ? "application/zip"
+                : "xlsx".equals(kind) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "text/plain")
             .putExtra(Intent.EXTRA_TITLE, filename);
         startActivityForResult(call, save, "backupDestination");
     }
