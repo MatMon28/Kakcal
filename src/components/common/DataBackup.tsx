@@ -10,6 +10,7 @@ import { saveLocalFile } from '../../utils/planSharing';
 import { useJournalText } from '../../i18n/journal';
 import { buildExcelExport } from '../../utils/excelExport';
 import { useMealSlots } from '../../utils/mealSlots';
+import { StorageInfo } from './StorageInfo';
 
 /** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
 export const DataBackup: React.FC = () => {
@@ -44,11 +45,14 @@ export const DataBackup: React.FC = () => {
   const handleExport = async () => {
     if (isAndroidApp()) {
       setMessage(null);
-      try { await JournalDevice.exportBackup({ json: exportDataJson() }); }
+      try { await JournalDevice.exportBackup({ json: await exportDataJson() }); }
       catch { setMessage({ text: t.history.exportError, error: true }); }
       return;
     }
-    const blob = new Blob([exportDataJson()], { type: 'application/json' });
+    let json: string;
+    try { json = await exportDataJson(); }
+    catch { setMessage({ text: t.history.exportError, error: true }); return; }
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -66,10 +70,11 @@ export const DataBackup: React.FC = () => {
     const reader = new FileReader();
     reader.onload = () => {
       const content = typeof reader.result === 'string' ? reader.result : '';
-      const ok = content.length > 0 && importDataJson(content);
-      setMessage({
-        text: ok ? t.history.importSuccess : t.history.importError,
-        error: !ok,
+      void (content.length > 0 ? importDataJson(content) : Promise.resolve(false)).then((ok) => {
+        setMessage({
+          text: ok ? t.history.importSuccess : t.history.importError,
+          error: !ok,
+        });
       });
     };
     reader.onerror = () => setMessage({ text: t.history.importError, error: true });
@@ -125,6 +130,7 @@ export const DataBackup: React.FC = () => {
         <span><strong>{j('Export meal pictures', 'Esporta le foto dei pasti')}</strong><small>{j('Standard photos + notes in a ZIP', 'Foto standard e note in uno ZIP')} ({photos.length})</small></span>
         <Download size={16} />
       </button>
+      <StorageInfo />
     </Collapsible>
   );
 };

@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { SPRING } from '../../utils/spring';
 import { prefersReducedMotion } from '../../utils/motion';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { getDockTarget } from './ActionDock';
 import { scrollFadeY } from '../../utils/scrollFade';
 
@@ -198,7 +198,7 @@ export const Modal: React.FC<ModalProps> = ({
   footer,
   dockId,
 }) => {
-  const { t } = useApp();
+  const { t } = useSettings();
   const titleId = useId();
   const viewportRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);

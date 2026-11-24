@@ -1,5 +1,5 @@
 import React from 'react';
-import { useApp } from '../../context/AppContext';
+import { useShell } from '../../context/AppContext';
 import { User, Settings } from 'lucide-react';
 import { Tabs } from './Tabs';
 import { Wordmark } from './Brand';
@@ -18,7 +18,7 @@ const smoothstep = (value: number) => {
 };
 
 export const Header: React.FC = () => {
-  const { t, activeTab, setActiveTab, setIsProfileOpen, setIsSettingsOpen } = useApp();
+  const { t, activeTab, setActiveTab, setIsProfileOpen, setIsSettingsOpen } = useShell();
   const surfaceRef = React.useRef<HTMLDivElement>(null);
   const topRowRef = React.useRef<HTMLDivElement>(null);
   const tabsRowRef = React.useRef<HTMLDivElement>(null);

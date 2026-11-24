@@ -17,3 +17,7 @@
 
 /data/off-foods.bin
   Cache-Control: public, max-age=86400
+
+# Content-hashed build output (vite emits assets/<name>-<hash>.js|css): safe to cache forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable

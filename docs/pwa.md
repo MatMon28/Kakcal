@@ -37,3 +37,7 @@
 - **New icon art:** edit `scripts/brand-geometry.mjs`, run `node scripts/generate-icon.mjs`, then `npm i --no-save sharp && node scripts/render-pwa-icons.mjs`, commit the PNGs in `public/icons/`.
 - **New theme colour for the splash/title bar:** edit `theme_color` and `background_color` in the manifest. (The runtime `theme-color` meta tag is still set per theme by the pre-paint script in `index.html`.)
 - **Add a file to the offline set:** add its relative path to `PWA_ASSETS` in `offline-worker.js` and bump `CACHE`.
+
+## Service worker strategy (storage review round)
+
+The build is no longer one inlined file: `dist/index.html` plus hashed `dist/assets/*`. `vite.config.ts` (`stampOfflineWorker`) stamps `offline-worker.js` with a build id (`kakcalculator-shell-<time>-<hash>`) and the asset list. Navigations are served from the cached shell at once and revalidated in the background (a conditional request, not a full download); `assets/*` are cache first; the newest **two** shell caches are kept so a page that is still open can lazy-load its own chunks after an update. `public/_headers` makes `/assets/*` immutable. Not yet tried on a real device or host.

@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Performance, storage and tooling round (no new screens):** the shared context is split into UI / settings / journal-data contexts with stable functions; journal days are stored one record per date in IndexedDB and photos as blobs (writes are coalesced, run outside React state updaters and failures are shown); optional screens are lazy-loaded (the single-file bundle is gone) and the service worker serves the cached shell first; the launch animation plays in full on the first launch only; the day rolls over with one midnight timer; nested components were hoisted; type check, lint, a regression suite and CI are required. See [docs/performance-review.md](docs/performance-review.md) (status of all 20 review points, including what is **not** done yet).
+
+### Earlier update
+
 **Page-change performance round:** opening the Custom page (and swiping to it) froze the app for a moment when a lot of data was loaded. Cause: the page was built with every collapsed meal / recipe card fully rendered, `Tabs` forced a whole-document layout after every render, ingredients were found by scanning all foods, and the Meal diary re-filtered the whole history on each render. Collapsed card / section bodies now mount on first open (`src/components/common/LazyBody.tsx`), lookups use `Map`s, `Tabs` measures only when labels change, off-screen collapsed cards use `content-visibility`. About 3-4x faster on a throttled CPU, no visual change. New `scripts/bench-page-change.mjs`. See [docs/performance.md](docs/performance.md).
 
 **Page-transition round:** changing page by tap, Back or the food catalogue is now a smooth *fade through* (the old page stays in place and fades out while the new one fades in and slides 14 px, about 300 ms, opacity / transform only) instead of a hard cut plus a field-by-field stagger. Swipes are unchanged; reduced motion keeps the instant change. New `src/utils/pageTransition.ts` and `scripts/check-page-transition.mjs`; `src/utils/pageFields.ts` was deleted. See [docs/motion.md](/MatMon28/Kakcal/blob/main/docs/motion.md).

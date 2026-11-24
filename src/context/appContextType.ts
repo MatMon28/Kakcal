@@ -111,7 +111,7 @@ export interface AppContextType {
   logPoop: (size: PoopSize, date?: string, description?: string, bristol?: BristolType) => void;
   removePoop: (poopId: string, date?: string) => void;
   // Data Backup
-  exportDataJson: () => string;
-  importDataJson: (jsonStr: string) => boolean;
+  exportDataJson: () => Promise<string>;
+  importDataJson: (jsonStr: string) => Promise<boolean>;
   allDayLogs: Record<string, DayLog>;
 }

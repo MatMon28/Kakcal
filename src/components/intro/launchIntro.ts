@@ -1,4 +1,4 @@
-import { pickIntroAnimation, shouldShowIntro, type IntroAnimation } from './introAnimations';
+import { isReturningLaunch, markIntroSeen, pickIntroAnimation, shouldShowIntro, type IntroAnimation } from './introAnimations';
 import './intro.css';
 
 /**
@@ -7,7 +7,9 @@ import './intro.css';
  * evaluated and before React renders, so the plain background-colour screen only lasts until the bundle has
  * been parsed. React (`IntroSplash`) only reports "the app is ready" and learns when the overlay is gone.
  *
- * Rules: the animation always plays to its last frame (the brand icon). It leaves only when BOTH the
+ * Rules: on the FIRST launch on a device the animation always plays to its last frame (the brand icon). On later
+ * launches (`isReturningLaunch()`) it leaves as soon as the app is ready, with the quick fade, and a tap still skips it.
+ * First launch: It leaves only when BOTH the
  * animation has finished (+ a short hold) AND the app is ready. If the app is slower than the animation
  * the finished icon simply stays until it is ready (capped by MAX_EXTRA_WAIT_MS).
  */
@@ -26,6 +28,7 @@ let phase: Phase = 'idle';
 let overlay: HTMLElement | null = null;
 let animationFinished = false;
 let appReady = false;
+let returning = false;
 const endListeners = new Set<() => void>();
 
 function removeBootLayer(): void {
@@ -45,13 +48,14 @@ function finish(): void {
 function leave(skipped: boolean): void {
   if (phase !== 'playing' || !overlay) return;
   phase = 'leaving';
+  markIntroSeen();
   overlay.setAttribute('data-leaving', 'true');
   overlay.setAttribute('data-fast', String(skipped));
   window.setTimeout(finish, skipped ? SKIP_FADE_MS : FADE_MS);
 }
 
 function maybeLeave(): void {
-  if (animationFinished && appReady) leave(false);
+  if (appReady && (returning || animationFinished)) leave(returning);
 }
 
 function build(animation: IntroAnimation): HTMLElement {
@@ -78,6 +82,7 @@ export function startLaunchIntro(): boolean {
   if (!shouldShowIntro()) { phase = 'done'; return false; }
 
   const animation = pickIntroAnimation();
+  returning = isReturningLaunch();
   phase = 'playing';
   overlay = build(animation);
   document.body.appendChild(overlay);

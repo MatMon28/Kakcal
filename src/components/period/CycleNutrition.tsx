@@ -163,8 +163,8 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
   ];
   const selectedTag = tagOptions.some((option) => option.id === tag) ? tag : tagOptions[0]?.id ?? '';
   const compare = useMemo(() => {
-    let tagged = { sum: 0, n: 0 };
-    let other = { sum: 0, n: 0 };
+    const tagged = { sum: 0, n: 0 };
+    const other = { sum: 0, n: 0 };
     for (const d of Object.keys(allDayLogs)) {
       const m = dayMetrics(allDayLogs[d]);
       if (!m) continue;

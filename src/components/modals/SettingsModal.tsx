@@ -39,6 +39,24 @@ import { MONO_HUES, SIX_NEW_THEMES } from '../../utils/themes';
 import { scrollFadeY } from '../../utils/scrollFade';
 import { useJournalText } from '../../i18n/journal';
 
+/** Module-scope switch (item 10): defined inside `SettingsModal` it remounted on every render. */
+const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
+  <span
+    aria-hidden="true"
+    className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
+      on
+        ? 'bg-[#C9EFD3] border-[#9ADBB0]'
+        : 'bg-[var(--border)] border-[var(--border)]'
+    }`}
+  >
+    <span
+      className={`block w-5 h-5 rounded-full transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] shadow-sm ${
+        on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
+      }`}
+    />
+  </span>
+);
+
 export const SettingsModal: React.FC = () => {
   const j = useJournalText();
   const {
@@ -95,23 +113,6 @@ export const SettingsModal: React.FC = () => {
         ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
         : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
     }`;
-
-  const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
-    <span
-      aria-hidden="true"
-      className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
-        on
-          ? 'bg-[#C9EFD3] border-[#9ADBB0]'
-          : 'bg-[var(--border)] border-[var(--border)]'
-      }`}
-    >
-      <span
-        className={`block w-5 h-5 rounded-full transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] shadow-sm ${
-          on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
-        }`}
-      />
-    </span>
-  );
 
   const quickRows = [
     { key: 'food' as const, icon: Utensils, cls: 'bg-intake text-intake-ink', label: t.quickAdd.food },

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Search, X, PlusCircle, Trash2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import type { AppContextType } from '../../context/appContextType';
+import type { Language } from '../../types';
 import {
   ACTIVITY_CATEGORIES,
   ACTIVITY_DB,
@@ -21,6 +23,43 @@ interface ActivitySearchProps {
   /** Called with the typed text when nothing matches and the user wants a custom activity instead. */
   onUseCustom: (name: string) => void;
 }
+
+interface ActivityRowProps {
+  activity: ActivityInfo;
+  language: Language;
+  t: AppContextType['t'];
+  onPick: (activity: ActivityInfo) => void;
+  onRemoveCustom: (id: string) => void;
+}
+
+/** Module-scope row (item 10): declaring it inside `ActivitySearch` remounted every row on each render. */
+const ActivityRow: React.FC<ActivityRowProps> = ({ activity, language, t, onPick, onRemoveCustom }) => (
+  <div className="flex items-center gap-2 p-3 hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors">
+    <button type="button" onClick={() => onPick(activity)} className="min-w-0 flex-1 text-left">
+      <span className="text-xs sm:text-sm font-bold text-[var(--text)] block leading-snug">
+        {activityName(activity, language)}
+      </span>
+      <span className="text-[11px] font-medium text-[var(--muted)]">
+        {categoryLabel(activity.category, language)}
+      </span>
+    </button>
+    <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
+      {activity.met.toFixed(1)} {t.activities.met}
+    </span>
+    {activity.category === 'custom' && (
+      <button
+        type="button"
+        onClick={() => onRemoveCustom(activity.id.slice(CUSTOM_ACTIVITY_PREFIX.length))}
+        className="pressable size-8 shrink-0 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+        title={t.common.delete}
+        aria-label={`${t.common.delete}: ${activity.name_en}`}
+      >
+        <Trash2 size={13} />
+      </button>
+    )}
+    <FavoriteButton foodId={activity.id} kind="activity" />
+  </div>
+);
 
 /**
  * Search page behind Activity → Other. Mirrors the food search: fuzzy matching, a clear button,
@@ -102,34 +141,6 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
   }, [trimmed, inCategory, favoriteActivities]);
 
   const total = favorites.length + others.length;
-
-  const Row: React.FC<{ activity: ActivityInfo }> = ({ activity }) => (
-    <div className="flex items-center gap-2 p-3 hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors">
-      <button type="button" onClick={() => onPick(activity)} className="min-w-0 flex-1 text-left">
-        <span className="text-xs sm:text-sm font-bold text-[var(--text)] block leading-snug">
-          {activityName(activity, language)}
-        </span>
-        <span className="text-[11px] font-medium text-[var(--muted)]">
-          {categoryLabel(activity.category, language)}
-        </span>
-      </button>
-      <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
-        {activity.met.toFixed(1)} {t.activities.met}
-      </span>
-      {activity.category === 'custom' && (
-        <button
-          type="button"
-          onClick={() => removeCustomActivity(activity.id.slice(CUSTOM_ACTIVITY_PREFIX.length))}
-          className="pressable size-8 shrink-0 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
-          title={t.common.delete}
-          aria-label={`${t.common.delete}: ${activity.name_en}`}
-        >
-          <Trash2 size={13} />
-        </button>
-      )}
-      <FavoriteButton foodId={activity.id} kind="activity" />
-    </div>
-  );
 
   const sectionHeader = (label: string, hint?: string) => (
     <div className="px-3 py-2 flex items-center justify-between gap-2 bg-[var(--bg)]/40 border-b border-[var(--border)]">
@@ -224,11 +235,11 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
           <div className="divide-y divide-[var(--border)]">
             {favorites.length > 0 && !isSearch && sectionHeader(t.favorites.title, t.activities.favoritesHint)}
             {favorites.map((a) => (
-              <Row key={a.id} activity={a} />
+              <ActivityRow key={a.id} activity={a} language={language} t={t} onPick={onPick} onRemoveCustom={removeCustomActivity} />
             ))}
             {favorites.length > 0 && others.length > 0 && !isSearch && sectionHeader(t.activities.suggestions)}
             {others.map((a) => (
-              <Row key={a.id} activity={a} />
+              <ActivityRow key={a.id} activity={a} language={language} t={t} onPick={onPick} onRemoveCustom={removeCustomActivity} />
             ))}
           </div>
         )}

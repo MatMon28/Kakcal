@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ActiveTab, ActivityLog, DayLog, EnergyExpenditureSummary, FoodItem, Language, LoggedFoodItem, MealSlotId, PeriodData, PeriodDayLog, PeriodSettings, PoopEntry, PoopSize, WaterEntry, BristolType, PreBuiltMeal, Settings, UserProfile, CustomActivityDef } from '../types';
 import { VERIFIED_FOODS } from '../data/verifiedFoods';
 import { INITIAL_PREBUILT_MEALS } from '../data/samplePreBuiltMeals';
@@ -11,14 +11,17 @@ import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
 import { exportLayout, importLayout } from '../utils/layoutStore';
-import { exportMealJournal, importMealJournal } from '../utils/journalStore';
+import { exportMealJournalForBackup, importMealJournal, prepareMealJournalImport } from '../utils/journalStore';
+import { bootedDays } from '../storage/boot';
+import { persistDayChanges, replaceAllDays } from '../storage/dayStore';
+import { usePersistLocal } from '../storage/usePersist';
+import { JournalDataContext, SettingsContext, UiContext, useStableActions, type JournalSlice, type SettingsSlice, type UiSlice } from './contexts';
 import { allMealItems } from '../utils/mealItems';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
 import { DEFAULT_NOTIFICATION_SETTINGS, normalizeNotificationSettings } from '../utils/notifications';
 import { startedWithPlanLink } from '../utils/incomingPlan';
 import { createDemoPeriodData, DEMO_CUSTOM_BUTTONS, DEMO_MEALS, DEMO_RECIPES, enrichDemoDayLogs } from '../data/demoData';
-import type { AppContextType } from './appContextType';
 import {
   DEFAULT_PERIOD_SETTINGS,
   DEFAULT_PROFILE,
@@ -36,8 +39,6 @@ import { createDemoSeedDays } from './demoSeeds';
 // Still exported from here for existing importers; the value lives in `appStorage.ts`.
 export { DEFAULT_QUICK_FOODS };
 
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 1. Language
   const [language, setLanguageState] = useState<Language>(() => {
@@ -47,8 +48,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem(STORAGE_KEYS.LANG, lang);
   };
+  usePersistLocal(STORAGE_KEYS.LANG, language, String);
 
   const t = translations[language];
 
@@ -71,20 +72,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateUserProfile = (profile: UserProfile) => {
     const sexChanged = profile.sex !== userProfile.sex;
     setUserProfileState(profile);
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(profile));
-    if (sexChanged) {
-      setSettingsState((prev) => {
-        if (prev.hidePeriodCustomized) return prev;
-        const hidePeriod = profile.sex === 'male';
-        if (hidePeriod) {
-          setActiveTabState((tab) => (tab === 'period' ? 'today' : tab));
-        }
-        const next = { ...prev, hidePeriod };
-        localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
-        return next;
-      });
+    if (sexChanged && !settings.hidePeriodCustomized) {
+      const hidePeriod = profile.sex === 'male';
+      setSettingsState((prev) => (prev.hidePeriodCustomized ? prev : { ...prev, hidePeriod }));
+      if (hidePeriod) setActiveTabState((tab) => (tab === 'period' ? 'today' : tab));
     }
   };
+  usePersistLocal(STORAGE_KEYS.PROFILE, userProfile);
 
   // 4. Custom Foods
   const [customFoods, setCustomFoods] = useState<FoodItem[]>(() => {
@@ -100,20 +94,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const addCustomFood = (food: FoodItem) => {
-    setCustomFoods((prev) => {
-      const updated = [food, ...prev.filter((f) => f.id !== food.id)];
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_FOODS, JSON.stringify(updated));
-      return updated;
-    });
+    setCustomFoods((prev) => [food, ...prev.filter((f) => f.id !== food.id)]);
   };
 
   const deleteCustomFood = (foodId: string) => {
-    setCustomFoods((prev) => {
-      const updated = prev.filter((f) => f.id !== foodId);
-      localStorage.setItem(STORAGE_KEYS.CUSTOM_FOODS, JSON.stringify(updated));
-      return updated;
-    });
+    setCustomFoods((prev) => prev.filter((f) => f.id !== foodId));
   };
+  usePersistLocal(STORAGE_KEYS.CUSTOM_FOODS, customFoods);
 
   // Foods picked from the 130,000-product offline catalogue. Lookups by id (favourites, recents,
   // recipe ingredients) go through allFoods, so a picked or starred catalogue food is kept here.
@@ -130,44 +117,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!food.id.startsWith('off-')) return; // the bundled and custom foods are always available
     setUsedFoods((prev) => {
       if (prev[0]?.id === food.id) return prev;
-      const next = [food, ...prev.filter((f) => f.id !== food.id)].slice(0, 3000);
-      try {
-        localStorage.setItem(STORAGE_KEYS.USED_FOODS, JSON.stringify(next));
-      } catch { /* storage full: the food still works for this session */ }
-      return next;
+      return [food, ...prev.filter((f) => f.id !== food.id)].slice(0, 3000);
     });
   };
+  usePersistLocal(STORAGE_KEYS.USED_FOODS, usedFoods);
 
   const allFoods = useMemo(() => [...customFoods, ...usedFoods, ...VERIFIED_FOODS], [customFoods, usedFoods]);
 
   // 5. Day Logs with realistic initial data for today and yesterday if first launch
-  const [dayLogs, setDayLogs] = useState<Record<string, DayLog>>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.DAY_LOGS);
-    if (saved) {
-      try {
-        return normalizeDayLogs(JSON.parse(saved));
-      } catch (e) {
-        console.error('Failed to parse day logs', e);
-      }
-    }
-
-    if (!DEMO_MODE) return {};
-
-    // Generate initial sample days for today & yesterday so the app has live visual data immediately
-    const today = getTodayDateString();
-    const yesterday = addDaysToDateString(today, -1);
-
-    const initialSeeds = createDemoSeedDays(today, yesterday);
-
-    const demoSeeds = enrichDemoDayLogs(initialSeeds);
+  // Days were loaded from IndexedDB (one record per date) by `bootStorage()` before the first render (see main.tsx).
+  // Without a boot (tests, tools) the legacy localStorage blob is read synchronously instead.
+  const [diskDays] = useState(() => {
+    const booted = bootedDays();
+    if (booted) return booted;
+    let legacy: Record<string, DayLog> | null = null;
     try {
-        localStorage.setItem(STORAGE_KEYS.DAY_LOGS, JSON.stringify(demoSeeds));
-      } catch (err) {
-        console.error('Failed to save initial day seeds', err);
-      }
-
-      return demoSeeds;
+      const saved = localStorage.getItem(STORAGE_KEYS.DAY_LOGS);
+      if (saved) legacy = normalizeDayLogs(JSON.parse(saved));
+    } catch (e) {
+      console.error('Failed to parse day logs', e);
+    }
+    return { logs: legacy ?? {}, initialised: legacy !== null, backend: 'local' as const };
   });
+  const [dayLogs, setDayLogs] = useState<Record<string, DayLog>>(() => {
+    if (diskDays.initialised || !DEMO_MODE) return diskDays.logs;
+    // Generate initial sample days for today & yesterday so the demo has live visual data immediately.
+    const today = getTodayDateString();
+    return enrichDemoDayLogs(createDemoSeedDays(today, addDaysToDateString(today, -1)));
+  });
+
+  // Persist per record, from an effect and outside any state updater: only days whose record changed are written.
+  const persistedDays = useRef(diskDays.logs);
+  useEffect(() => {
+    if (persistedDays.current === dayLogs) return;
+    persistDayChanges(persistedDays.current, dayLogs);
+    persistedDays.current = dayLogs;
+  }, [dayLogs]);
 
   const emptyDayFor = (date: string): DayLog => ({
     date,
@@ -185,18 +170,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     custom: {},
   });
 
-  const saveDayLogs = (newLogs: Record<string, DayLog>) => {
-    setDayLogs(newLogs);
-    localStorage.setItem(STORAGE_KEYS.DAY_LOGS, JSON.stringify(newLogs));
-  };
-
   const mutateDay = (date: string, fn: (day: DayLog) => DayLog) => {
-    setDayLogs((prev) => {
-      const base = prev[date] || emptyDayFor(date);
-      const next = { ...prev, [date]: fn(base) };
-      localStorage.setItem(STORAGE_KEYS.DAY_LOGS, JSON.stringify(next));
-      return next;
-    });
+    setDayLogs((prev) => ({ ...prev, [date]: fn(prev[date] || emptyDayFor(date)) }));
   };
 
   // 6. Prebuilt Meals
@@ -218,28 +193,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'prebuilt-' + Date.now(),
       createdAt: new Date().toISOString(),
     };
-    setPreBuiltMeals((prev) => {
-      const updated = [newMeal, ...prev];
-      localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
-      return updated;
-    });
+    setPreBuiltMeals((prev) => [newMeal, ...prev]);
   };
 
   const updatePreBuiltMeal = (updatedMeal: PreBuiltMeal) => {
-    setPreBuiltMeals((prev) => {
-      const updated = prev.map((m) => (m.id === updatedMeal.id ? updatedMeal : m));
-      localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
-      return updated;
-    });
+    setPreBuiltMeals((prev) => prev.map((m) => (m.id === updatedMeal.id ? updatedMeal : m)));
   };
 
   const deletePreBuiltMeal = (mealId: string) => {
-    setPreBuiltMeals((prev) => {
-      const updated = prev.filter((m) => m.id !== mealId);
-      localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(updated));
-      return updated;
-    });
+    setPreBuiltMeals((prev) => prev.filter((m) => m.id !== mealId));
   };
+  usePersistLocal(STORAGE_KEYS.PREBUILT_MEALS, preBuiltMeals);
 
   // Modals state
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
@@ -275,8 +239,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const savePeriodData = (next: PeriodData) => {
     periodRef.current = next;
     setPeriodData(next);
-    localStorage.setItem(STORAGE_KEYS.PERIOD, JSON.stringify(next));
   };
+  usePersistLocal(STORAGE_KEYS.PERIOD, periodData);
 
   // Date selected on the Period calendar (shared with the quick-log dialog)
   const [periodSelectedDate, setPeriodSelectedDate] = useState<string>(getTodayDateString());
@@ -511,10 +475,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
-  const persistCustomActivities = (next: CustomActivityDef[]) => {
-    localStorage.setItem(STORAGE_KEYS.CUSTOM_ACTIVITIES, JSON.stringify(next));
-    return next;
-  };
+  usePersistLocal(STORAGE_KEYS.CUSTOM_ACTIVITIES, customActivities);
 
   /** Saves (or updates) a custom activity so it can be searched under Activity → Other. */
   const addCustomActivity = (name: string, met = 5): CustomActivityDef => {
@@ -524,39 +485,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const def: CustomActivityDef = existing
       ? { ...existing, met: safeMet }
       : { id: `ca-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`, name: n, met: safeMet, createdAt: new Date().toISOString() };
-    setCustomActivities((prev) => persistCustomActivities([def, ...prev.filter((x) => x.id !== def.id)]));
+    setCustomActivities((prev) => [def, ...prev.filter((x) => x.id !== def.id)]);
     return def;
   };
 
   const removeCustomActivity = (id: string) => {
-    setCustomActivities((prev) => persistCustomActivities(prev.filter((x) => x.id !== id)));
+    setCustomActivities((prev) => prev.filter((x) => x.id !== id));
   };
 
   const toggleFavoriteFood = (foodId: string) => {
     setSettingsState((prev) => {
       const current = prev.favoriteFoods ?? [];
-      const next: Settings = {
+      return {
         ...prev,
         favoriteFoods: current.includes(foodId)
           ? current.filter((id) => id !== foodId)
           : [foodId, ...current.filter((id) => id !== foodId)],
       };
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
-      return next;
     });
   };
 
   const toggleFavoriteActivity = (activityId: string) => {
     setSettingsState((prev) => {
       const current = prev.favoriteActivities ?? [];
-      const next: Settings = {
+      return {
         ...prev,
         favoriteActivities: current.includes(activityId)
           ? current.filter((id) => id !== activityId)
           : [activityId, ...current.filter((id) => id !== activityId)],
       };
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
-      return next;
     });
   };
 
@@ -575,10 +532,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
       // No trackers means no button to show: keep the widget setting consistent with the data.
       if (next.customButtons.length === 0) next.widgetCustomButton = false;
-      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(next));
       return next;
     });
   };
+  usePersistLocal(STORAGE_KEYS.SETTINGS, settings);
 
   useEffect(() => {
     applyThemeAttributes(settings.theme, settings.themeStyle, settings.monoHue);
@@ -809,10 +766,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       meals: newMeals,
     };
 
-    saveDayLogs({
-      ...dayLogs,
-      [targetDate]: updatedDay,
-    });
+    setDayLogs((prev) => ({ ...prev, [targetDate]: updatedDay }));
 
     return { success: true, count: copiedCount };
   };
@@ -862,10 +816,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
-  // Export JSON
-  const exportDataJson = (): string => {
+  // Export JSON. Async because photos live in IndexedDB and are embedded as data URLs so a backup is self-contained.
+  const exportDataJson = async (): Promise<string> => {
     const data = {
-      version: '1.1',
+      version: '1.2',
       exportedAt: new Date().toISOString(),
       userProfile,
       customFoods,
@@ -877,33 +831,36 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       customActivities,
       advanced: exportAdvanced(), // goals/limits + body measures (Settings > Advanced)
       layout: exportLayout(), // advanced layout: field order/sizes/removed fields + added meal types
-      mealJournal: exportMealJournal(),
+      mealJournal: await exportMealJournalForBackup(),
     };
     return JSON.stringify(data, null, 2);
   };
 
-  // Import JSON
-  const importDataJson = (jsonStr: string): boolean => {
+  // Import JSON. Photos are stored FIRST: when the device is full this returns false and nothing else has changed.
+  const importDataJson = async (jsonStr: string): Promise<boolean> => {
     try {
       const data = JSON.parse(jsonStr);
+      const journal = await prepareMealJournalImport(data.mealJournal);
+      const importedDays = data.dayLogs && typeof data.dayLogs === 'object' && !Array.isArray(data.dayLogs)
+        ? normalizeDayLogs(data.dayLogs) : null;
+      if (importedDays) await replaceAllDays(importedDays);
       if (data.userProfile) {
         updateUserProfile(data.userProfile);
       }
       if (Array.isArray(data.customFoods)) {
         setCustomFoods(data.customFoods);
-        localStorage.setItem(STORAGE_KEYS.CUSTOM_FOODS, JSON.stringify(data.customFoods));
       }
       if (Array.isArray(data.usedFoods)) {
         const used = data.usedFoods.filter((f: FoodItem) => f && typeof f.id === 'string' && f.id.startsWith('off-')).slice(0, 3000);
         setUsedFoods(used);
-        localStorage.setItem(STORAGE_KEYS.USED_FOODS, JSON.stringify(used));
       }
-      if (data.dayLogs && typeof data.dayLogs === 'object' && !Array.isArray(data.dayLogs)) {
-        saveDayLogs(normalizeDayLogs(data.dayLogs));
+      if (importedDays) {
+        // The records are already stored; the effect must not write them a second time.
+        persistedDays.current = importedDays;
+        setDayLogs(importedDays);
       }
       if (Array.isArray(data.preBuiltMeals)) {
         setPreBuiltMeals(data.preBuiltMeals);
-        localStorage.setItem(STORAGE_KEYS.PREBUILT_MEALS, JSON.stringify(data.preBuiltMeals));
       }
       if (data.settings && typeof data.settings === 'object') {
         const s = data.settings;
@@ -924,11 +881,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       }
       if (Array.isArray(data.customActivities)) {
-        setCustomActivities(persistCustomActivities(normalizeCustomActivities(data.customActivities)));
+        setCustomActivities(normalizeCustomActivities(data.customActivities));
       }
       importAdvanced(data.advanced);
       importLayout(data.layout);
-      importMealJournal(data.mealJournal);
+      if (journal) importMealJournal(journal);
       if (data.periodData && typeof data.periodData === 'object') {
         try {
           savePeriodData(normalizePeriodData(data.periodData));
@@ -943,132 +900,69 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Calculations for current day
-  const allCurrentDayFoods: LoggedFoodItem[] = allMealItems(currentDayLog.meals);
+  // Derived totals for the selected day: recomputed only when the day or the profile changes.
+  const derived = useMemo(() => {
+    const foods: LoggedFoodItem[] = allMealItems(currentDayLog.meals);
+    const macros = calculateMacros(foods);
+    const intake = calculateTotalCalories(foods);
+    const bmr = calculateBMR(userProfile);
+    const activityExpenditure = calculateTotalActivityCalories(currentDayLog.activities);
+    const tefResult = calculateTEF(macros.carbsGrams, macros.proteinGrams, macros.fatGrams);
+    const totalExpenditure = bmr + activityExpenditure + tefResult.totalTEF;
+    const expenditure: EnergyExpenditureSummary = { bmr, activityExpenditure, tef: tefResult.totalTEF, totalExpenditure };
+    return { macros, intake, expenditure, net: intake - totalExpenditure };
+  }, [currentDayLog, userProfile]);
 
-  const currentMacros = calculateMacros(allCurrentDayFoods);
-  const currentIntakeCalories = calculateTotalCalories(allCurrentDayFoods);
+  // Stable function identities: a slice's value changes only when its data changes.
+  const uiActions = useStableActions({ setActiveTab, returnFromDatabase });
+  const settingsActions = useStableActions({ setLanguage, updateUserProfile, updateSettings, toggleFavoriteFood, toggleFavoriteActivity });
+  const journalActions = useStableActions({
+    addCustomFood, deleteCustomFood, rememberFood, logFoodItem, removeLoggedFoodItem, updateLoggedFoodItemAmount,
+    logActivity, removeActivity, copyYesterdayMeals, logItemsToSlot, addPreBuiltMeal, updatePreBuiltMeal,
+    deletePreBuiltMeal, logPreBuiltMealToSlot, updatePeriodSettings, updatePeriodDay, clearPeriodDay,
+    markPeriodStart, markPeriodEnd, addPeriodTag, deletePeriodTag, resetPeriodTags, addCustomActivity,
+    removeCustomActivity, logWater, removeWaterEntry, logCustom, removeCustomEntry, waterTotalFor, logWeight,
+    logPoop, removePoop, exportDataJson, importDataJson,
+  });
 
-  const bmr = calculateBMR(userProfile);
-  const activityExpenditure = calculateTotalActivityCalories(currentDayLog.activities);
-  const tefResult = calculateTEF(
-    currentMacros.carbsGrams,
-    currentMacros.proteinGrams,
-    currentMacros.fatGrams
-  );
-  const totalExpenditure = bmr + activityExpenditure + tefResult.totalTEF;
+  const ui = useMemo<UiSlice>(() => ({
+    selectedDate, setSelectedDate, targetMealSlot, setTargetMealSlot,
+    isAddFoodOpen, setIsAddFoodOpen, isLogActivityOpen, setIsLogActivityOpen,
+    isBarcodeOpen, setIsBarcodeOpen, isProfileOpen, setIsProfileOpen,
+    isSettingsOpen, setIsSettingsOpen, isWaterOpen, setIsWaterOpen,
+    isPoopOpen, setIsPoopOpen, isWeightOpen, setIsWeightOpen,
+    isCustomFoodOpen, setIsCustomFoodOpen, customButtonOpenId, setCustomButtonOpenId,
+    isCustomPickerOpen, setIsCustomPickerOpen, isPeriodSheetOpen, setIsPeriodSheetOpen,
+    activeTab, periodSelectedDate, setPeriodSelectedDate, ...uiActions,
+  }), [
+    selectedDate, targetMealSlot, isAddFoodOpen, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
+    isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId, isCustomPickerOpen,
+    isPeriodSheetOpen, activeTab, periodSelectedDate, uiActions,
+  ]);
 
-  const currentExpenditure: EnergyExpenditureSummary = {
-    bmr,
-    activityExpenditure,
-    tef: tefResult.totalTEF,
-    totalExpenditure,
-  };
+  const settingsValue = useMemo<SettingsSlice>(() => ({
+    language, t, userProfile, settings,
+    favoriteFoods: settings.favoriteFoods ?? [],
+    favoriteActivities: settings.favoriteActivities ?? [],
+    ...settingsActions,
+  }), [language, t, userProfile, settings, settingsActions]);
 
-  const netBalance = currentIntakeCalories - totalExpenditure;
+  const journal = useMemo<JournalSlice>(() => ({
+    allFoods, currentDayLog, preBuiltMeals, periodData, customActivities, allDayLogs: dayLogs,
+    currentMacros: derived.macros,
+    currentIntakeCalories: derived.intake,
+    currentExpenditure: derived.expenditure,
+    netBalance: derived.net,
+    ...journalActions,
+  }), [allFoods, currentDayLog, preBuiltMeals, periodData, customActivities, dayLogs, derived, journalActions]);
 
   return (
-    <AppContext.Provider
-      value={{
-        language,
-        setLanguage,
-        t,
-        selectedDate,
-        setSelectedDate,
-        userProfile,
-        updateUserProfile,
-        allFoods,
-        addCustomFood,
-        deleteCustomFood,
-        favoriteFoods: settings.favoriteFoods ?? [],
-        toggleFavoriteFood,
-        rememberFood,
-        favoriteActivities: settings.favoriteActivities ?? [],
-        toggleFavoriteActivity,
-        currentDayLog,
-        logFoodItem,
-        removeLoggedFoodItem,
-        updateLoggedFoodItemAmount,
-        logActivity,
-        removeActivity,
-        copyYesterdayMeals,
-        preBuiltMeals,
-        addPreBuiltMeal,
-        updatePreBuiltMeal,
-        deletePreBuiltMeal,
-        logPreBuiltMealToSlot,
-        logItemsToSlot,
-        currentMacros,
-        currentIntakeCalories,
-        currentExpenditure,
-        netBalance,
-        isAddFoodOpen,
-        setIsAddFoodOpen,
-        targetMealSlot,
-        setTargetMealSlot,
-        isLogActivityOpen,
-        setIsLogActivityOpen,
-        isBarcodeOpen,
-        setIsBarcodeOpen,
-        isProfileOpen,
-        setIsProfileOpen,
-        settings,
-        updateSettings,
-        activeTab,
-        setActiveTab,
-        returnFromDatabase,
-        isSettingsOpen,
-        setIsSettingsOpen,
-        isWaterOpen,
-        setIsWaterOpen,
-        isPoopOpen,
-        setIsPoopOpen,
-        isWeightOpen,
-        setIsWeightOpen,
-        isCustomFoodOpen,
-        setIsCustomFoodOpen,
-        customButtonOpenId,
-        setCustomButtonOpenId,
-        isCustomPickerOpen,
-        setIsCustomPickerOpen,
-        periodData,
-        updatePeriodSettings,
-        updatePeriodDay,
-        clearPeriodDay,
-        markPeriodStart,
-        markPeriodEnd,
-        addPeriodTag,
-        deletePeriodTag,
-        resetPeriodTags,
-        periodSelectedDate,
-        setPeriodSelectedDate,
-        isPeriodSheetOpen,
-        setIsPeriodSheetOpen,
-        customActivities,
-        addCustomActivity,
-        removeCustomActivity,
-        logWater,
-        removeWaterEntry,
-        logCustom,
-        removeCustomEntry,
-        waterTotalFor,
-        logWeight,
-        logPoop,
-        removePoop,
-        exportDataJson,
-        importDataJson,
-        allDayLogs: dayLogs,
-      }}
-    >
-      {children}
-    </AppContext.Provider>
+    <UiContext.Provider value={ui}>
+      <SettingsContext.Provider value={settingsValue}>
+        <JournalDataContext.Provider value={journal}>{children}</JournalDataContext.Provider>
+      </SettingsContext.Provider>
+    </UiContext.Provider>
   );
 };
 
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within an AppProvider');
-  }
-  return context;
-};
+export { useApp, useJournalData, useSettings, useShell, useUiState } from './contexts';

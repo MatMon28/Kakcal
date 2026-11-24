@@ -22,32 +22,12 @@ import {
 import { AppIcon } from './Brand';
 import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
 
-export type GuideLanguage = 'en' | 'it';
-export type InstallTarget = 'ios' | 'android' | 'desktop';
-
-export const OPEN_INSTALL_GUIDE = 'kc:open-install-guide';
+import { detectInstallTarget, OPEN_INSTALL_GUIDE, type GuideLanguage, type InstallTarget, type OpenDetail } from './installGuideEvents';
 
 /** The APK is placed here by the release workflow (see android/BUILD_APK.md). */
 const APK_URL = './downloads/Kakcalculator.apk';
 const RELEASES_URL = 'https://github.com/MatMon28/Kakcalculator/releases/latest';
 const BUILD_APK_URL = 'https://github.com/MatMon28/Kakcalculator/blob/main/android/BUILD_APK.md';
-
-type OpenDetail = { target?: InstallTarget; lang?: GuideLanguage };
-
-/** Opens the install guide from anywhere (tour header, Settings card, platform chips). */
-export function openInstallGuide(target?: InstallTarget, lang?: GuideLanguage) {
-  window.dispatchEvent(new CustomEvent<OpenDetail>(OPEN_INSTALL_GUIDE, { detail: { target, lang } }));
-}
-
-export function detectInstallTarget(): InstallTarget {
-  if (typeof navigator === 'undefined') return 'desktop';
-  const ua = navigator.userAgent;
-  if (/iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
-    return 'ios';
-  }
-  if (/android/i.test(ua)) return 'android';
-  return 'desktop';
-}
 
 function readLanguage(): GuideLanguage {
   try {
@@ -58,10 +38,10 @@ function readLanguage(): GuideLanguage {
 }
 
 /** Mounted once by App.tsx. Listens for openInstallGuide() and renders the sheet above every modal. */
-export const InstallGuideHost: React.FC<{ lang?: GuideLanguage }> = ({ lang }) => {
-  const [open, setOpen] = useState(false);
-  const [target, setTarget] = useState<InstallTarget>('desktop');
-  const [language, setLanguage] = useState<GuideLanguage>(lang ?? readLanguage);
+export const InstallGuideHost: React.FC<{ lang?: GuideLanguage; initial?: OpenDetail }> = ({ lang, initial }) => {
+  const [open, setOpen] = useState(Boolean(initial));
+  const [target, setTarget] = useState<InstallTarget>(initial?.target ?? detectInstallTarget());
+  const [language, setLanguage] = useState<GuideLanguage>(initial?.lang ?? lang ?? readLanguage());
 
   useEffect(() => {
     const onOpen = (event: Event) => {

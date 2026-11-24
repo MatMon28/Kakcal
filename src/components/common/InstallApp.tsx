@@ -3,7 +3,7 @@ import { CheckCircle, Download, Smartphone } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
 import { isAndroidApp } from '../../utils/android';
-import { openInstallGuide } from './InstallGuide';
+import { openInstallGuide } from './installGuideEvents';
 import { Collapsible } from './Collapsible';
 
 /**

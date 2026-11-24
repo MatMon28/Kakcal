@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Apple, ArrowLeft, ArrowRight, ArrowUpRight, Download, Monitor, MousePointer2, Smartphone } from 'lucide-react';
-import { openInstallGuide, type InstallTarget } from '../common/InstallGuide';
+import { openInstallGuide, type InstallTarget } from '../common/installGuideEvents';
 import { Wordmark } from '../common/Brand';
 import { WidgetGallery } from '../widgets/WidgetGallery';
 import { NotificationShowcase } from './NotificationShowcase';

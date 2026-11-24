@@ -33,6 +33,12 @@ jobs:
             --pattern 'Kakcalculator.apk' \
             --dir public/downloads \
             || echo "No APK found; using fallback."
+          # Validate the download: an APK is a ZIP. A broken or HTML file must never be published as the APK.
+          if [ -f public/downloads/Kakcalculator.apk ]; then
+            unzip -tq public/downloads/Kakcalculator.apk >/dev/null \
+              && unzip -l public/downloads/Kakcalculator.apk | grep -q AndroidManifest.xml \
+              || { echo "Downloaded APK is invalid; removing it."; rm -f public/downloads/Kakcalculator.apk; }
+          fi
 
       - name: Build application
         run: |

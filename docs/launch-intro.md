@@ -29,3 +29,7 @@ The app used to show the full-name wordmark on a Light cream launch screen, then
 How the colour reaches native code: `applyThemeAttributes` runs on every theme / style / hue change and on start; `AppContext.tsx` then calls `syncLaunchBackground(--bg)` (`src/utils/android.ts`) which calls the `JournalDevice.setLaunchBackground` plugin method; `LaunchBackground.save` stores it in the `launch_background` SharedPreferences and switches the splash style. The very first launch after installing has no stored colour yet and uses the Light fallback.
 
 Re-run `node scripts/generate-splash-themes.mjs` when a `--bg` in `src/index.css` (rules in `src/styles/*.css`, see [file-organisation.md](file-organisation.md)) or the mono palette in `src/utils/themes.ts` changes. `scripts/outline-wordmark.mjs` now only writes the logo into `index.html` / `splash_wordmark.xml` with `--launch-screens` (not used).
+
+## First launch only
+
+The animation plays to its last frame **only on the first launch on a device** (`kcalsync_intro_seen` in localStorage, set when the overlay leaves). Later launches (`isReturningLaunch()`) leave as soon as the app is ready, with the quick fade, and a tap still skips. `?intro=1`..`?intro=6` always plays in full. The earlier statement that it "always plays to its last frame" applies to the first launch only. Code: `introAnimations.ts`, `launchIntro.ts`.

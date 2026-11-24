@@ -1,4 +1,5 @@
 import type { MealPhoto } from '../types/journal';
+import { isPhotoRef, photoBytes } from '../storage/photoStore';
 
 const encoder = new TextEncoder();
 const concat = (parts: Uint8Array[]) => {
@@ -49,11 +50,9 @@ export async function exportMealPictures(photos: MealPhoto[]) {
   const files: { name: string; bytes: Uint8Array }[] = [];
   const csv = [['Filename', 'Date', 'Meal', 'Note', 'Created'].map((s) => `"${s}"`).join(',')];
   for (const [index, photo] of photos.entries()) {
-    const safeLocal = photo.src.startsWith('data:image/') || ((photo.src.startsWith(import.meta.env.BASE_URL + 'images/') || photo.src.startsWith('/images/')) && !photo.src.includes('..'));
+    const safeLocal = photo.src.startsWith('data:image/') || isPhotoRef(photo.src) || ((photo.src.startsWith(import.meta.env.BASE_URL + 'images/') || photo.src.startsWith('/images/')) && !photo.src.includes('..'));
     if (!safeLocal) throw new Error('unsafe-source');
-    const response = await fetch(photo.src);
-    if (!response.ok) throw new Error('photo-read');
-    const original = new Uint8Array(await response.arrayBuffer());
+    const original = await photoBytes(photo.src);
     const extension = original[0] === 0xff && original[1] === 0xd8 ? 'jpg' : original[0] === 0x89 ? 'png' : 'webp';
     const base = `${photo.date}_${photo.slot.replace(/[^a-z0-9_-]/gi, '')}_${index + 1}`;
     const name = `${base}.${extension}`;

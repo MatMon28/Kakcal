@@ -68,3 +68,22 @@ export function shouldShowIntro(): boolean {
   if (params.get('intro') === '0' || params.get('tour') === '1') return false;
   return !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 }
+
+/** localStorage flag: the full launch animation has been played (or skipped) once on this device. */
+export const INTRO_SEEN_KEY = 'kcalsync_intro_seen';
+
+/**
+ * Item 7 of the performance review: the animation plays in full on the first launch only. Later launches
+ * leave the moment the app is ready (still tap-to-skip). `?intro=1`..`?intro=6` always plays in full so
+ * the animations stay reviewable.
+ */
+export function isReturningLaunch(): boolean {
+  try {
+    if (new URLSearchParams(window.location.search).has('intro')) return false;
+    return window.localStorage.getItem(INTRO_SEEN_KEY) === '1';
+  } catch { return false; }
+}
+
+export function markIntroSeen(): void {
+  try { window.localStorage.setItem(INTRO_SEEN_KEY, '1'); } catch { /* ignore: the intro just plays again */ }
+}

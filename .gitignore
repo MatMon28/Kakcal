@@ -8,3 +8,9 @@ dist/
 *.aab
 local.properties
 .idea/
+# Generated test bundle and editor files (never tracked)
+scripts/smoke.bundle.js
+.vscode/
+*.log
+coverage/
+public/downloads/

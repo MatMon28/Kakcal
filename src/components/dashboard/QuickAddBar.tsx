@@ -1,5 +1,5 @@
 import { Utensils, Footprints, Droplets, Scale, Sparkles } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useShell } from '../../context/AppContext';
 import { ActionDock, type DockAction } from '../common/ActionDock';
 import { PoopIcon } from '../common/PoopIcon';
 import { useAutoMealSlot } from '../../utils/mealSlots';
@@ -10,7 +10,7 @@ export function QuickAddBar() {
   const {
     settings, activeTab, t, setIsAddFoodOpen, setIsLogActivityOpen, setIsWaterOpen,
     setIsPoopOpen, setIsWeightOpen, setCustomButtonOpenId, setIsCustomPickerOpen, setTargetMealSlot,
-  } = useApp();
+  } = useShell();
   const autoMealSlot = useAutoMealSlot();
   if (activeTab !== 'today') return null;
 

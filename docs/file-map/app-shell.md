@@ -32,3 +32,12 @@ Meal-journal additions: `App.tsx` mounts `JournalChrome`; `index.css` imports `c
 | `src/types/layout.ts`, `src/i18n/layout.ts` | Advanced layout contracts (page layouts, custom meal types) and English/Italian strings (`useLayoutText()`). `MealSlotId` in `types/index.ts` also accepts `custom_*` ids. |
 | `src/types/advanced.ts`, `src/i18n/advanced.ts` | Advanced personalisation contracts (goals, body measures) and their English/Italian strings (`useAdvancedText()`). |
 | `src/types/journal.ts`, `src/i18n/journal.ts` | Meal-plan, photo and meal-memory contracts and English/Italian journal copy selector. See [meal journal](../meal-journal.md). |
+
+## Added in the performance, storage and tooling round
+
+| File | Role |
+| --- | --- |
+| `src/context/contexts.ts` | The three contexts, `useUiState` / `useSettings` / `useJournalData` / `useShell` / `useApp`, and `useStableActions`. |
+| `eslint.config.mjs` | **Now real** (replaces the Next.js leftover): typescript-eslint, react, react-hooks, `no-unstable-nested-components`. |
+| `vite.config.ts`, `tests/`, `.github/workflows/ci.yml` | No single-file plugin, `base: './'`, worker stamping, Vitest config; the regression suite; required CI checks. |
+| `docs/performance-review.md` | Status of the 20-point review. |

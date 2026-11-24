@@ -16,7 +16,9 @@ import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString, getTodayDateString } from '../../utils/formatters';
-import { journalId, removeMealPhoto, saveMealPhoto, useMealJournal } from '../../utils/journalStore';
+import { addMealPhoto, journalId, removeMealPhoto, saveMealPhoto, useMealJournal } from '../../utils/journalStore';
+import { classifyStorageError } from '../../storage/status';
+import { usePhotoSrc } from '../../storage/photoStore';
 import { revealLibraryItem, revealMealSlot } from '../../utils/journalNavigation';
 import type { MealSlotId } from '../../types';
 import type { MealPhoto } from '../../types/journal';
@@ -72,7 +74,7 @@ export function PhotoDiary() {
               onClick={() => setSelected(photo.id)}
             >
               <span>
-                <img src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
+                <StoredImage src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
               </span>
               <strong>{photo.note}</strong>
               <small>{journalDate(photo.date, language)}</small>
@@ -138,7 +140,7 @@ export function MealPhotos({ date, slot }: { date: string; slot: MealSlotId }) {
       <div className="journal-meal-photos">
         {matching.map((p) => (
           <button type="button" key={p.id} onClick={() => setSelected(p.id)}>
-            <img src={p.src} alt="" decoding="async" />
+            <StoredImage src={p.src} alt="" decoding="async" />
             <span>{p.note}</span>
             <ChevronRight size={14} />
           </button>
@@ -169,7 +171,7 @@ export function LibraryPhoto({
     <div className="journal-library-photo">
       {matching.length ? (
         <button type="button" onClick={() => setView(true)}>
-          <img src={matching[0].src} alt={matching[0].note} decoding="async" />
+          <StoredImage src={matching[0].src} alt={matching[0].note} decoding="async" />
           <span>
             <Camera size={13} />
             {j('View photo', 'Vedi foto')}
@@ -195,7 +197,30 @@ export function LibraryPhoto({
   );
 }
 
-async function imageData(file: File): Promise<string> {
+/** Module-scope <img> that resolves `idb:` references to the stored blob (item 10: never defined inside a parent). */
+function StoredImage({ src, ...rest }: { src: string } & Omit<React.ImgHTMLAttributes<HTMLImageElement>, 'src'>) {
+  const resolved = usePhotoSrc(src);
+  return resolved ? <img {...rest} src={resolved} /> : <span className="journal-photo-pending" aria-hidden="true" />;
+}
+
+/** Photos are stored as blobs, so there is no 350 kB string budget any more: 1600 px, JPEG, about 1 MB at most. */
+const MAX_EDGE = 1600;
+const TARGET_BYTES = 1_000_000;
+
+const canvasBlob = (canvas: HTMLCanvasElement, quality: number) =>
+  new Promise<Blob>((resolve, reject) => canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error('canvas'))), 'image/jpeg', quality));
+
+async function encodeCanvas(canvas: HTMLCanvasElement): Promise<Blob> {
+  let quality = 0.85;
+  let blob = await canvasBlob(canvas, quality);
+  while (blob.size > TARGET_BYTES && quality > 0.5) {
+    quality -= 0.1;
+    blob = await canvasBlob(canvas, quality);
+  }
+  return blob;
+}
+
+async function imageBlob(file: File): Promise<Blob> {
   if (!file.type.startsWith('image/') || file.type === 'image/svg+xml' || file.size > 25 * 1024 * 1024)
     throw new Error('image');
   const url = URL.createObjectURL(file);
@@ -203,7 +228,7 @@ async function imageData(file: File): Promise<string> {
     const image = new Image();
     image.src = url;
     await image.decode();
-    const scale = Math.min(1, 1200 / Math.max(image.naturalWidth, image.naturalHeight));
+    const scale = Math.min(1, MAX_EDGE / Math.max(image.naturalWidth, image.naturalHeight));
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
     canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
@@ -212,13 +237,7 @@ async function imageData(file: File): Promise<string> {
     context.fillStyle = '#ffffff';
     context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    let quality = 0.8,
-      data = canvas.toDataURL('image/jpeg', quality);
-    while (data.length > 350000 && quality > 0.35) {
-      quality -= 0.1;
-      data = canvas.toDataURL('image/jpeg', quality);
-    }
-    return data;
+    return await encodeCanvas(canvas);
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -244,7 +263,15 @@ function PhotoComposer({
   const [date, setDate] = useState(initialDate);
   const [slot, setSlot] = useState(initialSlot);
   const [note, setNote] = useState(initialNote);
-  const [src, setSrc] = useState('');
+  // The chosen picture: the blob that will be stored and an object URL for the preview.
+  const [picked, setPicked] = useState<{ blob: Blob; url: string } | null>(null);
+  const pickedRef = useRef(picked);
+  pickedRef.current = picked;
+  const src = picked?.url ?? '';
+  const setBlob = (blob: Blob | null) => {
+    if (pickedRef.current) URL.revokeObjectURL(pickedRef.current.url);
+    setPicked(blob ? { blob, url: URL.createObjectURL(blob) } : null);
+  };
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -256,6 +283,7 @@ function PhotoComposer({
     mounted.current = true;
     return () => {
       mounted.current = false;
+      if (pickedRef.current) URL.revokeObjectURL(pickedRef.current.url);
     };
   }, []);
   useEffect(() => {
@@ -267,8 +295,8 @@ function PhotoComposer({
     setBusy(true);
     setError('');
     try {
-      const result = await imageData(file);
-      if (mounted.current) setSrc(result);
+      const result = await imageBlob(file);
+      if (mounted.current) setBlob(result);
     } catch {
       if (mounted.current)
         setError(
@@ -306,15 +334,20 @@ function PhotoComposer({
       );
     }
   };
-  const capture = () => {
+  const capture = async () => {
     const video = cameraRef.current;
     if (!video?.videoWidth) return;
-    const scale = Math.min(1, 1200 / Math.max(video.videoWidth, video.videoHeight));
+    const scale = Math.min(1, MAX_EDGE / Math.max(video.videoWidth, video.videoHeight));
     const canvas = document.createElement('canvas');
     canvas.width = Math.round(video.videoWidth * scale);
     canvas.height = Math.round(video.videoHeight * scale);
     canvas.getContext('2d')?.drawImage(video, 0, 0, canvas.width, canvas.height);
-    setSrc(canvas.toDataURL('image/jpeg', 0.75));
+    try {
+      const blob = await encodeCanvas(canvas);
+      if (mounted.current) setBlob(blob);
+    } catch {
+      if (mounted.current) setError(j('Could not capture the photo. Try again.', 'Impossibile scattare la foto. Riprova.'));
+    }
     setStream(null);
   };
   const defaultNote = `${label(slot)}, ${journalDate(date, language, { day: 'numeric', month: 'short', year: 'numeric' })}`;
@@ -346,25 +379,24 @@ function PhotoComposer({
             setError(j('Choose a date first.', 'Scegli prima una data.'));
             return;
           }
-          try {
-            saveMealPhoto({
-              id: journalId(),
-              date,
-              slot,
-              src,
-              note: note.trim() || defaultNote,
-              linkedId,
-              createdAt: new Date().toISOString(),
-            });
-            onClose();
-          } catch {
+          const blob = picked?.blob;
+          if (!blob) return;
+          setBusy(true);
+          addMealPhoto(
+            { id: journalId(), date, slot, note: note.trim() || defaultNote, linkedId, createdAt: new Date().toISOString() },
+            blob,
+          ).then(onClose, (failure) => {
+            if (!mounted.current) return;
+            setBusy(false);
             setError(
-              j(
-                'Your device storage is full. Export a backup, then remove older photos and try again.',
-                'Memoria piena. Esporta un backup, rimuovi vecchie foto e riprova.',
-              ),
+              classifyStorageError(failure) === 'quota'
+                ? j(
+                    'Your device storage is full. Export a backup, then remove older photos and try again.',
+                    'Memoria piena. Esporta un backup, rimuovi vecchie foto e riprova.',
+                  )
+                : j('The photo could not be saved. Try again.', 'Impossibile salvare la foto. Riprova.'),
             );
-          }
+          });
         }}
       >
         <div className="journal-photo-controls">
@@ -402,7 +434,7 @@ function PhotoComposer({
                 <X size={16} />
                 {j('Cancel', 'Annulla')}
               </button>
-              <button type="button" className="journal-primary-button" onClick={capture}>
+              <button type="button" className="journal-primary-button" onClick={() => void capture()}>
                 <Camera size={17} />
                 {j('Capture', 'Scatta')}
               </button>
@@ -411,7 +443,7 @@ function PhotoComposer({
         ) : src ? (
           <div className="journal-photo-selected">
             <img src={src} alt={j('Meal photo preview', 'Anteprima foto del pasto')} />
-            <button type="button" className="journal-secondary-button" onClick={() => setSrc('')}>
+            <button type="button" className="journal-secondary-button" onClick={() => setBlob(null)}>
               {j('Choose another', "Scegli un'altra foto")}
             </button>
           </div>
@@ -575,7 +607,7 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
                 onClick={() => setSelected(photo.id)}
               >
                 <span>
-                  <img src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
+                  <StoredImage src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
                 </span>
                 <strong>{photo.note}</strong>
                 <small>{journalDate(photo.date, language)}</small>
@@ -648,7 +680,7 @@ function PhotoViewer({
       >
         <div className="journal-form">
           <div className="journal-lightbox">
-            <img src={photo.src} alt={photo.note} />
+            <StoredImage src={photo.src} alt={photo.note} />
             {photos.length > 1 && (
               <>
                 <button

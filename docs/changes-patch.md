@@ -6,11 +6,11 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md), [changes-patch-history.md](changes-patch-history.md) (what earlier patches contained)
 
-**Current patch (page-change performance round, base `2f61652feb6bd6c11f34803170ca5d71acc76502`):** no `package.json` change, no data / Android / permission change, no visual change. Opening Custom (and going back to Today) no longer freezes the app when a lot of data is loaded (details and measurements in [performance.md](performance.md)):
+**Current patch (performance, storage and tooling round, base `7eb4b6392da61e21ea2acdab73fda7e1b5aeb3ff`):** changes `package.json` and `package-lock.json` (new devDependencies: eslint 9, typescript-eslint, react plugins, vitest, jsdom, fake-indexeddb, @testing-library/react, playwright; `vite-plugin-singlefile` removed; new scripts). Run `npm ci` after applying. No Android native, permission or data-format change except backup version `1.2` and the IndexedDB day / photo storage (the old data is migrated on first start). Full list and status: [performance-review.md](performance-review.md).
 
-- **New:** `src/components/common/LazyBody.tsx` (`useMountedOnce`, `LazyBody`), `scripts/bench-page-change.mjs` (see [verification.md](verification.md#page-change-benchmark)), `docs/performance.md`.
-- **Edited:** `src/components/common/Tabs.tsx` (label widths measured only when the labels change), `src/components/prebuilt/{usePreBuiltMealsState,MealsSection,RecipesSection,PreBuiltMealsView}.tsx` (`foodById` / `mealNutrition` maps, lazy card / section bodies, `data-card-open`), `src/components/journal/{JournalUI,MealDiary,PhotoDiary}.tsx` (lazy section body, no search work without a query, memoised photo sort, async image decoding), `src/components/journal/css/journal-diary.css` (`content-visibility` for collapsed cards).
-- **Docs:** `README.md`, `docs/README.md`, `performance.md`, `motion.md`, `verification.md`, `changelog/rounds-ui-brand.md`, `file-map/{components-common,components-pages,scripts-public}.md`, this file and `changes-patch-history.md`.
+- **New:** `src/storage/*`, `src/context/contexts.ts`, `src/utils/{useToday,widgetDates}.ts`, `src/components/common/{StorageNotice,StorageInfo,LazyInstallGuideHost,installGuideEvents}.ts(x)`, `tests/*`, `.github/workflows/ci.yml`, `docs/performance-review.md`.
+- **Edited:** `src/App.tsx`, `src/main.tsx`, `src/context/{AppContext,appContextType}`, `src/utils/{journalStore,photoExport,deleteAllData,amountMemory}.ts`, `src/components/journal/PhotoDiary.tsx`, `src/components/modals/{AddFoodModal,ActivitySearch,SettingsModal}.tsx`, `src/components/common/{DataBackup,InstallGuide,InstallApp,Header,Modal}.tsx`, intro files, `vite.config.ts`, `eslint.config.mjs`, `tsconfig.json`, `public/{offline-worker.js,_headers}`, `scripts/prepare-android.mjs`, `.github/workflows/pages.yml`, `.gitignore`, docs.
+- **Deleted / untracked:** `src/components/common/Toast.tsx`, `.idea/`, `scripts/smoke.bundle.js`.
 
 Apply from that repository revision:
 

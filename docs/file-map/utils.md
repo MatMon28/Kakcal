@@ -48,3 +48,10 @@
 | `src/utils/journalStore.ts` | Versioned meal plans, memories and photos; shared reactive localStorage state, validation, cross-tab updates, food snapshots, and JSON backup helpers. |
 
 android.ts declares the local exportFile bridge. planSharing.ts/saveLocalFile chooses browser downloads or the APK document picker; native links use the existing public homepage, configurable with VITE_PUBLIC_APP_URL.
+
+## Added in the performance, storage and tooling round
+
+| File | Role |
+| --- | --- |
+| `src/storage/idb.ts`, `dayStore.ts`, `photoStore.ts`, `writeQueue.ts`, `usePersist.ts`, `status.ts`, `boot.ts` | The storage layer: IndexedDB wrapper, per-record day store with the schema migration, photo blobs / backups / storage info, coalescing write queue, effect-based localStorage persistence, failure status store, start-up loader awaited by `main.tsx`. See [storage-and-privacy.md](../storage-and-privacy.md). |
+| `src/utils/useToday.ts`, `widgetDates.ts` | One-timer midnight rollover; the dates the widgets need. |

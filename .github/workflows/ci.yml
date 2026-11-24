@@ -1,0 +1,35 @@
+name: CI
+
+# Required checks (docs/verification.md): type check, lint, the focused regression suite and a production build.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Type check
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Regression tests (saving, importing, food logging, navigation, storage)
+        run: npm test
+      - name: Production build
+        run: npx vite build
+      - name: Service worker was stamped
+        run: |
+          ! grep -q "__BUILD_ID__" dist/offline-worker.js
+          grep -q "assets/" dist/offline-worker.js
+      - name: Widget layouts
+        run: node scripts/check-widget-layouts.mjs

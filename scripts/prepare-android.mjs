@@ -12,6 +12,9 @@ const config = JSON.parse(await readFile('capacitor.config.json', 'utf8'));
 if (config.webDir !== 'dist' || config.server?.url || config.server?.allowNavigation?.length) {
   throw new Error('A release must load dist from APK assets, without remote navigation or a live-reload URL.');
 }
+// Guard: a release must never be built from code that does not type-check (the same check `npm run build` runs).
+const typecheck = spawnSync(process.execPath, [path.join(root, 'node_modules/typescript/bin/tsc'), '--noEmit'], { stdio: 'inherit' });
+if (typecheck.status !== 0) throw new Error('TypeScript check failed. Fix the errors before preparing an Android build.');
 process.env.VITE_DEMO_DATA = 'false';
 process.env.VITE_ANDROID_RELEASE = 'true';
 // The download archive and browser service worker do not belong in an APK.
@@ -31,6 +34,10 @@ const sync = spawnSync(process.execPath, [path.join(root, 'node_modules/@capacit
 if (sync.status !== 0) throw new Error('Capacitor sync failed. Run npm ci and try again.');
 const assets = 'android/app/src/main/assets/';
 if (await readFile(assets + 'public/index.html', 'utf8') !== html) throw new Error('Synced web bundle mismatch.');
+// The bundle is no longer a single file: every script / stylesheet the shell references must have been synced too.
+for (const ref of html.matchAll(/(?:src|href)="\.\/(assets\/[^"]+)"/g)) {
+  await readFile(assets + 'public/' + ref[1]).catch(() => { throw new Error(`Synced web bundle is missing ${ref[1]}.`); });
+}
 const plugins = JSON.parse(await readFile(assets + 'capacitor.plugins.json', 'utf8'));
 if (!plugins.some((plugin) => plugin.pkg === '@capacitor/app')) throw new Error('Android Back plugin missing.');
 if (!plugins.some((plugin) => plugin.pkg === '@capacitor/local-notifications')) throw new Error('Android notifications plugin missing.');

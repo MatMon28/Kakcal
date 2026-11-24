@@ -39,3 +39,7 @@
 `scripts/verify-interaction-update.mjs`: optional Playwright desktop/mobile regression suite for the interaction update; see verification.md.
 
 `scripts/bench-page-change.mjs`: Playwright benchmark of the page-change cost with a large seeded journal and a throttled CPU (see [../verification.md](../verification.md#page-change-benchmark), [../performance.md](../performance.md)).
+
+## Added in the performance, storage and tooling round
+
+`public/offline-worker.js` now holds `__BUILD_ID__` / `__PRECACHE_ASSETS__` placeholders that `vite.config.ts` fills in; `public/_headers` caches `/assets/*` as immutable; `scripts/smoke.bundle.js` is no longer tracked; `scripts/prepare-android.mjs` type-checks and verifies the synced `assets/*`.

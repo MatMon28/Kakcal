@@ -27,7 +27,7 @@ export function setLastAmount(foodId: string, amount: number) {
   m[foodId] = amount;
   try {
     localStorage.setItem(KEY, JSON.stringify(m));
-  } catch {}
+  } catch { /* storage full or unavailable: the portion is simply not remembered */ }
 }
 
 /**

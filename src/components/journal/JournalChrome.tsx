@@ -14,7 +14,7 @@ import {
   Sun,
   User,
 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useShell } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useAdvanced } from '../../utils/advancedStore';
 import { isPeriodShown } from '../../utils/tourPreview';
@@ -35,7 +35,7 @@ export function JournalChrome() {
     selectedDate,
     language,
     t,
-  } = useApp();
+  } = useShell();
   const bodyEnabled = useAdvanced().body.enabled;
   const j = useJournalText();
   const [help, setHelp] = useState(false);

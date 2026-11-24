@@ -35,3 +35,13 @@ Photo normalization/export retains legacy `/images/` references as well as base-
 
 **Planner / dock round:** new UI-only key `kcak_planner_draft` holds one unfinished meal-plan draft (selected days, meals and the foods or notes entered so far). It stays on this device, is not part of JSON backups and is removed when the plan is saved or the draft is discarded or deleted. No other keys.
 **New features round:** `kcalsync_settings` also stores `showPlannerButton` / `showPhotoButton`; `kcalsync_advanced` stores the intake / burned `balance` target and the protein `perKg` flag; recipes keep their standard portion in `portion`; UI-only key `kcak_custom_foods_tab`. The Excel export is built in the browser and saved locally; nothing is sent anywhere. See [new-features-update.md](new-features-update.md).
+
+## IndexedDB (storage review round)
+
+| Data | Where | Notes |
+| --- | --- | --- |
+| Journal days | IndexedDB `kakcal` > `days` (one record per date) | Schema in `meta.daySchema` (2). The old `kcalsync_day_logs` localStorage blob is migrated once and deleted after the transaction commits. Without IndexedDB the blob is used as a fallback. Code: `src/storage/dayStore.ts`. |
+| Meal photos | IndexedDB `photos` (blobs); the journal stores `idb:<id>` in `MealPhoto.src` | Legacy `data:` photos migrate when idle. Backups embed photos as data URLs. Code: `src/storage/photoStore.ts`. |
+| Everything else | localStorage keys as before | Written through `src/storage/writeQueue.ts` (coalesced, flushed on hide / unload), from effects, never inside state updaters. |
+
+**Delete all data** also deletes the IndexedDB database. Failed writes are reported by `StorageNotice`; `StorageInfo` (Settings > Backup) shows the browser's usage / quota estimate (quotas vary, no fixed limit is assumed). Backup version is `1.2`.

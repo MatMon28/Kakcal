@@ -48,3 +48,10 @@ Continuous selector: `Tabs.tsx` keeps labels mounted and blends pastel indicator
 DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. JournalChrome.tsx also displays the continuous page pill on desktop and marks demo builds as Test mode.
 
 (Round: page-change performance) `src/components/common/LazyBody.tsx`: `useMountedOnce(open)` / `<LazyBody open>` mount a collapsed accordion body only once it has been opened (then it stays mounted); used by the Custom cards / sections and `JournalSection`. `Tabs.tsx` measures the tab label widths only when the labels change (it used to read `scrollWidth` after every render, forcing a layout). See [../performance.md](../performance.md).
+
+## Added in the performance, storage and tooling round
+
+| File | Role |
+| --- | --- |
+| `StorageNotice.tsx`, `StorageInfo.tsx` | Failed-save banner (mounted in `App.tsx`); storage usage / persistence control in Settings > Backup. |
+| `installGuideEvents.ts`, `LazyInstallGuideHost.tsx` | The tiny always-loaded open-event API and the lazy host; the heavy `InstallGuide.tsx` loads on first request. `Toast.tsx` was deleted. |

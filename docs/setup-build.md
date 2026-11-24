@@ -15,9 +15,11 @@
 | Script | What it really runs |
 | --- | --- |
 | `npm run dev` | `vite` dev server (`-- --host 0.0.0.0` to expose on the network). |
-| `npm run build` | `vite build` -> one inlined `dist/index.html`, plus everything from `public/` (PWA `manifest.webmanifest`, `icons/`, `offline-worker.js`, `_headers`, catalogue, licences). This is the **browser/PWA build** (demo seeds, service worker), not an APK bundle. Host the whole `dist/` over HTTPS ([pwa-setup.md](pwa-setup.md)). |
+| `npm run build` | `tsc --noEmit` then `vite build` -> `dist/index.html` plus hashed `dist/assets/*` (lazy chunks, CSS, fonts), everything from `public/` and a stamped `offline-worker.js`. The build fails on a type error. Host the whole `dist/` over HTTPS ([pwa-setup.md](pwa-setup.md)). |
 | `npm run preview` | `vite preview` of `dist/`. |
-| `npm run android:prepare` | `npm run build && npx cap sync android`. **This is not the clean no-demo Android build** (it keeps demo seeds and the service worker); use `node scripts/prepare-android.mjs` instead. See [known-gaps.md](known-gaps.md). |
+| `npm run android:prepare` | `node scripts/check-widget-layouts.mjs && node scripts/prepare-android.mjs`: **the one guarded Android path** (type check, clean no-demo build, asset sync checks). |
+| `npm run typecheck` / `lint` / `test` / `check` | `tsc --noEmit`; ESLint on `src`; Vitest regression suite (`tests/`); all of them plus a build (what CI runs). |
+| `npm run test:browser` | Playwright scripts (`scripts/smoke.mjs`, `scripts/check-journal.mjs`); run `npx playwright install chromium` first. |
 
 ## Scripts you run directly
 

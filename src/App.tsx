@@ -1,30 +1,22 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
-import { AppProvider, useApp } from './context/AppContext';
+import { AppProvider, useApp, useShell } from './context/AppContext';
 import { Header } from './components/common/Header';
 import { JournalChrome } from './components/journal/JournalChrome';
 import { closeTopModal, getOpenModalCount } from './components/common/Modal';
 import { TodayView } from './components/dashboard/TodayView';
 import { PreBuiltMealsView } from './components/prebuilt/PreBuiltMealsView';
-import { PeriodView } from './components/period/PeriodView';
 import { FoodDatabaseView } from './components/database/FoodDatabaseView';
-import { HistoryView } from './components/history/HistoryView';
-import { BodyView } from './components/body/BodyView';
 import { AddFoodModal } from './components/modals/AddFoodModal';
-import { LogActivityModal } from './components/modals/LogActivityModal';
-import { BarcodeLookupModal } from './components/modals/BarcodeLookupModal';
-import { UserProfileModal } from './components/modals/UserProfileModal';
-import { SettingsModal } from './components/modals/SettingsModal';
 import { WaterModal } from './components/modals/WaterModal';
 import { WeightModal } from './components/modals/WeightModal';
 import { PoopModal } from './components/modals/PoopModal';
 import { CustomFoodModal } from './components/modals/CustomFoodModal';
 import { CustomButtonModal } from './components/modals/CustomButtonModal';
 import { CustomPickerModal } from './components/modals/CustomPickerModal';
-import { PeriodSheet } from './components/modals/PeriodSheet';
 import { QuickAddBar } from './components/dashboard/QuickAddBar';
-import { AppTour } from './components/tour/AppTour';
-import { InstallGuideHost } from './components/common/InstallGuide';
+import { StorageNotice } from './components/common/StorageNotice';
+import { LazyInstallGuideHost } from './components/common/LazyInstallGuideHost';
 import { PageSwiper } from './components/common/PageSwiper';
 import { IntroSplash } from './components/intro/IntroSplash';
 import { isStandaloneApp } from './utils/pwaInstall';
@@ -40,7 +32,9 @@ import {
   type TourScreen,
   type WidgetAction,
 } from './components/widgets/widgetContract';
-import { addDaysToDateString, getTodayDateString } from './utils/formatters';
+import { getTodayDateString } from './utils/formatters';
+import { useToday } from './utils/useToday';
+import { widgetDates } from './utils/widgetDates';
 import { isAndroidApp, JournalDevice } from './utils/android';
 import { isPeriodShown } from './utils/tourPreview';
 import { useNotificationScheduler } from './utils/useNotificationScheduler';
@@ -53,6 +47,27 @@ import { useAppReady } from './components/intro/useAppReady';
 import type { ActiveTab } from './types';
 import { DEMO_MODE } from './config/demo';
 import { startedWithPlanLink } from './utils/incomingPlan';
+
+// Optional screens load on demand (item 2) and are preloaded once the app is idle, so opening one is still instant.
+const PeriodView = lazy(() => import('./components/period/PeriodView').then((m) => ({ default: m.PeriodView })));
+const HistoryView = lazy(() => import('./components/history/HistoryView').then((m) => ({ default: m.HistoryView })));
+const BodyView = lazy(() => import('./components/body/BodyView').then((m) => ({ default: m.BodyView })));
+const LogActivityModal = lazy(() => import('./components/modals/LogActivityModal').then((m) => ({ default: m.LogActivityModal })));
+const BarcodeLookupModal = lazy(() => import('./components/modals/BarcodeLookupModal').then((m) => ({ default: m.BarcodeLookupModal })));
+const UserProfileModal = lazy(() => import('./components/modals/UserProfileModal').then((m) => ({ default: m.UserProfileModal })));
+const SettingsModal = lazy(() => import('./components/modals/SettingsModal').then((m) => ({ default: m.SettingsModal })));
+const PeriodSheet = lazy(() => import('./components/modals/PeriodSheet').then((m) => ({ default: m.PeriodSheet })));
+const AppTour = lazy(() => import('./components/tour/AppTour').then((m) => ({ default: m.AppTour })));
+
+function preloadOptionalScreens() {
+  void import('./components/period/PeriodView');
+  void import('./components/history/HistoryView');
+  void import('./components/body/BodyView');
+  void import('./components/modals/LogActivityModal');
+  void import('./components/modals/SettingsModal');
+  void import('./components/modals/UserProfileModal');
+  void import('./components/modals/PeriodSheet');
+}
 
 const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'body', 'history'];
 
@@ -71,11 +86,12 @@ const targetOrigin = () => (window.location.origin === 'null' ? '*' : window.loc
 function WidgetAppBridge() {
   const app = useApp();
   const autoMealSlot = useAutoMealSlot();
-  const [today, setToday] = useState(getTodayDateString);
+  const today = useToday();
   const snapshot = useMemo(
     () => makeWidgetSnapshot(today, app.language, app.allDayLogs[today], app.userProfile),
     [today, app.language, app.allDayLogs, app.userProfile],
   );
+  const lastPublished = useRef('');
   const snapshotRef = useRef(snapshot);
   snapshotRef.current = snapshot;
 
@@ -202,15 +218,10 @@ function WidgetAppBridge() {
   useEffect(() => {
     if (!isAndroidApp() || window.parent !== window) return;
     const days: Record<string, NutritionValues> = {};
-    const earliest = addDaysToDateString(today, -1);
-    // Today is always published, even with no entries. Yesterday covers timezone changes,
-    // and recorded future dates keep offline rollover correct.
-    for (const date of new Set([today, ...Object.keys(app.allDayLogs)])) {
-      if (date < earliest) continue;
+    for (const date of widgetDates(today, app.allDayLogs)) {
       days[date] = nutritionValues(makeWidgetSnapshot(date, app.language, app.allDayLogs[date], app.userProfile));
     }
-    // The widgets are not part of the first screen: publish once the app is idle (and only the latest change).
-    return whenIdle(() => void JournalDevice.publishNutrition({
+    const payload = {
       language: app.language,
       bmr: calculateBMR(app.userProfile),
       widgetStyle: app.settings.widgetStyle,
@@ -218,7 +229,15 @@ function WidgetAppBridge() {
       monoHue: app.settings.monoHue,
       widgetCustomButton: app.settings.widgetCustomButton && app.settings.customButtons.length > 0,
       days,
-    }).catch(() => console.warn('Native widget refresh unavailable')));
+    };
+    // Edits to older days produce the same payload: nothing to publish then.
+    const key = JSON.stringify(payload);
+    if (key === lastPublished.current) return;
+    // The widgets are not part of the first screen: publish once the app is idle (and only the latest change).
+    return whenIdle(() => {
+      lastPublished.current = key;
+      void JournalDevice.publishNutrition(payload).catch(() => console.warn('Native widget refresh unavailable'));
+    });
   }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.themeStyle, app.settings.monoHue, app.settings.widgetCustomButton, app.settings.customButtons]);
 
   useEffect(() => {
@@ -248,18 +267,6 @@ function WidgetAppBridge() {
     window.parent.postMessage({ channel: WIDGET_CHANNEL, type: 'snapshot', snapshot }, targetOrigin());
   }, [snapshot, app.settings.theme, app.settings.themeStyle, app.settings.monoHue, app.settings.widgetStyle, app.settings.widgetCustomButton, app.settings.customButtons]);
 
-  useEffect(() => {
-    const updateDate = () => setToday(getTodayDateString());
-    const interval = window.setInterval(updateDate, 60_000);
-    window.addEventListener('focus', updateDate);
-    document.addEventListener('visibilitychange', updateDate);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener('focus', updateDate);
-      document.removeEventListener('visibilitychange', updateDate);
-    };
-  }, []);
-
   return null;
 }
 
@@ -269,7 +276,7 @@ function MainContent() {
     isAddFoodOpen, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
     isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId,
     isCustomPickerOpen, isPeriodSheetOpen,
-  } = useApp();
+  } = useShell();
 
   const anyModal = isAddFoodOpen || isLogActivityOpen || isBarcodeOpen || isProfileOpen ||
     isSettingsOpen || isWaterOpen || isPoopOpen || isWeightOpen || isCustomFoodOpen ||
@@ -286,8 +293,12 @@ function MainContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, [activeTab]);
 
+  // Download the optional screens in the background once the first screen is done (item 2).
+  useEffect(() => whenIdle(preloadOptionalScreens), []);
+
   const visibleTabs = MAIN_TABS.filter((tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown));
-  const renderMainTab = (tab: ActiveTab) => {
+  const renderMainTab = (tab: ActiveTab) => <Suspense fallback={null}>{renderTabContent(tab)}</Suspense>;
+  const renderTabContent = (tab: ActiveTab) => {
     switch (tab) {
       case 'today': return <TodayView />;
       case 'prebuilt': return <PreBuiltMealsView hideDock={tab !== activeTab} />;
@@ -354,6 +365,7 @@ function MainContent() {
   return (
     <div data-journal-root data-active-tab={activeTab} className="min-h-dvh bg-[var(--bg)] text-[var(--text)] flex flex-col font-sans pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)]">
       <WidgetAppBridge />
+      <StorageNotice />
       <Header />
       <JournalChrome />
       <main data-journal-surface className="flex-1 min-w-0">
@@ -371,17 +383,19 @@ function MainContent() {
       </main>
       {activeTab === 'today' && <QuickAddBar />}
       {isAddFoodOpen && <AddFoodModal />}
-      {isLogActivityOpen && <LogActivityModal />}
-      {isBarcodeOpen && <BarcodeLookupModal />}
-      {isProfileOpen && <UserProfileModal />}
-      {isSettingsOpen && <SettingsModal />}
+      <Suspense fallback={null}>
+        {isLogActivityOpen && <LogActivityModal />}
+        {isBarcodeOpen && <BarcodeLookupModal />}
+        {isProfileOpen && <UserProfileModal />}
+        {isSettingsOpen && <SettingsModal />}
+        {isPeriodSheetOpen && <PeriodSheet />}
+      </Suspense>
       {isWaterOpen && <WaterModal />}
       {isPoopOpen && <PoopModal />}
       {isWeightOpen && <WeightModal />}
       {isCustomFoodOpen && <CustomFoodModal />}
       {customButtonOpenId && <CustomButtonModal key={customButtonOpenId} />}
       {isCustomPickerOpen && <CustomPickerModal />}
-      {isPeriodSheetOpen && <PeriodSheet />}
     </div>
   );
 }
@@ -393,10 +407,11 @@ export function App() {
   const view = new URLSearchParams(window.location.search).get('view');
   // Normal (installed) mode: an installed PWA, an iOS Home Screen app and the Android bundle
   // always open the journal itself — never the marketing/guided-tour page, even with ?view=tour.
-  // The guided tour is only for first-time browser visitors and can be skipped with ?view=app.
+  // The guided tour is opt-in (?view=tour) and lazy-loaded.
   const installed = isStandaloneApp() || import.meta.env.VITE_ANDROID_RELEASE === 'true' ||
     window.location.protocol === 'capacitor:' || isAndroidApp();
-  const showJournal = installed || view === 'app' || DEMO_MODE || startedWithPlanLink;
+  // Item 8: the journal is the main destination for everyone; the guided tour is opt-in with ?view=tour.
+  const showJournal = installed || view !== 'tour' || DEMO_MODE || startedWithPlanLink;
   // Launch intro (one of six random phase-1 animations); the app mounts underneath it.
   introPending ??= shouldShowIntro();
   const [introVisible, setIntroVisible] = useState(introPending);
@@ -407,14 +422,14 @@ export function App() {
   // The logo painted by index.html fades away once the app (and the intro over it) is mounted.
   useEffect(() => { dismissBootSplash(); }, []);
 
-  if (!showJournal) return <><InstallGuideHost /><AppTour />{intro}</>;
+  if (!showJournal) return <><LazyInstallGuideHost /><Suspense fallback={null}><AppTour /></Suspense>{intro}</>;
 
   return (
     <>
       <AppProvider>
         <MainContent />
       </AppProvider>
-      <InstallGuideHost />
+      <LazyInstallGuideHost />
       {intro}
     </>
   );

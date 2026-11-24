@@ -87,8 +87,6 @@ export const AddFoodModal: React.FC = () => {
     }
   }, [isAddFoodOpen, targetMealSlot, activeFood]);
 
-  // The 130,000-product offline catalogue is fetched the first time this dialog opens.
-  const offCatalog = useOffCatalog(isAddFoodOpen);
 
   const nameOf = (f: FoodItem) =>
     language === 'it' ? f.name_it : f.name_en || f.name_de;
@@ -105,6 +103,9 @@ export const AddFoodModal: React.FC = () => {
   );
 
   const trimmedQuery = searchTerm.trim();
+  // Item 6: the 130,000-product catalogue is fetched only when a catalogue search is actually needed (two or more
+  // typed characters), not when the dialog opens: picking a favourite, quick food or saved meal never downloads it.
+  const offCatalog = useOffCatalog(isAddFoodOpen && trimmedQuery.length >= 2);
   const isSearching = trimmedQuery.length >= 2;
 
   // Favourite foods: shown as the whole list while the field is focused and empty,
@@ -337,12 +338,6 @@ export const AddFoodModal: React.FC = () => {
   const portionKcal = activeFood ? kcalOf(activeFood, currentAmount) : 0;
   const queuedTotalKcal = queuedItems.reduce((s, e) => s + kcalOf(e.food, e.amount), 0);
 
-  // Shared result row: whole row picks the food, the star toggles favourites. It shows the
-  // pre-filled weight (last used, classic portion or 100 g/ml) with the macros of that weight.
-  const FoodRow: React.FC<{ food: FoodItem; onClick: () => void }> = ({ food, onClick }) => (
-    <FoodResultRow food={food} onClick={onClick} favorite />
-  );
-
   // Panel shown while the search field is empty/focused or only one char is typed.
   const favoritesPanel = (items: FoodItem[]) => (
     <div className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] overflow-hidden">
@@ -357,7 +352,7 @@ export const AddFoodModal: React.FC = () => {
       ) : (
         <div ref={setResultsEl} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)]">
           {items.map((f) => (
-            <FoodRow key={f.id} food={f} onClick={() => handlePickFood(f)} />
+            <FoodResultRow key={f.id} food={f} onClick={() => handlePickFood(f)} favorite />
           ))}
         </div>
       )}
@@ -618,10 +613,11 @@ export const AddFoodModal: React.FC = () => {
                       </span>
                     </button>
                   ) : (
-                    <FoodRow
+                    <FoodResultRow
                       key={res.f.id}
                       food={res.f}
                       onClick={() => handlePickFood(res.f)}
+                      favorite
                     />
                   )
                 )
