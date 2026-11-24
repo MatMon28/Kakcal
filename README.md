@@ -2,9 +2,13 @@
 
 ## Current Update
 
+**Android export fix round:** *Export JSON* from the Android APK produced a **0 B** file (the PWA was fine). The native save in `JournalDevicePlugin.java` is hardened: the staged file is found even when Capacitor lost the call, `xlsx` is accepted, the copy retries with another open mode and checks the byte count, a failed write removes the empty document and rejects instead of hanging, and an empty payload is refused. The app shows the saved size and no longer says "saved" when you close the picker. **Rebuild the APK.** See [docs/backup-update.md](docs/backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix).
+
+### Previous update (full backup round)
+
 **Full backup round:** Settings > Data Backup > **Export JSON** now saves **everything you saved except the pictures** (meals, recipes, plans, shopping lists, settings, favourites, notes, language, remembered portions, the planner draft and interface preferences) as a `version: "2.0"` file, and **warns that pictures are not included** (permanent notice, a confirmation when pictures exist, a message after the export; the separate *Export meal pictures* ZIP keeps them). **Import JSON** reads the new file and the old 1.x files (pictures included); picture notes are re-attached to pictures already on the device. See [docs/backup-update.md](docs/backup-update.md).
 
-### Previous update (plans and shopping round)
+### Earlier update (plans and shopping round)
 
 **Plans and shopping-list round:** the planner's first page asks for **one plan name** (never one per meal); Log food and the planner show **5 recent foods plus a `...` chip** that reveals 10 more; the planner uses the **same colours as Log food** for saved meals, recipes and meals planned on earlier days; the expanded planner has **See all plans** (current and past plans: edit one, or **reuse** it as the starting point of a new plan, e.g. 7 days stretched to 14 with the extra days empty); and Custom has a new teal **Shopping list** section below the planner: pick a plan, get every food with its total quantity, tick what was bought, and use the pencil to remove or add items. Stored inside the existing meal-journal record (also in JSON backups). See [docs/plans-shopping-update.md](docs/plans-shopping-update.md).
 

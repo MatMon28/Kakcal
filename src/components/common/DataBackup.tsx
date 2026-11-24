@@ -13,6 +13,8 @@ import { useMealSlots } from '../../utils/mealSlots';
 import { StorageInfo } from './StorageInfo';
 import { getLastImportReport } from '../../utils/backupFormat';
 
+const formatBytes = (bytes: number): string => (bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`);
+
 /** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
 export const DataBackup: React.FC = () => {
   const { exportDataJson, importDataJson, allDayLogs, userProfile, t } = useApp();
@@ -55,8 +57,11 @@ export const DataBackup: React.FC = () => {
     if (isAndroidApp()) {
       setMessage(null);
       try {
-        await JournalDevice.exportBackup({ json: await exportDataJson() });
-        setMessage({ text: picturesNote, error: false });
+        const json = await exportDataJson();
+        const result = await JournalDevice.exportBackup({ json, filename: `kakcal_backup_${getTodayDateString()}.json` });
+        if (result?.cancelled) return; // the user closed the picker: nothing was saved, so no success message
+        const size = typeof result?.bytes === 'number' ? ` (${formatBytes(result.bytes)})` : '';
+        setMessage({ text: `${j('Backup saved.', 'Backup salvato.')}${size} ${picturesNote}`, error: false });
       }
       catch { setMessage({ text: t.history.exportError, error: true }); }
       return;

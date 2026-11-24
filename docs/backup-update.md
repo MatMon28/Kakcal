@@ -51,17 +51,43 @@ Importing an old `1.x` file restores its embedded pictures, as before.
 
 `collectPreferences()` saves every localStorage key that matches `kcak_*`, `kcalsync_body_range`, `kcalsync_stats_daily_open` or `kcalsync_stats_weight_open`, except `kcak_planner_draft` (exported as `plannerDraft`). `applyPreferences()` accepts only the same whitelist (max 100 keys, 20,000 characters each). **A new interface-preference key named `kcak_*` is saved automatically**; any other new key must be added to `exportDataJson` / `importDataJson` in `AppContext.tsx` (see the table in [README.md](README.md#keeping-the-docs-current)). Open / closed states are read when a page mounts, so they show after the app is reopened.
 
+## Saving the file on Android (the APK): the 0 B file fix
+
+**Symptom:** *Export JSON* from the Android APK created a `.json` file of **0 B**; the PWA was fine (the browser downloads a Blob, the APK cannot).
+
+**Path in the APK:** `DataBackup.tsx` > `JournalDevice.exportBackup({ json, filename })` > `JournalDevicePlugin.exportBackup` stages the bytes in a private cache file > the system *create document* picker opens (this is the moment the 0 B document is created by Android) > `backupDestination` copies the staged file into it.
+
+**What could leave the document empty (all closed in `JournalDevicePlugin.java`):**
+
+| Cause | Fix |
+| --- | --- |
+| The copy callback received `call == null` (Capacitor no longer had the call, e.g. the activity was re-created while the picker was open) and silently returned, after Android had already created the empty document | the staged file name is also stored in SharedPreferences (`journal_export` / `pendingFile`); the callback copies the file anyway (only the answer to JS is missing) |
+| The temp-file name check accepted `json`, `zip`, `txt` but not `xlsx`: *Export to Excel* was rejected ("Backup expired") after the empty document existed | `xlsx` is accepted |
+| The provider failed with the `"wt"` (truncate) open mode and the error left the empty document | the copy retries with `"w"`; the byte count is checked; the file descriptor is synced |
+| Any failure left the empty document behind and an exception inside the callback was swallowed by Capacitor (JS waited forever) | the empty document is deleted (`DocumentsContract.deleteDocument`), the callback body is wrapped so JS always gets a rejection, the staged file is always removed |
+| An empty payload would have produced a 0 B file | empty / blank JSON and empty base64 are rejected before the picker opens |
+
+**Visible behaviour:** *Export JSON* in the APK now shows `Backup saved. (12.4 KB) Pictures are not included...` (the size actually written). Closing the picker without saving shows **no** success message (before it said the backup was saved). A real write failure shows the existing red error and leaves no 0 B file. The file name is `kakcal_backup_<date>.json`, like the browser.
+
+**Bridge contract (`src/utils/android.ts`):** `exportBackup({ json, filename? })` and `exportFile({ base64, filename, kind })` resolve `{ cancelled?: boolean; bytes?: number }`.
+
+**Rebuild the APK** (`node scripts/prepare-android.mjs && npx cap open android`) to get the fixed native plugin; the web part alone does not fix it. No new permission, package or storage key.
+
+**Tests:** `tests/backup-android.test.tsx` (the APK path with the plugin mocked: non-empty version 2 payload, file name, size shown, no Blob download, cancel shows nothing, failure shows the error). The Java part cannot run in CI: check it on a device (see [verification.md](verification.md)).
+
 ## Code
 
 - `src/utils/backupFormat.ts`: version constants, `isSupportedBackup`, picture notes (`journalWithoutPictures`, `readPhotoNotes`, `mergePictureNotes`), preferences, `ImportReport` (`getLastImportReport`).
 - `src/utils/journalStore.ts`: `exportMealJournalForBackup()` (now synchronous, no pictures), `prepareMealJournalImport()` (old pictures to blobs first; version 2 notes merged).
 - `src/context/AppContext.tsx`: `exportDataJson`, `importDataJson` (the `Promise` types are unchanged).
 - `src/utils/amountMemory.ts`: `exportLastAmounts`, `importLastAmounts`. `src/utils/plannerDraft.ts`: `parsePlannerDraft` (validation shared by the stored draft and the backup).
-- `src/components/common/DataBackup.tsx`: the notice, the confirmation, the messages.
+- `src/components/common/DataBackup.tsx`: the notice, the confirmation, the messages; the Android branch (native save, cancel, size).
+- `android/app/src/main/java/com/kcalsync/app/JournalDevicePlugin.java`: `exportBackup`, `exportFile`, `backupDestination` (see the section above). `src/utils/android.ts`: the typed bridge.
 - `tests/backup-ui.test.tsx`: the notice, the confirmation (nothing exported before the user confirms) and that the downloaded file has no picture data.
+- `tests/backup-android.test.tsx`: the Android export path.
 - `tests/backup.test.tsx`: contents, no picture data in the file, round trip to an empty device and onto a device that still has the picture, old `1.2` import, refusal of a newer file.
 
-No new package, permission, storage key, Android native code or remote API.
+No new package, permission, storage key or remote API (the Android native export code was hardened, see above).
 
 ## Verifying by hand
 

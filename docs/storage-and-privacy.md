@@ -28,7 +28,7 @@ Personalized tracker/category icons are local 96 px PNG data URLs and are includ
 
 Meal-plan links store selected meals/notes in the URL fragment, without a new API/backend. Anyone with the link can read it. Photo export is generated on-device as standard ZIP, JPEG XMP descriptions, text notes and CSV. Imported plans are previewed before additive save and do not log food.
 
-APK ZIP/text export reuses the existing local Android document picker. Only an internal plugin method is added: no external API or Android permission. Plan links from the APK point to the existing hosted web app rather than the device-local WebView origin. CSV note cells are protected against spreadsheet formula execution.
+APK JSON / ZIP / Excel / text export reuses the existing local Android document picker (hardened against 0 B files, see [backup-update.md](backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix)); the staged file name is kept in the private SharedPreferences file `journal_export` until the file is written or cancelled. Only an internal plugin method is added: no external API or Android permission. Plan links from the APK point to the existing hosted web app rather than the device-local WebView origin. CSV note cells are protected against spreadsheet formula execution.
 
 Photo normalization/export retains legacy `/images/` references as well as base-path-aware demo images; existing JPEG/PNG/WebP data URLs remain unchanged.
 

@@ -6,12 +6,12 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md), [changes-patch-history.md](changes-patch-history.md) (what earlier patches contained)
 
-**Current patch (full backup round, base `284239a8cb5fe34cf823c4e49f754de99ddff912`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission or new-key change, no remote API. Details: [backup-update.md](backup-update.md).
+**Current patch (Android export fix round, base `7323df46a57a78b9e402caaae5edec39801c6c94`):** no `package.json` / lock-file change (no `npm ci` needed), no new permission, storage key or remote API. **Rebuild the APK** (the fix is in the native plugin). Details: [backup-update.md](backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix).
 
-- **New:** `src/utils/backupFormat.ts`, `tests/{backup,backup-ui}.test.tsx`, `docs/backup-update.md`.
-- **Edited:** `src/context/AppContext.tsx` (`exportDataJson` / `importDataJson`), `src/components/common/DataBackup.tsx`, `src/utils/{journalStore,amountMemory,plannerDraft}.ts`, docs (`README.md`, `docs/README.md`, `storage-and-privacy.md`, `meal-journal.md`, `verification.md`, `known-gaps.md`, `planner-dock-update.md`, `interaction-update.md`, `performance-review.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/rounds-journal.md`, `file-map/{utils,components-common,app-shell}.md`).
+- **New:** `tests/backup-android.test.tsx`.
+- **Edited:** `android/app/src/main/java/com/kcalsync/app/JournalDevicePlugin.java` (export section), `src/utils/android.ts`, `src/components/common/DataBackup.tsx`, docs (`README.md`, `docs/README.md`, `backup-update.md`, `storage-and-privacy.md`, `interaction-update.md`, `verification.md`, `known-gaps.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/rounds-journal.md`, `file-map/android-native.md`, `file-map/utils.md`, `file-map/components-common.md`, `android/BUILD_APK.md`).
 - **Deleted:** nothing.
-- **Behaviour you can see:** Settings > Data Backup > *Export* writes a `version: "2.0"` file with all user data and **no pictures**, and warns about it (permanent notice, confirmation when pictures exist, message after export). *Import* reads version 2 and the old 1.x files, re-attaches picture notes to pictures already on the device, reports skipped notes, and refuses files from a newer major version.
+- **Behaviour you can see:** in the APK, Settings > Data Backup > *Export JSON* (and *Export to Excel* / *Export meal pictures*) no longer leaves a 0 B file: the file is written (the size is shown), a write failure leaves no empty file and shows the error, and closing the picker shows no "saved" message.
 
 Apply from that repository revision (the base commit above):
 

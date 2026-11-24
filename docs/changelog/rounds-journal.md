@@ -6,6 +6,8 @@
 >
 > **Related:** [../meal-journal.md](../meal-journal.md), [../new-features-update.md](../new-features-update.md), [../custom-photo-share-update.md](../custom-photo-share-update.md), [../planner-dock-update.md](../planner-dock-update.md), [../interaction-update.md](../interaction-update.md)
 
+**Android export fix round:** the APK's *Export JSON* wrote a 0 B file (PWA fine); the native save (`JournalDevicePlugin.java`) was hardened and the app shows the saved size. See [../backup-update.md](../backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix).
+
 **Full backup round:** the JSON export saves everything except the pictures (backup version 2.0) and warns about it; the import reads version 2 and the old 1.x files. See [../backup-update.md](../backup-update.md).
 
 **New features round:** photo diary time range; recent and favourite foods in Custom > Foods; a standard portion for recipes (logged by default instead of 100 g); a two-page meal planner (first / last day, weekdays to skip, specific days, then a scrolling list where only the meal being planned is open, with arrows at the bottom); Excel (.xlsx) export; *Add to Meals* for logged meals; protein target per kg of body weight; water in Statistics; a deficit / surplus target for intake minus burned; Plan meals / Photo diary buttons in the Custom bottom bar that can be hidden in Settings. See [docs/new-features-update.md](../new-features-update.md).

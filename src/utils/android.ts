@@ -22,9 +22,13 @@ interface JournalDevicePlugin {
     widgetCustomButton: boolean;
     days: Record<string, NutritionValues>;
   }): Promise<void>;
-  exportBackup(data: { json: string }): Promise<void>;
+  /**
+   * Saves the JSON backup through the system "save as" picker. Resolves `{ cancelled: true }` when the user closes the
+   * picker, otherwise `{ bytes }` (what was written). Rejects when nothing could be written (no empty file is left).
+   */
+  exportBackup(data: { json: string; filename?: string }): Promise<{ cancelled?: boolean; bytes?: number }>;
   /** Local document-picker export, using the same native backup destination handler. */
-  exportFile(data: { base64: string; filename: string; kind: 'zip' | 'txt' | 'xlsx' }): Promise<{ cancelled?: boolean }>;
+  exportFile(data: { base64: string; filename: string; kind: 'zip' | 'txt' | 'xlsx' }): Promise<{ cancelled?: boolean; bytes?: number }>;
   /** Tells the native launch surfaces (system launch screen, window, WebView) the current app background `#rrggbb`. */
   setLaunchBackground(data: { color: string }): Promise<void>;
 }

@@ -80,10 +80,10 @@ Camera access is optional and scanner support varies by WebView. `INTERNET` perm
 
 1. On a fresh install, enable airplane mode **before the first launch**. Verify that the journal is empty. Log food, water, activity, poop and weight, close and reopen, and check persistence.
 2. Add the four widgets (Small, Extra-small, Medium, Large). Test every shortcut with the app closed, backgrounded, on a previous date, and already in a dialog. Confirm cancel makes no entry and Save logs once, for today.
-3. Edit/remove a food and import a backup. Compare the large widget with Today. Check resizing, midnight, timezone changes, reboot, large font settings and TalkBack on your actual launcher.
+3. Edit/remove a food, export a backup (*Export JSON*; the saved file must not be 0 B, the message shows its size) and import it. Compare the large widget with Today. Check resizing, midnight, timezone changes, reboot, large font settings and TalkBack on your actual launcher.
 4. Turn on **Settings > Ultra minimal** and check the outlined diamond salt symbol. Swipe horizontally on content. Vertical scrolls, editable fields, horizontal lists, pinch gestures and system-edge Back should not change tabs. Check portrait/landscape, the keyboard and gesture/three-button navigation.
 5. Use Back in nested dialogs, the Today calendar, Browse Foods, and a non-Today tab. It should dismiss the top overlay, return from the catalog, then return to Today. Back at the root backgrounds the app.
-6. Export to a local JSON document, cancel and repeat, then import the saved file. Deny camera permission and check manual barcode entry; try known and unknown codes while offline.
+6. Export to a local JSON document, cancel and repeat (cancelling must show no "saved" message), then import the saved file. **Check the saved file is not 0 B** (open it in a file manager; the message shows its size): do it for *Export JSON*, *Export to Excel* and *Export meal pictures*, saving to Downloads and, if you use it, Google Drive. Deny camera permission and check manual barcode entry; try known and unknown codes while offline.
 7. With a device attached, run `./gradlew connectedDebugAndroidTest` from `android/` to check provider registration and accepted intent actions. Build and test your own signed release, including an update signed with the same key.
 
 

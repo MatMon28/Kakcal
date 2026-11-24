@@ -6,6 +6,13 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+**Earlier patch (full backup round, base `284239a8cb5fe34cf823c4e49f754de99ddff912`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission or new-key change, no remote API. Details: [backup-update.md](backup-update.md).
+
+- **New:** `src/utils/backupFormat.ts`, `tests/{backup,backup-ui}.test.tsx`, `docs/backup-update.md`.
+- **Edited:** `src/context/AppContext.tsx` (`exportDataJson` / `importDataJson`), `src/components/common/DataBackup.tsx`, `src/utils/{journalStore,amountMemory,plannerDraft}.ts`, docs (`README.md`, `docs/README.md`, `storage-and-privacy.md`, `meal-journal.md`, `verification.md`, `known-gaps.md`, `planner-dock-update.md`, `interaction-update.md`, `performance-review.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/rounds-journal.md`, `file-map/{utils,components-common,app-shell}.md`).
+- **Deleted:** nothing.
+- **Behaviour you can see:** Settings > Data Backup > *Export* writes a `version: "2.0"` file with all user data and **no pictures**, and warns about it (permanent notice, confirmation when pictures exist, message after export). *Import* reads version 2 and the old 1.x files, re-attaches picture notes to pictures already on the device, reports skipped notes, and refuses files from a newer major version.
+
 **Earlier patch (plans and shopping-list round, base `1ac8336e81bb4e31f8892b84bc4bce4ec0f27342`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission or new-key change, no remote API. Details: [plans-shopping-update.md](plans-shopping-update.md).
 
 - **New:** `src/components/common/RecentChips.tsx`, `src/components/journal/{PlanLibrary,ShoppingLists}.tsx`, `src/components/journal/css/{journal-planner-tones,journal-plans-shopping}.css`, `src/utils/{planGroups,shoppingList}.ts`, `tests/{plans-shopping,planner-wizard}.test.tsx`, `docs/plans-shopping-update.md`.
