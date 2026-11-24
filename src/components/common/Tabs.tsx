@@ -25,17 +25,6 @@ export function Tabs() {
   ];
   const latest = useRef({ index: 0, count: 0 });
   latest.current = { index: Math.max(0, items.findIndex((item) => item.id === activeTab)), count: items.length };
-
-  const scrollActiveIntoView = useCallback(() => {
-    const strip = nav.current, active = buttons.current[latest.current.index];
-    if (strip && active && strip.clientWidth && strip.scrollWidth > strip.clientWidth) {
-      strip.scrollTo({
-        left: Math.max(0, active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2),
-        behavior: 'smooth',
-      });
-    }
-  }, []);
-
   const draw = useCallback((value: number) => {
     const p = Math.max(0, Math.min(latest.current.count - 1, value));
     shown.current = p;
@@ -50,47 +39,30 @@ export function Tabs() {
     indicator.current.style.transform = `translate3d(${a.offsetLeft + (b.offsetLeft - a.offsetLeft) * fraction}px,0,0)`;
     indicator.current.style.width = `${a.offsetWidth + (b.offsetWidth - a.offsetWidth) * fraction}px`;
   }, []);
-
   const glide = useCallback(() => {
     cancelAnimationFrame(frame.current);
-    const to = latest.current.index;
-    const from = shown.current;
-    if (from === null || Math.abs(from - to) < 0.004 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      draw(to);
-      scrollActiveIntoView();
-      return;
-    }
-    const start = performance.now();
-    const duration = 270;
+    const from = shown.current ?? latest.current.index, to = latest.current.index, start = performance.now();
     const step = (now: number) => {
-      const tNorm = Math.min(1, (now - start) / duration);
-      const eased = 1 - Math.pow(1 - tNorm, 3.2);
-      draw(from + (to - from) * eased);
-      if (tNorm < 1) frame.current = requestAnimationFrame(step);
-      else scrollActiveIntoView();
+      const p = window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 1 : Math.min(1, (now - start) / 260);
+      draw(from + (to - from) * (1 - (1 - p) ** 3));
+      if (p < 1) frame.current = requestAnimationFrame(step);
+      else {
+        const strip = nav.current, active = buttons.current[to];
+        if (strip && active && strip.clientWidth && strip.scrollWidth > strip.clientWidth) {
+          strip.scrollTo({ left: Math.max(0, active.offsetLeft - (strip.clientWidth - active.offsetWidth) / 2), behavior: 'instant' });
+        }
+      }
     };
     frame.current = requestAnimationFrame(step);
-  }, [draw, scrollActiveIntoView]);
-
-  const measureLabels = useCallback(() => {
+  }, [draw]);
+  useLayoutEffect(() => {
     buttons.current.forEach((button) => {
       const label = button?.querySelector('span');
       if (button && label) button.style.setProperty('--tab-label-width', `${label.scrollWidth}px`);
     });
-  }, []);
-
-  useLayoutEffect(() => {
-    measureLabels();
-    const pos = getPagePosition();
-    if (pos !== null) {
-      draw(pos);
-    } else if (shown.current === null) {
-      draw(latest.current.index);
-    } else {
-      glide();
-    }
-  }, [activeTab, items.length, settings.ultraMinimal, t, measureLabels, draw, glide]);
-
+    if (getPagePosition() === null) glide();
+    else draw(getPagePosition()!);
+  });
   useEffect(() => {
     const unsubscribe = subscribePagePosition(() => {
       const p = getPagePosition();
@@ -98,15 +70,17 @@ export function Tabs() {
       if (p === null) glide(); else draw(p);
     });
     const refresh = () => {
-      measureLabels();
+      buttons.current.forEach((button) => {
+        const label = button?.querySelector('span');
+        if (button && label) button.style.setProperty('--tab-label-width', `${label.scrollWidth}px`);
+      });
       draw(shown.current ?? latest.current.index);
     };
     const observer = new ResizeObserver(refresh);
     if (nav.current) observer.observe(nav.current);
     void document.fonts.ready.then(refresh);
     return () => { unsubscribe(); observer.disconnect(); cancelAnimationFrame(frame.current); };
-  }, [draw, glide, measureLabels]);
-
+  }, [draw, glide]);
   return (
     <div className="flex items-center justify-center py-1.5">
       <nav ref={nav} className="kc-nav-pill kc-following-pill" aria-label="Primary">
