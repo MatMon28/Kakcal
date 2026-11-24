@@ -18,7 +18,7 @@ interface MealNutrientTotalsProps {
  * fat pills (directly under them in the header of the meal card, no dividing line) and show **only the icon and the
  * number**, never the name. The unit (g) is added in the Normal layout and left out in Compact and Ultra minimal.
  *
- * Each pill carries `data-macro`, the hook the theme CSS (`index.css`, "Numeric Macro Pills") uses to apply the active
+ * Each pill carries `data-macro`, the hook the theme CSS (`styles/themed-chrome.css`, "Numeric Macro Pills") uses to apply the active
  * style's pill colours, radius, border and clip-path, so they match the macro pills on every style. The icons use
  * `currentColor`. The name stays available as `title` and `aria-label`.
  */

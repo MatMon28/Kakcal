@@ -28,4 +28,4 @@ The app used to show the full-name wordmark on a Light cream launch screen, then
 
 How the colour reaches native code: `applyThemeAttributes` runs on every theme / style / hue change and on start; `AppContext.tsx` then calls `syncLaunchBackground(--bg)` (`src/utils/android.ts`) which calls the `JournalDevice.setLaunchBackground` plugin method; `LaunchBackground.save` stores it in the `launch_background` SharedPreferences and switches the splash style. The very first launch after installing has no stored colour yet and uses the Light fallback.
 
-Re-run `node scripts/generate-splash-themes.mjs` when a `--bg` in `src/index.css` or the mono palette in `src/utils/themes.ts` changes. `scripts/outline-wordmark.mjs` now only writes the logo into `index.html` / `splash_wordmark.xml` with `--launch-screens` (not used).
+Re-run `node scripts/generate-splash-themes.mjs` when a `--bg` in `src/index.css` (rules in `src/styles/*.css`, see [file-organisation.md](file-organisation.md)) or the mono palette in `src/utils/themes.ts` changes. `scripts/outline-wordmark.mjs` now only writes the logo into `index.html` / `splash_wordmark.xml` with `--launch-screens` (not used).

@@ -1,0 +1,82 @@
+/* Angular chamfered overrides for rounded containers across all views */
+html[data-style="angular"] .rounded-3xl,
+html[data-style="angular"] .rounded-2xl {
+  border-radius: 0px !important;
+  clip-path: var(--clip-md);
+}
+html[data-style="angular"] .rounded-xl,
+html[data-style="angular"] .rounded-lg {
+  border-radius: 0px !important;
+  clip-path: var(--clip-sm);
+}
+
+/* Angular: the meal selection chips (Add food, Custom meals) are `rounded-full`, which the rules above do not cover. */
+html[data-style="angular"] [data-slot-chip] {
+  border-radius: 0px !important;
+  clip-path: var(--clip-xs);
+}
+
+/* Pop Neo-Brutalist elevation on main cards across Custom, Period, Statistics & Database */
+html[data-style="pop"] main section.rounded-3xl,
+html[data-style="pop"] main div.rounded-3xl {
+  border: var(--card-border) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: var(--card-radius) !important;
+}
+html[data-style="minimal"] main section.rounded-3xl,
+html[data-style="minimal"] main div.rounded-3xl,
+html[data-style="mono"] main section.rounded-3xl,
+html[data-style="mono"] main div.rounded-3xl {
+  border: var(--card-border) !important;
+  border-radius: var(--card-radius) !important;
+}
+html[data-style="aurora"] main section.rounded-3xl,
+html[data-style="aurora"] main div.rounded-3xl,
+html[data-style="playful"] main section.rounded-3xl,
+html[data-style="playful"] main div.rounded-3xl {
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: var(--card-radius) !important;
+}
+
+/*
+ * Aurora: --micro-radius / --pill-radius are 999px (right for small chips and buttons), but the rules above also
+ * apply them to tall containers (Custom page cards and ingredient lists, Period cards, calendar days, day-overview
+ * rows), which turned them into stretched pill shapes. Containers get ordinary rounded corners instead.
+ */
+html[data-style="aurora"]:not([data-style="classic"]) [data-library-card],
+html[data-style="aurora"]:not([data-style="classic"]) [data-period-card],
+html[data-style="aurora"]:not([data-style="classic"]) [data-day-overview-card],
+html[data-style="aurora"]:not([data-style="classic"]) .kc-modal-banner {
+  border-radius: 18px !important;
+}
+html[data-style="aurora"]:not([data-style="classic"]) [data-library-ingredients],
+html[data-style="aurora"]:not([data-style="classic"]) [data-day-overview-row],
+html[data-style="aurora"]:not([data-style="classic"]) button[data-period-cell] {
+  border-radius: 14px !important;
+}
+html[data-style="aurora"]:not([data-style="classic"]) span[data-period-cell] {
+  border-radius: 5px !important;
+}
+
+/* Koink-style continuous selector: one indicator, cross-fading pastel layers. */
+.kc-following-pill { position: relative; display: inline-flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--border); background: var(--surface); border-radius: 99px; max-width: 100%; }
+.kc-following-indicator { position: absolute; left: 0; top: 4px; height: 32px; overflow: hidden; border-radius: 99px; pointer-events: none; will-change: transform,width; }
+.kc-following-indicator > span { position: absolute; inset: 0; border-radius: inherit; }
+.kc-following-tab { --tab-weight: 0; position: relative; z-index: 1; height: 32px; width: calc(32px + (var(--tab-label-width, 50px) + 12px) * var(--tab-weight)); display: flex; align-items: center; justify-content: center; gap: calc(6px * var(--tab-weight)); flex-shrink: 0; border-radius: 99px; color: var(--text); font-size: 12px; font-weight: 750; }
+.kc-following-tab svg { flex-shrink: 0; }
+.kc-following-tab > span { white-space: nowrap; overflow: hidden; max-width: calc(var(--tab-label-width, 50px) * var(--tab-weight)); opacity: var(--tab-weight); }
+.kc-following-tab.is-ultra { width: 32px; gap: 0; }
+.kc-following-tab.is-ultra > span { display: none; }
+
+/* Keep a tall adjacent preview from growing the document during a swipe at its bottom. */
+html.kc-page-moving [data-page-viewport] { overflow: clip; }
+
+.kc-following-tab { color: color-mix(in srgb, #3f3429 calc(var(--tab-weight) * 100%), var(--text)); }
+html[data-style]:not([data-style='classic']) .kc-following-indicator > span { background: var(--text) !important; }
+html[data-style]:not([data-style='classic']) .kc-following-tab { color: color-mix(in srgb, var(--on-text) calc(var(--tab-weight) * 100%), var(--muted)); }
+.journal-mobile-demo { margin: 0 3px 10px; color: var(--muted); font-size: 10px; letter-spacing: .03em; }
+@media (min-width: 1100px) { .journal-mobile-demo { display: none; } }
+
+.kc-following-pill { overflow-x: auto; scrollbar-width: none; }
+.kc-following-pill::-webkit-scrollbar { display: none; }

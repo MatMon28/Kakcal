@@ -1,0 +1,540 @@
+import { useEffect, useState, useMemo } from 'react';
+import { useApp } from '../../context/AppContext';
+import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../../types';
+import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
+import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
+import { useOffCatalog } from '../../utils/useOffCatalog';
+import { catalogueScore } from '../../data/offCatalog';
+import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
+import { Search, X } from 'lucide-react';
+import { usePersistentState } from '../../utils/usePersistentState';
+import { useJournalText } from '../../i18n/journal';
+import { useCustomDockActions } from '../journal/CustomShortcuts';
+
+/** All state, derived lists and handlers of the Custom page (Meals / Recipes / Foods). Rendered by `PreBuiltMealsView.tsx`. */
+export function usePreBuiltMealsState() {
+  const {
+    preBuiltMeals,
+    addPreBuiltMeal,
+    addCustomFood,
+    deleteCustomFood,
+    updatePreBuiltMeal,
+    deletePreBuiltMeal,
+    logPreBuiltMealToSlot,
+    logFoodItem,
+    allFoods,
+    favoriteFoods,
+    rememberFood,
+    language,
+    selectedDate,
+    setIsBarcodeOpen,
+    setIsCustomFoodOpen,
+    setTargetMealSlot,
+    setActiveTab,
+    settings,
+
+    t,
+  } = useApp();
+  const { options: mealSlots, label: slotLabel } = useMealSlots();
+  const autoMealSlot = useAutoMealSlot();
+  const j = useJournalText();
+  const journalDockActions = useCustomDockActions();
+  // The pages below are not opened from a meal: the meal preselected is the one that fits the time of day.
+  const openBarcode = () => { setTargetMealSlot(autoMealSlot()); setIsBarcodeOpen(true); };
+  const openCustomFood = () => { setTargetMealSlot(autoMealSlot()); setIsCustomFoodOpen(true); };
+  const ultraMinimal = settings.ultraMinimal;
+
+  const savedRecipes = useMemo(() => allFoods.filter((f) => f.isRecipe), [allFoods]);
+
+  // section searches (type-to-search, fuzzy — identical to Add Food)
+  const [mealQuery, setMealQuery] = useState('');
+  const [recipeQuery, setRecipeQuery] = useState('');
+
+  // Logging to slot modal state
+  const [activeMealToLog, setActiveMealToLog] = useState<PreBuiltMeal | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<MealSlotId>('lunch');
+
+  // Create / Edit meal modal state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [editingMealId, setEditingMealId] = useState<string | null>(null);
+  const [newMealName, setNewMealName] = useState('');
+  const [newMealDesc, setNewMealDesc] = useState('');
+  const [newMealSlot, setNewMealSlot] = useState<MealSlotId>('breakfast');
+  const [newIngredients, setNewIngredients] = useState<PreBuiltMealIngredient[]>([]);
+
+  // Immediate quantity selection when a food is tapped
+  const [pendingFood, setPendingFood] = useState<FoodItem | null>(null);
+  const [pendingAmount, setPendingAmount] = useState<number>(100);
+  const [ingredientSearch, setIngredientSearch] = useState('');
+
+  // Recipe builder (saves a multi-ingredient dish to the food database, per 100g)
+  const [isRecipeOpen, setIsRecipeOpen] = useState(false);
+  const [editingRecipeId, setEditingRecipeId] = useState<string | null>(null);
+  const [recipeName, setRecipeName] = useState('');
+  const [recipeIngs, setRecipeIngs] = useState<PreBuiltMealIngredient[]>([]);
+  const [recipePendingFood, setRecipePendingFood] = useState<FoodItem | null>(null);
+  const [recipePendingAmt, setRecipePendingAmt] = useState<number>(100);
+  const [recipeSearch, setRecipeSearch] = useState('');
+  // Standard portion of the recipe in g (0 = none): the amount offered when the recipe is logged.
+  const [recipePortion, setRecipePortion] = useState(0);
+
+  // Log a saved recipe to a slot (amount selectable)
+  const [activeRecipeToLog, setActiveRecipeToLog] = useState<FoodItem | null>(null);
+  const [recipeLogSlot, setRecipeLogSlot] = useState<MealSlotId>('lunch');
+  const [recipeLogAmount, setRecipeLogAmount] = useState(100);
+
+  // Collapsible lists (persisted)
+  const [openRecipes, setOpenRecipes] = usePersistentState<string[]>('kcak_my_recipes_open', []);
+  const [openMeals, setOpenMeals] = usePersistentState<string[]>('kcak_my_meals_open', []);
+  // Whole-section collapse (Meals / Recipes / Foods), remembered like the Today layout.
+  const [sectionsOpen, setSectionsOpen] = usePersistentState<Record<'meals' | 'recipes' | 'foods', boolean>>(
+    'kcak_custom_sections_open',
+    { meals: true, recipes: true, foods: true }
+  );
+  const toggleSection = (key: 'meals' | 'recipes' | 'foods') =>
+    setSectionsOpen((prev) => ({ ...prev, [key]: !prev[key] }));
+  // "Go to the meal" from the photo viewer: show the saved meal / recipe the picture belongs to.
+  useEffect(() => {
+    const onOpen = (event: Event) => {
+      const id = (event as CustomEvent<unknown>).detail;
+      if (typeof id !== 'string') return;
+      setSectionsOpen((prev) => ({ ...prev, meals: true, recipes: true }));
+      setOpenMeals((prev) => (prev.includes(id) ? prev : [...prev, id]));
+      setOpenRecipes((prev) => (prev.includes(id) ? prev : [...prev, id]));
+    };
+    window.addEventListener('kc:open-library', onOpen);
+    return () => window.removeEventListener('kc:open-library', onOpen);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // Delete confirmation for meals and recipes.
+  const [pendingDelete, setPendingDelete] = useState<{ kind: 'meal' | 'recipe'; id: string; name: string } | null>(null);
+
+  const nameOf = (f: FoodItem) => (language === 'it' ? f.name_it : f.name_en || f.name_de);
+
+  const calculateMealNutrition = (ingredients: PreBuiltMealIngredient[]) => {
+    let totalKcal = 0, carbs = 0, protein = 0, fat = 0, fiber = 0, salt = 0, sugar = 0;
+    for (const ing of ingredients) {
+      const food = allFoods.find((f) => f.id === ing.foodId);
+      if (!food) continue;
+      const factor = ing.amount / 100;
+      totalKcal += food.calories * factor;
+      if (food.carbs !== null) carbs += food.carbs * factor;
+      if (food.protein !== null) protein += food.protein * factor;
+      if (food.fat !== null) fat += food.fat * factor;
+      if (food.fiber !== null) fiber += food.fiber * factor;
+      if (food.salt !== null) salt += food.salt * factor;
+      if (food.sugar != null) sugar += food.sugar * factor;
+    }
+    return {
+      totalKcal: Math.round(totalKcal),
+      carbs: Math.round(carbs * 10) / 10,
+      protein: Math.round(protein * 10) / 10,
+      fat: Math.round(fat * 10) / 10,
+      fiber: Math.round(fiber * 10) / 10,
+      salt: Math.round(salt * 100) / 100,
+      sugar: Math.round(sugar * 10) / 10,
+    };
+  };
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const newMealNutrition = useMemo(() => calculateMealNutrition(newIngredients), [newIngredients, allFoods]);
+
+  const openNewMealModal = () => {
+    setEditingMealId(null);
+    setNewMealName('');
+    setNewMealDesc('');
+    setNewMealSlot(autoMealSlot());
+    setNewIngredients([]);
+    setPendingFood(null);
+    setIngredientSearch('');
+    setIsCreateOpen(true);
+  };
+
+  const openEditMealModal = (meal: PreBuiltMeal) => {
+    setEditingMealId(meal.id);
+    setNewMealName(meal.name);
+    setNewMealDesc(meal.description || '');
+    setNewMealSlot(meal.slot || 'breakfast');
+    setNewIngredients([...meal.ingredients]);
+    setPendingFood(null);
+    setIngredientSearch('');
+    setIsCreateOpen(true);
+  };
+
+  const handleOpenLogModal = (meal: PreBuiltMeal) => {
+    setActiveMealToLog(meal);
+    setSelectedSlot(meal.slot ?? autoMealSlot());
+  };
+
+  const confirmLogToSlot = () => {
+    if (!activeMealToLog) return;
+    logPreBuiltMealToSlot(activeMealToLog.id, selectedSlot, selectedDate);
+    setActiveMealToLog(null);
+  };
+
+  const handleSelectFood = (food: FoodItem) => {
+    rememberFood(food);
+    setPendingFood(food);
+    setPendingAmount(getDefaultAmount(food));
+  };
+
+  const handleConfirmAndAddAnother = () => {
+    if (!pendingFood || pendingAmount <= 0) return;
+    setLastAmount(pendingFood.id, pendingAmount);
+    setNewIngredients((prev) => [...prev, { foodId: pendingFood.id, amount: pendingAmount }]);
+    setPendingFood(null);
+    setIngredientSearch('');
+  };
+
+  const handleSaveMeal = (includePending = false) => {
+    const finalIngs = [...newIngredients];
+    if (includePending && pendingFood && pendingAmount > 0) {
+      setLastAmount(pendingFood.id, pendingAmount);
+      finalIngs.push({ foodId: pendingFood.id, amount: pendingAmount });
+    }
+    const validIngs = finalIngs.filter((i) => i.amount > 0);
+    if (validIngs.length === 0) return;
+    const fallbackName = validIngs
+      .slice(0, 2)
+      .map((i) => {
+        const f = allFoods.find((x) => x.id === i.foodId);
+        return f ? nameOf(f).split(' ')[0] : 'Meal';
+      })
+      .join(' + ');
+    const finalName = newMealName.trim() || fallbackName;
+
+    if (editingMealId) {
+      updatePreBuiltMeal({
+        id: editingMealId,
+        name: finalName,
+        description: newMealDesc.trim() || undefined,
+        slot: newMealSlot,
+        ingredients: validIngs,
+        createdAt: new Date().toISOString(),
+      });
+    } else {
+      addPreBuiltMeal({
+        name: finalName,
+        description: newMealDesc.trim() || undefined,
+        slot: newMealSlot,
+        ingredients: validIngs,
+      });
+    }
+    setIsCreateOpen(false);
+    setPendingFood(null);
+  };
+
+  // The offline Open Food Facts catalogue also feeds the ingredient searches (loaded on first use).
+  const offCatalog = useOffCatalog(isCreateOpen || isRecipeOpen);
+
+  const favoriteIds = useMemo(() => favoriteFoods ?? [], [favoriteFoods]);
+
+  const filteredFoodsForSearch = useMemo(() => {
+    const q = ingredientSearch.trim();
+    if (q.length < 2) return [];
+    const local = allFoods
+      .map((f) => ({
+        f,
+        score: Math.min(
+          fuzzyScore(q, f.name_de),
+          fuzzyScore(q, f.name_it),
+          fuzzyScore(q, f.name_en),
+          fuzzyScore(q, f.brand || '')
+        ),
+      }))
+      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
+      .sort((a, b) => a.score - b.score);
+    const seen = new Set(local.map((x) => x.f.id));
+    const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
+      .filter((f) => !seen.has(f.id))
+      .map((f) => ({ f, score: catalogueScore(q) }));
+    const ranked = [...local, ...catalogue].sort((a, b) => a.score - b.score);
+    // Favourites that directly match the text come first (same rule as Add Food).
+    return pinCoherentFavorites(ranked, favoriteIds, (x) => x.f.id, (x) => x.score, q).slice(0, 40).map((x) => x.f);
+  }, [allFoods, ingredientSearch, offCatalog, favoriteIds]);
+
+  const recipeResults = useMemo(() => {
+    const q = recipeSearch.trim();
+    if (q.length < 2) return [];
+    const local = allFoods
+      .map((f) => ({
+        f,
+        score: Math.min(fuzzyScore(q, f.name_de), fuzzyScore(q, f.name_it), fuzzyScore(q, f.name_en)),
+      }))
+      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
+      .sort((a, b) => a.score - b.score);
+    const seen = new Set(local.map((x) => x.f.id));
+    const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
+      .filter((f) => !seen.has(f.id))
+      .map((f) => ({ f, score: catalogueScore(q) }));
+    const ranked = [...local, ...catalogue].sort((a, b) => a.score - b.score);
+    return pinCoherentFavorites(ranked, favoriteIds, (x) => x.f.id, (x) => x.score, q).slice(0, 40).map((x) => x.f);
+  }, [allFoods, recipeSearch, offCatalog, favoriteIds]);
+
+  // One typed character: the favourites starting with it (Add Food does the same), instead of only a hint.
+  const favoriteOneChar = (query: string) => {
+    const q = query.trim();
+    if (q.length !== 1) return [];
+    return favoriteIds
+      .map((id) => allFoods.find((f) => f.id === id))
+      .filter((f): f is FoodItem => Boolean(f) && matchesFirstChar(f as FoodItem, q));
+  };
+
+  const recipeTotals = useMemo(() => {
+    let g = 0, kcal = 0, c = 0, p = 0, f = 0, fib = 0, salt = 0, sugar = 0;
+    for (const ing of recipeIngs) {
+      const food = allFoods.find((x) => x.id === ing.foodId);
+      if (!food) continue;
+      const k = ing.amount / 100;
+      g += ing.amount;
+      kcal += food.calories * k;
+      if (food.carbs !== null) c += food.carbs * k;
+      if (food.protein !== null) p += food.protein * k;
+      if (food.fat !== null) f += food.fat * k;
+      if (food.fiber !== null) fib += food.fiber * k;
+      if (food.salt !== null) salt += food.salt * k;
+      if (food.sugar != null) sugar += food.sugar * k;
+    }
+    const per100 = g > 0 ? 100 / g : 0;
+    return {
+      grams: Math.round(g),
+      kcal100: Math.round(kcal * per100),
+      c100: Math.round(c * per100 * 10) / 10,
+      p100: Math.round(p * per100 * 10) / 10,
+      f100: Math.round(f * per100 * 10) / 10,
+      fib100: Math.round(fib * per100 * 10) / 10,
+      salt100: Math.round(salt * per100 * 100) / 100,
+      sugar100: Math.round(sugar * per100 * 10) / 10,
+    };
+  }, [recipeIngs, allFoods]);
+
+  const openRecipeModal = () => {
+    setEditingRecipeId(null);
+    setRecipeName('');
+    setRecipePortion(0);
+    setRecipeIngs([]);
+    setRecipePendingFood(null);
+    setRecipeSearch('');
+    setIsRecipeOpen(true);
+  };
+
+  const closeRecipeModal = () => {
+    setIsRecipeOpen(false);
+    setRecipePendingFood(null);
+    setEditingRecipeId(null);
+  };
+
+  const openEditRecipeModal = (recipe: FoodItem) => {
+    setEditingRecipeId(recipe.id);
+    setRecipeName(nameOf(recipe));
+    setRecipePortion(recipe.portion && recipe.portion > 0 ? recipe.portion : 0);
+    setRecipeIngs(recipe.recipeIngredients ? [...recipe.recipeIngredients] : []);
+    setRecipePendingFood(null);
+    setRecipeSearch('');
+    setIsRecipeOpen(true);
+  };
+
+  const saveRecipe = () => {
+    const validIngs = recipeIngs.filter((i) => i.amount > 0);
+    if (!recipeName.trim() || validIngs.length === 0) return;
+    const rt = recipeTotals;
+    const existing = editingRecipeId
+      ? allFoods.find((f) => f.id === editingRecipeId && f.isRecipe)
+      : undefined;
+    const payload: FoodItem = {
+      ...(existing ?? { id: 'recipe-' + Date.now(), store: 'Custom', unit: 'g', category: 'prepared' as const }),
+      id: existing?.id ?? 'recipe-' + Date.now(),
+      name_de: recipeName.trim(),
+      name_it: recipeName.trim(),
+      name_en: recipeName.trim(),
+      store: 'Custom',
+      category: 'prepared',
+      unit: 'g',
+      calories: rt.kcal100,
+      carbs: rt.c100,
+      protein: rt.p100,
+      fat: rt.f100,
+      fiber: rt.fib100,
+      salt: rt.salt100,
+      sugar: rt.sugar100,
+      isCustom: true,
+      isRecipe: true,
+      recipeIngredients: validIngs,
+      portion: recipePortion > 0 ? Math.round(recipePortion * 10) / 10 : undefined,
+      source: existing?.source,
+    };
+    addCustomFood(payload); // upsert by id: keeps an edited recipe's identity
+    closeRecipeModal();
+  };
+
+  const pendingKcal = pendingFood ? Math.round((pendingFood.calories * pendingAmount) / 100) : 0;
+
+  const mealResults = useMemo(() => {
+    const q = mealQuery.trim();
+    if (q.length < 2) return [];
+    return preBuiltMeals
+      .map((m) => ({ m, score: fuzzyScore(q, m.name) }))
+      .filter((x) => fuzzyMatch(q, [x.m.name]))
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 35)
+      .map((x) => x.m);
+  }, [preBuiltMeals, mealQuery]);
+
+  const recipeListResults = useMemo(() => {
+    const q = recipeQuery.trim();
+    if (q.length < 2) return [];
+    return savedRecipes
+      .map((f) => ({ f, score: fuzzyScore(q, `${f.name_de} ${f.name_it} ${f.name_en}`) }))
+      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en]))
+      .sort((a, b) => a.score - b.score)
+      .slice(0, 35)
+      .map((x) => x.f);
+  }, [savedRecipes, recipeQuery]);
+
+  const isMealFiltering = mealQuery.trim().length >= 2;
+  const isRecipeFiltering = recipeQuery.trim().length >= 2;
+  const visibleMeals = isMealFiltering ? mealResults : preBuiltMeals;
+  const visibleRecipes = isRecipeFiltering ? recipeListResults : savedRecipes;
+
+  const searchInput = (value: string, onChange: (v: string) => void, placeholder?: string) => (
+    <div className="relative">
+      <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
+      <input
+        type="text"
+        enterKeyHint="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder || t.settings.searchText}
+        className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
+      />
+      {value && (
+        <button
+          type="button"
+          onClick={() => onChange('')}
+          className="pressable absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+          aria-label={t.common.clear}
+        >
+          <X size={14} />
+        </button>
+      )}
+    </div>
+  );
+
+  return {
+    preBuiltMeals,
+    addPreBuiltMeal,
+    addCustomFood,
+    deleteCustomFood,
+    updatePreBuiltMeal,
+    deletePreBuiltMeal,
+    logPreBuiltMealToSlot,
+    logFoodItem,
+    allFoods,
+    favoriteFoods,
+    rememberFood,
+    language,
+    selectedDate,
+    setIsBarcodeOpen,
+    setIsCustomFoodOpen,
+    setTargetMealSlot,
+    setActiveTab,
+    settings,
+    t,
+    mealSlots,
+    slotLabel,
+    autoMealSlot,
+    j,
+    journalDockActions,
+    openBarcode,
+    openCustomFood,
+    ultraMinimal,
+    savedRecipes,
+    mealQuery,
+    setMealQuery,
+    recipeQuery,
+    setRecipeQuery,
+    activeMealToLog,
+    setActiveMealToLog,
+    selectedSlot,
+    setSelectedSlot,
+    isCreateOpen,
+    setIsCreateOpen,
+    editingMealId,
+    setEditingMealId,
+    newMealName,
+    setNewMealName,
+    newMealDesc,
+    setNewMealDesc,
+    newMealSlot,
+    setNewMealSlot,
+    newIngredients,
+    setNewIngredients,
+    pendingFood,
+    setPendingFood,
+    pendingAmount,
+    setPendingAmount,
+    ingredientSearch,
+    setIngredientSearch,
+    isRecipeOpen,
+    setIsRecipeOpen,
+    editingRecipeId,
+    setEditingRecipeId,
+    recipeName,
+    setRecipeName,
+    recipeIngs,
+    setRecipeIngs,
+    recipePendingFood,
+    setRecipePendingFood,
+    recipePendingAmt,
+    setRecipePendingAmt,
+    recipeSearch,
+    setRecipeSearch,
+    recipePortion,
+    setRecipePortion,
+    activeRecipeToLog,
+    setActiveRecipeToLog,
+    recipeLogSlot,
+    setRecipeLogSlot,
+    recipeLogAmount,
+    setRecipeLogAmount,
+    openRecipes,
+    setOpenRecipes,
+    openMeals,
+    setOpenMeals,
+    sectionsOpen,
+    setSectionsOpen,
+    toggleSection,
+    pendingDelete,
+    setPendingDelete,
+    nameOf,
+    calculateMealNutrition,
+    newMealNutrition,
+    openNewMealModal,
+    openEditMealModal,
+    handleOpenLogModal,
+    confirmLogToSlot,
+    handleSelectFood,
+    handleConfirmAndAddAnother,
+    handleSaveMeal,
+    offCatalog,
+    favoriteIds,
+    filteredFoodsForSearch,
+    recipeResults,
+    favoriteOneChar,
+    recipeTotals,
+    openRecipeModal,
+    closeRecipeModal,
+    openEditRecipeModal,
+    saveRecipe,
+    pendingKcal,
+    mealResults,
+    recipeListResults,
+    isMealFiltering,
+    isRecipeFiltering,
+    visibleMeals,
+    visibleRecipes,
+    searchInput,
+  };
+}
+
+export type LibraryState = ReturnType<typeof usePreBuiltMealsState>;

@@ -1,0 +1,147 @@
+/* 3. POP THEME (Neo-Brutalist Outlines + Hard Offset Shadows) */
+html[data-style="pop"] {
+  --font-family: 'Space Grotesk Variable', system-ui, sans-serif;
+  --icon-btn-radius: 9999px;
+  --nav-radius: 999px;
+  --nav-pill-radius: 999px;
+  --card-radius: 20px;
+  --micro-radius: 18px;
+  --badge-radius: 999px;
+  --bar-radius: 999px;
+  --pill-radius: 8px;
+  --dock-radius: 999px;
+  --dock-btn-radius: 9999px;
+  --clip-lg: none;
+  --clip-md: none;
+  --clip-sm: none;
+  --clip-xs: none;
+  --clip-dock: none;
+
+  --intake-bg: #7ef29d;
+  --intake-text: #09080d;
+  --intake-label: #09080d;
+  --intake-track: #ffffff;
+  --intake-fill: #09080d;
+  --intake-badge-bg: #09080d; --intake-badge-text: #7ef29d;
+
+  --burned-bg: #ff7a7a;
+  --burned-text: #09080d;
+  --burned-label: #09080d;
+  --burned-track: rgba(9, 8, 13, 0.25);
+  --burned-fill: #09080d;
+  --badge-bg: #09080d;
+  --badge-text: #ffffff;
+
+  --carbs-bg: #7cc4fa;
+  --carbs-text: #09080d;
+  --protein-bg: #ffb84d;
+  --protein-text: #09080d;
+  --fat-bg: #c99eff;
+  --fat-text: #09080d;
+
+  --nav-active-bg: #ff7a7a;
+  --nav-active-color: #09080d;
+
+  --dock-1: #7ef29d; --dock-icon-1: #09080d;
+  --dock-2: #ff7a7a; --dock-icon-2: #09080d;
+  --dock-3: #7cc4fa; --dock-icon-3: #09080d;
+  --dock-4: #ffb84d; --dock-icon-4: #09080d;
+  --dock-5: #c99eff; --dock-icon-5: #09080d;
+  --dock-6: #fde047; --dock-icon-6: #09080d;
+
+  --fiber-bg: #fde047; --fiber-text: #09080d;
+  --salt-bg: #fde047; --salt-text: #09080d;
+  --sugar-bg: #fde047; --sugar-text: #09080d;
+}
+
+html[data-style="pop"][data-theme="dark"] {
+  --bg: #120f18;
+  --surface: #211c2b;
+  --surface-solid: #211c2b;
+  --inset: #191522;
+  --hover: #2c2539;
+  --border: #fef9c3;
+  --text: #ffffff;
+  --muted: #cbd5e1;
+  --brand-flame-color: #fde047;
+  --header-btn-bg: #211c2b;
+  --header-icon-color: #fef9c3;
+  --nav-bg: #211c2b;
+  --nav-inactive-color: #fef9c3;
+  --meal-icon-color: #fde047;
+
+  --card-border: 2px solid #fef9c3;
+  --card-shadow: 3px 3px 0px #fde047;
+  --pill-border: 1.5px solid #fef9c3;
+  --pill-c-bg: #7cc4fa; --pill-c-text: #09080d;
+  --pill-p-bg: #ffb84d; --pill-p-text: #09080d;
+  --pill-f-bg: #c99eff; --pill-f-text: #09080d;
+
+  --dock-bg: #211c2b;
+  --dock-border: 2px solid #fef9c3;
+  --dock-shadow: 3px 3px 0px #fde047;
+  --dock-btn-border: 1.5px solid #fef9c3;
+}
+
+html[data-style="pop"][data-theme="lite-dark"] {
+  --bg: #201d2b;
+  --surface: #322d42;
+  --surface-solid: #322d42;
+  --inset: #272335;
+  --hover: #3d3751;
+  --border: #e2e8f0;
+  --text: #ffffff;
+  --muted: #e2e8f0;
+  --brand-flame-color: #fde047;
+  --header-btn-bg: #322d42;
+  --header-icon-color: #ffffff;
+  --nav-bg: #322d42;
+  --nav-inactive-color: #f1f5f9;
+  --meal-icon-color: #fde047;
+
+  --card-border: 2px solid #e2e8f0;
+  --card-shadow: 3px 3px 0px #09080d;
+  --pill-border: 1.5px solid #09080d;
+  --pill-c-bg: #7cc4fa; --pill-c-text: #09080d;
+  --pill-p-bg: #ffb84d; --pill-p-text: #09080d;
+  --pill-f-bg: #c99eff; --pill-f-text: #09080d;
+
+  --dock-bg: #322d42;
+  --dock-border: 2px solid #e2e8f0;
+  --dock-shadow: 3px 3px 0px #09080d;
+  --dock-btn-border: 1.5px solid #09080d;
+}
+
+html[data-style="pop"][data-theme="light"] {
+  --bg: #fae043;
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --inset: #fef9c3;
+  --hover: #fde047;
+  --border: #000000;
+  --text: #000000;
+  --muted: #1e293b;
+  --brand-flame-color: #000000;
+  --header-btn-bg: #ffffff;
+  --header-icon-color: #000000;
+  --nav-bg: #ffffff;
+  --nav-inactive-color: #000000;
+  --meal-icon-color: #000000;
+
+  --card-border: 2.5px solid #000000;
+  --card-shadow: 4px 4px 0px #000000;
+  --pill-border: 1.5px solid #000000;
+  --pill-c-bg: #7cc4fa; --pill-c-text: #000000;
+  --pill-p-bg: #ffb84d; --pill-p-text: #000000;
+  --pill-f-bg: #c99eff; --pill-f-text: #000000;
+
+  --dock-bg: #000000;
+  --dock-border: 2.5px solid #000000;
+  --dock-shadow: 4px 4px 0px rgba(0, 0, 0, 0.25);
+  --dock-btn-border: none;
+  --dock-6: #ffffff; --dock-icon-6: #000000;
+
+  --fiber-bg: #ffffff; --fiber-text: #000000;
+  --salt-bg: #ffffff; --salt-text: #000000;
+  --sugar-bg: #ffffff; --sugar-text: #000000;
+}

@@ -1,0 +1,227 @@
+/* ---- Motion ----
+   --ease-soft: a gently damped spring (pages, sheets, docks, values). --ease-bounce: a spring with a
+   visible overshoot (pressed controls, docks). src/utils/spring.ts replaces both with the exact spring
+   curves (linear()) at startup; the cubic-beziers below are the fallback for older WebViews. Durations
+   are deliberately longer than a flick so every change reads as a movement, not a blink. */
+:root {
+  --ease-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-soft: 260ms;
+  --ease-bounce: cubic-bezier(0.34, 1.4, 0.64, 1);
+  --dur-bounce: 300ms;
+}
+
+@keyframes kc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes kc-dialog-in {
+  from { opacity: 0; transform: translate3d(0, 28px, 0) scale(0.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes kc-pop-in {
+  from { opacity: 0; transform: translate3d(0, -8px, 0) scale(0.94); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes kc-dock-in {
+  from {
+    opacity: 0;
+    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 22px), 0, 0) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes kc-dock-btn-in {
+  from {
+    opacity: 0;
+    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 10px), 0, 0) scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* A changed number (intake, burned, balance) settles in from slightly below. */
+@keyframes kc-value-in {
+  from { opacity: 0.2; transform: translate3d(0, 7px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+/* The dialog viewport follows window.visualViewport (see Modal.tsx), so the sheet sits just
+   above the keyboard when a field is focused and as low as the screen allows otherwise. */
+.dialog-viewport {
+  top: var(--dialog-top, 0px);
+  left: var(--dialog-left, 0px);
+  width: var(--dialog-width, 100%);
+  height: 100vh;
+  height: var(--dialog-height, 100dvh);
+  padding: max(0.75rem, env(safe-area-inset-top)) max(0.75rem, env(safe-area-inset-right))
+    max(0.5rem, env(safe-area-inset-bottom)) max(0.75rem, env(safe-area-inset-left));
+}
+
+.anim-backdrop {
+  animation: kc-fade-in 180ms ease-out backwards;
+}
+
+[data-journal-surface] { touch-action: pan-y pinch-zoom; }
+.kc-page-moving { overflow-anchor: none; }
+html.kc-sheet-open, .kc-sheet-open body, .dialog-viewport { overscroll-behavior: none; }
+.kc-sheet-open .anim-dock { visibility: hidden; pointer-events: none; }
+
+.anim-dialog {
+  animation: kc-dialog-in var(--dur-soft) var(--ease-soft) backwards;
+}
+
+.anim-page {
+  animation: kc-fade-in 200ms ease-out;
+}
+
+.anim-pop {
+  animation: kc-pop-in var(--dur-soft) var(--ease-soft) backwards;
+}
+
+.anim-dock {
+  animation: kc-dock-in 130ms var(--ease-bounce) backwards;
+  transition: opacity 85ms ease-out;
+}
+
+.anim-dock .kc-dock-btn {
+  animation: kc-dock-btn-in 130ms var(--ease-bounce) backwards;
+}
+
+/* Scrolling down slides the whole bar below the screen edge; a small scroll up brings it back
+   (see ActionDock.tsx). The transform lives on the wrapper so it never fights the entrance animation. */
+.kc-dock-wrap {
+  transition: transform 280ms var(--ease-soft), visibility 0s linear 0s;
+}
+.kc-dock-wrap[data-hidden="true"] {
+  transform: translate3d(0, calc(100% + 3rem), 0);
+  visibility: hidden;
+  transition: transform 240ms cubic-bezier(0.4, 0, 1, 1), visibility 0s linear 240ms;
+}
+
+/* While the finger is dragging across pages, the dock stays hidden; as soon as the swipe releases,
+   kc-page-dragging is removed so the destination dock and action buttons appear immediately. */
+.kc-page-dragging .anim-dock,
+.kc-page-dragging .anim-dock .kc-dock-btn {
+  animation: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.anim-value {
+  display: inline-block;
+  animation: kc-value-in var(--dur-soft) var(--ease-soft) backwards;
+}
+
+/* Smooth height accordion via CSS Grid (no overshoot, so the rows never jump). */
+.accordion-grid {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+.accordion-grid[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+.accordion-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Pressed controls: a quick, clear shrink while the finger is down, then a springy return to full size
+   with a small overshoot. The :active rule supplies the fast transition; the base rule the spring. */
+.pressable {
+  transition:
+    transform 300ms var(--ease-bounce),
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    opacity 220ms ease;
+}
+.pressable:active:not(:disabled) {
+  transform: scale(0.9);
+  transition:
+    transform 110ms cubic-bezier(0.3, 0, 0.6, 1),
+    background-color 220ms ease,
+    border-color 220ms ease,
+    color 220ms ease,
+    opacity 220ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .anim-backdrop,
+  .anim-dialog,
+  .anim-page,
+  .anim-pop,
+  .anim-dock,
+  .anim-dock .kc-dock-btn,
+  .anim-value {
+    animation: none !important;
+  }
+  .accordion-grid,
+  .pressable {
+    transition: none !important;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 9999px;
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/*
+ * Edge-fade for scrollable fields (see src/utils/scrollFade.ts). The script sets data-fade-start / data-fade-end while
+ * content is hidden before / after the visible part; a mask fades that edge, so it works on every theme and style.
+ */
+[data-scroll-fade][data-fade-start],
+[data-scroll-fade][data-fade-end] {
+  --kc-fade-a: 0px;
+  --kc-fade-b: 0px;
+  -webkit-mask-image: linear-gradient(var(--kc-fade-dir, to bottom), transparent 0, #000 var(--kc-fade-a), #000 calc(100% - var(--kc-fade-b)), transparent 100%);
+  mask-image: linear-gradient(var(--kc-fade-dir, to bottom), transparent 0, #000 var(--kc-fade-a), #000 calc(100% - var(--kc-fade-b)), transparent 100%);
+}
+[data-scroll-fade="x"] {
+  --kc-fade-dir: to right;
+  --kc-fade-size: 22px;
+}
+[data-scroll-fade="y"] {
+  --kc-fade-dir: to bottom;
+  --kc-fade-size: 26px;
+}
+[data-scroll-fade][data-fade-start="true"] {
+  --kc-fade-a: var(--kc-fade-size);
+}
+[data-scroll-fade][data-fade-end="true"] {
+  --kc-fade-b: var(--kc-fade-size);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

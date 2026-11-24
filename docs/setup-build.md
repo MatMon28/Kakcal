@@ -32,7 +32,7 @@
 | `npx cap open android` | Opens `android/` in Android Studio. |
 | `node scripts/build-off-catalog.mjs` | Rebuilds `public/data/off-foods.bin` ([details](data-off-catalogue.md)). |
 | `node scripts/outline-wordmark.mjs` | Regenerates every wordmark SVG (k + solid poop + kcal, Nunito Black outlines; `--launch-screens` also rewrites `splash_wordmark.xml` and the `index.html` boot SVG, no longer used). Needs `npm i --no-save opentype.js`. |
-| `node scripts/generate-splash-themes.mjs` | Regenerates `android/app/src/main/res/values/splash_themes.xml` (one launch-screen style per app background colour). Run it after changing a `--bg` in `src/index.css` or the mono palette ([launch intro](launch-intro.md)). |
+| `node scripts/generate-splash-themes.mjs` | Regenerates `android/app/src/main/res/values/splash_themes.xml` (one launch-screen style per app background colour). Run it after changing a `--bg` in `src/index.css` (rules in `src/styles/*.css`, see [file-organisation.md](file-organisation.md)) or the mono palette ([launch intro](launch-intro.md)). |
 | `node scripts/render-widget-tray.mjs` | Regenerates the chamfered widget tray 9-patches (no dependencies; [widgets](widgets.md)). |
 | `node scripts/generate-icon.mjs` | Writes the icon SVGs (solid poop, carved K; no dependency); run it before `render-brand.mjs` and `render-pwa-icons.mjs` ([brand.md](brand.md#the-icon)). |
 | `node scripts/render-pwa-icons.mjs` | Regenerates the PWA PNG icons in `public/icons/` from the icon SVG. Needs `npm i --no-save sharp` ([pwa.md](pwa.md)). |

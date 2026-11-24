@@ -1,0 +1,193 @@
+/* 4. PLAYFUL THEME (Soft Bubbly Pastel Cards) */
+html[data-style="playful"] {
+  --font-family: 'Space Grotesk Variable', system-ui, sans-serif;
+  --icon-btn-radius: 9999px;
+  --nav-radius: 32px;
+  --nav-pill-radius: 32px;
+  --card-radius: 24px;
+  --micro-radius: 22px;
+  --badge-radius: 12px;
+  --bar-radius: 6px;
+  --pill-radius: 9px;
+  --dock-radius: 40px;
+  --dock-btn-radius: 9999px;
+  --card-border: none;
+  --pill-border: none;
+  --dock-border: none;
+  --dock-btn-border: none;
+  --clip-lg: none;
+  --clip-md: none;
+  --clip-sm: none;
+  --clip-xs: none;
+  --clip-dock: none;
+  --brand-flame-color: #fb7185;
+}
+
+html[data-style="playful"][data-theme="dark"] {
+  --bg: #1e1b4b;
+  --surface: #312e81;
+  --surface-solid: #312e81;
+  --inset: #272469;
+  --hover: #3b389c;
+  --border: rgba(165, 180, 252, 0.22);
+  --text: #f3e8ff;
+  --muted: #a5b4fc;
+  --header-btn-bg: #312e81;
+  --header-icon-color: #f3e8ff;
+  --nav-bg: #312e81;
+  --nav-inactive-color: #e0e7ff;
+  --nav-active-bg: #e11d48;
+  --nav-active-color: #ffffff;
+  --meal-icon-color: #fb7185;
+  --card-shadow: 0 6px 18px rgba(10, 8, 35, 0.35);
+
+  --intake-bg: #065f46;
+  --intake-text: #d1fae5;
+  --intake-label: #d1fae5;
+  --intake-track: rgba(209, 250, 229, 0.2);
+  --intake-fill: #d1fae5;
+  --intake-badge-bg: #d1fae5; --intake-badge-text: #065f46;
+
+  --burned-bg: #9f1239;
+  --burned-text: #ffe4e6;
+  --burned-label: #ffe4e6;
+  --burned-track: rgba(255, 228, 230, 0.22);
+  --burned-fill: #ffe4e6;
+  --badge-bg: rgba(0, 0, 0, 0.28);
+  --badge-text: #ffe4e6;
+
+  --carbs-bg: #312e81; --carbs-text: #e0e7ff;
+  --protein-bg: #713f12; --protein-text: #fef08a;
+  --fat-bg: #4c1d95; --fat-text: #e9d5ff;
+
+  --pill-c-bg: #1e3a8a; --pill-c-text: #bfdbfe;
+  --pill-p-bg: #854d0e; --pill-p-text: #fde68a;
+  --pill-f-bg: #4c1d95; --pill-f-text: #e9d5ff;
+
+  --dock-bg: #312e81;
+  --dock-shadow: 0 8px 24px rgba(10, 8, 35, 0.4);
+  --dock-1: #065f46; --dock-icon-1: #d1fae5;
+  --dock-2: #9f1239; --dock-icon-2: #ffe4e6;
+  --dock-3: #1e3a8a; --dock-icon-3: #bfdbfe;
+  --dock-4: #854d0e; --dock-icon-4: #fde68a;
+  --dock-5: #4c1d95; --dock-icon-5: #e9d5ff;
+  --dock-6: #a16207; --dock-icon-6: #fef08a;
+
+  --fiber-bg: #a16207; --fiber-text: #fef08a;
+  --salt-bg: #a16207; --salt-text: #fef08a;
+  --sugar-bg: #a16207; --sugar-text: #fef08a;
+}
+
+html[data-style="playful"][data-theme="lite-dark"] {
+  --bg: #252154;
+  --surface: #363173;
+  --surface-solid: #363173;
+  --inset: #2d2863;
+  --hover: #423c8a;
+  --border: rgba(255, 255, 255, 0.14);
+  --text: #ffffff;
+  --muted: #e0e7ff;
+  --header-btn-bg: #363173;
+  --header-icon-color: #f8fafc;
+  --nav-bg: #363173;
+  --nav-inactive-color: #e0e7ff;
+  --nav-active-bg: #fb7185;
+  --nav-active-color: #3b0413;
+  --meal-icon-color: #fda4af;
+  --card-border: 1px solid rgba(255, 255, 255, 0.14);
+  --card-shadow: 0 6px 18px rgba(15, 12, 45, 0.3);
+
+  --intake-bg: #34d399;
+  --intake-text: #042f2e;
+  --intake-label: #042f2e;
+  --intake-track: rgba(4, 47, 46, 0.22);
+  --intake-fill: #042f2e;
+  --intake-badge-bg: #042f2e; --intake-badge-text: #a7f3d0;
+
+  --burned-bg: #fb7185;
+  --burned-text: #3b0413;
+  --burned-label: #3b0413;
+  --burned-track: rgba(59, 4, 19, 0.22);
+  --burned-fill: #3b0413;
+  --badge-bg: rgba(59, 4, 19, 0.22);
+  --badge-text: #3b0413;
+
+  --carbs-bg: #3730a3; --carbs-text: #eef2ff;
+  --protein-bg: #854d0e; --protein-text: #fef9c3;
+  --fat-bg: #581c87; --fat-text: #faf5ff;
+
+  --pill-c-bg: #1e3a8a; --pill-c-text: #dbeafe;
+  --pill-p-bg: #713f12; --pill-p-text: #fef08a;
+  --pill-f-bg: #4c1d95; --pill-f-text: #f3e8ff;
+
+  --dock-bg: #363173;
+  --dock-border: 1px solid rgba(255, 255, 255, 0.14);
+  --dock-shadow: 0 8px 24px rgba(15, 12, 45, 0.35);
+  --dock-1: #34d399; --dock-icon-1: #042f2e;
+  --dock-2: #fb7185; --dock-icon-2: #3b0413;
+  --dock-3: #60a5fa; --dock-icon-3: #172554;
+  --dock-4: #fbbf24; --dock-icon-4: #451a03;
+  --dock-5: #c084fc; --dock-icon-5: #2e1065;
+  --dock-6: #fde047; --dock-icon-6: #422006;
+
+  --fiber-bg: #fde047; --fiber-text: #422006;
+  --salt-bg: #fde047; --salt-text: #422006;
+  --sugar-bg: #fde047; --sugar-text: #422006;
+}
+
+html[data-style="playful"][data-theme="light"] {
+  --bg: #ebe0fa;
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --inset: #f3ecfc;
+  --hover: #e5d5f8;
+  --border: rgba(76, 29, 149, 0.14);
+  --text: #17143b;
+  --muted: #334155;
+  --header-btn-bg: #ffffff;
+  --header-icon-color: #17143b;
+  --nav-bg: #ffffff;
+  --nav-inactive-color: #1e1b4b;
+  --nav-active-bg: #f43f5e;
+  --nav-active-color: #ffffff;
+  --meal-icon-color: #e11d48;
+  --card-border: 1px solid rgba(76, 29, 149, 0.14);
+  --card-shadow: 0 5px 14px rgba(30, 27, 75, 0.08);
+
+  --intake-bg: #34d399;
+  --intake-text: #042f2e;
+  --intake-label: #042f2e;
+  --intake-track: rgba(4, 47, 46, 0.22);
+  --intake-fill: #042f2e;
+  --intake-badge-bg: #042f2e; --intake-badge-text: #a7f3d0;
+
+  --burned-bg: #fb7185;
+  --burned-text: #3b0413;
+  --burned-label: #3b0413;
+  --burned-track: rgba(59, 4, 19, 0.22);
+  --burned-fill: #3b0413;
+  --badge-bg: rgba(59, 4, 19, 0.18);
+  --badge-text: #3b0413;
+
+  --carbs-bg: #dbeafe; --carbs-text: #172554;
+  --protein-bg: #fef08a; --protein-text: #422006;
+  --fat-bg: #e9d5ff; --fat-text: #2e1065;
+
+  --pill-c-bg: #dbeafe; --pill-c-text: #172554;
+  --pill-p-bg: #fef08a; --pill-p-text: #422006;
+  --pill-f-bg: #e9d5ff; --pill-f-text: #2e1065;
+
+  --dock-bg: #ffffff;
+  --dock-border: 1px solid rgba(76, 29, 149, 0.14);
+  --dock-shadow: 0 6px 18px rgba(30, 27, 75, 0.1);
+  --dock-1: #34d399; --dock-icon-1: #042f2e;
+  --dock-2: #fb7185; --dock-icon-2: #3b0413;
+  --dock-3: #60a5fa; --dock-icon-3: #172554;
+  --dock-4: #fbbf24; --dock-icon-4: #422006;
+  --dock-5: #c084fc; --dock-icon-5: #2e1065;
+  --dock-6: #fcd34d; --dock-icon-6: #422006;
+
+  --fiber-bg: #fcd34d; --fiber-text: #422006;
+  --salt-bg: #fcd34d; --salt-text: #422006;
+  --sugar-bg: #fcd34d; --sugar-text: #422006;
+}

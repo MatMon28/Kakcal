@@ -1,0 +1,258 @@
+import React from 'react';
+import { Modal } from '../common/Modal';
+import { AmountSelector } from '../common/AmountSelector';
+import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
+import { FoodResultRow } from '../common/FoodResultRow';
+import { FoodMacroGrid } from '../common/FoodMacroGrid';
+import { Plus, Trash2, Check, ArrowLeft } from 'lucide-react';
+import { MacroPills } from '../common/MacroPills';
+import { NumericInput } from '../common/NumericInput';
+import { scrollFadeY } from '../../utils/scrollFade';
+import type { LibraryState } from './usePreBuiltMealsState';
+
+export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
+  const {
+    allFoods, rememberFood, settings, t, j, isRecipeOpen, editingRecipeId, recipeName,
+    setRecipeName, recipeIngs, setRecipeIngs, recipePendingFood, setRecipePendingFood,
+    recipePendingAmt, setRecipePendingAmt, recipeSearch, setRecipeSearch, recipePortion,
+    setRecipePortion, nameOf, recipeResults, favoriteOneChar, recipeTotals, closeRecipeModal,
+    saveRecipe, searchInput,
+  } = s;
+  return (
+    <>
+      {/* ============ Create / Edit recipe modal ============ */}
+      <Modal
+        dockId="recipe"
+        isOpen={isRecipeOpen}
+        onClose={closeRecipeModal}
+        title={
+          recipePendingFood
+            ? nameOf(recipePendingFood)
+            : editingRecipeId
+            ? t.prebuilt.edit
+            : t.prebuilt.recipeTitle
+        }
+        maxWidth="max-w-xl"
+      >
+        {recipePendingFood ? (
+          <div className="space-y-4">
+            <button
+              type="button"
+              onClick={() => setRecipePendingFood(null)}
+              className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+            >
+              <ArrowLeft size={14} />
+              <span>{t.common.back}</span>
+            </button>
+
+            <div className="kc-modal-banner flex items-center justify-between bg-[#E2D6FF] rounded-2xl px-4 py-3 tabular-nums">
+              <span className="text-xs font-bold text-[#4D3582]">
+                {recipePendingFood.calories} kcal / 100{recipePendingFood.unit}
+              </span>
+              <span className="text-xl font-extrabold text-[#1F1636]">
+                {Math.round((recipePendingFood.calories * recipePendingAmt) / 100)} kcal
+              </span>
+            </div>
+
+            <AmountSelector value={recipePendingAmt} onChange={setRecipePendingAmt} unit={recipePendingFood.unit} />
+
+            <FoodMacroGrid food={recipePendingFood} amount={recipePendingAmt} />
+
+            <button
+              type="button"
+              disabled={recipePendingAmt <= 0}
+              onClick={() => {
+                if (recipePendingAmt > 0) {
+                  setLastAmount(recipePendingFood.id, recipePendingAmt);
+                  setRecipeIngs((prev) => [...prev, { foodId: recipePendingFood.id, amount: recipePendingAmt }]);
+                }
+                setRecipePendingFood(null);
+                setRecipeSearch('');
+              }}
+              className="kc-primary-btn pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-40"
+            >
+              <Plus size={17} strokeWidth={2.5} />
+              <span>{t.prebuilt.addIngredient}</span>
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-3.5">
+            <input
+              type="text"
+              value={recipeName}
+              onChange={(e) => setRecipeName(e.target.value)}
+              placeholder={t.prebuilt.recipeNamePlaceholder}
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
+            />
+
+            {/* Ingredient search — same behaviour as Add Food (favourites first and starred). Placed ABOVE the ingredients already in the recipe. */}
+            <div className="space-y-2">
+              {searchInput(recipeSearch, setRecipeSearch, t.foodModal.searchPlaceholder)}
+              {recipeSearch.trim().length === 1 && (
+                favoriteOneChar(recipeSearch).length > 0 ? (
+                  <div ref={scrollFadeY} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                    {favoriteOneChar(recipeSearch).map((food) => (
+                      <FoodResultRow
+                        key={food.id}
+                        food={food}
+                        favorite
+                        onClick={() => {
+                          rememberFood(food);
+                          setRecipePendingFood(food);
+                          setRecipePendingAmt(getDefaultAmount(food));
+                        }}
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
+                )
+              )}
+              {recipeSearch.trim().length >= 2 && (
+                <div ref={scrollFadeY} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl divide-y divide-[var(--border)] max-h-52 overflow-y-auto">
+                  {recipeResults.length === 0 ? (
+                    <div className="p-3 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
+                  ) : (
+                    recipeResults.map((food) => (
+                      <FoodResultRow
+                        key={food.id}
+                        food={food}
+                        favorite
+                        onClick={() => {
+                          rememberFood(food);
+                          setRecipePendingFood(food);
+                          setRecipePendingAmt(getDefaultAmount(food));
+                        }}
+                      />
+                    ))
+                  )}
+                </div>
+              )}
+            </div>
+
+
+            {recipeIngs.length > 0 && (
+              <div className="bg-[var(--inset)] rounded-2xl p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold tabular-nums text-[var(--text)]">
+                    {t.prebuilt.ingredientsCount.replace('{count}', String(recipeIngs.length))} · {recipeTotals.grams}g
+                  </span>
+                </div>
+                <div data-nutrition-row className="flex min-w-0 items-center gap-3">
+                  <span data-calories className="shrink-0 whitespace-nowrap text-xs font-extrabold tabular-nums text-[var(--text)]">
+                    {recipeTotals.kcal100} <span className="text-[11px] font-semibold text-[var(--muted)]">kcal/100g</span>
+                  </span>
+                  <MacroPills carbs={recipeTotals.c100} protein={recipeTotals.p100} fat={recipeTotals.f100} stretch />
+                </div>
+                <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-1 text-center text-[10px] font-bold tabular-nums`}>
+                  <span data-nutrient="fiber" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.fiber} {recipeTotals.fib100}g</span>
+                  <span data-nutrient="salt" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}g</span>
+                  {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {recipeTotals.sugar100}g</span>}
+                </div>
+                {/* Standard portion: e.g. a 1000 g recipe with a 250 g portion is logged as 250 g by default. */}
+                <div data-recipe-portion className="rounded-xl bg-[var(--surface)] px-3 py-2.5 space-y-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="min-w-0">
+                      <span className="block text-xs font-extrabold text-[var(--text)]">{j('Standard portion', 'Porzione standard')}</span>
+                      <span className="block text-[10px] font-medium text-[var(--muted)]">
+                        {j(`Logged by default instead of 100 g (recipe: ${recipeTotals.grams} g).`, `Registrata di default al posto di 100 g (ricetta: ${recipeTotals.grams} g).`)}
+                      </span>
+                    </span>
+                    <div className="w-28 shrink-0">
+                      <NumericInput
+                        ariaLabel={j('Standard portion in grams', 'Porzione standard in grammi')}
+                        value={recipePortion}
+                        onChange={setRecipePortion}
+                        unit="g"
+                        min={0}
+                        max={Math.max(recipeTotals.grams, 1) * 2}
+                        placeholder="100"
+                        className="!py-2 !text-sm"
+                      />
+                    </div>
+                  </div>
+                  {recipeTotals.grams > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {[2, 3, 4, 6, 8].map((parts) => {
+                        const grams = Math.round((recipeTotals.grams / parts) * 10) / 10;
+                        return (
+                          <button
+                            key={parts}
+                            type="button"
+                            aria-pressed={recipePortion === grams}
+                            onClick={() => setRecipePortion(recipePortion === grams ? 0 : grams)}
+                            className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold border tabular-nums ${recipePortion === grams ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F5]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)]'}`}
+                          >
+                            1/{parts} · {grams} g
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+                <div ref={scrollFadeY} className="space-y-1.5 max-h-32 overflow-y-auto">
+                  {recipeIngs.map((ing, idx) => {
+                    const food = allFoods.find((f) => f.id === ing.foodId);
+                    return (
+                      <div
+                        key={idx}
+                        className="px-3 py-1.5 rounded-xl bg-[var(--surface)] flex items-center justify-between gap-2 text-xs"
+                      >
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (food) {
+                              setRecipeIngs((prev) => prev.filter((_, i) => i !== idx));
+                              setRecipePendingFood(food);
+                              setRecipePendingAmt(ing.amount);
+                            }
+                          }}
+                          className="font-bold text-[var(--text)] truncate text-left hover:underline"
+                        >
+                          {food ? nameOf(food) : ing.foodId} ({ing.amount}
+                          {food?.unit || 'g'})
+                        </button>
+                        {food && (
+                          <span className="ml-auto flex items-center gap-1.5 shrink-0 tabular-nums">
+                            <MacroPills
+                              carbs={food.carbs == null ? null : (food.carbs * ing.amount) / 100}
+                              protein={food.protein == null ? null : (food.protein * ing.amount) / 100}
+                              fat={food.fat == null ? null : (food.fat * ing.amount) / 100}
+                            />
+                            <span className="font-bold text-[var(--muted)]">{Math.round((food.calories * ing.amount) / 100)} kcal</span>
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setRecipeIngs((prev) => prev.filter((_, i) => i !== idx))}
+                          className="pressable w-6 h-6 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
+                          aria-label={t.common.delete}
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {recipeIngs.length > 0 && (
+              <button
+                type="button"
+                onClick={saveRecipe}
+                disabled={!recipeName.trim() || recipeIngs.every((i) => i.amount <= 0)}
+                className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
+              >
+                <Check size={18} strokeWidth={2.5} />
+                <span>
+                  {t.common.save} · {t.prebuilt.recipeNote}: {recipeTotals.kcal100} kcal
+                </span>
+              </button>
+            )}
+          </div>
+        )}
+      </Modal>
+    </>
+  );
+};

@@ -5,14 +5,24 @@
 // Android 13+, picks the right one with Context.setSplashScreenTheme (see LaunchBackground.java). The names are
 // `Splash_<bg hex without #, lowercase>`, so the web layer only has to send the hex of the current --bg.
 //
-// Run again whenever a --bg value in src/index.css or the mono palette in src/utils/themes.ts changes:
+// Run again whenever a --bg value in src/index.css (or the src/styles/*.css files it imports) or the mono palette in
+// src/utils/themes.ts changes:
 //   node scripts/generate-splash-themes.mjs
 import { build } from 'esbuild';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const css = await readFile(`${root}src/index.css`, 'utf8');
+// src/index.css is only a list of @imports; inline the ./styles/*.css parts (in import order) before reading --bg.
+const inlineStyles = async (file) => {
+  const text = await readFile(file, 'utf8');
+  const parts = await Promise.all(text.split('\n').map(async (line) => {
+    const m = line.match(/^@import "\.\/(styles\/[^"]+)";/);
+    return m ? inlineStyles(`${root}src/${m[1]}`) : line;
+  }));
+  return parts.join('\n');
+};
+const css = await inlineStyles(`${root}src/index.css`);
 const MODES = ['light', 'lite-dark', 'dark'];
 const colours = new Map(); // hex -> label
 

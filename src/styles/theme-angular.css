@@ -1,0 +1,187 @@
+/* ==========================================================================
+   6 INSPIRED THEMES × 3 MODES (Angular, Aurora, Pop, Playful, Minimal, Mono)
+   ========================================================================== */
+
+/* 1. ANGULAR THEME (Chakra Petch + Chamfered Polygons) */
+html[data-style="angular"] {
+  --font-family: 'Chakra Petch', system-ui, sans-serif;
+  --icon-btn-radius: 0px;
+  --nav-radius: 0px;
+  --nav-pill-radius: 0px;
+  --card-radius: 0px;
+  --micro-radius: 0px;
+  --badge-radius: 0px;
+  --bar-radius: 0px;
+  --pill-radius: 0px;
+  --dock-radius: 0px;
+  --dock-btn-radius: 0px;
+  --card-border: none;
+  --pill-border: none;
+  --dock-border: none;
+  --dock-btn-border: none;
+  --card-shadow: none;
+  --dock-shadow: none;
+
+  --clip-lg: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px));
+  --clip-md: polygon(0 0, calc(100% - 11px) 0, 100% 11px, 100% 100%, 11px 100%, 0 calc(100% - 11px));
+  --clip-sm: polygon(0 0, calc(100% - 9px) 0, 100% 9px, 100% 100%, 9px 100%, 0 calc(100% - 9px));
+  --clip-xs: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
+  --clip-dock: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+
+  --brand-flame-color: #ff551a;
+  --burned-bg: #ff551a;
+  --burned-text: #0b1019;
+  --burned-label: #0b1019;
+  --burned-track: rgba(11, 16, 25, 0.25);
+  --burned-fill: #0b1019;
+  --badge-bg: #0b1019;
+  --badge-text: #ff551a;
+  --nav-active-bg: #ff551a;
+  --nav-active-color: #0b1019;
+  --meal-icon-color: #ff551a;
+}
+
+html[data-style="angular"][data-theme="dark"] {
+  --bg: #0b1019;
+  --surface: #151e2d;
+  --surface-solid: #151e2d;
+  --inset: #101724;
+  --hover: #1e2a3e;
+  --border: #25344d;
+  --text: #ffffff;
+  --muted: #cbd5e1;
+  --header-btn-bg: #151e2d;
+  --header-icon-color: #e6edf3;
+  --nav-bg: #151e2d;
+  --nav-inactive-color: #e6edf3;
+
+  --intake-bg: #e6edf3;
+  --intake-text: #0b1019;
+  --intake-label: #0b1019;
+  --intake-track: #cbd5e1;
+  --intake-fill: #0b1019;
+  --intake-badge-bg: #0b1019; --intake-badge-text: #e6edf3;
+
+  --carbs-bg: #1d3c78;
+  --carbs-text: #93c5fd;
+  --protein-bg: #59480d;
+  --protein-text: #fde047;
+  --fat-bg: #3b2366;
+  --fat-text: #d8b4fe;
+
+  --pill-c-bg: #1d3c78;
+  --pill-c-text: #93c5fd;
+  --pill-p-bg: #59480d;
+  --pill-p-text: #fde047;
+  --pill-f-bg: #3b2366;
+  --pill-f-text: #d8b4fe;
+
+  --dock-bg: #151e2d;
+  --dock-1: #e6edf3; --dock-icon-1: #0b1019;
+  --dock-2: #ff551a; --dock-icon-2: #0b1019;
+  --dock-3: #c7d2fe; --dock-icon-3: #0b1019;
+  --dock-4: #fde047; --dock-icon-4: #0b1019;
+  --dock-5: #e9d5ff; --dock-icon-5: #0b1019;
+  --dock-6: #7dd3fc; --dock-icon-6: #0b1019;
+
+  --fiber-bg: #7dd3fc; --fiber-text: #0b1019;
+  --salt-bg: #7dd3fc; --salt-text: #0b1019;
+  --sugar-bg: #7dd3fc; --sugar-text: #0b1019;
+}
+
+html[data-style="angular"][data-theme="lite-dark"] {
+  --bg: #202836;
+  --surface: #2f3b4f;
+  --surface-solid: #2f3b4f;
+  --inset: #263042;
+  --hover: #38465d;
+  --border: #435470;
+  --text: #ffffff;
+  --muted: #e2e8f0;
+  --header-btn-bg: #2f3b4f;
+  --header-icon-color: #f8fafc;
+  --nav-bg: #2f3b4f;
+  --nav-inactive-color: #e2e8f0;
+
+  --intake-bg: #f1f5f9;
+  --intake-text: #090e17;
+  --intake-label: #090e17;
+  --intake-track: #cbd5e1;
+  --intake-fill: #090e17;
+  --intake-badge-bg: #090e17; --intake-badge-text: #f1f5f9;
+
+  --carbs-bg: #8eb4fa;
+  --carbs-text: #0f1f4b;
+  --protein-bg: #f5d758;
+  --protein-text: #381a04;
+  --fat-bg: #c6b0f7;
+  --fat-text: #250b57;
+
+  --pill-c-bg: #1e3a73;
+  --pill-c-text: #dbeafe;
+  --pill-p-bg: #5c460c;
+  --pill-p-text: #fef08a;
+  --pill-f-bg: #3d226b;
+  --pill-f-text: #f3e8ff;
+
+  --dock-bg: #2f3b4f;
+  --dock-1: #f1f5f9; --dock-icon-1: #090e17;
+  --dock-2: #ff551a; --dock-icon-2: #090e17;
+  --dock-3: #c7d2fe; --dock-icon-3: #090e17;
+  --dock-4: #fde047; --dock-icon-4: #090e17;
+  --dock-5: #e9d5ff; --dock-icon-5: #090e17;
+  --dock-6: #7dd3fc; --dock-icon-6: #090e17;
+
+  --fiber-bg: #7dd3fc; --fiber-text: #090e17;
+  --salt-bg: #7dd3fc; --salt-text: #090e17;
+  --sugar-bg: #7dd3fc; --sugar-text: #090e17;
+}
+
+html[data-style="angular"][data-theme="light"] {
+  --bg: #cfd8e3;
+  --surface: #ffffff;
+  --surface-solid: #ffffff;
+  --inset: #e2e8f0;
+  --hover: #cbd5e1;
+  --border: #94a3b8;
+  --text: #090e17;
+  --muted: #1e293b;
+  --header-btn-bg: #ffffff;
+  --header-icon-color: #090e17;
+  --nav-bg: #ffffff;
+  --nav-inactive-color: #1e293b;
+  --card-shadow: 0 3px 10px rgba(11, 16, 25, 0.08);
+
+  --intake-bg: #0b1019;
+  --intake-text: #ffffff;
+  --intake-label: #ffffff;
+  --intake-track: #334155;
+  --intake-fill: #ffffff;
+  --intake-badge-bg: #ffffff; --intake-badge-text: #0b1019;
+
+  --carbs-bg: #b8d0ff;
+  --carbs-text: #112663;
+  --protein-bg: #f8da57;
+  --protein-text: #4d2806;
+  --fat-bg: #d4bcff;
+  --fat-text: #35116e;
+
+  --pill-c-bg: #b8d0ff;
+  --pill-c-text: #112663;
+  --pill-p-bg: #f8da57;
+  --pill-p-text: #4d2806;
+  --pill-f-bg: #d4bcff;
+  --pill-f-text: #35116e;
+
+  --dock-bg: #ffffff;
+  --dock-1: #0b1019; --dock-icon-1: #ffffff;
+  --dock-2: #ff551a; --dock-icon-2: #0b1019;
+  --dock-3: #b8d0ff; --dock-icon-3: #0b1019;
+  --dock-4: #f8da57; --dock-icon-4: #0b1019;
+  --dock-5: #d4bcff; --dock-icon-5: #0b1019;
+  --dock-6: #7dd3fc; --dock-icon-6: #0b1019;
+
+  --fiber-bg: #7dd3fc; --fiber-text: #0b1019;
+  --salt-bg: #7dd3fc; --salt-text: #0b1019;
+  --sugar-bg: #7dd3fc; --sugar-text: #0b1019;
+}

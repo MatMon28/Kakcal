@@ -85,7 +85,7 @@ Desktop fields align at their own content height rather than stretching a short 
 | `src/components/journal/MealDiary.tsx` | Searchable/filterable meal history, favourites, notes, detail dialog and inline Today/logging controls. |
 | `src/components/journal/PhotoDiary.tsx` | Camera/import composer, searchable gallery, lightbox, saved-meal/recipe attachments and Today photos. |
 | `src/components/journal/JournalChrome.tsx` | Responsive desktop navigation, help, existing Settings/Profile entry points and Custom heading/create menu. |
-| `src/components/journal/journal.css` | Responsive journal additions, theme-token overrides, accessible interaction states and reduced-motion-aware entrances/accordions/photo hover. |
+| `src/components/journal/journal.css` (an `@import` list; parts in `journal/css/`, see [file-organisation.md](file-organisation.md)) | Responsive journal additions, theme-token overrides, accessible interaction states and reduced-motion-aware entrances/accordions/photo hover. |
 
 The store persists before publishing; storage errors are not reported as successful saves. The new key is `kcalsync_meal_journal`. No backend or account is involved.
 

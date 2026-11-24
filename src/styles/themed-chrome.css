@@ -1,0 +1,225 @@
+/* ==========================================================================
+   COHERENT APPLICATION-WIDE RULES FOR THE 6 NEW THEMES
+   ========================================================================== */
+html[data-style]:not([data-style="classic"]) body,
+html[data-style]:not([data-style="classic"]) [data-journal-root] {
+  font-family: var(--font-family, var(--font-sans));
+  background: var(--app-bg-image, var(--bg));
+  background-attachment: fixed;
+  color: var(--text);
+}
+
+/* Header surface & buttons */
+.kc-header-surface {
+  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 94%), transparent);
+  border-bottom-color: color-mix(in srgb, var(--border) calc(var(--header-bg-progress, 1) * 100%), transparent);
+  backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 12px));
+  -webkit-backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 12px));
+}
+
+html[data-style]:not([data-style="classic"]) .kc-header-surface {
+  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 90%), transparent);
+  border-bottom-color: color-mix(in srgb, var(--border) calc(var(--header-bg-progress, 1) * 100%), transparent);
+  backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 14px));
+  -webkit-backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 14px));
+}
+
+/* Floating transparent page pill when revealed during scroll (no header background behind it) */
+.kc-header-surface[data-pill-floating="true"] .kc-nav-pill {
+  background: color-mix(in srgb, var(--surface) 76%, transparent) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+html[data-style]:not([data-style="classic"]) .kc-icon-btn {
+  background: var(--header-btn-bg, var(--surface)) !important;
+  color: var(--header-icon-color, var(--text)) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-sm, none);
+}
+
+/* Brand ink of the wordmark: Koink's exact colours, #0B0F1E on light themes and #F9F3E6 on the two dark ones
+   (not the theme's --text, which differs between the style presets). */
+:root { --kc-brand-ink: #0B0F1E; }
+[data-theme="lite-dark"], [data-theme="dark"] { --kc-brand-ink: #F9F3E6; }
+
+/* Wordmark: the poop is solid ink (currentColor, like the letters). The artwork carries its own fill, so no theme
+   may recolour it (the previous outline poop needed a `fill: none` rule here). `.kc-poop-group` is the poop. */
+.kc-wordmark svg .kc-poop-group {
+  fill: currentColor;
+}
+
+/* Navigation pill & tabs */
+html[data-style]:not([data-style="classic"]) .kc-nav-pill {
+  background: var(--nav-bg, var(--surface)) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--nav-radius, 999px) !important;
+  clip-path: var(--clip-sm, none);
+  transition: background-color 180ms ease;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-header-surface[data-pill-floating="true"] .kc-nav-pill {
+  background: color-mix(in srgb, var(--surface-solid, var(--nav-bg, var(--surface))) 76%, transparent) !important;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+html[data-style]:not([data-style="classic"]) .kc-nav-tab {
+  border-radius: var(--nav-pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+  color: var(--nav-inactive-color, var(--muted));
+}
+
+html[data-style]:not([data-style="classic"]) .kc-nav-tab-active {
+  background: var(--nav-active-bg) !important;
+  color: var(--nav-active-color) !important;
+}
+
+/* Hero Intake & Burned cards (Today, Statistics, Day Overview) */
+html[data-style]:not([data-style="classic"]) .kc-hero-intake {
+  background: var(--intake-bg) !important;
+  color: var(--intake-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 24px) !important;
+  clip-path: var(--clip-lg, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-hero-intake * {
+  color: inherit;
+}
+html[data-style]:not([data-style="classic"]) .kc-hero-intake .kc-hero-track {
+  background: var(--intake-track) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-hero-intake .kc-hero-fill {
+  background: var(--intake-fill) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-hero-burned {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 24px) !important;
+  clip-path: var(--clip-lg, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-hero-burned * {
+  color: inherit;
+}
+html[data-style]:not([data-style="classic"]) .kc-hero-burned .kc-hero-track {
+  background: var(--burned-track) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-hero-burned .kc-hero-fill {
+  background: var(--burned-fill) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-balance-badge {
+  background: var(--badge-bg) !important;
+  color: var(--badge-text) !important;
+  border-radius: var(--badge-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+
+/* Calorie-surplus pill sits on the green Intake card: it uses the intake palette, not the burned (red) badge colours. */
+html[data-style]:not([data-style="classic"]) .kc-balance-badge.kc-balance-badge-intake {
+  background: var(--intake-badge-bg, var(--intake-fill)) !important;
+  color: var(--intake-badge-text, var(--intake-bg)) !important;
+}
+
+/* Macro cards (Today, Statistics, Day Overview) */
+html[data-style]:not([data-style="classic"]) .kc-macro-carbs,
+html[data-style]:not([data-style="classic"]) [data-nutrient="carbs"] {
+  background: var(--carbs-bg) !important;
+  color: var(--carbs-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 20px) !important;
+  clip-path: var(--clip-md, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-macro-carbs *,
+html[data-style]:not([data-style="classic"]) [data-nutrient="carbs"] * {
+  color: inherit !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-macro-protein,
+html[data-style]:not([data-style="classic"]) [data-nutrient="protein"] {
+  background: var(--protein-bg) !important;
+  color: var(--protein-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 20px) !important;
+  clip-path: var(--clip-md, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-macro-protein *,
+html[data-style]:not([data-style="classic"]) [data-nutrient="protein"] * {
+  color: inherit !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-macro-fat,
+html[data-style]:not([data-style="classic"]) [data-nutrient="fat"] {
+  background: var(--fat-bg) !important;
+  color: var(--fat-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 20px) !important;
+  clip-path: var(--clip-md, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-macro-fat *,
+html[data-style]:not([data-style="classic"]) [data-nutrient="fat"] * {
+  color: inherit !important;
+}
+
+/* Secondary nutrients: Fiber, Salt, Sugar (Today, FoodMacroGrid, Statistics) */
+html[data-style]:not([data-style="classic"]) [data-nutrient="fiber"],
+html[data-style]:not([data-style="classic"]) [data-nutrient="salt"],
+html[data-style]:not([data-style="classic"]) [data-nutrient="sugar"] {
+  background: var(--fiber-bg) !important;
+  color: var(--fiber-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--micro-radius, 18px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) [data-nutrient="fiber"] *,
+html[data-style]:not([data-style="classic"]) [data-nutrient="salt"] *,
+html[data-style]:not([data-style="classic"]) [data-nutrient="sugar"] * {
+  color: inherit !important;
+}
+
+/* Numeric Macro Pills (Meal cards, Food rows, Recipes, Database, Day Overview) */
+html[data-style]:not([data-style="classic"]) [data-macro="carbs"] {
+  background: var(--pill-c-bg) !important;
+  color: var(--pill-c-text) !important;
+  border: var(--pill-border, none) !important;
+  border-radius: var(--pill-radius, 8px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-macro="protein"] {
+  background: var(--pill-p-bg) !important;
+  color: var(--pill-p-text) !important;
+  border: var(--pill-border, none) !important;
+  border-radius: var(--pill-radius, 8px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-macro="fat"] {
+  background: var(--pill-f-bg) !important;
+  color: var(--pill-f-text) !important;
+  border: var(--pill-border, none) !important;
+  border-radius: var(--pill-radius, 8px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-macro="fiber"],
+html[data-style]:not([data-style="classic"]) [data-macro="salt"],
+html[data-style]:not([data-style="classic"]) [data-macro="sugar"] {
+  background: var(--fiber-bg) !important;
+  color: var(--fiber-text) !important;
+  border: var(--pill-border, none) !important;
+  border-radius: var(--pill-radius, 8px) !important;
+  clip-path: var(--clip-xs, none);
+}

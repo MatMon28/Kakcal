@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-// Fonts: latin-only @font-face rules live in index.css (see the note there).
+// Fonts: latin-only @font-face rules live in styles/fonts.css, imported by index.css (see the note there).
 import "./index.css";
 // Must stay before "./App": paints the launch animation before the app modules are evaluated (see launch-intro.md).
 import "./components/intro/earlyStart";

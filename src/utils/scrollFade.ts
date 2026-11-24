@@ -3,7 +3,7 @@
  *
  * When a scrollable element is partly hidden (there is more content before and / or after what is visible), a soft fade
  * is drawn on that edge so the user can tell it can be scrolled. The fade disappears again once the edge is reached or
- * when everything fits. It is a CSS mask (`[data-scroll-fade]` rules in `index.css`), so it works on any background,
+ * when everything fits. It is a CSS mask (`[data-scroll-fade]` rules in `styles/motion.css`), so it works on any background,
  * theme and style.
  *
  * Usage: pass `scrollFadeX` (horizontal chip rows) or `scrollFadeY` (vertical lists, dialog bodies) as the `ref` of the

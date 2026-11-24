@@ -1,0 +1,250 @@
+/* Meal slot cards, Tracker cards, Custom library sections, and Surface cards across all pages */
+html[data-style]:not([data-style="classic"]) [data-meal-slot],
+html[data-style]:not([data-style="classic"]) [data-tracker],
+html[data-style]:not([data-style="classic"]) [data-library-section],
+html[data-style]:not([data-style="classic"]) .kc-themed-card {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 20px) !important;
+  clip-path: var(--clip-md, none);
+}
+
+html[data-style="aurora"] [data-meal-slot],
+html[data-style="aurora"] [data-tracker],
+html[data-style="aurora"] [data-library-section],
+html[data-style="aurora"] .kc-themed-card,
+html[data-style="aurora"] .kc-nav-pill,
+html[data-style="aurora"] .kc-icon-btn {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html[data-style]:not([data-style="classic"]) [data-meal-slot] .kc-meal-icon,
+html[data-style]:not([data-style="classic"]) [data-tracker] .kc-tracker-icon,
+html[data-style]:not([data-style="classic"]) .kc-period-header-icon {
+  color: var(--meal-icon-color, var(--text)) !important;
+}
+
+/* Custom page (PreBuiltMealsView) nested cards, ingredients, empty states & food action buttons */
+html[data-style]:not([data-style="classic"]) .kc-section-empty {
+  color: var(--muted) !important;
+}
+
+html[data-style]:not([data-style="classic"]) [data-library-card] {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--micro-radius, 16px) !important;
+  clip-path: var(--clip-sm, none);
+}
+
+html[data-style]:not([data-style="classic"]) [data-library-ingredients] {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--pill-radius, 12px) !important;
+  clip-path: var(--clip-xs, none);
+}
+
+html[data-style]:not([data-style="classic"]) [data-library-food-btn] {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) [data-library-food-btn]:hover {
+  background: var(--hover) !important;
+}
+
+/* Custom item fields, tracker pills, water indicators & statistics custom tracker cards */
+html[data-style]:not([data-style="classic"]) .kc-custom-pill {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--pill-radius, 8px) !important;
+  clip-path: var(--clip-xs, none);
+}
+
+html[data-style]:not([data-style="classic"]) .kc-custom-icon-badge {
+  background: var(--dock-6, var(--fiber-bg)) !important;
+  color: var(--dock-icon-6, var(--fiber-text)) !important;
+  border: var(--dock-btn-border, none) !important;
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+
+html[data-style]:not([data-style="classic"]) [data-custom-nutrient] .kc-custom-num-input {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--pill-radius, 12px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-custom-nutrient] .kc-custom-num-unit {
+  color: var(--muted) !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-water-track {
+  background: var(--inset) !important;
+  border-radius: var(--bar-radius, 6px) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-water-fill {
+  background: var(--carbs-text, var(--nav-active-bg)) !important;
+  border-radius: var(--bar-radius, 6px) !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-custom-stat-header {
+  color: var(--text) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-custom-stat-sub {
+  color: var(--muted) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-custom-stat-dot-active {
+  background: var(--nav-active-bg) !important;
+  color: var(--nav-active-color) !important;
+  border: var(--pill-border, none) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-custom-stat-dot-empty {
+  background: var(--inset) !important;
+  color: var(--muted) !important;
+  border: 1px solid var(--border) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-custom-stat-bar-active {
+  background: var(--nav-active-bg) !important;
+  border-radius: var(--bar-radius, 4px) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-custom-stat-bar-empty {
+  background: var(--inset) !important;
+  border-radius: var(--bar-radius, 4px) !important;
+}
+
+/* Period page, Calendar, Day Overview & Shared Action/Chip controls */
+html[data-style]:not([data-style="classic"]) [data-period-card],
+html[data-style]:not([data-style="classic"]) [data-day-overview-card],
+html[data-style]:not([data-style="classic"]) .kc-modal-banner {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--micro-radius, 16px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-modal-banner * {
+  color: inherit !important;
+}
+html[data-style]:not([data-style="classic"]) [data-period-card] [data-period-value],
+html[data-style]:not([data-style="classic"]) [data-day-overview-card] [data-period-value] {
+  color: var(--text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-period-card] [data-period-label],
+html[data-style]:not([data-style="classic"]) [data-day-overview-card] [data-period-label] {
+  color: var(--muted) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-day-overview-row] {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--pill-radius, 12px) !important;
+  clip-path: var(--clip-xs, none);
+}
+
+html[data-style]:not([data-style="classic"]) [data-period-cell="logged"] {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
+  border: var(--pill-border, none) !important;
+  border-radius: var(--micro-radius, 14px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-period-cell="predicted"] {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1.5px dashed var(--border) !important;
+  border-radius: var(--micro-radius, 14px) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-period-cell="logged"] .kc-period-cell-ink {
+  color: var(--burned-text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-period-cell="predicted"] .kc-period-cell-ink {
+  color: var(--text) !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-period-pill,
+html[data-style]:not([data-style="classic"]) .kc-period-chip,
+html[data-style]:not([data-style="classic"]) .kc-action-pill,
+html[data-style]:not([data-style="classic"]) .kc-chip-active {
+  background: var(--nav-active-bg) !important;
+  color: var(--nav-active-color) !important;
+  border-color: transparent !important;
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+
+html[data-style]:not([data-style="classic"]) .kc-period-bar {
+  background: var(--nav-active-bg) !important;
+  border-radius: var(--bar-radius, 4px) !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-primary-btn {
+  background: var(--intake-bg) !important;
+  color: var(--intake-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--micro-radius, 16px) !important;
+  clip-path: var(--clip-sm, none);
+}
+
+/* Bottom Action Dock & Quick-Add Buttons (Today, Custom, Period) */
+html[data-style]:not([data-style="classic"]) .kc-dock {
+  background: var(--dock-bg, var(--surface)) !important;
+  border: var(--dock-border, var(--card-border, 1px solid var(--border))) !important;
+  box-shadow: var(--dock-shadow, var(--card-shadow, none)) !important;
+  border-radius: var(--dock-radius, 999px) !important;
+  clip-path: var(--clip-dock, none);
+}
+html[data-style="aurora"] .kc-dock {
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+html[data-style]:not([data-style="classic"]) .kc-dock-btn {
+  border: var(--dock-btn-border, none) !important;
+  border-radius: var(--dock-btn-radius, 9999px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 1) {
+  background: var(--dock-1) !important;
+  color: var(--dock-icon-1) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 2) {
+  background: var(--dock-2) !important;
+  color: var(--dock-icon-2) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 3) {
+  background: var(--dock-3) !important;
+  color: var(--dock-icon-3) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 4) {
+  background: var(--dock-4) !important;
+  color: var(--dock-icon-4) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 5) {
+  background: var(--dock-5) !important;
+  color: var(--dock-icon-5) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 6) {
+  background: var(--dock-6) !important;
+  color: var(--dock-icon-6) !important;
+}
+
+/* Modals / Dialog Sheets */
+html[data-style]:not([data-style="classic"]) [role="dialog"] {
+  background: var(--surface-solid, var(--surface)) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--dock-shadow, 0 20px 50px rgba(0, 0, 0, 0.45)) !important;
+  border-radius: var(--card-radius, 24px) !important;
+  clip-path: var(--clip-lg, none);
+  font-family: var(--font-family, var(--font-sans));
+}
