@@ -9,7 +9,7 @@
 - **Minimal mode** (`settings.ultraMinimal`): every Custom field (Meal diary, Meals, Recipes, Meal planner, Photo diary, Foods) is a flex item of `.journal-minimal-grid`. A collapsed field is half a row (two next to each other) and grows to fill the row, so a lone one takes the whole row. An expanded field takes the whole row. The state is read from `data-section-open` on each `<section>` (set by `JournalSection` and by the three library sections), so Meal diary and Meal planner now compact like the others.
 - **Header icons in compact fields:** `LibrarySectionHeader` measures the header (`useFitActions`, ResizeObserver). Optional buttons (search, share, filter, +) that do not fit a half-width field are hidden (`display: none` on the DOM node, the last button is kept longest). They are shown again when the field is expanded and hidden again when it is compacted. The chevron and the icon circle are always shown.
 - **Not Minimal:** `.custom-library-grid` is a single column at every width, so each field takes the whole row (the old two-column rule at 760 px was removed).
-- **No entrance animation on Custom:** the staggered `journal-arrive` animation on the grid sections was removed, and `animatePageFields` skips children of a container marked `data-static-fields` (the Custom grid). All fields appear together with the page, like on other pages.
+- **No entrance animation on Custom:** the staggered `journal-arrive` animation on the grid sections was removed. (Until the page-transition rework the `data-static-fields` attribute also kept `animatePageFields` away from the grid; both are gone, and every page now changes with the same page-level fade-through, see [motion.md](motion.md).)
 
 ## Share pop-up rule
 

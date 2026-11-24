@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNo
 import { flushSync } from 'react-dom';
 import type { ActiveTab } from '../../types';
 import { prefersReducedMotion } from '../../utils/motion';
-import { animatePageFields } from '../../utils/pageFields';
+import { canAnimatePages, playPageChange } from '../../utils/pageTransition';
 import { getOpenModalCount } from './Modal';
 import { setPagePosition } from '../../utils/pagePosition';
 
@@ -16,6 +16,8 @@ interface PageSwiperProps {
 }
 
 type Peer = { tab: ActiveTab; side: number; top: number };
+// The page a tap / Back change is leaving: kept mounted (inert, in place) while it fades out.
+type Leaving = { tab: ActiveTab; top: number };
 type Drag = {
   id: number; origin: Element; startX: number; startY: number; startTime: number; scrollY: number;
   width: number; locked: boolean; side: number; target?: ActiveTab; offset: number;
@@ -58,6 +60,18 @@ export function PageSwiper(props: PageSwiperProps) {
   const previous = useRef(activeTab);
   const swipeDestination = useRef<ActiveTab | null>(null);
   const [peer, setPeer] = useState<Peer | null>(null);
+  const [leaving, setLeaving] = useState<Leaving | null>(null);
+  const [shownTab, setShownTab] = useState(activeTab);
+
+  // Tap / Back change: keep the page we are leaving mounted so it can fade out instead of being cut away. This is
+  // decided while rendering, so the old page is never unmounted and re-mounted (its state and DOM survive). A swipe
+  // already hands the old page over as `peer`, and reduced motion keeps the instant change.
+  if (shownTab !== activeTab) {
+    const handedOver = swipeDestination.current === activeTab || peer?.tab === shownTab;
+    setShownTab(activeTab);
+    // The window is scrolled to the top in the same commit, so the old page is shifted up by the scroll it had.
+    setLeaving(handedOver || !canAnimatePages() ? null : { tab: shownTab, top: -window.scrollY });
+  }
 
   const cancelMotion = useCallback(() => {
     cancelAnimationFrame(frame.current);
@@ -79,6 +93,7 @@ export function PageSwiper(props: PageSwiperProps) {
   const rest = useCallback(() => {
     cancelMotion();
     setPeer(null);
+    setLeaving(null);
   }, [cancelMotion]);
 
   // The base style is already at rest. A finished animation cannot pin the live page offscreen.
@@ -112,16 +127,28 @@ export function PageSwiper(props: PageSwiperProps) {
       return;
     }
     drag.current = null;
-    rest();
+    cancelMotion();
+    setPeer(null);
     const tabs = latest.current.tabs;
     const side = activeTab === 'database' || (old !== 'database' && tabs.indexOf(activeTab) > tabs.indexOf(old)) ? 1 : -1;
     document.documentElement.style.setProperty('--kc-swipe-dir', String(side));
     document.documentElement.dataset.swipeDir = side > 0 ? 'right' : 'left';
+    const pages = Array.from(rail.current?.children ?? []).filter((el): el is HTMLElement => el instanceof HTMLElement);
+    const incoming = pages.find((el) => el.dataset.journalPage === activeTab);
+    const outgoing = pages.find((el) => el.dataset.journalPage === old) ?? null;
+    if (!incoming || !canAnimatePages()) { rest(); return; }
+    // Fade through: the old page fades out, the new one fades in while sliding 14 px (src/utils/pageTransition.ts).
     document.documentElement.classList.add('kc-page-moving');
-    // One 10 px compositor slide of the rail (transform only), then the fields rise in with a tiny stagger.
-    settle(side * 10, 180);
-    animatePageFields(rail.current?.querySelector<HTMLElement>('[data-journal-page]'));
-  }, [activeTab, rest, settle]);
+    const animation = playPageChange(incoming, outgoing, side);
+    motion.current = animation;
+    // Unmount the (already invisible) old page in the same frame in which the clipping class is removed: removing the
+    // class first would let the old page stretch the document for one frame.
+    animation.onfinish = () => {
+      if (motion.current !== animation) return;
+      flushSync(() => { setPeer(null); setLeaving(null); });
+      cancelMotion();
+    };
+  }, [activeTab, cancelMotion, rest]);
 
   useEffect(() => {
     const el = rail.current;
@@ -276,16 +303,20 @@ export function PageSwiper(props: PageSwiperProps) {
     };
   }, [cancelMotion, rest, settle]);
 
-  const pages = peer && peer.tab !== activeTab ? [activeTab, peer.tab] : [activeTab];
+  // The page that is not the active one: the swipe neighbour (beside the rail) or the page a tap just left (in place).
+  const other = peer && peer.tab !== activeTab
+    ? { tab: peer.tab, style: { left: `${peer.side * 100}%`, top: peer.top } }
+    : leaving && leaving.tab !== activeTab ? { tab: leaving.tab, style: { left: 0, top: leaving.top } } : null;
+  const pages = other ? [activeTab, other.tab] : [activeTab];
   return (
     <div className="relative overflow-x-clip min-h-[55dvh]" data-page-viewport>
       <div ref={rail} className="relative" data-page-rail>
         {pages.map((tab) => {
-          const other = tab !== activeTab && peer;
+          const ghost = other && tab !== activeTab ? other : null;
           return (
-            <div key={tab} data-journal-page={tab} inert={Boolean(other)} aria-hidden={other ? true : undefined}
-              className={other ? 'pointer-events-none absolute w-full' : undefined}
-              style={other ? { left: `${other.side * 100}%`, top: other.top } : undefined}>
+            <div key={tab} data-journal-page={tab} inert={Boolean(ghost)} aria-hidden={ghost ? true : undefined}
+              className={ghost ? 'pointer-events-none absolute w-full' : undefined}
+              style={ghost?.style}>
               {renderTab(tab)}
             </div>
           );

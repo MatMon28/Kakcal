@@ -23,7 +23,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   } = s;
   return (
     <>
-    <div className={ultraMinimal ? 'journal-minimal-grid' : 'custom-library-grid'} data-static-fields>
+    <div className={ultraMinimal ? 'journal-minimal-grid' : 'custom-library-grid'}>
       <MealDiary />
       {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}
       <MealsSection s={s} />
