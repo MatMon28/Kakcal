@@ -355,26 +355,3 @@ export function startWebReminders(plan: PlannedNotification[], onOpen: (screen: 
   };
 }
 
-/** Fires a notification right now so the user can check that delivery works. */
-export async function sendTestNotification(copy: NotificationCopy): Promise<void> {
-  if (isAndroidApp()) {
-    if ((await requestNotificationPermission()) !== 'granted') return;
-    await LocalNotifications.createChannel({
-      id: 'kc-reminders', name: copy.channels.reminders, description: copy.channels.remindersDesc, importance: 3, visibility: 1,
-    });
-    await LocalNotifications.schedule({
-      notifications: [{
-        id: 9001,
-        title: copy.testTitle,
-        body: copy.testBody,
-        channelId: 'kc-reminders',
-        smallIcon: 'ic_stat_kak',
-        iconColor: '#0B0F1E',
-        extra: { screen: 'today' },
-        schedule: { at: new Date(Date.now() + 2000), allowWhileIdle: true },
-      }],
-    });
-    return;
-  }
-  if ((await requestNotificationPermission()) === 'granted') showWebNotification(copy.testTitle, copy.testBody, 'kc-test');
-}

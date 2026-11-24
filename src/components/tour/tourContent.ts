@@ -427,7 +427,7 @@ export const TOUR_STEPS: TourStep[] = [
         'Water: choose how often (every 30 minutes up to every 4 hours) and the hours of the day.',
         'Meals: a separate reminder for each meal, at the time you pick for it.',
         'Weight, custom buttons and a general “don’t forget to log your data” reminder, each at a time you choose.',
-        'Use “Send a test notification” to check delivery. Android asks for permission the first time you switch one on.',
+        'Android asks for permission the first time you switch one on.',
       ],
       it: [
         'Acqua: scegli ogni quanto (da ogni 30 minuti a ogni 4 ore) e le ore della giornata.',

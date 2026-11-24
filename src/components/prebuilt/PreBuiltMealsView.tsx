@@ -15,6 +15,9 @@ import { CreateMealModal } from './CreateMealModal';
 import { RecipeBuilderModal } from './RecipeBuilderModal';
 import { LazyBody } from '../common/LazyBody';
 import { usePreBuiltMealsState } from './usePreBuiltMealsState';
+import { useApp } from '../../context/AppContext';
+import type { DockAction } from '../common/ActionDock';
+import type { CustomFieldId } from '../../types';
 
 export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
   const s = usePreBuiltMealsState();
@@ -23,22 +26,31 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
     journalDockActions, openBarcode, openCustomFood, ultraMinimal, sectionsOpen, toggleSection,
     pendingDelete, setPendingDelete, openNewMealModal, openRecipeModal,
   } = s;
+  // Settings > Custom page: hidden sections and hidden creation buttons (the Plan / Photo buttons are in journalDockActions).
+  const { settings } = useApp();
+  const hideField = (key: CustomFieldId) => Boolean(settings.hideCustomFields[key]);
+  const dockActions: DockAction[] = [
+    ...(settings.hideCustomButtons.meal ? [] : [{ id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: openNewMealModal }]),
+    ...(settings.hideCustomButtons.recipe ? [] : [{ id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openRecipeModal }]),
+    ...(settings.hideCustomButtons.food ? [] : [{ id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: openCustomFood }]),
+    ...journalDockActions,
+  ];
   return (
     <>
     <div className={ultraMinimal ? 'journal-minimal-grid' : 'custom-library-grid'}>
-      <MealDiary />
+      {!hideField('diary') && <MealDiary />}
       {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}
-      <MealsSection s={s} />
+      {!hideField('meals') && <MealsSection s={s} />}
 
       {/* ============ RECIPES ============ */}
-      <RecipesSection s={s} />
+      {!hideField('recipes') && <RecipesSection s={s} />}
 
-      <MealPlanner />
-      <ShoppingLists />
-      <PhotoDiary />
+      {!hideField('planner') && <MealPlanner />}
+      {!hideField('shopping') && <ShoppingLists />}
+      {!hideField('photos') && <PhotoDiary />}
 
       {/* ============ FOODS ============ */}
-      <section data-library-section="foods" className={`bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.foods}>
+      {!hideField('foods') && <section data-library-section="foods" className={`bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.foods}>
         <LibrarySectionHeader
           title={t.database.title}
           tone="foods"
@@ -92,7 +104,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         </LazyBody>
         </div>
         </div>
-      </section>
+      </section>}
 
       <ConfirmDialog
         open={pendingDelete !== null}
@@ -109,15 +121,10 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         }}
       />
 
-      {!hideDock && (
+      {!hideDock && dockActions.length > 0 && (
         <ActionDock
           label={t.prebuilt.creationDock}
-          actions={[
-            { id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: openNewMealModal },
-            { id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openRecipeModal },
-            { id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: openCustomFood },
-            ...journalDockActions,
-          ]}
+          actions={dockActions}
         />
       )}
 

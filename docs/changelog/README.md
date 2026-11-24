@@ -16,3 +16,5 @@ The newest round (planner / Custom dock) is summarised at the top of the root [R
 The file-organisation round (CSS, `AppContext`, translations and the Custom page split into smaller files) is described in [../file-organisation.md](../file-organisation.md).
 
 The search and animation performance round (food search work moved off the typing path, catalogue search in a Web Worker, dialogs animated without cloning) is described in [../search-and-animation-performance.md](../search-and-animation-performance.md); the status table is [../performance-review.md](../performance-review.md).
+
+**Settings restructure round:** Settings is split into Today (quick-add buttons, Log water, Log poop, Track sugar, meal notes, quick food shortcuts, Custom buttons), Custom page (bottom-bar buttons and sections that can be hidden), Pages (Custom, Statistics, Track period, Body measurements) and Delete data (one confirmed row per kind of record, plus Delete all data). The test notification button was removed. See [settings-update.md](../settings-update.md).

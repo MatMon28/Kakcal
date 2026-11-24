@@ -125,7 +125,7 @@ try {
   });
   await check('built-in and uploaded personalized tracker icons save', async () => {
     await page.locator('button[aria-label="Settings"]:visible').first().click();
-    await dialog(page).getByRole('button', { name: 'Custom buttons', exact: true }).click();
+    await dialog(page).getByRole('button', { name: 'Today', exact: true }).click(); // Settings > Today holds Custom buttons
     await dialog(page).getByRole('button', { name: 'Edit tracker', exact: true }).first().click();
     let editor = dialog(page);
     await editor.getByRole('button', { name: 'Choose an icon', exact: true }).click();

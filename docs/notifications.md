@@ -25,3 +25,7 @@ How it works:
 - Settings shows a banner when notifications are blocked or unsupported, an *Allow notifications* button when permission is still pending, and **Send a test notification**.
 - Old backups and stored settings without `notifications` load with the defaults (`normalizeNotificationSettings`).
 - The guided tour has a **Notifications** step (after Settings, before the widgets): five tappable previews built from the app's real notification strings, beside the live journal with Settings > Notifications expanded.
+
+## Test notification removed (Settings restructure round)
+
+The *Send a test notification* button in Settings > Notifications and the function behind it (`sendTestNotification`) were removed. To check delivery, switch on a reminder and wait for its time, or use the Android notification settings. Reminder scheduling itself is unchanged.

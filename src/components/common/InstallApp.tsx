@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { CheckCircle, Download, Smartphone } from 'lucide-react';
+import { TONE } from '../modals/settings/SettingsParts';
 import { useApp } from '../../context/AppContext';
 import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
 import { isAndroidApp } from '../../utils/android';
@@ -41,7 +42,7 @@ export const InstallApp: React.FC = () => {
     state === 'installed' ? t.pwa.installed : state === 'ios' ? t.pwa.iosDesc : ui.manual;
 
   return (
-    <Collapsible title={t.pwa.title}>
+    <Collapsible title={t.pwa.title} icon={<Smartphone size={15} />} tone={TONE.teal}>
       <div className="flex items-start gap-2.5">
         <span className="w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
           {state === 'installed' ? <CheckCircle size={15} /> : <Smartphone size={15} />}

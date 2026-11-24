@@ -18,10 +18,10 @@ export function Tabs() {
   const frame = useRef(0);
   const items = [
     { id: 'today', label: t.nav.today, icon: Flame, color: '#F6D0D0' },
-    { id: 'prebuilt', label: t.nav.prebuilt, icon: UtensilsCrossed, color: '#FAE0B4' },
+    ...(settings.hideCustomPage ? [] : [{ id: 'prebuilt', label: t.nav.prebuilt, icon: UtensilsCrossed, color: '#FAE0B4' }]),
     ...(isPeriodShown(settings.hidePeriod) ? [{ id: 'period', label: t.nav.period, icon: Droplet, color: '#F4C6D8' }] : []),
     ...(bodyShown ? [{ id: 'body', label: t.nav.body, icon: PersonStanding, color: '#E2D6FF' }] : []),
-    { id: 'history', label: t.nav.history, icon: TrendingUp, color: '#CFE7FE' },
+    ...(settings.hideStatisticsPage ? [] : [{ id: 'history', label: t.nav.history, icon: TrendingUp, color: '#CFE7FE' }]),
     ...(activeTab === 'database' ? [{ id: 'database', label: t.nav.database, icon: BookOpen, color: '#C9EFD3' }] : []),
   ];
   const latest = useRef({ index: 0, count: 0 });

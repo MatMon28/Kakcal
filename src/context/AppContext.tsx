@@ -9,6 +9,7 @@ import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../ut
 import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
 import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
+import { isPageHiddenBySettings } from '../utils/pageVisibility';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
 import { exportLayout, importLayout } from '../utils/layoutStore';
 import { exportMealJournalForBackup, importMealJournal, prepareMealJournalImport } from '../utils/journalStore';
@@ -379,7 +380,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
   const returnFromDatabase = () => {
     const target = lastMainTabRef.current;
-    setActiveTabState(target === 'period' && settings.hidePeriod ? 'today' : target);
+    setActiveTabState(isPageHiddenBySettings(target, settings) ? 'today' : target);
   };
 
   // Settings (theme, quick-add buttons, hide poop/period — Period hidden by default for male profiles)
@@ -418,6 +419,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           showPhotoButton: p.showPhotoButton !== false,
           hidePeriod: resolvedHidePeriod,
           hidePeriodCustomized: customized,
+          hideCustomPage: Boolean(p.hideCustomPage),
+          hideStatisticsPage: Boolean(p.hideStatisticsPage),
+          hideCustomButtons:
+            p.hideCustomButtons && typeof p.hideCustomButtons === 'object'
+              ? { meal: Boolean(p.hideCustomButtons.meal), recipe: Boolean(p.hideCustomButtons.recipe), food: Boolean(p.hideCustomButtons.food) }
+              : {},
+          hideCustomFields: p.hideCustomFields && typeof p.hideCustomFields === 'object' ? p.hideCustomFields : {},
           quickFoods:
             Array.isArray(p.quickFoods) && p.quickFoods.length === 3
               ? p.quickFoods
@@ -457,6 +465,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       showPhotoButton: true,
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
+      hideCustomPage: false,
+      hideStatisticsPage: false,
+      hideCustomButtons: {},
+      hideCustomFields: {},
       quickFoods: DEFAULT_QUICK_FOODS,
       favoriteFoods: DEMO_MODE ? DEMO_FAVORITE_FOODS : [],
       favoriteActivities: [],

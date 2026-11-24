@@ -41,10 +41,10 @@ export function JournalChrome() {
   const [help, setHelp] = useState(false);
   const links = [
     { id: 'today', title: t.nav.today, icon: Sun },
-    { id: 'prebuilt', title: t.nav.prebuilt, icon: Sparkles },
+    ...(settings.hideCustomPage ? [] : [{ id: 'prebuilt', title: t.nav.prebuilt, icon: Sparkles }]),
     ...(isPeriodShown(settings.hidePeriod) ? [{ id: 'period', title: t.nav.period, icon: Droplet }] : []),
     ...(bodyEnabled ? [{ id: 'body', title: t.nav.body, icon: PersonStanding }] : []),
-    { id: 'history', title: t.nav.history, icon: ChartNoAxesCombined },
+    ...(settings.hideStatisticsPage ? [] : [{ id: 'history', title: t.nav.history, icon: ChartNoAxesCombined }]),
   ];
   return (
     <>
@@ -178,8 +178,8 @@ export function JournalChrome() {
             </p>
             <p>
               {j(
-                'Turn on Photo diary and Meal notes in Today in Settings > Today & pages. Change your style and appearance in Settings > Appearance.',
-                'Attiva Diario fotografico e Note dei pasti in Impostazioni > Oggi e pagine. Cambia stile e aspetto in Impostazioni > Aspetto.',
+                'Turn on Photo diary in Settings > Custom page and Meal notes in Settings > Today. Change your style and appearance in Settings > Appearance.',
+                'Attiva Diario fotografico in Impostazioni > Pagina Custom e Note dei pasti in Impostazioni > Oggi. Cambia stile e aspetto in Impostazioni > Aspetto.',
               )}
             </p>
             <p>

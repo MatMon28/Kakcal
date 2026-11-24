@@ -8,6 +8,9 @@ interface CollapsibleProps {
   /** Controlled mode: pass both to let the parent open the group (e.g. the tour). */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  /** Icon badge shown before the title (Settings groups). `tone` is the badge colour classes, see settings/SettingsParts.tsx `TONE`. */
+  icon?: React.ReactNode;
+  tone?: string;
 }
 
 /**
@@ -15,7 +18,7 @@ interface CollapsibleProps {
  * their own titles when it is open. Closed content stays mounted but inert, so it cannot be
  * reached by keyboard or screen reader.
  */
-export function Collapsible({ title, children, defaultOpen = false, open: controlledOpen, onOpenChange }: CollapsibleProps) {
+export function Collapsible({ title, children, defaultOpen = false, open: controlledOpen, onOpenChange, icon, tone }: CollapsibleProps) {
   const [innerOpen, setInnerOpen] = useState(defaultOpen);
   const open = controlledOpen ?? innerOpen;
   const setOpen = (next: (value: boolean) => boolean) => {
@@ -33,7 +36,17 @@ export function Collapsible({ title, children, defaultOpen = false, open: contro
         onClick={() => setOpen((value) => !value)}
         className="pressable w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left"
       >
-        <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--text)]">{title}</span>
+        <span className="flex items-center gap-2.5 min-w-0">
+          {icon && (
+            <span
+              aria-hidden="true"
+              className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone ?? 'bg-[var(--surface)] text-[var(--text)]'}`}
+            >
+              {icon}
+            </span>
+          )}
+          <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--text)]">{title}</span>
+        </span>
         <ChevronDown
           size={18}
           aria-hidden="true"

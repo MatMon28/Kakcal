@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle, FileSpreadsheet, TriangleAlert } from 'lucide-react';
+import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle, FileSpreadsheet, TriangleAlert, DatabaseBackup } from 'lucide-react';
+import { TONE } from '../modals/settings/SettingsParts';
 import { useApp } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
 import { isAndroidApp, type ExportResult, type NativeExportRecord } from '../../utils/android';
@@ -138,7 +139,7 @@ export const DataBackup: React.FC = () => {
   const notice = message ?? recoveredNotice(recovered, j);
 
   return (
-    <Collapsible title={t.history.backupTitle}>
+    <Collapsible title={t.history.backupTitle} icon={<DatabaseBackup size={15} />} tone={TONE.slate}>
       {notice && (
         <div
           role={notice.error ? 'alert' : 'status'}

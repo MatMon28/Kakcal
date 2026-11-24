@@ -24,7 +24,7 @@
 | `src/components/modals/BodyMeasuresProfile.tsx` | Profile section (only when Body measurements is on): choose tracked measures, add/remove custom ones. |
 | (Save before closing) `src/components/modals/AddFoodModal.tsx` | `requestClose` asks through `SaveBeforeCloseDialog` when the batch has foods or a food is picked but not added; `handleLogNow` is the Save action. |
 
-| (Round: Settings coherence) `SettingsModal.tsx`, `AdvancedSettings.tsx` | Track poop / period / sugar switches, collapsible Quick add, greyed-out unavailable shortcuts, widget switch below custom buttons; Goal / Limit for nine items with a collapsible list. |
+| (Round: Settings coherence; superseded by the settings restructure, see [settings-update.md](../settings-update.md)) `SettingsModal.tsx`, `AdvancedSettings.tsx` | Track poop / period / sugar switches, collapsible Quick add, greyed-out unavailable shortcuts, widget switch below custom buttons; Goal / Limit for nine items with a collapsible list. |
 | (Round: left / right) `src/components/modals/BodyMeasuresProfile.tsx` | Tiles of paired measures carry a small L·R badge (tracking stays one switch per measure). |
 | (Polish round) `SettingsModal.tsx` | Language is a collapsible group; the Foods database / browse button was removed; style presets show only their names; the quick-add food icon is `Utensils`. |
 | (Polish round) `WaterModal.tsx`, `PoopModal.tsx`, `AdvancedSettings.tsx`, `AddFoodModal.tsx`, `ActivitySearch.tsx` | Water: stepper above the quick buttons, `250ml`, **Save water**; Poop: *(optional)* next to *Bristol type*; Goals & limits items indented under a guide line (`data-goals-subsections`); meal chips carry `data-slot-chip` (Angular chamfer) and the chip rows / result lists use `scrollFadeX` / `scrollFadeY`. |
@@ -32,3 +32,17 @@
 SettingsModal delegates custom button icons to common/IconPicker.tsx. LayoutToolbar uses the same chooser for new and existing custom meal types.
 
 (Search performance round) `AddFoodModal.tsx`, `SettingsModal.tsx`: local search through `searchFoods` / `searchMeals`, catalogue through `useCatalogueSearch` (worker), lists use `useDeferredValue`; Add food and the planner hold back "No results" while the catalogue answer is pending. `Modal.tsx` closes through `common/dialogExit.ts` (no cloned dialog). See [../search-and-animation-performance.md](../search-and-animation-performance.md).
+
+## Settings restructure round
+
+| File | Role |
+| --- | --- |
+| `src/components/modals/SettingsModal.tsx` | Settings modal: composes Language, Appearance, Today, Custom page, Pages, Advanced, Notifications, Backup, Install app and Delete data. See [settings-update.md](../settings-update.md). |
+| `src/components/modals/settings/SettingsParts.tsx` | Shared Settings look: `TONE` badge colours, `SubSection`, `ToggleRow`, `ActionRow`, `SwitchVisual`. |
+| `src/components/modals/settings/TodaySettings.tsx` | Today group: quick-add buttons, Log water / Log poop / Track sugar, Meal notes, quick food shortcuts (picker), Custom buttons. |
+| `src/components/modals/settings/CustomButtonsSettings.tsx` | Custom buttons list, add / edit form and widget switch (inside Today). Moved unchanged from the old group. |
+| `src/components/modals/settings/CustomPageSettings.tsx` | Custom page group: Photo diary feature, bottom-bar buttons, sections. |
+| `src/components/modals/settings/PagesSettings.tsx` | Pages group: hide Custom, Statistics, Track period, Body measurements; body profile shortcut. |
+| `src/components/modals/settings/DeleteDataSettings.tsx` | Delete data group: one confirmed row per kind of record, then *Delete all data*. |
+| `src/components/modals/NotificationSettings.tsx` | Test notification button removed; group now has a bell icon and colour. |
+| `src/components/modals/AdvancedSettings.tsx` | Body measurements switch moved to Pages; group has an icon. |

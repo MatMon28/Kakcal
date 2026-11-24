@@ -29,7 +29,7 @@
 | `src/utils/tourPreview.ts` | The `?tour=1` flag that shows the Period page inside the tour only. |
 | `src/utils/deleteAllData.ts` | `deleteAllData()`: cancels pending reminders (Android), clears local/session storage. Called by `DeleteAllData.tsx`. |
 | `src/utils/android.ts` | Typed local Capacitor plugin for launcher actions, nutrition and theme-style updates, native export (`exportBackup` / `exportFile` resolve `{ cancelled?, bytes? }`, `takeLastExport`, types `ExportResult` / `NativeExportRecord`), and `syncLaunchBackground` (sends the current `--bg` to the native launch surfaces). |
-| `src/utils/notifications.ts` | Notification defaults and `normalizeNotificationSettings`, the pure `buildNotificationPlan` / `waterReminderMinutes`, permission helpers, the Android scheduler (`syncNativeNotifications`, tap listener, test notification via `@capacitor/local-notifications`) and the browser timer fallback. See [Notifications](../notifications.md). |
+| `src/utils/notifications.ts` | Notification defaults and `normalizeNotificationSettings`, the pure `buildNotificationPlan` / `waterReminderMinutes`, permission helpers, the Android scheduler (`syncNativeNotifications`, tap listener, reminder scheduling via `@capacitor/local-notifications` (the test notification was removed)) and the browser timer fallback. See [Notifications](../notifications.md). |
 | `src/utils/useNotificationScheduler.ts` | React hook that keeps the Android alarms / browser timers in step with Settings, language and custom buttons, and opens the right screen when a notification is tapped. |
 | `src/utils/calculations.ts`, `waterTarget.ts` | Nutrition, activity, BMR, personal MET-based activity energy (`calculateMetCalories`), thermogenesis, and water-goal calculations. |
 | `src/utils/activityLabel.ts` | Display name of a logged activity (Walk, Run, localized database name or custom name) shared by Today and the Day overview. |
@@ -65,3 +65,11 @@ android.ts declares the local exportBackup / exportFile / takeLastExport bridge 
 | `src/utils/useToday.ts`, `widgetDates.ts` | One-timer midnight rollover; the dates the widgets need. |
 
 (Round: page-change follow-up) `idle.ts`: new `afterPaint(task)` (rAF + macrotask, returns a cancel function; a passive effect is not after paint for a tap). `pageTransition.ts`: `playPageChange` returns `{ incoming, outgoing }` (both animations; `PageChangeAnimations`). `journalStore.ts`: `usePhotosForLinked(linkedId)` / `usePhotosForSlot(date, slot)` (O(1) index per `photos` array, `WeakMap`). `planGroups.ts`: `planGroupViews` in one pass (`Map`), ISO-date compare. `mealSlots.ts` (`useMealSlots`) uses `useSettings()`; the same for `src/i18n/{journal,advanced,layout}.ts`.
+
+## Settings restructure round
+
+| File | Role |
+| --- | --- |
+| `src/utils/deleteData.ts` | `deleteCategory(category, allDayLogs)`: removes one kind of record (plans, saved meals, recipes, photos, meal notes, logged food, activities, water, weight, poop, custom tracker entries, body measurements, period records). See [settings-update.md](../settings-update.md). |
+| `src/utils/pageVisibility.ts` | `isPageHiddenBySettings(tab, settings)`: Custom, Statistics and Period hidden by Settings; used by `App.tsx`, `AppContext.tsx`. |
+| `src/utils/notifications.ts` | `sendTestNotification` removed (Send a test notification button is gone). |

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Candy, Check, Droplets, Flame, LayoutDashboard, RotateCcw, Ruler, Scale, Target, User, Wheat } from 'lucide-react';
+import { Candy, Check, Droplets, Flame, LayoutDashboard, RotateCcw, Scale, SlidersHorizontal, Target, Wheat } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useAdvancedText } from '../../i18n/advanced';
 import { useJournalText } from '../../i18n/journal';
@@ -14,7 +14,6 @@ import {
   DEFAULT_PROTEIN_PER_KG,
   PROTEIN_PER_KG_MAX,
   goalValue,
-  setBodyEnabled,
   setGoalsEnabled,
   updateBalance,
   updateGoal,
@@ -26,6 +25,7 @@ import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { NumericInput } from '../common/NumericInput';
 import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
+import { TONE } from './settings/SettingsParts';
 
 const Switch: React.FC<{ on: boolean }> = ({ on }) => (
   <span
@@ -63,7 +63,7 @@ const GOAL_ICON: Record<GoalKey, React.ReactNode> = {
  * and body measurements (which adds the Body page and the Profile section).
  */
 export const AdvancedSettings: React.FC = () => {
-  const { t, settings, setIsSettingsOpen, setIsProfileOpen, userProfile } = useApp();
+  const { t, settings, userProfile } = useApp();
   const text = useAdvancedText();
   const j = useJournalText();
   const advanced = useAdvanced();
@@ -89,7 +89,7 @@ export const AdvancedSettings: React.FC = () => {
     key === 'calories' ? text.settings.calories : key === 'burned' ? text.settings.burned : key === 'water' ? text.settings.water : t.macros[key];
 
   return (
-    <Collapsible title={text.settings.title}>
+    <Collapsible title={text.settings.title} icon={<SlidersHorizontal size={15} />} tone={TONE.sand}>
       {/* ---------- Goals & limits ---------- */}
       <div className="space-y-2.5">
         <div className="flex items-center gap-1 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl transition-colors">
@@ -257,35 +257,7 @@ export const AdvancedSettings: React.FC = () => {
         )}
       </div>
 
-      {/* ---------- Body measurements ---------- */}
-      <div className="space-y-2.5">
-        <button
-          type="button"
-          aria-pressed={advanced.body.enabled}
-          onClick={() => setBodyEnabled(!advanced.body.enabled)}
-          className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
-        >
-          <span className="flex items-center gap-2.5 min-w-0">
-            <span className="size-8 rounded-full bg-weight text-weight-ink flex items-center justify-center shrink-0">
-              <Ruler size={15} />
-            </span>
-            <span className="block text-xs font-extrabold text-[var(--text)]">{text.settings.bodyTitle}</span>
-          </span>
-          <Switch on={advanced.body.enabled} />
-        </button>
-
-        {advanced.body.enabled && (
-          <button
-            type="button"
-            onClick={() => { setIsSettingsOpen(false); setIsProfileOpen(true); }}
-            className="pressable w-full py-2.5 px-4 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-dashed border-[var(--border)] text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)] text-center"
-          >
-            {/* Icon and text flow together and are centred together, so a wrapped label no longer leaves the icon at the left edge. */}
-            <User size={14} className="inline-block align-[-2px] mr-1.5" aria-hidden="true" />
-            <span>{text.settings.bodyProfileHint}</span>
-          </button>
-        )}
-      </div>
+      {/* Body measurements moved to Settings > Pages (the switch and the body profile shortcut). */}
       {/* ---------- Advanced layout ---------- */}
       <div className="space-y-2.5">
         <button

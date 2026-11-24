@@ -37,6 +37,7 @@ import { useToday } from './utils/useToday';
 import { widgetDates } from './utils/widgetDates';
 import { isAndroidApp, JournalDevice } from './utils/android';
 import { isPeriodShown } from './utils/tourPreview';
+import { isPageHiddenBySettings } from './utils/pageVisibility';
 import { useNotificationScheduler } from './utils/useNotificationScheduler';
 import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
@@ -288,6 +289,10 @@ function MainContent() {
   useEffect(() => {
     if (!bodyShown && activeTab === 'body') setActiveTab('today');
   }, [bodyShown, activeTab, setActiveTab]);
+  // A page that Settings hides while it is open goes back to Today.
+  useEffect(() => {
+    if (isPageHiddenBySettings(activeTab, settings)) setActiveTab('today');
+  }, [activeTab, settings, setActiveTab]);
 
   // The scroll reset of a page CHANGE lives in PageSwiper (swipe: same commit; tap: after the first frame, so it is
   // no forced layout of the new page). Only the first screen needs it here.
@@ -298,7 +303,10 @@ function MainContent() {
   // Download the optional screens in the background once the first screen is done (item 2).
   useEffect(() => whenIdle(preloadOptionalScreens), []);
 
-  const visibleTabs = MAIN_TABS.filter((tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown));
+  // Settings > Pages hides Custom and Statistics (Period and Body have their own switches above).
+  const visibleTabs = MAIN_TABS.filter(
+    (tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown) && !isPageHiddenBySettings(tab, settings),
+  );
   // The page elements are memoised: `useShell()` changes whenever ANY dialog opens, which re-renders MainContent and
   // PageSwiper; with a fresh element per render React would re-render both whole pages for it. With these stable
   // elements (they depend only on the active tab and the two optional pages) it skips them. `hideDock` is the only

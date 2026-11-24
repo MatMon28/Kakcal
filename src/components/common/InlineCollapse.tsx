@@ -23,7 +23,7 @@ export function CollapseArrow({ open, className = '' }: { open: boolean; classNa
 
 /**
  * A titled block inside a settings group with a collapse arrow (for example the Quick add toggles in
- * Settings > Today & pages). Open by default; the content stays mounted but inert while closed.
+ * Settings > Today). Open by default; the content stays mounted but inert while closed.
  */
 export function InlineCollapse({
   label,

@@ -60,3 +60,11 @@ DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. JournalChrome
 | `installGuideEvents.ts`, `LazyInstallGuideHost.tsx` | The tiny always-loaded open-event API and the lazy host; the heavy `InstallGuide.tsx` loads on first request. `Toast.tsx` was deleted. |
 
 (Round: page-change follow-up) `src/components/common/DeferredBody.tsx` (new): mounts its children after the first paint (`whenIdle`, at most 150 ms) behind a `.kc-body-skeleton`; used through `<LazyBody open defer>`. `LazyBody.tsx`: new `defer` prop, applied only to a body that is open on the first render of its page (a body opened by a tap mounts at once). `PageSwiper.tsx`: the leaving page / swipe neighbour is `contain: layout paint` + `will-change: opacity`; the leaving page is unmounted when its own fade-out ends (`playPageChange` returns both animations); the scroll reset of a page change lives here (tap: after the first frame via `afterPaint`; swipe / no animation: in the commit); the swipe neighbour is a placeholder (`peer.placeholder`) until 60 % of the commit distance (`PREVIEW_AT`). `Tabs.tsx`: the follow-the-tab layout effect has a dependency list; uses `useShell()`. `LibrarySectionHeader.tsx`: `useFitActions` depends on the scalar `extraActionCount` and measures in `requestAnimationFrame` / `ResizeObserver`; uses `useSettings()`.
+
+## Settings restructure round
+
+| File | Role |
+| --- | --- |
+| `src/components/common/Collapsible.tsx` | Settings group header takes an `icon` and a `tone` (badge colours from `settings/SettingsParts.tsx` `TONE`). |
+| `src/components/common/DeleteAllData.tsx` | Still the last item of Delete data (two confirmations). Rendered inside `settings/DeleteDataSettings.tsx`. |
+| `src/components/common/DataBackup.tsx`, `InstallApp.tsx` | Group headers now carry an icon and a colour. |

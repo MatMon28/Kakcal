@@ -45,3 +45,7 @@ Photo normalization/export retains legacy `/images/` references as well as base-
 | Everything else | localStorage keys as before | Written through `src/storage/writeQueue.ts` (coalesced, flushed on hide / unload), from effects, never inside state updaters. |
 
 **Delete all data** also deletes the IndexedDB database. Failed writes are reported by `StorageNotice`; `StorageInfo` (Settings > Backup) shows the browser's usage / quota estimate (quotas vary, no fixed limit is assumed). Backup version is `2.0` (`1.x` files still import; files from a newer major version are refused).
+
+## Settings restructure round (keys)
+
+`kcalsync_settings` gains four keys, all with defaults and all part of the normal settings object (JSON backup included): `hideCustomPage`, `hideStatisticsPage`, `hideCustomButtons` and `hideCustomFields`. No new storage key was added. *Delete data* (Settings > Delete data) changes existing keys only: `kcalsync_meal_journal` (plans, shopping lists, photos, meal notes), `kcalsync_prebuilt_meals`, `kcalsync_custom_foods` (recipes), `kcak_planner_draft`, the day records (`replaceAllDays`, IndexedDB or localStorage), `kcalsync_body` and `kf_period_data`, and the IndexedDB `photos` store. See [settings-update.md](settings-update.md).

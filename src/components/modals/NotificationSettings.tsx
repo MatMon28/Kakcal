@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { BellRing, ClipboardCheck, Droplets, Scale, Sparkles, UtensilsCrossed } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { Collapsible } from '../common/Collapsible';
+import { TONE } from './settings/SettingsParts';
 import { isAndroidApp } from '../../utils/android';
 import {
   consumeOpenNotificationRequest,
@@ -10,7 +11,6 @@ import {
   MEAL_REMINDER_SLOTS,
   OPEN_NOTIFICATION_SETTINGS_EVENT,
   requestNotificationPermission,
-  sendTestNotification,
   WATER_INTERVALS,
   waterReminderMinutes,
   type NotificationPermission,
@@ -136,7 +136,7 @@ export const NotificationSettings: React.FC = () => {
 
   return (
     <div ref={anchorRef} id="settings-notifications" className="scroll-mt-2">
-    <Collapsible title={copy.title} open={open} onOpenChange={setOpen}>
+    <Collapsible title={copy.title} open={open} onOpenChange={setOpen} icon={<BellRing size={15} />} tone={TONE.rose}>
       <p className="text-[11px] font-medium text-[var(--muted)] px-1">{copy.hint}</p>
 
       {permission === 'denied' && (
@@ -269,15 +269,6 @@ export const NotificationSettings: React.FC = () => {
       >
         <TimeField label={copy.at} value={n.logData.time} onChange={(time) => daily('logData', { time })} />
       </Row>
-
-      <button
-        type="button"
-        onClick={() => void sendTestNotification(copy).finally(refreshPermission)}
-        className="pressable w-full flex items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-xs font-extrabold bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] border border-[var(--border)]"
-      >
-        <BellRing size={14} />
-        {copy.test}
-      </button>
 
       {!isAndroidApp() && <p className="text-[11px] font-medium text-[var(--muted)] px-1">{copy.webNote}</p>}
     </Collapsible>
