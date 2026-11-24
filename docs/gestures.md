@@ -20,8 +20,8 @@ All numbers are named constants at the top of `PageSwiper.tsx` / inside `Modal.t
 
 | Gesture | Rule |
 | --- | --- |
-| Page swipe takes over | 6 px horizontal travel, horizontal must beat vertical by 1.1x (was 10 px / 1.25x) |
-| Page follows the finger | 0.88x initially (was 0.72x) |
+| Page swipe takes over | 6 px horizontal travel, horizontal must beat vertical by 1.1x (zero dead-zone jump on lock) |
+| Page follows the finger | 0.94x initially, 1:1 past 72 px; smooth exponential rubber-band at edges without an adjacent tab |
 | Page swipe commits | 44-72 px (14 % of the width), or a light flick (> 0.22 px/ms past max(24 px, 6 % width)) |
 | Swipe back from the food catalogue | 56 px |
 | Popup swipe-down starts | 2 px; dismisses past 56 px or on a flick (> 0.3 px/ms past 10 px); the handle area is taller |

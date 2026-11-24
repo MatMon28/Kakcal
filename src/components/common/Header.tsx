@@ -121,12 +121,22 @@ export const Header: React.FC = () => {
     [applyHeaderProgress]
   );
 
-  React.useEffect(() => {
+  const hasMountedRef = React.useRef(false);
+
+  React.useLayoutEffect(() => {
     const state = scrollStateRef.current;
-    state.lastY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
-    state.topProgress = clamp01(1 - state.lastY / TOP_HIDE_SCROLL_PX);
-    state.tabsProgress = state.lastY <= 4 ? 1 : state.tabsProgress;
-    scheduleSmoothUpdate(true);
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      state.lastY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
+      state.topProgress = clamp01(1 - state.lastY / TOP_HIDE_SCROLL_PX);
+      state.tabsProgress = state.lastY <= 4 ? 1 : state.tabsProgress;
+      scheduleSmoothUpdate(true);
+      return;
+    }
+    state.lastY = 0;
+    state.topProgress = 1;
+    state.tabsProgress = 1;
+    scheduleSmoothUpdate(false);
   }, [activeTab, scheduleSmoothUpdate]);
 
   React.useEffect(() => {

@@ -28,7 +28,7 @@
 @keyframes kc-dock-in {
   from {
     opacity: 0;
-    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 22px), 0, 0) scale(0.95);
+    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 18px), 0, 0) scale(0.96);
   }
   to {
     opacity: 1;
@@ -39,7 +39,7 @@
 @keyframes kc-dock-btn-in {
   from {
     opacity: 0;
-    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 10px), 0, 0) scale(0.92);
+    transform: translate3d(calc(var(--kc-swipe-dir, 1) * 8px), 0, 0) scale(0.94);
   }
   to {
     opacity: 1;
@@ -87,12 +87,12 @@ html.kc-sheet-open, .kc-sheet-open body, .dialog-viewport { overscroll-behavior:
 }
 
 .anim-dock {
-  animation: kc-dock-in 130ms var(--ease-bounce) backwards;
-  transition: opacity 85ms ease-out;
+  animation: kc-dock-in 220ms var(--ease-soft) backwards;
+  transition: opacity 100ms ease-out;
 }
 
 .anim-dock .kc-dock-btn {
-  animation: kc-dock-btn-in 130ms var(--ease-bounce) backwards;
+  animation: kc-dock-btn-in 220ms var(--ease-soft) backwards;
 }
 
 /* Scrolling down slides the whole bar below the screen edge; a small scroll up brings it back

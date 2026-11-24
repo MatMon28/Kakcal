@@ -6,14 +6,14 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md), [changes-patch-history.md](changes-patch-history.md) (what earlier patches contained)
 
-**Current patch (file-organisation round, base `cee71f462cf1656872acd035f9d6a12df4b5c79b`, \"Fixes\"):** no behaviour change, no `package.json` change. The largest source and documentation files were split into small single-topic files (details and the verification in [file-organisation.md](file-organisation.md)):
+**Current patch (smooth page-to-page transitions round, base `74cc7ccf7e313fd9a1fa63fa1c84f06228715d5d`, "Update pages.yml"):** no `package.json`, Android, catalogue or storage-key changes.
 
-- **CSS:** `src/index.css` -> `src/styles/*.css` (11 parts, still imported in the original order); `src/components/journal/journal.css` -> `src/components/journal/css/*.css` (8 parts). Both entry files are now lists of `@import`s.
-- **`scripts/generate-splash-themes.mjs`:** edited, it now inlines the `./styles/*.css` imports before reading the `--bg` values (output `splash_themes.xml` is unchanged).
-- **Strings:** `src/i18n/translations.ts` -> `translations.en.ts` + `translations.it.ts` (the old file composes them and still exports `translations` / `TranslationKey`).
-- **Context:** `src/context/AppContext.tsx` -> + `appContextType.ts`, `appStorage.ts`, `demoSeeds.ts`.
-- **Custom page:** `src/components/prebuilt/PreBuiltMealsView.tsx` -> + `usePreBuiltMealsState.tsx`, `MealsSection.tsx`, `RecipesSection.tsx`, `LogToSlotModals.tsx`, `CreateMealModal.tsx`, `RecipeBuilderModal.tsx`.
-- **Docs:** the root `README.md` keeps the overview (round history moved to `docs/changelog/`), `docs/README.md` keeps the index (audit history moved to `docs/audit-log.md`), this file keeps the how-to (older patches moved to `changes-patch-history.md`); new `docs/file-organisation.md`; file maps (`app-shell`, `components-pages`, `scripts-public`), `meal-journal.md` and a few path mentions updated.
+- **`src/components/common/PageSwiper.tsx`:** unified two-page compositor rail for tap / sidebar / Back transitions as well as swipes (scroll-compensated outgoing peer, subtle opacity feathering `0.72 -> 1` incoming / `1 -> 0.25` outgoing on tap, critically-damped velocity-aware settle curve `175–300 ms` with zero overshoot, zero dead-zone reverse jitter on drag lock, smooth exponential edge rubber-band, viewport height preservation during exit, seamless swipe-back handoff from the food catalogue, mid-flight nav/sidebar redirection, and full-span `pagePosition` synchronisation).
+- **`src/components/common/Tabs.tsx`:** removed the un-keyed `useLayoutEffect` re-render thrash and `glide()`/`setPagePosition()` collision; only glides independently when `PageSwiper` is not driving `pagePosition` (e.g. `database`), and smoothly scrolls overflowing tab strips into view.
+- **`src/components/common/Header.tsx`:** switched tab-change header reset to `useLayoutEffect` with smooth interpolation back to resting height, eliminating the 1-frame header pop/flicker when leaving a scrolled page.
+- **`src/styles/motion.css`:** smoothed `.anim-dock` / `.kc-dock-btn` entrance (`220 ms var(--ease-soft)`) and drag fade (`100 ms`) to match page transitions.
+- **Deleted:** `src/utils/pageFields.ts` (replaced by the full two-page rail transition so cards no longer flash invisible and stagger vertically during horizontal page slides).
+- **Docs:** updated `docs/motion.md`, `docs/gestures.md`, `docs/journal-shell.md`, `docs/file-map/components-common.md`, `docs/file-map/utils.md`, `docs/changes-patch.md`, and `docs/changes-patch-history.md`.
 
 Apply from that repository revision:
 
