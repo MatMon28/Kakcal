@@ -32,4 +32,6 @@ APK ZIP/text export reuses the existing local Android document picker. Only an i
 
 Photo normalization/export retains legacy `/images/` references as well as base-path-aware demo images; existing JPEG/PNG/WebP data URLs remain unchanged.
 
+
+**Planner / dock round:** new UI-only key `kcak_planner_draft` holds one unfinished meal-plan draft (selected days, meals and the foods or notes entered so far). It stays on this device, is not part of JSON backups and is removed when the plan is saved or the draft is discarded or deleted. No other keys.
 **New features round:** `kcalsync_settings` also stores `showPlannerButton` / `showPhotoButton`; `kcalsync_advanced` stores the intake / burned `balance` target and the protein `perKg` flag; recipes keep their standard portion in `portion`; UI-only key `kcak_custom_foods_tab`. The Excel export is built in the browser and saved locally; nothing is sent anywhere. See [new-features-update.md](new-features-update.md).

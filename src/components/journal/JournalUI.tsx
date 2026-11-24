@@ -16,7 +16,7 @@ export function JournalSection({
   tone,
   icon,
   title,
-  subtitle,
+  summary,
   count,
   createLabel,
   onCreate,
@@ -30,7 +30,7 @@ export function JournalSection({
   tone: 'yellow' | 'blue' | 'red';
   icon: ReactNode;
   title: string;
-  subtitle: string;
+  summary?: string;
   count?: number;
   createLabel?: string;
   onCreate?: () => void;
@@ -54,7 +54,7 @@ export function JournalSection({
       <LibrarySectionHeader
         title={title}
         tone={toneToPalette[tone]}
-        summary={subtitle}
+        summary={summary}
         icon={icon}
         count={count}
         createLabel={createLabel}
@@ -127,10 +127,14 @@ export function JournalSearch({
   value,
   onChange,
   placeholder,
+  onFocus,
+  onBlur,
 }: {
   value: string;
   onChange: (s: string) => void;
   placeholder: string;
+  onFocus?: () => void;
+  onBlur?: () => void;
 }) {
   const j = useJournalText();
   return (
@@ -141,6 +145,8 @@ export function JournalSearch({
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        onFocus={onFocus}
+        onBlur={onBlur}
       />
       {value && (
         <button type="button" aria-label={j('Clear search', 'Cancella ricerca')} onClick={() => onChange('')}>

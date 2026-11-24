@@ -67,7 +67,6 @@ export function MealPlanner() {
         tone="blue"
         className="journal-planner"
         title={j('Meal planner', 'Pianifica pasti')}
-        subtitle={j('A little planning, a little more balance.', "Un po' di organizzazione, piu equilibrio.")}
         icon={<CalendarDays size={16} strokeWidth={2.2} />}
         count={plans.length}
         searchLabel={j('Search planned meals', 'Cerca nei pasti pianificati')}

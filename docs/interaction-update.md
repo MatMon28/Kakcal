@@ -54,6 +54,6 @@ Passed: `npm run build`; strict TypeScript checking of the shipped `src/main.tsx
 
 Optional browser suite: `npm install --no-save @playwright/test`, `npx playwright install chromium`, then run the demo dev server and `node scripts/verify-interaction-update.mjs`. Minimal Linux also needs `npx playwright install-deps chromium`. Use `TEST_URL` for another Vite development origin. Artifacts under `.test-output/` are not part of the patch.
 
-The repository-wide typecheck still includes unchanged, unused Next.js/database/Toast leftovers with pre-existing errors. The shipped Vite application graph typechecks cleanly. Android Java compilation, real document/camera pickers and native share sheets were not run on a physical device. PWA install/offline behavior was not re-tested in this round.
+(Later: the Next.js / database files were deleted; only the unused `Toast.tsx` still reports typecheck errors.) The repository-wide typecheck included unused Next.js/database/Toast leftovers with pre-existing errors. The shipped Vite application graph typechecks cleanly. Android Java compilation, real document/camera pickers and native share sheets were not run on a physical device. PWA install/offline behavior was not re-tested in this round.
 
 Patch verification passed: `git apply --check --cached changes.patch` against a clean index of the stated base revision. Legacy local image references are retained in normalization and export.

@@ -1845,44 +1845,9 @@ html[data-theme='lite-dark'] .journal-feature .journal-see-all { color: var(--te
 }
 
 /* ============================================================================================
-   New features round: Custom shortcuts, photo time range, planner wizard, Add to Meals.
+   New features round: photo time range, planner wizard, Add to Meals.
    Everything reuses the existing variables, radii and chip / button looks of the journal.
    ============================================================================================ */
-
-/* Custom page shortcut buttons (Meal planner / Photo diary). */
-.journal-shortcuts {
-  grid-column: 1 / -1;
-  flex: 1 1 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  gap: 8px;
-}
-.journal-shortcut {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-width: 0;
-  min-height: 46px;
-  padding: 10px 14px;
-  border-radius: 999px;
-  border: 1px solid #b9d7f2;
-  background: #cfe7fe;
-  color: #183f66;
-  font-size: 13px;
-  font-weight: 800;
-  transition: transform 160ms, opacity 160ms;
-}
-.journal-shortcut[data-tone='red'] {
-  border-color: #e8b9ba;
-  background: #f6d0d0;
-  color: #702d32;
-}
-html[data-style='classic'] .journal-shortcut { background: #dceaf8; border-color: #c2d8ed; }
-html[data-style='classic'] .journal-shortcut[data-tone='red'] { background: #f4dedb; border-color: #e9c9c5; }
-.journal-shortcut:hover { opacity: 0.85; }
-.journal-shortcut:active { transform: scale(0.98); }
-.journal-shortcut span:not(.sr-only) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* Photo diary: from / to range. */
 .journal-range {
@@ -2131,3 +2096,122 @@ html[data-style='classic'] .journal-shortcut[data-tone='red'] { background: #f4d
   font-weight: 800;
 }
 .journal-save-meal-row:hover { color: var(--text); background: var(--hover, var(--inset)); }
+
+/* ============================================================================================
+   Planner / Foods polish round: first + last day, draft card, quick food shortcuts, earlier plans,
+   Custom > Foods chips in every theme (light, dark, lite-dark).
+   ============================================================================================ */
+
+/* Planner page 1: the two calendar icons next to each other. */
+.journal-date-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.journal-date-pair .journal-date-field.is-stack {
+  min-height: 92px;
+  gap: 5px;
+}
+.journal-date-caption {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.journal-date-pair .journal-date-text {
+  font-size: 13px;
+  font-weight: 750;
+}
+
+/* Saved draft offered at the top of the planner. */
+.journal-draft-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 10px 10px 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--inset);
+  color: var(--text);
+}
+.journal-draft-icon { display: inline-flex; flex-shrink: 0; color: var(--muted); }
+.journal-draft-text { flex: 1; min-width: 0; }
+.journal-draft-text strong,
+.journal-draft-text small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-draft-text strong { font-size: 13px; font-weight: 800; }
+.journal-draft-text small { font-size: 11px; font-weight: 650; color: var(--muted); }
+.journal-draft-continue {
+  flex-shrink: 0;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--on-text, var(--bg));
+  font-size: 12px;
+  font-weight: 800;
+}
+.journal-draft-delete {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  color: var(--muted);
+}
+.journal-draft-delete:hover { color: var(--text); background: var(--hover); }
+
+/* Quick food shortcuts below the planner search bar (the three foods of Settings). */
+.journal-quick-food-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.journal-quick-food-grid button {
+  min-width: 0;
+  padding: 10px 8px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--inset);
+  color: var(--text);
+  text-align: center;
+}
+.journal-quick-food-grid button:hover { background: var(--hover); }
+.journal-quick-food-grid strong,
+.journal-quick-food-grid small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-quick-food-grid strong { font-size: 12px; font-weight: 800; }
+.journal-quick-food-grid small { margin-top: 2px; font-size: 10px; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* "Planned on earlier days": meals of the same slot that can be added again in one tap. */
+.journal-plan-suggestions { display: flex; flex-direction: column; gap: 6px; }
+.journal-plan-suggestion {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--inset);
+  color: var(--text);
+  text-align: left;
+}
+.journal-plan-suggestion:hover { background: var(--hover); }
+.journal-plan-suggestion:active { transform: scale(0.99); }
+.journal-plan-suggestion > span { flex: 1; min-width: 0; }
+.journal-plan-suggestion strong,
+.journal-plan-suggestion small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.journal-plan-suggestion strong { font-size: 13px; font-weight: 800; }
+.journal-plan-suggestion small { font-size: 11px; font-weight: 650; color: var(--muted); }
+.journal-plan-suggestion svg { flex-shrink: 0; color: var(--muted); }
+
+/* Custom > Foods: the Recent / Favourites pills are the Meal diary's All / Favorites pills, in the Foods green.
+   Classic keeps the pastel section; the six other themes take the theme tokens (see the data-style rules). */
+[data-library-section='foods'] {
+  --feature-bg: #fbf8f2;
+  --feature-ink: #174a2b;
+  --feature-border: #9adbb0;
+}
+[data-custom-foods-quick] .journal-chip-row { padding-bottom: 0; }
+[data-custom-foods-quick] .kc-foods-hint { color: #1d5c38; }
+html[data-style]:not([data-style='classic']) [data-custom-foods-quick] .kc-foods-hint { color: var(--muted); }
+[data-custom-foods-quick] .kc-foods-more { margin-top: 0; }

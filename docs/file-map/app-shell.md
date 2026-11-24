@@ -24,7 +24,7 @@ Meal-journal additions: `App.tsx` mounts `JournalChrome`; `index.css` imports `c
 | `changes.patch` (untracked deliverable) | Meal-journal `git diff --binary` against commit `1bdef4cc492bb21936537fecbb579db4ebb38fa1`; excludes sandbox fixtures, local configs, build/test outputs and itself. See [changes-patch.md](../changes-patch.md). |
 | `tsconfig.json`, `vite.config.ts` | Strict TypeScript with the `@/*` alias and `noUnused*` checks; Vite with React, Tailwind v4 (`@tailwindcss/vite`) and `vite-plugin-singlefile` (one inlined `dist/index.html`). |
 | `capacitor.config.json` | `appId com.kcalsync.app`, `webDir dist`, no `server.url`, LocalNotifications status icon `ic_stat_kak`, SystemBars inset handling, no mixed content. |
-| `src/app/`, `src/db/`, `next.config.ts`, `drizzle.config.json`, `eslint.config.mjs` | **Inert Next.js-era leftovers**, not imported by `src/main.tsx` (see [provenance](../provenance.md)). |
+| `eslint.config.mjs` | **Inert Next.js-era leftover**, not imported by `src/main.tsx` (the rest of the Next.js / Drizzle scaffold was deleted, see [provenance](../provenance.md)). |
 | `src/assets/themes_insp.txt` | Stand-alone HTML design exploration (6 themes x 3 modes). Reference only; not imported. |
 | `docs/`, `README.md`, `android/BUILD_APK.md` | The documentation set; index at [docs/README.md](../README.md). |
 | `src/types/layout.ts`, `src/i18n/layout.ts` | Advanced layout contracts (page layouts, custom meal types) and English/Italian strings (`useLayoutText()`). `MealSlotId` in `types/index.ts` also accepts `custom_*` ids. |

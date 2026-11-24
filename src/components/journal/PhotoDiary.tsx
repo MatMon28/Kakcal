@@ -53,7 +53,6 @@ export function PhotoDiary() {
         tone="red"
         className="journal-photo-diary"
         title={j('Photo diary', 'Diario fotografico')}
-        subtitle={j('Your meals. A different kind of memory.', 'I tuoi pasti. Un altro modo di ricordare.')}
         icon={<Camera size={16} strokeWidth={2.2} />}
         count={photos.length}
         searchLabel={j('Search photo diary', 'Cerca nel diario fotografico')}
@@ -322,7 +321,6 @@ function PhotoComposer({
       isOpen
       onClose={onClose}
       title={j('A meal to remember', 'Un pasto da ricordare')}
-      subtitle={j('Capture the moment, not just the macros.', 'Ricorda il momento, non solo i nutrienti.')}
       maxWidth="max-w-lg"
       footer={
         // Always visible under the scrolling form, as wide as the pop-up fields.
@@ -516,7 +514,6 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
         isOpen
         onClose={onClose}
         title={j('Your photo diary', 'Il tuo diario fotografico')}
-        subtitle={j('Little moments, one meal at a time.', 'Piccoli momenti, un pasto alla volta.')}
         maxWidth="max-w-3xl"
       >
         <div className="journal-form">

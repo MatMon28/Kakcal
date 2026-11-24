@@ -114,7 +114,6 @@ export function MealDiary() {
         tone="yellow"
         className="journal-meal-diary"
         title={j('Meal diary', 'Diario dei pasti')}
-        subtitle={j('Good meals are worth remembering.', 'I buoni pasti meritano di essere ricordati.')}
         icon={<NotebookPen size={16} strokeWidth={2.2} />}
         count={meals.length}
         searchLabel={j('Search a meal or an ingredient', 'Cerca un pasto o un ingrediente')}
@@ -280,10 +279,6 @@ function DiaryBrowser({
         isOpen
         onClose={onClose}
         title={j('Your meal diary', 'Il tuo diario dei pasti')}
-        subtitle={j(
-          'Find a favorite. Notice a pattern. Remember a good meal.',
-          "Ritrova un preferito. Scopri un'abitudine. Ricorda un buon pasto.",
-        )}
         maxWidth="max-w-3xl"
       >
         <div className="journal-form">

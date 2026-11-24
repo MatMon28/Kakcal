@@ -9,18 +9,23 @@ import { journalDate } from './JournalUI';
 
 /**
  * Calendar date control of the photo diary pop-ups.
- * - `stack`: a clickable calendar icon with the date below it (photo composer).
+ * - `stack`: a clickable calendar icon with the date below it (photo composer, planner first / last day).
  * - `bar`: a full-width field like the search bar, calendar icon + date + clear button (gallery filter).
  * The real `<input type="date">` is stretched invisibly over the control, so a tap opens the native calendar on
  * phones and `showPicker()` opens it on desktop browsers.
  */
-export function JournalDateField({ value, onChange, label, variant = 'stack', emptyLabel = '', onClear }: {
+export function JournalDateField({ value, onChange, label, variant = 'stack', emptyLabel = '', onClear, caption, min, max }: {
   value: string;
   onChange: (value: string) => void;
   label: string;
   variant?: 'stack' | 'bar';
   emptyLabel?: string;
   onClear?: () => void;
+  /** Small caption above the date (planner: First day / Last day). */
+  caption?: string;
+  /** Earliest / latest date the calendar accepts (yyyy-mm-dd). */
+  min?: string;
+  max?: string;
 }) {
   const { language } = useApp();
   const j = useJournalText();
@@ -28,6 +33,7 @@ export function JournalDateField({ value, onChange, label, variant = 'stack', em
   const text = value ? journalDate(value, language, { day: 'numeric', month: 'short', year: 'numeric' }) : emptyLabel;
   return (
     <div className={`journal-date-field is-${variant}`} data-empty={!value || undefined}>
+      {caption && <span className="journal-date-caption">{caption}</span>}
       <CalendarDays size={variant === 'stack' ? 24 : 18} aria-hidden="true" />
       <span className="journal-date-text">{text}</span>
       <input
@@ -35,6 +41,8 @@ export function JournalDateField({ value, onChange, label, variant = 'stack', em
         type="date"
         required={variant === 'stack'}
         value={value}
+        min={min}
+        max={max}
         aria-label={label}
         title={label}
         onChange={(event) => onChange(event.target.value)}

@@ -53,7 +53,7 @@ function useFitActions(row: React.RefObject<HTMLDivElement | null>, group: React
 
 /**
  * Shared collapsible section header of the Custom page: icon circle, title + count + summary,
- * search toggle (inline search field below), optional actions, + and chevron.
+ * optional actions, search toggle (inline search field below, always right next to +), + and chevron.
  * Used by Meals, Recipes, Foods and by the journal sections (Meal diary, Meal planner, Photo diary).
  */
 export function LibrarySectionHeader({ title, tone, summary, icon, count, createLabel, onCreate, extraActions, searchLabel, query, setQuery, open, onToggle }: {
@@ -64,7 +64,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
   count?: number;
   createLabel?: string;
   onCreate?: () => void;
-  /** Extra icon buttons shown between search and +, e.g. a filter button. Use `libraryIconButton` for their class. */
+  /** Extra icon buttons shown left of the search button (search always sits right next to +), e.g. a filter or share button. Use `libraryIconButton` for their class. */
   extraActions?: React.ReactNode;
   searchLabel?: string;
   query?: string;
@@ -121,6 +121,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
         </button>
         <div className="flex items-center gap-1.5 shrink-0">
           <div ref={groupRef} className="flex items-center gap-1.5">
+          {extraActions}
           {setQuery && !ultraMinimal && (
             <button
               id={`${inputId}-toggle`}
@@ -141,7 +142,6 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
               <Search size={15} strokeWidth={searchOpen ? 3 : 2} />
             </button>
           )}
-          {extraActions}
           {onCreate && (
             <button type="button" onClick={onCreate} aria-label={createLabel} title={createLabel} className={iconBtn}>
               <Plus size={16} strokeWidth={2.5} />

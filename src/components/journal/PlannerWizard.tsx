@@ -8,9 +8,8 @@ import {
   Clock,
   Copy,
   FileText,
-  Minus,
+  History,
   Plus,
-  Star,
   Trash2,
   Utensils,
   UtensilsCrossed,
@@ -21,16 +20,24 @@ import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString } from '../../utils/formatters';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
-import { allMealItems } from '../../utils/mealItems';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
-import { pinCoherentFavorites } from '../../utils/favorites';
+import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { useOffCatalog } from '../../utils/useOffCatalog';
 import { catalogueScore } from '../../data/offCatalog';
 import { journalId, removeMealPlan, saveMealPlans, useMealJournal } from '../../utils/journalStore';
+import {
+  clearPlannerDraft,
+  draftPlannedCount,
+  loadPlannerDraft,
+  savePlannerDraft,
+  type PlanEntry,
+  type PlannerDraft,
+} from '../../utils/plannerDraft';
 import type { FoodItem, MealSlotId } from '../../types';
 import type { MealPlan, PlannedFood } from '../../types/journal';
 import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
+import { SaveBeforeCloseDialog } from '../common/SaveBeforeCloseDialog';
 import { MealSlotIcon } from '../common/mealSlotIcon';
 import { AmountSelector } from '../common/AmountSelector';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
@@ -38,12 +45,11 @@ import { FoodResultRow } from '../common/FoodResultRow';
 import { JournalEmpty, JournalSearch, journalDate } from './JournalUI';
 import { JournalDateField } from './JournalPickers';
 
-/** What is planned for one day + meal. */
-interface PlanEntry {
-  kind: 'food' | 'note';
-  items: PlannedFood[];
-  title: string;
-  note: string;
+/** An earlier plan of the same meal that can be added again with one tap. */
+interface PlanSuggestion {
+  key: string;
+  date: string;
+  entry: PlanEntry;
 }
 
 interface PlanTarget {
@@ -59,27 +65,36 @@ const entryValid = (e: PlanEntry) =>
     : e.items.length > 0 && e.items.every((i) => i.amount > 0 && Number.isFinite(i.amount));
 
 const MAX_DAYS = 90;
+const DEFAULT_SPAN = 7;
+const dayDiff = (from: string, to: string) =>
+  Math.round((new Date(`${to}T12:00:00`).getTime() - new Date(`${from}T12:00:00`).getTime()) / 86400000);
 // Monday first.
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 const weekdayOf = (date: string) => new Date(`${date}T12:00:00`).getDay();
 
 /**
  * Meal planner, in two pages.
- * 1. Setup: starting date, number of days (+ / - buttons), weekdays to skip, single days to add back or remove, meals.
+ * 1. Setup: first and last day (two calendar icons side by side), weekdays to skip, single days to add back or remove, meals.
+ *    A saved draft of an earlier, unfinished plan is offered at the top.
  * 2. Planning: one scrolling list of every day + meal. Meals that are planned or still to plan are compressed; only
  *    the one being planned is open (the same search / amount / macros flow as logging food). Arrows at the bottom
  *    move to the previous / next meal, and pressing any meal closes the open one and opens that one.
- * Opening an existing plan skips the setup and edits that single meal.
+ * Closing a plan that is half way asks: save as a draft, discard, or keep editing. Opening an existing plan skips the
+ * setup and edits that single meal.
  */
 export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string; plan?: MealPlan; onClose: () => void }) {
   const { language } = useApp();
   const { options: slots, label } = useMealSlots();
   const { plans } = useMealJournal();
   const j = useJournalText();
+  // The unfinished plan saved earlier (only offered when planning something new).
+  const [draft, setDraft] = useState<PlannerDraft | null>(() => (plan ? null : loadPlannerDraft()));
+  const [fromDraft, setFromDraft] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
 
   const [step, setStep] = useState<'setup' | 'plan'>(plan ? 'plan' : 'setup');
   const [startDate, setStartDate] = useState(plan?.date ?? initialDate);
-  const [days, setDays] = useState(7);
+  const [endDate, setEndDate] = useState(() => addDaysToDateString(plan?.date ?? initialDate, DEFAULT_SPAN - 1));
   const [skippedWeekdays, setSkippedWeekdays] = useState<number[]>([]);
   // Single days switched on / off by hand, on top of the skipped weekdays.
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
@@ -95,10 +110,24 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
   const name = (f: PlannedFood['food']) => (language === 'it' ? f.name_it : f.name_en) || f.name_de;
 
   // ----- Setup -----
-  const span = useMemo(
-    () => (startDate && days >= 1 ? Array.from({ length: Math.min(days, MAX_DAYS) }, (_, i) => addDaysToDateString(startDate, i)) : []),
-    [startDate, days],
-  );
+  const span = useMemo(() => {
+    if (!startDate || !endDate) return [];
+    const count = Math.max(1, Math.min(MAX_DAYS, dayDiff(startDate, endDate) + 1));
+    return Array.from({ length: count }, (_, i) => addDaysToDateString(startDate, i));
+  }, [startDate, endDate]);
+  const lastAllowed = addDaysToDateString(startDate, MAX_DAYS - 1);
+  const changeStart = (value: string) => {
+    if (!value) return;
+    setStartDate(value);
+    // The last day never comes before the first day, and a plan covers at most 90 days.
+    setEndDate((prev) => (prev < value ? value : prev > addDaysToDateString(value, MAX_DAYS - 1) ? addDaysToDateString(value, MAX_DAYS - 1) : prev));
+    setOverrides({});
+  };
+  const changeEnd = (value: string) => {
+    if (!value) return;
+    setEndDate(value < startDate ? startDate : value > lastAllowed ? lastAllowed : value);
+    setOverrides({});
+  };
   const dayOn = (date: string) => overrides[date] ?? !skippedWeekdays.includes(weekdayOf(date));
   const plannedDays = plan ? [plan.date] : span.filter(dayOn);
   const targets = useMemo<PlanTarget[]>(() => {
@@ -111,7 +140,6 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plan, span, overrides, skippedWeekdays, slots, selectedSlots]);
 
-  const setDayCount = (next: number) => setDays(Math.max(1, Math.min(MAX_DAYS, Math.round(next) || 1)));
   const toggleWeekday = (weekday: number) => {
     setSkippedWeekdays((prev) => (prev.includes(weekday) ? prev.filter((w) => w !== weekday) : [...prev, weekday]));
     // A weekday choice wins over single-day changes made before it.
@@ -170,6 +198,63 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
     });
   };
 
+  // ----- Earlier plans of the same meal, one tap away -----
+  const suggestionsFor = (target: PlanTarget): PlanSuggestion[] => {
+    const found: PlanSuggestion[] = [];
+    const seen = new Set<string>();
+    const add = (key: string, date: string, entry: PlanEntry) => {
+      if (!entryValid(entry)) return;
+      const signature = entry.kind === 'note' ? `note:${entry.note.trim()}` : entry.items.map((i) => `${i.food.id}:${i.amount}`).join('|');
+      if (seen.has(signature)) return;
+      seen.add(signature);
+      found.push({ key, date, entry });
+    };
+    // Meals of the same kind planned on earlier days, here in this plan first and then in the saved plans; newest first.
+    targets
+      .filter((o) => o.slot === target.slot && o.date < target.date)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .forEach((o) => add(`draft-${o.key}`, o.date, entryFor(o.key)));
+    plans
+      .filter((p) => p.slot === target.slot && p.date < target.date && p.id !== plan?.id)
+      .sort((a, b) => b.date.localeCompare(a.date))
+      .forEach((p) => add(`saved-${p.id}`, p.date, { kind: p.kind, items: p.items, title: p.title, note: p.note }));
+    return found.slice(0, 6);
+  };
+
+  // ----- Draft and closing -----
+  const hasContent = (e: PlanEntry) => e.items.length > 0 || e.note.trim().length > 0 || e.title.trim().length > 0;
+  const hasWork = !plan && (step === 'plan' || Object.values(entries).some(hasContent));
+  const requestClose = () => (hasWork ? setConfirmClose(true) : onClose());
+  const saveDraft = () => {
+    const kept = savePlannerDraft({ step, startDate, endDate, skippedWeekdays, overrides, selectedSlots, entries, preferredKind, activeKey });
+    setConfirmClose(false);
+    if (kept) onClose();
+    else setError(j('Not enough device storage to keep the draft. Export a backup and free some space.', 'Spazio insufficiente per la bozza. Esporta un backup e libera spazio.'));
+  };
+  const discardPlan = () => {
+    // A draft that was continued is thrown away with the plan; an older, untouched draft stays.
+    if (fromDraft) clearPlannerDraft();
+    setConfirmClose(false);
+    onClose();
+  };
+  const continueDraft = (d: PlannerDraft) => {
+    setStartDate(d.startDate);
+    setEndDate(d.endDate);
+    setSkippedWeekdays(d.skippedWeekdays);
+    setOverrides(d.overrides);
+    setSelectedSlots(d.selectedSlots.length ? d.selectedSlots : ['lunch']);
+    setEntries(d.entries);
+    setPreferredKind(d.preferredKind);
+    setActiveKey(d.activeKey);
+    setStep(d.step);
+    setFromDraft(true);
+    setDraft(null);
+  };
+  const deleteDraft = () => {
+    clearPlannerDraft();
+    setDraft(null);
+  };
+
   const save = () => {
     const next: MealPlan[] = targets
       .filter((t) => entryValid(entryFor(t.key)))
@@ -189,6 +274,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
     if (next.length === 0) return;
     try {
       saveMealPlans(next, plan?.id);
+      if (fromDraft) clearPlannerDraft();
       onClose();
     } catch {
       setError(j('Not enough device storage. Export a backup and free some space.', 'Spazio insufficiente. Esporta un backup e libera spazio.'));
@@ -244,7 +330,7 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
     <>
       <Modal
         isOpen
-        onClose={onClose}
+        onClose={requestClose}
         title={plan ? j('Edit meal plan', 'Modifica programma') : j('Plan meals', 'Pianifica i pasti')}
         subtitle={
           plan
@@ -254,48 +340,44 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
               : j('Step 2 of 2 · Plan each meal', 'Passo 2 di 2 · Pianifica ogni pasto')
         }
         maxWidth="max-w-xl"
-        footer={step === 'plan' ? planFooter : <div className="journal-plan-footer">{nextButton}</div>}
+        footer={step === 'plan' ? planFooter : <div className="journal-plan-footer">{error && <p role="alert" className="journal-error">{error}</p>}{nextButton}</div>}
       >
         {step === 'setup' ? (
           <div className="journal-form" data-planner-step="setup">
-            <JournalDateField
-              variant="bar"
-              value={startDate}
-              onChange={(value) => { setStartDate(value); setOverrides({}); }}
-              label={j('Starting on', 'A partire da')}
-              emptyLabel={j('Choose a start date', 'Scegli la data di inizio')}
-            />
+            {draft && (
+              <div className="journal-draft-card" role="group" aria-label={j('Saved draft', 'Bozza salvata')}>
+                <span className="journal-draft-icon"><FileText size={18} /></span>
+                <span className="journal-draft-text">
+                  <strong>{j('Continue your draft', 'Riprendi la bozza')}</strong>
+                  <small>
+                    {journalDate(draft.startDate, language)} - {journalDate(draft.endDate, language)} · {j(`${draftPlannedCount(draft)} meals planned`, `${draftPlannedCount(draft)} pasti pianificati`)}
+                  </small>
+                </span>
+                <button type="button" className="journal-draft-continue" onClick={() => continueDraft(draft)}>
+                  {j('Continue', 'Continua')}
+                </button>
+                <button type="button" className="journal-draft-delete" aria-label={j('Delete draft', 'Elimina bozza')} title={j('Delete draft', 'Elimina bozza')} onClick={deleteDraft}>
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            )}
 
-            <fieldset>
-              <legend>{j('How many days?', 'Quanti giorni?')}</legend>
-              <div className="journal-stepper" role="group" aria-label={j('Number of days', 'Numero di giorni')}>
-                <button type="button" aria-label={j('One day less', 'Un giorno in meno')} disabled={days <= 1} onClick={() => setDayCount(days - 1)}>
-                  <Minus size={18} />
-                </button>
-                <label className="journal-stepper-value">
-                  <input
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    max={MAX_DAYS}
-                    value={days}
-                    aria-label={j('Number of days', 'Numero di giorni')}
-                    onChange={(e) => setDayCount(Number(e.target.value))}
-                  />
-                  <span>{days === 1 ? j('day', 'giorno') : j('days', 'giorni')}</span>
-                </label>
-                <button type="button" aria-label={j('One day more', 'Un giorno in piu')} disabled={days >= MAX_DAYS} onClick={() => setDayCount(days + 1)}>
-                  <Plus size={18} />
-                </button>
-              </div>
-              <div className="journal-slot-options journal-quick-days">
-                {[3, 7, 14, 30].map((n) => (
-                  <button key={n} type="button" aria-pressed={days === n} className={days === n ? 'is-active' : ''} onClick={() => setDayCount(n)}>
-                    {n}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+            <div className="journal-date-pair" role="group" aria-label={j('First and last day', 'Primo e ultimo giorno')}>
+              <JournalDateField
+                caption={j('First day', 'Primo giorno')}
+                value={startDate}
+                onChange={changeStart}
+                label={j('First day of the plan', 'Primo giorno del programma')}
+              />
+              <JournalDateField
+                caption={j('Last day', 'Ultimo giorno')}
+                value={endDate}
+                min={startDate}
+                max={lastAllowed}
+                onChange={changeEnd}
+                label={j('Last day of the plan', 'Ultimo giorno del programma')}
+              />
+            </div>
 
             <fieldset>
               <legend>{j('Skip these days of the week', 'Escludi questi giorni della settimana')}</legend>
@@ -408,6 +490,8 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
                           <MealEntryEditor
                             key={t.key}
                             entry={entry}
+                            slot={t.slot}
+                            suggestions={suggestionsFor(t)}
                             onChange={(next) => {
                               setPreferredKind(next.kind);
                               setEntries((prev) => ({ ...prev, [t.key]: next }));
@@ -430,6 +514,18 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
           </div>
         )}
       </Modal>
+      <SaveBeforeCloseDialog
+        open={confirmClose}
+        title={j('Close the meal planner?', 'Chiudere il pianificatore?')}
+        message={j('Your plan is not finished. Keep it as a draft to continue it next time, or discard it.', 'Il programma non e finito. Salvalo come bozza per riprenderlo la prossima volta, oppure eliminalo.')}
+        detail={j(`${planned} of ${targets.length} meals planned`, `${planned} di ${targets.length} pasti pianificati`)}
+        saveLabel={j('Save as draft', 'Salva come bozza')}
+        discardLabel={j('Discard', 'Elimina')}
+        keepLabel={j('Keep planning', 'Continua')}
+        onSave={saveDraft}
+        onDiscard={discardPlan}
+        onKeepEditing={() => setConfirmClose(false)}
+      />
       <ConfirmDialog
         open={confirmDelete}
         message={j('Delete this meal plan? Your logged food will not be changed.', 'Eliminare il programma? Gli alimenti registrati non cambieranno.')}
@@ -447,13 +543,31 @@ export function PlanWizard({ initialDate, plan, onClose }: { initialDate: string
  * Food / note editor of one meal. Same flow as logging food: search (favourites first, offline catalogue included),
  * favourites and recent foods one tap away, then the amount with its macros before adding.
  */
-function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange: (entry: PlanEntry) => void; name: (f: PlannedFood['food']) => string }) {
-  const { allFoods, preBuiltMeals, favoriteFoods, allDayLogs, rememberFood, language } = useApp();
+function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
+  entry: PlanEntry;
+  slot: MealSlotId;
+  suggestions: PlanSuggestion[];
+  onChange: (entry: PlanEntry) => void;
+  name: (f: PlannedFood['food']) => string;
+}) {
+  const { allFoods, preBuiltMeals, favoriteFoods, allDayLogs, rememberFood, language, settings, t } = useApp();
   const j = useJournalText();
   const offCatalog = useOffCatalog(true);
   const [query, setQuery] = useState('');
   const [pending, setPending] = useState<FoodItem | null>(null);
   const [amount, setAmount] = useState(100);
+  // Favourites only show up once the user starts looking for a food (field focused or one letter typed), like in Add food.
+  const [focused, setFocused] = useState(false);
+  const blurTimer = useRef<number | null>(null);
+  useEffect(() => () => { if (blurTimer.current) window.clearTimeout(blurTimer.current); }, []);
+  const onFocus = () => {
+    if (blurTimer.current) window.clearTimeout(blurTimer.current);
+    setFocused(true);
+  };
+  const onBlur = () => {
+    if (blurTimer.current) window.clearTimeout(blurTimer.current);
+    blurTimer.current = window.setTimeout(() => setFocused(false), 140);
+  };
   const { kind, items, title, note } = entry;
   const patch = (next: Partial<PlanEntry>) => onChange({ ...entry, ...next });
   const q = query.trim();
@@ -477,14 +591,21 @@ function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange
 
   const favorites = useMemo(() => {
     const byId = new Map(allFoods.map((f) => [f.id, f]));
-    return favoriteFoods.map((id) => byId.get(id)).filter((f): f is FoodItem => Boolean(f)).slice(0, 8);
+    return favoriteFoods.map((id) => byId.get(id)).filter((f): f is FoodItem => Boolean(f));
   }, [allFoods, favoriteFoods]);
+  const oneCharMatches = useMemo(() => (q.length === 1 ? favorites.filter((f) => matchesFirstChar(f, q)) : []), [favorites, q]);
+  // The three quick food shortcuts of Settings (default salt, bread, olive oil), like in Add food.
+  const quickFoods = useMemo(
+    () => settings.quickFoods.map((id) => allFoods.find((f) => f.id === id)).filter((f): f is FoodItem => Boolean(f)),
+    [settings.quickFoods, allFoods],
+  );
+  // Foods logged most recently in this meal.
   const recent = useMemo(() => {
     const byId = new Map(allFoods.map((f) => [f.id, f]));
     const seen = new Set<string>();
     const out: FoodItem[] = [];
     for (const date of Object.keys(allDayLogs).sort().reverse()) {
-      for (const item of allMealItems(allDayLogs[date].meals).slice().reverse()) {
+      for (const item of (allDayLogs[date].meals[slot] ?? []).slice().reverse()) {
         if (seen.has(item.foodId)) continue;
         seen.add(item.foodId);
         const found = byId.get(item.foodId);
@@ -493,7 +614,16 @@ function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange
       if (out.length >= 8) break;
     }
     return out.slice(0, 8);
-  }, [allDayLogs, allFoods]);
+  }, [allDayLogs, allFoods, slot]);
+  const slotMeals = useMemo(() => preBuiltMeals.filter((m) => !m.slot || m.slot === slot).slice(0, 8), [preBuiltMeals, slot]);
+  const sameKind = suggestions.filter((s) => s.entry.kind === kind);
+  const entrySummary = (e: PlanEntry) =>
+    e.title.trim() || (e.kind === 'note' ? e.note.trim().split('\n')[0] : e.items.map((i) => name(i.food)).slice(0, 2).join(' + '));
+  const entryKcal = (e: PlanEntry) => Math.round(e.items.reduce((sum, i) => sum + (i.food.calories * i.amount) / 100, 0));
+  const applySuggestion = (s: PlanSuggestion) => {
+    if (s.entry.kind === 'food') patch({ items: [...items, ...s.entry.items.map((i) => ({ ...i }))], title: title || s.entry.title });
+    else patch({ note: s.entry.note, title: title || s.entry.title });
+  };
 
   const pick = (food: FoodItem) => {
     rememberFood(food);
@@ -510,10 +640,38 @@ function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange
     setQuery('');
   };
   const kcal = Math.round(items.reduce((sum, i) => sum + (i.food.calories * i.amount) / 100, 0));
-  const chip = (food: FoodItem) => (
-    <button key={food.id} type="button" className="journal-food-chip" onClick={() => pick(food)}>
-      {name(food)}
-    </button>
+  const favoritesPanel = (list: FoodItem[]) => (
+    <div className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] overflow-hidden" data-planner-favorites>
+      <div className="px-3 py-2 flex items-center justify-between gap-2 border-b border-[var(--border)]">
+        <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">{t.favorites.title}</span>
+        <span className="text-[10px] font-medium text-[var(--muted)]">{t.favorites.hint}</span>
+      </div>
+      {list.length === 0 ? (
+        <p className="p-4 text-center text-xs font-medium text-[var(--muted)]">{t.favorites.empty}</p>
+      ) : (
+        <div className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)]">
+          {list.map((f) => (
+            <FoodResultRow key={f.id} food={f} favorite onClick={() => pick(f)} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+  const earlierPlans = sameKind.length > 0 && (
+    <div data-planner-earlier>
+      <span className="journal-quick-label"><History size={12} /> {j('Planned on earlier days', 'Pianificati nei giorni scorsi')}</span>
+      <div className="journal-plan-suggestions">
+        {sameKind.map((s) => (
+          <button key={s.key} type="button" className="journal-plan-suggestion" onClick={() => applySuggestion(s)}>
+            <span>
+              <strong>{entrySummary(s.entry)}</strong>
+              <small>{journalDate(s.date, language, { weekday: 'short', day: 'numeric', month: 'short' })}{s.entry.kind === 'food' ? ` · ${entryKcal(s.entry)} kcal` : ''}</small>
+            </span>
+            <Plus size={16} />
+          </button>
+        ))}
+      </div>
+    </div>
   );
 
   return (
@@ -562,7 +720,13 @@ function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange
             </div>
           ) : (
             <>
-              <JournalSearch value={query} onChange={setQuery} placeholder={j('Search foods, saved meals or recipes', 'Cerca alimenti, pasti o ricette')} />
+              <JournalSearch
+                value={query}
+                onChange={setQuery}
+                onFocus={onFocus}
+                onBlur={onBlur}
+                placeholder={j('Search foods, saved meals or recipes', 'Cerca alimenti, pasti o ricette')}
+              />
               {q.length >= 2 ? (
                 <div className="journal-picker-results" data-planner-results>
                   {results.meals.map((meal) => (
@@ -581,28 +745,42 @@ function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange
                     <JournalEmpty>{j('No foods found. Try another ingredient.', 'Nessun risultato. Prova un altro ingrediente.')}</JournalEmpty>
                   )}
                 </div>
+              ) : q.length === 1 && oneCharMatches.length > 0 ? (
+                favoritesPanel(oneCharMatches)
               ) : (
                 <div className="journal-quick-foods">
                   {q.length === 1 && <p className="journal-result-count">{j('Type at least 2 letters.', 'Scrivi almeno 2 lettere.')}</p>}
-                  {favorites.length > 0 && (
+                  {q.length === 0 && focused && favoritesPanel(favorites)}
+                  {quickFoods.length > 0 && (
+                    <div className="journal-quick-food-grid" data-planner-quick-foods>
+                      {quickFoods.map((f) => (
+                        <button key={f.id} type="button" onClick={() => pick(f)}>
+                          <strong>{name(f)}</strong>
+                          <small>{f.calories} kcal/100{f.unit}</small>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {earlierPlans}
+                  {slotMeals.length > 0 && (
                     <div>
-                      <span className="journal-quick-label"><Star size={12} /> {j('Favourites', 'Preferiti')}</span>
-                      <div className="journal-food-chips">{favorites.map(chip)}</div>
+                      <span className="journal-quick-label"><UtensilsCrossed size={12} /> {j('Saved meals', 'Pasti salvati')}</span>
+                      <div className="journal-food-chips">
+                        {slotMeals.map((meal) => (
+                          <button key={meal.id} type="button" className="journal-food-chip" onClick={() => addMeal(meal)}>
+                            {meal.name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   )}
                   {recent.length > 0 && (
                     <div>
                       <span className="journal-quick-label"><Clock size={12} /> {j('Recent', 'Recenti')}</span>
-                      <div className="journal-food-chips">{recent.map(chip)}</div>
-                    </div>
-                  )}
-                  {preBuiltMeals.length > 0 && (
-                    <div>
-                      <span className="journal-quick-label"><UtensilsCrossed size={12} /> {j('Saved meals', 'Pasti salvati')}</span>
                       <div className="journal-food-chips">
-                        {preBuiltMeals.slice(0, 8).map((meal) => (
-                          <button key={meal.id} type="button" className="journal-food-chip" onClick={() => addMeal(meal)}>
-                            {meal.name}
+                        {recent.map((food) => (
+                          <button key={food.id} type="button" className="journal-food-chip" onClick={() => pick(food)}>
+                            {name(food)}
                           </button>
                         ))}
                       </div>
@@ -636,6 +814,8 @@ function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange
           )}
         </>
       ) : (
+        <>
+        {earlierPlans}
         <label>
           {j('Your food plan', 'Il tuo programma')}
           <textarea
@@ -647,6 +827,7 @@ function MealEntryEditor({ entry, onChange, name }: { entry: PlanEntry; onChange
           />
           <small>{j('This note appears first when you open the meal in Today.', 'La nota appare per prima quando apri il pasto in Oggi.')}</small>
         </label>
+        </>
       )}
 
       <label>

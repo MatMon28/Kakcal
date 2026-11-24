@@ -13,6 +13,12 @@ interface SaveBeforeCloseDialogProps {
   onKeepEditing: () => void;
   /** What would be lost, e.g. "3 foods". Optional. */
   detail?: string;
+  /** Optional replacement texts (default: the "Save before closing?" wording of Add food). */
+  title?: string;
+  message?: string;
+  saveLabel?: string;
+  discardLabel?: string;
+  keepLabel?: string;
 }
 
 const TEXT = {
@@ -36,14 +42,14 @@ const TEXT = {
  * Shown when a dialog that holds unsaved input is dismissed (tap outside, swipe down, X, Back): Save, Don't save or
  * Keep editing. Tapping outside this small dialog (or Back) counts as Keep editing, so nothing is lost by accident.
  */
-export const SaveBeforeCloseDialog: React.FC<SaveBeforeCloseDialogProps> = ({ open, onSave, onDiscard, onKeepEditing, detail }) => {
+export const SaveBeforeCloseDialog: React.FC<SaveBeforeCloseDialogProps> = ({ open, onSave, onDiscard, onKeepEditing, detail, title, message, saveLabel, discardLabel, keepLabel }) => {
   const { language } = useApp();
   const text = TEXT[language === 'it' ? 'it' : 'en'];
   return (
-    <Modal isOpen={open} onClose={onKeepEditing} title={text.title} maxWidth="max-w-sm">
+    <Modal isOpen={open} onClose={onKeepEditing} title={title ?? text.title} maxWidth="max-w-sm">
       <div className="space-y-4">
         <p className="text-sm font-medium text-[var(--text)]">
-          {text.message}
+          {message ?? text.message}
           {detail ? <span className="block mt-1 text-xs font-semibold text-[var(--muted)]">{detail}</span> : null}
         </p>
         <div className="space-y-2">
@@ -54,7 +60,7 @@ export const SaveBeforeCloseDialog: React.FC<SaveBeforeCloseDialogProps> = ({ op
             className="pressable w-full min-h-11 px-3 py-2.5 rounded-2xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#17432A] text-sm font-extrabold inline-flex items-center justify-center gap-1.5"
           >
             <Check size={16} strokeWidth={2.5} aria-hidden="true" />
-            {text.save}
+            {saveLabel ?? text.save}
           </button>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -62,14 +68,14 @@ export const SaveBeforeCloseDialog: React.FC<SaveBeforeCloseDialogProps> = ({ op
               onClick={onKeepEditing}
               className="pressable min-h-11 px-2 py-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] text-sm font-extrabold leading-tight"
             >
-              {text.keep}
+              {keepLabel ?? text.keep}
             </button>
             <button
               type="button"
               onClick={onDiscard}
               className="pressable min-h-11 px-2 py-2.5 rounded-2xl bg-[#F6D0D0] hover:bg-[#F0BDBD] text-[#7A2727] text-sm font-extrabold inline-flex items-center justify-center gap-1.5 leading-tight"
             >
-              {text.discard}
+              {discardLabel ?? text.discard}
             </button>
           </div>
         </div>

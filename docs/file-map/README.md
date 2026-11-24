@@ -8,7 +8,7 @@
 
 | Looking for... | Open |
 | --- | --- |
-| `index.html`, `App.tsx`, context, types, i18n, themes/CSS, brand assets, root configs, Next.js leftovers | [app-shell.md](app-shell.md) |
+| `index.html`, `App.tsx`, context, types, i18n, themes/CSS, brand assets, root configs, the inert `eslint.config.mjs` | [app-shell.md](app-shell.md) |
 | Anything in `src/utils/` (notifications, calculations, formatters, motion, favourites, android bridge) | [utils.md](utils.md) |
 | `src/data/`, `src/config/` (foods, activities, demo data, OFF catalogue reader) | [data.md](data.md) |
 | Shared components (`components/common/`: Modal, Header, PageSwiper, icons, amount selectors) | [components-common.md](components-common.md) |

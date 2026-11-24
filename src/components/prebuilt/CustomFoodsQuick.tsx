@@ -11,6 +11,7 @@ import { Modal } from '../common/Modal';
 import { AmountSelector } from '../common/AmountSelector';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { FoodResultRow } from '../common/FoodResultRow';
+import { JournalChip } from '../journal/JournalUI';
 
 const SHOWN = 5;
 const MAX = 20;
@@ -57,26 +58,22 @@ export const CustomFoodsQuick: React.FC = () => {
   const visible = all ? list : list.slice(0, SHOWN);
   const nameOf = (f: FoodItem) => (language === 'it' ? f.name_it : f.name_en || f.name_de);
 
-  const chip = (active: boolean) =>
-    `pressable flex-1 min-w-0 py-2 px-2.5 rounded-full text-xs font-extrabold flex items-center justify-center gap-1.5 border ${
-      active ? 'bg-[#FBF8F2] text-[#174A2B] border-[#9ADBB0]' : 'bg-transparent text-[#1D5C38] border-[#9ADBB0]/70 hover:bg-[#FBF8F2]/60'
-    }`;
-
   return (
     <div data-custom-foods-quick className="space-y-2">
-      <div role="group" aria-label={j('Recent and favourite foods', 'Alimenti recenti e preferiti')} className="flex gap-2">
-        <button type="button" aria-pressed={tab === 'recent'} className={chip(tab === 'recent')} onClick={() => { setTab('recent'); setAll(false); }}>
-          <Clock size={14} className="shrink-0" />
-          <span className="truncate">{j('Recent', 'Recenti')}</span>
-        </button>
-        <button type="button" aria-pressed={tab === 'favorites'} className={chip(tab === 'favorites')} onClick={() => { setTab('favorites'); setAll(false); }}>
-          <Star size={14} className="shrink-0" fill={tab === 'favorites' ? 'currentColor' : 'none'} />
-          <span className="truncate">{j('Favourites', 'Preferiti')}</span>
-        </button>
+      {/* Same pill selection as the Meal diary's All / Favorites chips (journal.css: .journal-chip). */}
+      <div className="journal-chip-row" role="group" aria-label={j('Recent and favourite foods', 'Alimenti recenti e preferiti')} data-no-swipe>
+        <JournalChip active={tab === 'recent'} onClick={() => { setTab('recent'); setAll(false); }}>
+          <Clock size={13} />
+          {j('Recent', 'Recenti')}
+        </JournalChip>
+        <JournalChip active={tab === 'favorites'} onClick={() => { setTab('favorites'); setAll(false); }}>
+          <Star size={13} fill={tab === 'favorites' ? 'currentColor' : 'none'} />
+          {j('Favourites', 'Preferiti')}
+        </JournalChip>
       </div>
 
       {list.length === 0 ? (
-        <p className="px-1 text-[11px] font-medium text-[#1D5C38]">
+        <p className="kc-foods-hint px-1 text-[11px] font-medium">
           {tab === 'recent'
             ? j('Foods you log will show up here.', 'Gli alimenti che registri appariranno qui.')
             : t.favorites.empty}
@@ -98,7 +95,7 @@ export const CustomFoodsQuick: React.FC = () => {
         </div>
       )}
       {list.length > SHOWN && (
-        <button type="button" onClick={() => setAll((v) => !v)} className="pressable w-full py-2 rounded-full text-xs font-extrabold text-[#174A2B] bg-[#FBF8F2]/70 hover:bg-[#FBF8F2]">
+        <button type="button" onClick={() => setAll((v) => !v)} className="pressable journal-see-all kc-foods-more w-full py-2 rounded-full text-xs font-extrabold">
           {all ? j('Show fewer', 'Mostra meno') : j(`Show all ${list.length}`, `Mostra tutti (${list.length})`)}
         </button>
       )}

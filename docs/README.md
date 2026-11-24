@@ -20,6 +20,7 @@
 | Change meal planning, meal notes, meal diary or photo diary | [meal-journal.md](meal-journal.md) |
 | Planner wizard (days, weekdays, specific days), Excel export, *Add to Meals*, recipe portion, protein per kg, intake / burned target, water in Statistics, Custom shortcuts, photo time range, recent / favourite foods | [new-features-update.md](new-features-update.md) |
 | Change the Custom grid in Minimal mode, header icons, photo diary pop-ups, "Go to the meal", short share links, when the share pop-up opens | [custom-photo-share-update.md](custom-photo-share-update.md) |
+| Custom bottom bar (Plan / Photo diary), planner first / last day, planner drafts, earlier-plan and quick-food shortcuts, Foods pills, header icon order, removed taglines, deleted Next.js leftovers | [planner-dock-update.md](planner-dock-update.md) |
 | Change animations / springs / swipe feel / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
@@ -34,7 +35,7 @@
 | 130,000-product Open Food Facts catalogue | [data-off-catalogue.md](data-off-catalogue.md) |
 | Run tests / pre-release checks | [verification.md](verification.md) |
 | Produce or apply `changes.patch` | [changes-patch.md](changes-patch.md) |
-| Know why Next.js leftovers exist | [provenance.md](provenance.md) |
+| Know where the Android shell came from and which Next.js leftovers were removed | [provenance.md](provenance.md) |
 | See what docs and code disagree on | [known-gaps.md](known-gaps.md) |
 | Find which file does X | [file-map/README.md](file-map/README.md) |
 

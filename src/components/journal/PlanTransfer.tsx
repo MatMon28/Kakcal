@@ -69,7 +69,7 @@ export function PlanTransfer({ plans, weekStart }: { plans: MealPlan[]; weekStar
   };
   return <>
     <button type="button" className="library-browse-search" title={j('Share or import meal plans', 'Condividi o importa programmi')} aria-label={j('Share or import meal plans', 'Condividi o importa programmi')} onPointerDown={() => { pressed.current = true; window.setTimeout(() => { pressed.current = false; }, 1500); }} onClick={(event) => { if (event.detail === 0 || pressed.current) setOpen(true); }}><Share2 size={16} /></button>
-    {open && <Modal isOpen onClose={close} title={j('Good plans are better shared.', 'I buoni programmi si condividono.')} subtitle={j('From your kitchen to theirs. No account needed.', 'Dalla tua cucina alla loro. Senza account.')} maxWidth="max-w-lg">
+    {open && <Modal isOpen onClose={close} title={j('Share meal plans', 'Condividi i programmi')} maxWidth="max-w-lg">
       <div className="journal-form plan-transfer">
         <div className="journal-segmented"><button type="button" className={mode === 'share' ? 'is-active' : ''} onClick={() => { setMode('share'); setError(''); setStatus(''); }}><Share2 size={16} />{j('Share a plan', 'Condividi')}</button><button type="button" className={mode === 'import' ? 'is-active' : ''} onClick={() => { setMode('import'); setError(''); setStatus(''); }}><Download size={16} />{j('Import a plan', 'Importa')}</button></div>
         {mode === 'share' ? <>

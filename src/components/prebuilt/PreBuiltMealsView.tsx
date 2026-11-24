@@ -36,7 +36,7 @@ import { useJournalText } from '../../i18n/journal';
 import { MealDiary } from '../journal/MealDiary';
 import { MealPlanner } from '../journal/MealPlanner';
 import { CustomFoodsQuick } from './CustomFoodsQuick';
-import { CustomShortcuts } from '../journal/CustomShortcuts';
+import { useCustomDockActions } from '../journal/CustomShortcuts';
 import { LibraryPhoto, PhotoDiary } from '../journal/PhotoDiary';
 import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
 
@@ -66,6 +66,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   const { options: mealSlots, label: slotLabel } = useMealSlots();
   const autoMealSlot = useAutoMealSlot();
   const j = useJournalText();
+  const journalDockActions = useCustomDockActions();
   // The pages below are not opened from a meal: the meal preselected is the one that fits the time of day.
   const openBarcode = () => { setTargetMealSlot(autoMealSlot()); setIsBarcodeOpen(true); };
   const openCustomFood = () => { setTargetMealSlot(autoMealSlot()); setIsCustomFoodOpen(true); };
@@ -449,14 +450,12 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
   return (
     <>
     <div className={ultraMinimal ? 'journal-minimal-grid' : 'custom-library-grid'} data-static-fields>
-      <CustomShortcuts />
       <MealDiary />
       {/* Section colours are restored; the individual meal cards stay neutral. In ultra minimal, all 3 sit next to one another. */}
       <section data-library-section="meals" className={`bg-[#FAE0B4] border border-[#E8C68E] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.meals}>
         <LibrarySectionHeader
           title={t.prebuilt.title}
           tone="meals"
-          summary={j('Your go-to combinations, ready to log.', 'I tuoi abbinamenti, pronti da registrare.')}
           icon={<UtensilsCrossed size={16} strokeWidth={2.2} />}
           count={preBuiltMeals.length}
           createLabel={t.prebuilt.createNew}
@@ -849,6 +848,7 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
             { id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: openNewMealModal },
             { id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openRecipeModal },
             { id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: openCustomFood },
+            ...journalDockActions,
           ]}
         />
       )}

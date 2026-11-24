@@ -1,5 +1,7 @@
 # File map: `src/utils/`
 
+
+(Planner / dock round) `plannerDraft.ts`: the unfinished planner draft (`PlanEntry`, `PlannerDraft`, `loadPlannerDraft` with validation, `savePlannerDraft`, `clearPlannerDraft`, `draftPlannedCount`), stored under `kcak_planner_draft`.
 (New features round) `excelExport.ts`: local `.xlsx` workbook builder (`buildWorkbook`, `buildExcelExport`) on top of the `zip` of `photoExport.ts`; `advancedStore.ts`: `balance` target (`updateBalance`), protein `perKg` (`goalValue`, `goalState(..., weightKg)`); `amountMemory.ts`: a recipe's standard portion wins in `getDefaultAmount`; `planSharing.ts` / `android.ts`: `xlsx` export kind.
 
 `photoExport.ts`: local standard ZIP assembly, XMP JPEG descriptions, per-photo text notes and CSV index.
