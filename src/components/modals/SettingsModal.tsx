@@ -1,9 +1,9 @@
 import { IconPicker } from '../common/IconPicker';
-import React, { useMemo, useState } from 'react';
+import React, { useDeferredValue, useMemo, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
-import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
-import { useOffCatalog } from '../../utils/useOffCatalog';
+import { searchFoods } from '../../utils/foodSearchIndex';
+import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
 import { catalogueScore } from '../../data/offCatalog';
 import { FoodItem } from '../../types';
 import {
@@ -90,22 +90,18 @@ export const SettingsModal: React.FC = () => {
   const foodById = (id: string) => allFoods.find((x) => x.id === id);
 
   // Food picker results, same behaviour as the Add Food search (type to find, typos OK)
-  const catalogue = useOffCatalog(pickerIdx !== null);
+  const pickerQuery = useDeferredValue(query.trim());
+  const { foods: catalogue } = useCatalogueSearch(pickerQuery, pickerIdx !== null, 25);
   const pickerResults = useMemo(() => {
-    const q = query.trim();
+    const q = pickerQuery;
     if (q.length < 2) return [];
-    const local = allFoods
-      .map((f) => ({
-        f,
-        score: fuzzyScore(q, `${f.name_de} ${f.name_it} ${f.name_en} ${f.brand || ''}`),
-      }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']));
+    const local = searchFoods(allFoods, q, { combined: true });
     const known = new Set(local.map(({ f }) => f.id));
-    const matches = (catalogue?.search(q, 25) ?? []).filter((f) => !known.has(f.id));
+    const matches = catalogue.filter((f) => !known.has(f.id));
     return [...local, ...matches.map((f) => ({ f, score: catalogueScore(q) }))].sort((a, b) => a.score - b.score)
       .slice(0, 25)
       .map((x) => x.f);
-  }, [allFoods, query, catalogue]);
+  }, [allFoods, pickerQuery, catalogue]);
 
   const seg = (active: boolean) =>
     `pressable flex-1 py-2.5 rounded-xl text-xs font-extrabold text-center border ${

@@ -26,6 +26,7 @@
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
 | Speed up app start | [startup-performance.md](startup-performance.md) |
 | See what the performance / storage / tooling review changed, and what is still open | [performance-review.md](performance-review.md) |
+| Typing in a food search lags, the 130,000-product catalogue is searched, result caches, the catalogue Web Worker, dialogs close slowly / clone the DOM, `dialogExit.ts` | [search-and-animation-performance.md](search-and-animation-performance.md) |
 | Page change / swipe lags, the Custom page is slow with lots of data, lazy-mounted accordions, layout reads in effects | [performance.md](performance.md) |
 | Add or rename a stored key, backup, network behaviour | [storage-and-privacy.md](storage-and-privacy.md) |
 | Calorie maths, colours | [calculations-colors.md](calculations-colors.md) |
@@ -67,6 +68,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | CSS parts (`src/styles/`, `journal/css/`), translations split, `AppContext` helpers, Custom page parts | [file-organisation.md](file-organisation.md), the matching `file-map/*.md` row |
 | A finished round (history) | move its paragraph from [changes-patch.md](changes-patch.md) to [changes-patch-history.md](changes-patch-history.md); add the round to `changelog/*.md` and, if you audited, to [audit-log.md](audit-log.md) |
 | Storage layer (`src/storage/`), contexts, lazy screens, service worker, CI, lint | [performance-review.md](performance-review.md), [storage-and-privacy.md](storage-and-privacy.md), [pwa.md](pwa.md), [verification.md](verification.md) |
+| Food search (`fuzzy.ts`, `foodSearchIndex.ts`, `catalogueSearch.ts`, `useCatalogueSearch.ts`, `src/workers/`), dialog exit (`Modal.tsx`, `dialogExit.ts`) | [search-and-animation-performance.md](search-and-animation-performance.md), [performance-review.md](performance-review.md), `file-map/utils.md`, `file-map/components-common.md`, [verification.md](verification.md#search-and-dialog-check) |
 | Docs structure itself | this file and the root `README.md` |
 
 Then regenerate the patch ([changes-patch.md](changes-patch.md)). Keep each document under roughly 120 lines; if one grows, split it and add a row above.

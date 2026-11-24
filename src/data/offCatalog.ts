@@ -42,7 +42,8 @@ export interface OffCatalog {
   };
 }
 
-function parse(buffer: ArrayBuffer): OffCatalog {
+/** Wraps the catalogue file in typed arrays. Also used by src/workers/offCatalogSearch.worker.ts. */
+export function parseOffCatalog(buffer: ArrayBuffer): OffCatalog {
   const view = new DataView(buffer);
   if (view.getUint32(0, true) !== MAGIC || view.getUint32(4, true) !== 1) throw new Error('Unsupported food catalogue');
   const count = view.getUint32(8, true);
@@ -205,7 +206,7 @@ export function loadOffCatalog(): Promise<OffCatalog | null> {
       try {
         const response = await fetch(new URL('data/off-foods.bin', document.baseURI).href);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        loaded = parse(await response.arrayBuffer());
+        loaded = parseOffCatalog(await response.arrayBuffer());
         listeners.forEach((notify) => notify());
         return loaded;
       } catch (error) {

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
@@ -20,9 +20,9 @@ import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString } from '../../utils/formatters';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
-import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
-import { useOffCatalog } from '../../utils/useOffCatalog';
+import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
 import { catalogueScore } from '../../data/offCatalog';
 import { journalId, removeMealPlan, saveMealPlans, useMealJournal } from '../../utils/journalStore';
 import {
@@ -552,7 +552,6 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
 }) {
   const { allFoods, preBuiltMeals, favoriteFoods, allDayLogs, rememberFood, language, settings, t } = useApp();
   const j = useJournalText();
-  const offCatalog = useOffCatalog(true);
   const [query, setQuery] = useState('');
   const [pending, setPending] = useState<FoodItem | null>(null);
   const [amount, setAmount] = useState(100);
@@ -571,23 +570,24 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
   const { kind, items, title, note } = entry;
   const patch = (next: Partial<PlanEntry>) => onChange({ ...entry, ...next });
   const q = query.trim();
+  // Results follow the typing a moment later; the catalogue is searched in a worker (utils/catalogueSearch.ts) and
+  // only once two characters are typed.
+  const resultsQuery = useDeferredValue(q);
+  const { foods: catalogueFoods, pending: cataloguePending } = useCatalogueSearch(resultsQuery, true, 30);
 
   const results = useMemo(() => {
-    if (q.length < 2) return { foods: [] as FoodItem[], meals: [] as typeof preBuiltMeals };
-    const local = allFoods
-      .map((f) => ({ f, score: Math.min(fuzzyScore(q, f.name_de), fuzzyScore(q, f.name_it), fuzzyScore(q, f.name_en), fuzzyScore(q, f.brand || '')) }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
-      .sort((a, b) => a.score - b.score);
+    if (resultsQuery.length < 2) return { foods: [] as FoodItem[], meals: [] as typeof preBuiltMeals };
+    const local = searchFoods(allFoods, resultsQuery);
     const seen = new Set(local.map((x) => x.f.id));
-    const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
+    const catalogue = catalogueFoods
       .filter((f) => !seen.has(f.id))
-      .map((f) => ({ f, score: catalogueScore(q) }));
+      .map((f) => ({ f, score: catalogueScore(resultsQuery) }));
     const ranked = [...local, ...catalogue].sort((a, b) => a.score - b.score);
     return {
-      foods: pinCoherentFavorites(ranked, favoriteFoods, (x) => x.f.id, (x) => x.score, q).slice(0, 30).map((x) => x.f),
-      meals: preBuiltMeals.filter((m) => fuzzyMatch(q, [m.name])).slice(0, 6),
+      foods: pinCoherentFavorites(ranked, favoriteFoods, (x) => x.f.id, (x) => x.score, resultsQuery).slice(0, 30).map((x) => x.f),
+      meals: searchMeals(preBuiltMeals, resultsQuery).slice(0, 6).map((x) => x.m),
     };
-  }, [q, allFoods, offCatalog, favoriteFoods, preBuiltMeals]);
+  }, [resultsQuery, allFoods, catalogueFoods, favoriteFoods, preBuiltMeals]);
 
   const favorites = useMemo(() => {
     const byId = new Map(allFoods.map((f) => [f.id, f]));
@@ -741,7 +741,7 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
                   {results.foods.map((food) => (
                     <FoodResultRow key={food.id} food={food} favorite onClick={() => pick(food)} />
                   ))}
-                  {results.foods.length === 0 && results.meals.length === 0 && (
+                  {results.foods.length === 0 && results.meals.length === 0 && !cataloguePending && resultsQuery === q && (
                     <JournalEmpty>{j('No foods found. Try another ingredient.', 'Nessun risultato. Prova un altro ingrediente.')}</JournalEmpty>
                   )}
                 </div>

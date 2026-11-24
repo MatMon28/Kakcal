@@ -6,6 +6,12 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+**Earlier patch (performance, storage and tooling round, base `7eb4b6392da61e21ea2acdab73fda7e1b5aeb3ff`):** changes `package.json` and `package-lock.json` (new devDependencies: eslint 9, typescript-eslint, react plugins, vitest, jsdom, fake-indexeddb, @testing-library/react, playwright; `vite-plugin-singlefile` removed; new scripts). Run `npm ci` after applying. No Android native, permission or data-format change except backup version `1.2` and the IndexedDB day / photo storage (the old data is migrated on first start). Full list and status: [performance-review.md](performance-review.md).
+
+- **New:** `src/storage/*`, `src/context/contexts.ts`, `src/utils/{useToday,widgetDates}.ts`, `src/components/common/{StorageNotice,StorageInfo,LazyInstallGuideHost,installGuideEvents}.ts(x)`, `tests/*`, `.github/workflows/ci.yml`, `docs/performance-review.md`.
+- **Edited:** `src/App.tsx`, `src/main.tsx`, `src/context/{AppContext,appContextType}`, `src/utils/{journalStore,photoExport,deleteAllData,amountMemory}.ts`, `src/components/journal/PhotoDiary.tsx`, `src/components/modals/{AddFoodModal,ActivitySearch,SettingsModal}.tsx`, `src/components/common/{DataBackup,InstallGuide,InstallApp,Header,Modal}.tsx`, intro files, `vite.config.ts`, `eslint.config.mjs`, `tsconfig.json`, `public/{offline-worker.js,_headers}`, `scripts/prepare-android.mjs`, `.github/workflows/pages.yml`, `.gitignore`, docs.
+- **Deleted / untracked:** `src/components/common/Toast.tsx`, `.idea/`, `scripts/smoke.bundle.js`.
+
 **Earlier patch (page-transition round, base `74cc7ccf7e313fd9a1fa63fa1c84f06228715d5d`):** no `package.json` change, no data / Android / permission change. The tap / Back page change was reworked (details in [motion.md](motion.md)):
 
 - **New:** `src/utils/pageTransition.ts` (fade-through timings and `playPageChange`), `scripts/check-page-transition.mjs` (frame-by-frame artifact check, see [verification.md](verification.md#page-transition-check)).

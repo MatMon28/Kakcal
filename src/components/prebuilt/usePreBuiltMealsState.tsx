@@ -1,11 +1,11 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useDeferredValue, useEffect, useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../../types';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
-import { useOffCatalog } from '../../utils/useOffCatalog';
+import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
 import { catalogueScore } from '../../data/offCatalog';
-import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { Search, X } from 'lucide-react';
 import { usePersistentState } from '../../utils/usePersistentState';
@@ -233,52 +233,39 @@ export function usePreBuiltMealsState() {
     setPendingFood(null);
   };
 
-  // The offline Open Food Facts catalogue also feeds the ingredient searches (loaded on first use).
-  const offCatalog = useOffCatalog(isCreateOpen || isRecipeOpen);
+  // The offline Open Food Facts catalogue also feeds the ingredient searches. It is searched in a worker and only
+  // once two characters are typed (utils/catalogueSearch.ts); the lists follow the typing a moment later.
+  const ingredientQuery = useDeferredValue(ingredientSearch.trim());
+  const recipeFoodQuery = useDeferredValue(recipeSearch.trim());
+  const { foods: ingredientCatalogue } = useCatalogueSearch(ingredientQuery, isCreateOpen, 30);
+  const { foods: recipeCatalogue } = useCatalogueSearch(recipeFoodQuery, isRecipeOpen, 30);
 
   const favoriteIds = useMemo(() => favoriteFoods ?? [], [favoriteFoods]);
 
   const filteredFoodsForSearch = useMemo(() => {
-    const q = ingredientSearch.trim();
+    const q = ingredientQuery;
     if (q.length < 2) return [];
-    const local = allFoods
-      .map((f) => ({
-        f,
-        score: Math.min(
-          fuzzyScore(q, f.name_de),
-          fuzzyScore(q, f.name_it),
-          fuzzyScore(q, f.name_en),
-          fuzzyScore(q, f.brand || '')
-        ),
-      }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
-      .sort((a, b) => a.score - b.score);
+    const local = searchFoods(allFoods, q);
     const seen = new Set(local.map((x) => x.f.id));
-    const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
+    const catalogue = ingredientCatalogue
       .filter((f) => !seen.has(f.id))
       .map((f) => ({ f, score: catalogueScore(q) }));
     const ranked = [...local, ...catalogue].sort((a, b) => a.score - b.score);
     // Favourites that directly match the text come first (same rule as Add Food).
     return pinCoherentFavorites(ranked, favoriteIds, (x) => x.f.id, (x) => x.score, q).slice(0, 40).map((x) => x.f);
-  }, [allFoods, ingredientSearch, offCatalog, favoriteIds]);
+  }, [allFoods, ingredientQuery, ingredientCatalogue, favoriteIds]);
 
   const recipeResults = useMemo(() => {
-    const q = recipeSearch.trim();
+    const q = recipeFoodQuery;
     if (q.length < 2) return [];
-    const local = allFoods
-      .map((f) => ({
-        f,
-        score: Math.min(fuzzyScore(q, f.name_de), fuzzyScore(q, f.name_it), fuzzyScore(q, f.name_en)),
-      }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']))
-      .sort((a, b) => a.score - b.score);
+    const local = searchFoods(allFoods, q);
     const seen = new Set(local.map((x) => x.f.id));
-    const catalogue = (offCatalog ? offCatalog.search(q, 30) : [])
+    const catalogue = recipeCatalogue
       .filter((f) => !seen.has(f.id))
       .map((f) => ({ f, score: catalogueScore(q) }));
     const ranked = [...local, ...catalogue].sort((a, b) => a.score - b.score);
     return pinCoherentFavorites(ranked, favoriteIds, (x) => x.f.id, (x) => x.score, q).slice(0, 40).map((x) => x.f);
-  }, [allFoods, recipeSearch, offCatalog, favoriteIds]);
+  }, [allFoods, recipeFoodQuery, recipeCatalogue, favoriteIds]);
 
   // One typed character: the favourites starting with it (Add Food does the same), instead of only a hint.
   const favoriteOneChar = (query: string) => {
@@ -381,23 +368,13 @@ export function usePreBuiltMealsState() {
   const mealResults = useMemo(() => {
     const q = mealQuery.trim();
     if (q.length < 2) return [];
-    return preBuiltMeals
-      .map((m) => ({ m, score: fuzzyScore(q, m.name) }))
-      .filter((x) => fuzzyMatch(q, [x.m.name]))
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 35)
-      .map((x) => x.m);
+    return searchMeals(preBuiltMeals, q).slice(0, 35).map((x) => x.m);
   }, [preBuiltMeals, mealQuery]);
 
   const recipeListResults = useMemo(() => {
     const q = recipeQuery.trim();
     if (q.length < 2) return [];
-    return savedRecipes
-      .map((f) => ({ f, score: fuzzyScore(q, `${f.name_de} ${f.name_it} ${f.name_en}`) }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en]))
-      .sort((a, b) => a.score - b.score)
-      .slice(0, 35)
-      .map((x) => x.f);
+    return searchFoods(savedRecipes, q, { combined: true }).slice(0, 35).map((x) => x.f);
   }, [savedRecipes, recipeQuery]);
 
   const isMealFiltering = mealQuery.trim().length >= 2;
@@ -527,7 +504,6 @@ export function usePreBuiltMealsState() {
     handleSelectFood,
     handleConfirmAndAddAnother,
     handleSaveMeal,
-    offCatalog,
     favoriteIds,
     filteredFoodsForSearch,
     recipeResults,

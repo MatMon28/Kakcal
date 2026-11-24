@@ -4,6 +4,8 @@
 >
 > **Read when:** you touch `off-foods.bin`, `offCatalog.ts`, `useOffCatalog.ts`, `build-off-catalog.mjs` or food search ranking.
 >
+> **Search runs in a Web Worker** (`src/workers/offCatalogSearch.worker.ts`, client `src/utils/catalogueSearch.ts`) for Add food, the planner and the Custom / Settings pickers; the worker parses its own copy of the file with the same reader (`parseOffCatalog`). The food database page and barcode lookup still use the main-thread copy. See [search-and-animation-performance.md](search-and-animation-performance.md).
+>
 > **Related:** data-nutrition.md, storage-and-privacy.md, file-map/data.md
 
 **Browse the full database:** Custom > Foods > Browse Foods opens the same offline index as Add Food. Its count includes matching catalogue and local foods without counting remembered barcodes twice. Name, brand, barcode and category searches cover the whole file, not just the current page. Pages contain at most 36 decoded food records from the combined results. Favourites and custom foods retain their own filters. If the file fails to load, the browser identifies the partial list and offers a retry. Restore `public/data/off-foods.bin` from Git if it is missing. `scripts/prepare-android.mjs` copies the file into `dist/data/` (and so into the APK) and refuses to continue if its KOFF magic number is wrong.

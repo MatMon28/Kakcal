@@ -39,5 +39,5 @@ Meal-journal additions: `App.tsx` mounts `JournalChrome`; `index.css` imports `c
 | --- | --- |
 | `src/context/contexts.ts` | The three contexts, `useUiState` / `useSettings` / `useJournalData` / `useShell` / `useApp`, and `useStableActions`. |
 | `eslint.config.mjs` | **Now real** (replaces the Next.js leftover): typescript-eslint, react, react-hooks, `no-unstable-nested-components`. |
-| `vite.config.ts`, `tests/`, `.github/workflows/ci.yml` | No single-file plugin, `base: './'`, worker stamping, Vitest config; the regression suite; required CI checks. |
+| `vite.config.ts`, `tests/`, `.github/workflows/ci.yml` | No single-file plugin, `base: './'`, worker stamping, Vitest config; the regression suite (`tests/`: storage, context, midnight, `fuzzy.test.ts`, `catalogueSearch.test.tsx`, `dialogExit.test.tsx`); required CI checks. |
 | `docs/performance-review.md` | Status of the 20-point review. |

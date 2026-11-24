@@ -29,3 +29,5 @@
 | (Polish round) `WaterModal.tsx`, `PoopModal.tsx`, `AdvancedSettings.tsx`, `AddFoodModal.tsx`, `ActivitySearch.tsx` | Water: stepper above the quick buttons, `250ml`, **Save water**; Poop: *(optional)* next to *Bristol type*; Goals & limits items indented under a guide line (`data-goals-subsections`); meal chips carry `data-slot-chip` (Angular chamfer) and the chip rows / result lists use `scrollFadeX` / `scrollFadeY`. |
 
 SettingsModal delegates custom button icons to common/IconPicker.tsx. LayoutToolbar uses the same chooser for new and existing custom meal types.
+
+(Search performance round) `AddFoodModal.tsx`, `SettingsModal.tsx`: local search through `searchFoods` / `searchMeals`, catalogue through `useCatalogueSearch` (worker), lists use `useDeferredValue`; Add food and the planner hold back "No results" while the catalogue answer is pending. `Modal.tsx` closes through `common/dialogExit.ts` (no cloned dialog). See [../search-and-animation-performance.md](../search-and-animation-performance.md).

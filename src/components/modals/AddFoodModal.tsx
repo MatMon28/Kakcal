@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
@@ -7,11 +7,11 @@ import { FoodItem, LoggedFoodItem, PreBuiltMeal } from '../../types';
 import { useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { FoodResultRow } from '../common/FoodResultRow';
-import { useOffCatalog } from '../../utils/useOffCatalog';
+import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
 import { catalogueScore } from '../../data/offCatalog';
 import { calculateTotalCalories } from '../../utils/calculations';
 import { addDaysToDateString, formatDateDisplay } from '../../utils/formatters';
-import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
 import { SaveBeforeCloseDialog } from '../common/SaveBeforeCloseDialog';
@@ -103,14 +103,16 @@ export const AddFoodModal: React.FC = () => {
   );
 
   const trimmedQuery = searchTerm.trim();
-  // Item 6: the 130,000-product catalogue is fetched only when a catalogue search is actually needed (two or more
-  // typed characters), not when the dialog opens: picking a favourite, quick food or saved meal never downloads it.
-  const offCatalog = useOffCatalog(isAddFoodOpen && trimmedQuery.length >= 2);
   const isSearching = trimmedQuery.length >= 2;
+  // Searching never blocks typing: the input follows the keystrokes at once, the results follow a moment later
+  // (`useDeferredValue`), and the 130,000-product catalogue is searched in a Web Worker (utils/catalogueSearch.ts).
+  // Item 6 still holds: the catalogue file is fetched only once two characters are typed, never when the dialog opens.
+  const resultsQuery = useDeferredValue(trimmedQuery);
+  const { foods: catalogueFoods, pending: cataloguePending } = useCatalogueSearch(resultsQuery, isAddFoodOpen, 40);
 
   // Favourite foods: shown as the whole list while the field is focused and empty,
   // matching the first character as soon as typing starts, and pinned to the top later.
-  const favoriteIds = favoriteFoods ?? [];
+  const favoriteIds = useMemo(() => favoriteFoods ?? [], [favoriteFoods]);
   const favoriteItems = useMemo(
     () =>
       favoriteIds
@@ -145,33 +147,23 @@ export const AddFoodModal: React.FC = () => {
   }, [trimmedQuery]);
   // Search results: only shown while typing (>=2 chars), fuzzy matched.
   // Includes individual foods, recipes (tagged), AND saved meals (one-tap log).
+  // Local names are tokenized once and finished queries are cached (utils/foodSearchIndex.ts).
   const searchResults = useMemo(() => {
-    if (!isSearching) return [];
-    const q = trimmedQuery;
-    const foods = allFoods
-      .map((f) => ({
-        kind: 'food' as const,
-        f,
-        score: Math.min(
-          fuzzyScore(q, f.name_de),
-          fuzzyScore(q, f.name_it),
-          fuzzyScore(q, f.name_en),
-          ...(f.brand ? [fuzzyScore(q, f.brand)] : [])
-        ),
-      }))
-      .filter((x) => fuzzyMatch(q, [x.f.name_de, x.f.name_it, x.f.name_en, x.f.brand || '']));
-    const meals = preBuiltMeals
-      .map((m) => ({ kind: 'meal' as const, m, score: fuzzyScore(q, m.name) }))
-      .filter((x) => fuzzyMatch(q, [x.m.name]));
+    if (resultsQuery.length < 2) return [];
+    const q = resultsQuery;
+    const foods = searchFoods(allFoods, q).map((x) => ({ kind: 'food' as const, f: x.f, score: x.score }));
+    const meals = searchMeals(preBuiltMeals, q).map((x) => ({ kind: 'meal' as const, m: x.m, score: x.score }));
     // The offline Open Food Facts catalogue is ranked on the same scale: below an exact match in the
     // bundled foods, above their loose typo matches (catalogue foods the user already picked are in allFoods).
     const knownIds = new Set(foods.map((x) => x.f.id));
-    const catalogue = (offCatalog ? offCatalog.search(q, 40) : [])
+    const catalogue = catalogueFoods
       .filter((f) => !knownIds.has(f.id))
       .map((f) => ({ kind: 'food' as const, f, score: catalogueScore(q) }));
     const ranked = [...meals, ...foods, ...catalogue].sort((a, b) => a.score - b.score);
     return pinCoherentFavorites(ranked, favoriteIds, (r) => (r.kind === 'food' ? r.f.id : ''), (r) => r.score, q).slice(0, 50);
-  }, [allFoods, preBuiltMeals, trimmedQuery, isSearching, favoriteIds, offCatalog]);
+  }, [allFoods, preBuiltMeals, resultsQuery, favoriteIds, catalogueFoods]);
+  // Hold the "no results" message back while the answer for the typed text is still being worked out.
+  const resultsPending = cataloguePending || resultsQuery !== trimmedQuery;
 
   // Saved meals tagged for this slot
   const slotMeals = useMemo(
@@ -551,7 +543,9 @@ export const AddFoodModal: React.FC = () => {
           {/* Search results: favourites pinned first (min 2 chars, fuzzy) */}
           {isSearching ? (
             <div ref={setResultsEl} className="max-h-72 overflow-y-auto overscroll-contain divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
-              {searchResults.length === 0 ? (
+              {searchResults.length === 0 && resultsPending ? (
+                <div className="p-5 text-center text-xs font-medium text-[var(--muted)]" aria-live="polite">…</div>
+              ) : searchResults.length === 0 ? (
                 <div className="p-5 space-y-3 text-center">
                   <p className="text-xs font-medium text-[var(--muted)]">{t.foodModal.noResults}</p>
                   <div className="flex flex-wrap gap-2 justify-center">

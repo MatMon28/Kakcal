@@ -1,10 +1,10 @@
-import React, { useLayoutEffect, useId, useRef } from 'react';
+import React, { useLayoutEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { SPRING } from '../../utils/spring';
 import { prefersReducedMotion } from '../../utils/motion';
 import { useSettings } from '../../context/AppContext';
-import { getDockTarget } from './ActionDock';
+import { armTapRescue, createDialogHost, finishExitAnimations, type ExitContext } from './dialogExit';
 import { scrollFadeY } from '../../utils/scrollFade';
 
 interface ModalProps {
@@ -32,159 +32,7 @@ export function closeTopModal(): boolean {
   return true;
 }
 
-/** Exit animations still on screen. Each entry ends its animation and removes its ghost at once. */
-const activeExits = new Set<() => void>();
-let inputGuardsInstalled = false;
-
-/** Ends every closing animation immediately (any press, key, scroll or new dialog skips what is left of it). */
-export function finishExitAnimations() {
-  Array.from(activeExits).forEach((end) => end());
-}
-
-/** After a swipe-dismiss, a tap that the browser drops (see below) is re-sent as a click until this time. */
-let tapRescueUntil = 0;
-const TAP_RESCUE_MS = 900;
-
-/**
- * Two document-level guards, installed once:
- * 1. *Skip the exit*: any new press, key, wheel or dialog opening finishes the closing animations at once, so
- *    the animation can never be in the way of the next action.
- * 2. *Tap rescue*: Chromium can swallow the click of the first taps that follow a drag on a `touch-action: none`
- *    handle (pointer events still arrive, the `click` never does), which felt like a "refractory period" after a
- *    swipe-down. For a short while after a swipe-dismiss, a quick tap whose `click` does not arrive within
- *    80 ms is re-sent as a click on the same element.
- */
-function installInputGuards() {
-  if (inputGuardsInstalled || typeof document === 'undefined') return;
-  inputGuardsInstalled = true;
-  const skip = () => { if (activeExits.size) finishExitAnimations(); };
-  (['pointerdown', 'touchstart', 'keydown', 'wheel'] as const).forEach((type) =>
-    document.addEventListener(type, skip, { capture: true, passive: true }));
-  document.addEventListener('kc:overlay-open', skip);
-
-  let down: { target: EventTarget | null; x: number; y: number; time: number } | null = null;
-  document.addEventListener('pointerdown', (e) => {
-    down = { target: e.target, x: e.clientX, y: e.clientY, time: performance.now() };
-  }, true);
-  document.addEventListener('pointerup', (e) => {
-    const d = down;
-    down = null;
-    const now = performance.now();
-    if (!d || now > tapRescueUntil || e.pointerType === 'mouse' || d.target !== e.target) return;
-    if (Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12 || now - d.time > 700) return;
-    const target = e.target as Element;
-    let clicked = false;
-    const sawClick = () => { clicked = true; };
-    document.addEventListener('click', sawClick, true);
-    window.setTimeout(() => {
-      document.removeEventListener('click', sawClick, true);
-      if (clicked || !target.isConnected || target.closest('[inert], :disabled')) return;
-      target.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, composed: true, clientX: e.clientX, clientY: e.clientY, view: window }));
-    }, 80);
-  }, true);
-}
-
-interface ExitOptions {
-  overlay: HTMLElement;
-  /** Another dialog stays open underneath: leave through the bottom instead of the dock. */
-  stacked: boolean;
-  swiped: boolean;
-  dockId?: string;
-}
-
-/**
- * Plays the closing animation of a dialog that React is removing. The overlay is cloned (or, when
- * React has already detached it, reused) and animated on its own, so the dialog never waits for the
- * unmount and the page behind it is usable at once. With a bottom bar on screen the sheet shrinks
- * into the bar's button (or the bar's centre), otherwise it leaves through the bottom edge.
- */
-function playExit({ overlay, stacked, swiped, dockId }: ExitOptions) {
-  const livePanel = overlay.querySelector<HTMLElement>('[data-sheet-panel]');
-  const liveScrim = overlay.querySelector<HTMLElement>('[data-sheet-scrim]');
-  if (!livePanel || !liveScrim) return;
-  const attached = overlay.isConnected;
-  // Where the animation starts: the sheet exactly as painted (dragged, or still opening).
-  const startTransform = attached ? getComputedStyle(livePanel).transform : livePanel.style.transform || 'none';
-  const startOpacity = attached ? getComputedStyle(livePanel).opacity : '1';
-  const startScrim = attached ? getComputedStyle(liveScrim).opacity : liveScrim.style.opacity || '1';
-
-  const ghost = attached ? (overlay.cloneNode(true) as HTMLElement) : overlay;
-  const panel = ghost.querySelector<HTMLElement>('[data-sheet-panel]')!;
-  const scrim = ghost.querySelector<HTMLElement>('[data-sheet-scrim]')!;
-  ghost.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
-  ghost.removeAttribute('data-no-swipe');
-  ghost.setAttribute('aria-hidden', 'true');
-  ghost.setAttribute('inert', '');
-  ghost.style.pointerEvents = 'none';
-  panel.removeAttribute('role');
-  panel.style.animation = 'none';
-  panel.style.transform = 'none';
-  panel.style.opacity = '1';
-  scrim.style.animation = 'none';
-  scrim.style.opacity = '1';
-  if (attached) {
-    // A clone starts from the markup: carry over what the user typed and how far they scrolled.
-    const from = overlay.querySelectorAll<HTMLInputElement>('input, textarea, select');
-    const to = ghost.querySelectorAll<HTMLInputElement>('input, textarea, select');
-    from.forEach((el, i) => { if (to[i]) { to[i].value = el.value; to[i].checked = el.checked; } });
-  }
-  document.body.appendChild(ghost);
-  if (attached) {
-    const from = overlay.querySelectorAll<HTMLElement>('[data-dialog-scroll]');
-    ghost.querySelectorAll<HTMLElement>('[data-dialog-scroll]').forEach((el, i) => { el.scrollTop = from[i]?.scrollTop ?? 0; });
-  }
-
-  const running: Animation[] = [];
-  let finished = false;
-  const remove = () => {
-    if (finished) return;
-    finished = true;
-    activeExits.delete(remove);
-    running.forEach((a) => { a.onfinish = null; a.oncancel = null; a.cancel(); });
-    ghost.remove();
-  };
-  if (!panel.animate) { remove(); return; }
-  installInputGuards();
-  activeExits.add(remove);
-
-  const natural = panel.getBoundingClientRect();
-  const target = stacked ? null : getDockTarget(dockId);
-  const visualViewport = window.visualViewport;
-  const visibleBottom = (visualViewport?.offsetTop ?? 0) + (visualViewport?.height ?? window.innerHeight);
-  let end: string;
-  if (target) {
-    const dx = target.x - (natural.left + natural.width / 2);
-    const dy = target.y - (natural.top + natural.height / 2);
-    const sx = Math.max(0.04, target.width / natural.width);
-    const sy = Math.max(0.04, target.height / natural.height);
-    end = `translate3d(${dx}px,${dy}px,0) scale(${sx},${sy})`;
-  } else {
-    end = `translate3d(0,${visibleBottom - natural.top + 8}px,0)`;
-  }
-  // Released with the finger already moving: start at speed. The exit is deliberately barely perceivable
-  // (60-90 ms): the dialog is gone almost at once, with just a hint of being swallowed by the button.
-  const duration = target ? (swiped ? 70 : 90) : swiped ? 60 : 80;
-  const easing = swiped ? 'cubic-bezier(.2,.25,.6,.5)' : target ? 'cubic-bezier(.45,.05,.7,.45)' : 'cubic-bezier(.4,0,.9,.6)';
-  const options: KeyframeAnimationOptions = { duration, easing, fill: 'forwards' };
-  const slide = panel.animate([
-    { transform: startTransform, opacity: startOpacity },
-    { opacity: startOpacity, offset: target ? 0.7 : 0.55 },
-    { transform: end, opacity: 0 },
-  ], options);
-  const fade = scrim.animate([{ opacity: startScrim }, { opacity: 0 }], { duration, easing: 'linear', fill: 'forwards' });
-  running.push(slide, fade);
-  slide.onfinish = remove;
-  slide.oncancel = remove;
-
-  // The button (or bar) swallows the dialog with a small pulse.
-  if (target) {
-    const isBar = target.pulse.hasAttribute('data-dock');
-    running.push(target.pulse.animate(
-      [{ transform: 'scale(1)' }, { transform: `scale(${isBar ? 1.05 : 1.2})`, offset: 0.4 }, { transform: 'scale(1)' }],
-      { duration: 110, delay: duration * 0.7, easing: 'ease-out' },
-    ));
-  }
-}
+export { finishExitAnimations };
 
 const focusSelector = 'button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled), a[href], [tabindex]:not([tabindex="-1"])';
 
@@ -207,6 +55,20 @@ export const Modal: React.FC<ModalProps> = ({
   const dockIdRef = useRef(dockId);
   dockIdRef.current = dockId;
   const swiped = useRef(false);
+  const closeHandlerRef = useRef<(() => void) | null>(null);
+  // The overlay is portalled into its own host so that closing animates the live dialog instead of a clone
+  // (dialogExit.ts). The host reads what it needs at the moment React removes the dialog.
+  const [host] = useState(() => createDialogHost({
+    stacked: () => openModalStack.some((dismiss) => dismiss !== closeHandlerRef.current),
+    takeSwiped: () => { const was = swiped.current; swiped.current = false; return was; },
+    dockId: () => dockIdRef.current,
+  } satisfies ExitContext));
+  useLayoutEffect(() => {
+    host.retain();
+    return () => host.dispose();
+  }, [host]);
+  // Newest dialog last in <body> (above the ones opened earlier), attached before the children first render.
+  host.sync(isOpen);
 
   useLayoutEffect(() => {
     const panel = panelRef.current;
@@ -214,8 +76,8 @@ export const Modal: React.FC<ModalProps> = ({
     if (!isOpen || !panel || !overlay) return;
 
     const trigger = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const openedAt = performance.now();
     const closeHandler = () => onCloseRef.current();
+    closeHandlerRef.current = closeHandler;
     if (!openModalStack.length) {
       previousBodyOverflow = document.body.style.overflow;
       anchor = { page: document.querySelector('[data-journal-page]:not([inert])'), x: window.scrollX, y: window.scrollY };
@@ -291,12 +153,8 @@ export const Modal: React.FC<ModalProps> = ({
       const wasTop = isTop();
       const idx = openModalStack.lastIndexOf(closeHandler);
       if (idx >= 0) openModalStack.splice(idx, 1);
-      // Closed for any reason (X, backdrop, swipe, Back, or the parent after saving): animate out.
-      // (The 150 ms guard skips React StrictMode's immediate mount/unmount probe in development.)
-      if (!prefersReducedMotion() && performance.now() - openedAt > 150) {
-        playExit({ overlay, stacked: openModalStack.length > 0, swiped: swiped.current, dockId: dockIdRef.current });
-      }
-      swiped.current = false;
+      // Closed for any reason (X, backdrop, swipe, Back, or the parent after saving): the exit animation is played by
+      // the dialog host when React removes the overlay (dialogExit.ts). `swiped` is read and cleared there.
       if (!openModalStack.length) {
         document.body.style.overflow = previousBodyOverflow;
         document.documentElement.classList.remove('kc-sheet-open');
@@ -353,10 +211,9 @@ export const Modal: React.FC<ModalProps> = ({
     const dismiss = !cancelled && (d.offset > DISMISS_DISTANCE ||
       (d.offset > DISMISS_FLICK_DISTANCE && event.timeStamp - d.time < 120 && d.velocity > DISMISS_FLICK_SPEED));
     if (!dismiss) { settleBack(d.offset); return; }
-    // Closing is just unmounting: playExit() continues from the painted position, with the finger's speed.
+    // Closing is just unmounting: the dialog host (dialogExit.ts) continues from the painted position, with the finger's speed.
     swiped.current = true;
-    installInputGuards();
-    tapRescueUntil = performance.now() + TAP_RESCUE_MS;
+    armTapRescue();
     onCloseRef.current();
     window.setTimeout(() => {
       if (!swiped.current || !panelRef.current?.isConnected) return;
@@ -452,6 +309,6 @@ export const Modal: React.FC<ModalProps> = ({
         )}
       </div>
     </div>,
-    document.body
+    host.element
   );
 };
