@@ -5,9 +5,22 @@ import type { NutritionValues } from '../components/widgets/widgetContract';
 export const isAndroidApp = () => Capacitor.getPlatform() === 'android';
 export type { NutritionValues };
 
+/** Result of every native export. `cancelled` = the user closed the picker (nothing saved, nothing to show). */
+export type ExportResult = { cancelled?: boolean; bytes?: number };
+
+/** An export that finished while its call was gone (activity re-created or process killed while the picker was open). */
+export interface NativeExportRecord {
+  id: string;
+  status: 'saved' | 'failed';
+  filename?: string;
+  bytes?: number;
+  /** For `failed`: mode, exception class and message of the real failure, plus whether the empty file was removed. */
+  detail?: string;
+}
+
 interface JournalDevicePlugin {
   takeWidgetAction(): Promise<{ action?: string }>;
-  addListener(event: 'widgetActionAvailable', listener: () => void): Promise<PluginListenerHandle>;
+  addListener(event: 'widgetActionAvailable' | 'exportFinished', listener: () => void): Promise<PluginListenerHandle>;
   publishNutrition(data: {
     language: Language;
     /** Basal metabolic rate: the burned figure for a day with no entries. */
@@ -26,9 +39,11 @@ interface JournalDevicePlugin {
    * Saves the JSON backup through the system "save as" picker. Resolves `{ cancelled: true }` when the user closes the
    * picker, otherwise `{ bytes }` (what was written). Rejects when nothing could be written (no empty file is left).
    */
-  exportBackup(data: { json: string; filename?: string }): Promise<{ cancelled?: boolean; bytes?: number }>;
-  /** Local document-picker export, using the same native backup destination handler. */
-  exportFile(data: { base64: string; filename: string; kind: 'zip' | 'txt' | 'xlsx' }): Promise<{ cancelled?: boolean; bytes?: number }>;
+  exportBackup(data: { json: string; filename?: string }): Promise<ExportResult>;
+  /** Local document-picker export, using the same native staging / picker / verified write as `exportBackup`. */
+  exportFile(data: { base64: string; filename: string; kind: 'json' | 'zip' | 'txt' | 'xlsx' }): Promise<ExportResult>;
+  /** Exports that finished without a live call (read once, then cleared). Missing in APKs built before round 2. */
+  takeLastExport(): Promise<{ exports?: NativeExportRecord[] }>;
   /** Tells the native launch surfaces (system launch screen, window, WebView) the current app background `#rrggbb`. */
   setLaunchBackground(data: { color: string }): Promise<void>;
 }
@@ -41,3 +56,4 @@ export function syncLaunchBackground(color: string): void {
   // An older native build without this method just rejects; nothing to do then.
   JournalDevice.setLaunchBackground({ color }).catch(() => undefined);
 }
+

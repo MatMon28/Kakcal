@@ -6,6 +6,15 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+**Earlier patch (page-change follow-up round "stop paying twice", base `88141edad0804338b8584959d4c96cef9b4dc184`):** no `package.json` / lock-file change (no `npm ci` needed), no Android native, permission, storage-key or remote API change, no APK rebuild needed beyond the normal web build. Details: [performance.md](performance.md#follow-up-round-stop-paying-twice).
+
+- **New:** `src/components/common/DeferredBody.tsx`, `src/styles/performance.css`, `tests/page-change.test.tsx`.
+- **Edited (code):** `src/App.tsx`, `src/index.css` (one `@import`), `src/components/common/{PageSwiper,LazyBody,Tabs,LibrarySectionHeader}.tsx`, `src/components/journal/{JournalUI,MealDiary,PhotoDiary,PlanLibrary,ShoppingLists,MealPlanner,MealSummaryCard}.tsx`, `src/components/prebuilt/{usePreBuiltMealsState.tsx,MealsSection,RecipesSection,PreBuiltMealsView}.tsx`, `src/i18n/{journal,advanced,layout}.ts`, `src/utils/{idle,journalStore,mealSlots,pageTransition,planGroups}.ts`, `scripts/bench-page-change.mjs`.
+- **Edited (docs):** `README.md`, `docs/README.md`, `performance.md`, `performance-review.md`, `motion.md`, `meal-journal.md`, `verification.md`, `search-and-animation-performance.md`, `file-organisation.md`, `known-gaps.md`, `changes-patch.md`, `changes-patch-history.md`, `changelog/rounds-journal.md`, `file-map/{app-shell,components-common,components-pages,utils,scripts-public}.md`.
+- **Deleted:** nothing.
+- **Behaviour you can see:** Custom's seven sections (Meals, Recipes, Foods, Meal diary, Meal planner, Photo diary, Shopping list) are **closed on a fresh install** (a section you have opened or closed keeps its state); a section left open shows a grey placeholder for a frame before its content; a tap page change drops the old page after 110 ms instead of ~300 ms; during a swipe the neighbouring page is empty until the drag is about 60 % of the way to the commit distance. Nothing else changes visually.
+- **Not measured:** the benchmark could not be run where this patch was written (no Chromium libraries). Run `node scripts/bench-page-change.mjs` before and after, and put the figures into [performance.md](performance.md#follow-up-round-stop-paying-twice).
+
 **Earlier patch (Android export fix round, base `7323df46a57a78b9e402caaae5edec39801c6c94`):** no `package.json` / lock-file change (no `npm ci` needed), no new permission, storage key or remote API. **Rebuild the APK** (the fix is in the native plugin). Details: [backup-update.md](backup-update.md#saving-the-file-on-android-the-apk-the-0-b-file-fix).
 
 - **New:** `tests/backup-android.test.tsx`.

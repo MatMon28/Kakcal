@@ -16,6 +16,18 @@ android {
             ignoreAssetsPattern '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    testOptions {
+        // Robolectric (ExportStoreTest) needs the merged manifest and resources on the unit-test classpath.
+        unitTests {
+            includeAndroidResources = true
+            all {
+                // Robolectric reflects into java.base (ParcelFileDescriptor / FileDescriptor) and JDK 17+ refuses without these.
+                jvmArgs '--add-opens=java.base/java.io=ALL-UNNAMED', '--add-opens=java.base/java.lang=ALL-UNNAMED',
+                    '--add-opens=java.base/java.util=ALL-UNNAMED', '--add-opens=java.base/java.nio=ALL-UNNAMED',
+                    '--add-opens=java.base/sun.nio.ch=ALL-UNNAMED'
+            }
+        }
+    }
     buildTypes {
         release {
             // R8: shrink + optimise code and drop unused resources (smaller dex/APK = less to load at start).
@@ -42,6 +54,9 @@ dependencies {
     implementation "androidx.profileinstaller:profileinstaller:$profileInstallerVersion"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
+    // Local JVM tests of the export copy loop against a stub ContentProvider (src/test/java/com/kcalsync/app).
+    testImplementation "org.robolectric:robolectric:4.14.1"
+    testImplementation "androidx.test:core:1.6.1"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')

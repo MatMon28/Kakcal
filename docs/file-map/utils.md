@@ -28,7 +28,7 @@
 | --- | --- |
 | `src/utils/tourPreview.ts` | The `?tour=1` flag that shows the Period page inside the tour only. |
 | `src/utils/deleteAllData.ts` | `deleteAllData()`: cancels pending reminders (Android), clears local/session storage. Called by `DeleteAllData.tsx`. |
-| `src/utils/android.ts` | Typed local Capacitor plugin for launcher actions, nutrition and theme-style updates, native JSON export (`exportBackup` / `exportFile` resolve `{ cancelled?, bytes? }`), and `syncLaunchBackground` (sends the current `--bg` to the native launch surfaces). |
+| `src/utils/android.ts` | Typed local Capacitor plugin for launcher actions, nutrition and theme-style updates, native export (`exportBackup` / `exportFile` resolve `{ cancelled?, bytes? }`, `takeLastExport`, types `ExportResult` / `NativeExportRecord`), and `syncLaunchBackground` (sends the current `--bg` to the native launch surfaces). |
 | `src/utils/notifications.ts` | Notification defaults and `normalizeNotificationSettings`, the pure `buildNotificationPlan` / `waterReminderMinutes`, permission helpers, the Android scheduler (`syncNativeNotifications`, tap listener, test notification via `@capacitor/local-notifications`) and the browser timer fallback. See [Notifications](../notifications.md). |
 | `src/utils/useNotificationScheduler.ts` | React hook that keeps the Android alarms / browser timers in step with Settings, language and custom buttons, and opens the right screen when a notification is tapped. |
 | `src/utils/calculations.ts`, `waterTarget.ts` | Nutrition, activity, BMR, personal MET-based activity energy (`calculateMetCalories`), thermogenesis, and water-goal calculations. |
@@ -55,7 +55,7 @@
 | `src/utils/journalStore.ts` | Versioned meal plans, memories and photos; shared reactive localStorage state, validation, cross-tab updates, food snapshots, and JSON backup helpers (backup without pictures, import of old and new files). |
 | `src/utils/backupFormat.ts` | Format of the JSON backup version 2: version check, picture notes (no images), interface preferences, import report. Pure helpers, covered by `tests/backup.test.tsx` (and `tests/backup-ui.test.tsx` for the Settings UI). |
 
-android.ts declares the local exportBackup / exportFile bridge (answers: `{ cancelled?, bytes? }`). planSharing.ts/saveLocalFile chooses browser downloads or the APK document picker; native links use the existing public homepage, configurable with VITE_PUBLIC_APP_URL.
+android.ts declares the local exportBackup / exportFile / takeLastExport bridge (answers: `{ cancelled?, bytes? }`). `nativeExport.ts`: `takeNativeExports` / `onNativeExportFinished` (exports that finished while the call was gone; never reject). planSharing.ts/`saveLocalFile(Blob | string, name)` is the one save helper of Export JSON, Excel and pictures: browser download or the APK document picker, always `{ cancelled?, bytes? }` (throws when a success has no byte count), plus `formatBytes` / `withSize`; native links use the existing public homepage, configurable with VITE_PUBLIC_APP_URL.
 
 ## Added in the performance, storage and tooling round
 

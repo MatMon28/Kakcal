@@ -1,4 +1,4 @@
-import { isAndroidApp, JournalDevice } from './android';
+import { isAndroidApp, JournalDevice, type ExportResult } from './android';
 import type { FoodItem } from '../types';
 import type { MealPlan } from '../types/journal';
 import { journalId, normalizeMealJournal } from './journalStore';
@@ -180,15 +180,39 @@ export function downloadFile(blob: Blob, name: string) {
   anchor.remove();
   window.setTimeout(() => URL.revokeObjectURL(url), 30000);
 }
-/** The APK uses its existing document picker instead of unsupported WebView blob downloads. */
-export async function saveLocalFile(blob: Blob, name: string): Promise<boolean> {
-  if (!isAndroidApp()) { downloadFile(blob, name); return true; }
+export const formatBytes = (bytes: number): string => (bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`);
+
+/** "<text> (12.4 KB)": the one success grammar of every export (JSON, Excel, pictures). */
+export const withSize = (text: string, bytes: number): string => `${text} (${formatBytes(bytes)})`;
+
+/** A success without a byte count is a bug: it would let a 0 B file pass as "saved". */
+function checkedResult(result: { cancelled?: boolean; bytes?: number } | undefined | null): ExportResult {
+  if (result?.cancelled) return { cancelled: true };
+  if (typeof result?.bytes !== 'number' || !Number.isFinite(result.bytes) || result.bytes <= 0) {
+    throw new Error('The export finished without a byte count.');
+  }
+  return { bytes: result.bytes };
+}
+
+/**
+ * The ONE save helper for Export JSON, Export to Excel and Export meal pictures.
+ * - browser: downloads the Blob and returns its size;
+ * - APK: the system document picker through the native plugin (staged in private storage, verified write).
+ * Returns `{ cancelled: true }` when the user closes the picker (show nothing), `{ bytes }` when the file was written
+ * (show "saved (size)"), and throws when nothing could be written (show the red error). Never a bare boolean.
+ * A string is the JSON backup (kept as text so it is not base64-encoded on the main thread).
+ */
+export async function saveLocalFile(content: Blob | string, name: string): Promise<ExportResult> {
+  const blob = typeof content === 'string' ? new Blob([content], { type: 'application/json' }) : content;
+  if (blob.size === 0) throw new Error('Nothing to export: the file would be empty.');
+  if (!isAndroidApp()) { downloadFile(blob, name); return { bytes: blob.size }; }
+  if (typeof content === 'string') return checkedResult(await JournalDevice.exportBackup({ json: content, filename: name }));
   const base64 = await new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => resolve(String(reader.result).split(',')[1]);
+    reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
-  const result = await JournalDevice.exportFile({ base64, filename: name, kind: name.endsWith('.zip') ? 'zip' : name.endsWith('.xlsx') ? 'xlsx' : 'txt' });
-  return !result.cancelled;
+  const kind = name.endsWith('.json') ? 'json' : name.endsWith('.zip') ? 'zip' : name.endsWith('.xlsx') ? 'xlsx' : 'txt';
+  return checkedResult(await JournalDevice.exportFile({ base64, filename: name, kind }));
 }

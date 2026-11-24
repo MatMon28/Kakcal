@@ -51,29 +51,50 @@ Importing an old `1.x` file restores its embedded pictures, as before.
 
 `collectPreferences()` saves every localStorage key that matches `kcak_*`, `kcalsync_body_range`, `kcalsync_stats_daily_open` or `kcalsync_stats_weight_open`, except `kcak_planner_draft` (exported as `plannerDraft`). `applyPreferences()` accepts only the same whitelist (max 100 keys, 20,000 characters each). **A new interface-preference key named `kcak_*` is saved automatically**; any other new key must be added to `exportDataJson` / `importDataJson` in `AppContext.tsx` (see the table in [README.md](README.md#keeping-the-docs-current)). Open / closed states are read when a page mounts, so they show after the app is reopened.
 
-## Saving the file on Android (the APK): the 0 B file fix
+## Saving the file on Android (the APK): the 0 B file fix, round 2
 
-**Symptom:** *Export JSON* from the Android APK created a `.json` file of **0 B**; the PWA was fine (the browser downloads a Blob, the APK cannot).
+**Symptom:** *Export JSON*, *Export to Excel* and *Export meal pictures* from the APK left a **0 B** file in Downloads; the PWA was fine (the browser downloads a Blob, the APK cannot). Round 1 (`88141ed`) did not fix it.
 
-**Path in the APK:** `DataBackup.tsx` > `JournalDevice.exportBackup({ json, filename })` > `JournalDevicePlugin.exportBackup` stages the bytes in a private cache file > the system *create document* picker opens (this is the moment the 0 B document is created by Android) > `backupDestination` copies the staged file into it.
+**Why round 1 was wrong.** It retried the copy with `"wt"` and then `"w"`. For Storage Access Framework providers both map to `ContentResolver.MODE_WRITE` (create + truncate + write): the same call, so a provider that fails one fails the other and the retry only truncates again. **That loop was removed and is not a rationale for anything.** It also assumed the 0 B file was left by a failed copy, but after round 1 every copy failure deleted the document and rejected (a red error, never a silent 0 B file). A silent 0 B file therefore means *the copy never ran*.
 
-**What could leave the document empty (all closed in `JournalDevicePlugin.java`):**
+**The structural fact.** `ACTION_CREATE_DOCUMENT` makes Android create the empty document when the user taps Save; the app writes into it afterwards, in the result callback. Anything that interrupts the app in between leaves 0 B. That window cannot be removed, only narrowed, and a record must always be left that can be resolved.
+
+**Real causes and what closes them** (`ExportStore.java`, `JournalDevicePlugin.java`, `MainActivity.java`):
 
 | Cause | Fix |
 | --- | --- |
-| The copy callback received `call == null` (Capacitor no longer had the call, e.g. the activity was re-created while the picker was open) and silently returned, after Android had already created the empty document | the staged file name is also stored in SharedPreferences (`journal_export` / `pendingFile`); the callback copies the file anyway (only the answer to JS is missing) |
-| The temp-file name check accepted `json`, `zip`, `txt` but not `xlsx`: *Export to Excel* was rejected ("Backup expired") after the empty document existed | `xlsx` is accepted |
-| The provider failed with the `"wt"` (truncate) open mode and the error left the empty document | the copy retries with `"w"`; the byte count is checked; the file descriptor is synced |
-| Any failure left the empty document behind and an exception inside the callback was swallowed by Capacitor (JS waited forever) | the empty document is deleted (`DocumentsContract.deleteDocument`), the callback body is wrapped so JS always gets a rejection, the staged file is always removed |
-| An empty payload would have produced a 0 B file | empty / blank JSON and empty base64 are rejected before the picker opens |
+| The bytes were staged in `getCacheDir()`, the first thing Android evicts (low memory, Doze, cleaner apps, *Clear cache*): the staged file could vanish while the picker was open, so the copy wrote nothing into the already created document | staged in `getFilesDir()/exports` (app-private, removed only on uninstall / clear data), fsync + size check before the picker opens |
+| Process / WebView death while the picker is open: the `PluginCall` and the bridge are gone, the old `@ActivityCallback` was not (reliably) re-invoked, DocumentsUI still created the 0 B file and nobody wrote into it. Round 1's SharedPreferences fallback only covered activity re-creation with a live bridge | the picker is launched by **`MainActivity`** (`getActivityResultRegistry().register("kakcal-export-picker", this, ...)` on every start), so a result that arrives after the activity or the whole process was re-created is still delivered and the copy still runs; **every start also calls `ExportStore.recover()`** (below) |
+| One pending slot (`PENDING_KEY = "pendingFile"`) and every new staging deleted the previous staged file: two exports in a row (JSON then Excel) could delete each other's payload | every export has an id; SharedPreferences `journal_export` holds one record per id (`pending.<id>` = absolute path, kind, file name, size, created time, target document). Records and files are independent per id |
+| The failure was swallowed (`catch (Throwable ignored)`, `reject("Could not write the selected file")`): nothing could be diagnosed from a device report | `Log.e("KakcalExport", ...)` with the exception, and the reject message is `Could not write the selected file: mode=wt <ExceptionClass>: <message> (provider=<authority>) [the empty document was removed]` (or `[... could not be removed: delete it manually]`); the app shows it in the red error |
+| Excel and pictures went through `saveLocalFile()` which returned a bare boolean and dropped `{ bytes }`; only the JSON button had the size / cancel contract | one JS helper for all three (below) |
 
-**Visible behaviour:** *Export JSON* in the APK now shows `Backup saved. (12.4 KB) Pictures are not included...` (the size actually written). Closing the picker without saving shows **no** success message (before it said the backup was saved). A real write failure shows the existing red error and leaves no 0 B file. The file name is `kakcal_backup_<date>.json`, like the browser.
+**Write path (`ExportStore.complete`)**, in this order: record the target document **before** anything is written (a crash from here on is resumable) > read the staged bytes into memory (the target is **not opened before the bytes exist**) > `openOutputStream(target, "wt")` once > write in one pass > `flush()` > `sync()` (when the stream is a file) > `close()` (close errors are raised) > verify the size: the provider's `_size` must equal the bytes written (three short polls for slow providers; a provider that reports no size is accepted and logged) > only then resolve `{ bytes }`. On any failure: `deleteDocument` as **best effort** (the grant that came with the picker result may be revoked or insufficient, and not every provider can delete), then `ContentResolver.delete`, and the message says which one happened. A document that could not be removed is remembered and retried on the next start (24 h).
 
-**Bridge contract (`src/utils/android.ts`):** `exportBackup({ json, filename? })` and `exportFile({ base64, filename, kind })` resolve `{ cancelled?: boolean; bytes?: number }`.
+**Resume on create (`MainActivity.onCreate` > `ExportStore.recover()`, on a background thread):**
 
-**Rebuild the APK** (`node scripts/prepare-android.mjs && npx cap open android`) to get the fixed native plugin; the web part alone does not fix it. No new permission, package or storage key.
+- a record **with a target** is an export whose picker returned but whose write never finished (process killed, crash): the copy is finished from the staged bytes, or, if that is impossible, the empty document is removed;
+- a record **without a target** is a picker that may still be open: kept for 24 h, then dropped together with its staged bytes;
+- staged files nobody refers to, and the cache files of the round 1 implementation (`journal-backup-*`), are removed.
 
-**Tests:** `tests/backup-android.test.tsx` (the APK path with the plugin mocked: non-empty version 2 payload, file name, size shown, no Blob download, cancel shows nothing, failure shows the error). The Java part cannot run in CI: check it on a device (see [verification.md](verification.md)).
+**Telling the web layer.** When the `PluginCall` is still alive (normal case) the call is resolved / rejected. When it is gone (activity re-created, process restarted) the outcome is stored (`lastExport`, at most 5), a toast is shown (English / Italian), the `exportFinished` plugin event fires, and `JournalDevice.takeLastExport()` returns and clears the list. `DataBackup` reads it on mount (Android only) and shows `Saved after the app restarted: <name>. (12.4 KB)` or the red error with the real cause. A result that arrives while Settings is closed is shown the next time Settings > Data Backup opens.
+
+**One JS helper, one message grammar (`src/utils/planSharing.ts`).** `saveLocalFile(content: Blob | string, name)` returns `{ cancelled?, bytes? }` for **all three** exports (a string is the JSON backup and goes through `exportBackup` without base64; the browser path returns the Blob size). `DataBackup.runExport` shows: success `<text> (12.4 KB)` (JSON: `Backup saved. (12.4 KB) Pictures are not included...`); nothing on cancel; the red error on failure, with the native detail appended on the APK. **A success without a byte count is a bug:** `saveLocalFile` throws `The export finished without a byte count.` and the red error is shown. An empty file is refused before anything is sent.
+
+**Narrowing the window.** The bytes are staged before the picker opens, so nothing has to be computed after Android created the document; the native write runs on a dedicated background thread, reads the staged file into memory and writes once. **Not changed:** `exportDataJson()` still serialises the whole journal on the WebView main thread (it lives in `AppContext.tsx`); only the JSON text is handed over, no base64 is made for it.
+
+**Visible behaviour:** saved: `Backup saved. (12.4 KB) ...`; cancel: nothing; forced failure: red error and no 0 B file (or the red error says the empty file could not be removed); killed or restarted mid-picker: the file is finished on the next start (toast, then the message in Settings).
+
+**Bridge contract (`src/utils/android.ts`):** `exportBackup({ json, filename? })` and `exportFile({ base64, filename, kind: 'json' | 'zip' | 'txt' | 'xlsx' })` resolve `{ cancelled?, bytes? }`; `takeLastExport()` resolves `{ exports?: NativeExportRecord[] }` (`{ id, status: 'saved' | 'failed', filename?, bytes?, detail? }`); the `exportFinished` event has no payload. `src/utils/nativeExport.ts` wraps both so they never reject (an APK built before this round has neither).
+
+**Rebuild the APK** (`node scripts/prepare-android.mjs && npx cap open android`); the web part alone does not fix it. No new permission or package; new private data: `filesDir/exports/` and the SharedPreferences keys of `journal_export` (see [storage-and-privacy.md](storage-and-privacy.md)).
+
+**Tests:**
+
+- `android/app/src/test/java/com/kcalsync/app/ExportStoreTest.java` (+ `StubDocumentsProvider.java`): **Robolectric** test of the real copy loop through the real `ContentResolver` against a stub `ContentProvider`: staging in `filesDir`; one open, mode `wt`, no retry; the first open fails with the document deleted and a second fresh document succeeds with the exact byte count; `deleteDocument` denied is reported and retried on the next start; a provider that keeps fewer bytes than written is a failure; two exports in a row do not delete each other; process death between picker and write is finished by `recover()`; a staged file that vanished is reported and the target is never opened; an open picker is kept until stale; legacy cache files are removed. Run: `cd android && ./gradlew :app:testDebugUnitTest` (after `npx cap sync android`; needs JDK 21 and about 1.5 GB of free memory).
+- `tests/backup-android.test.tsx`: the APK path with the plugin mocked. This file alone can not prove the Java, that is what `ExportStoreTest` is for. It now covers JSON, **Excel and pictures** (file name, kind, non-empty payload, size shown, nothing on cancel, red error with the native detail, a success without bytes is an error) and the recovered-export messages.
+
+**Device acceptance** (see [verification.md](verification.md)): export JSON, Excel and pictures to Downloads and to Drive: each file non-zero and `Backup saved. (<size>)` shown; cancel shows nothing; a forced failure shows the red error and leaves no 0 B file; repeat with the app backgrounded while the picker is open, and after killing the app mid-picker: the orphaned 0 B document must not survive.
 
 ## Code
 
@@ -81,13 +102,13 @@ Importing an old `1.x` file restores its embedded pictures, as before.
 - `src/utils/journalStore.ts`: `exportMealJournalForBackup()` (now synchronous, no pictures), `prepareMealJournalImport()` (old pictures to blobs first; version 2 notes merged).
 - `src/context/AppContext.tsx`: `exportDataJson`, `importDataJson` (the `Promise` types are unchanged).
 - `src/utils/amountMemory.ts`: `exportLastAmounts`, `importLastAmounts`. `src/utils/plannerDraft.ts`: `parsePlannerDraft` (validation shared by the stored draft and the backup).
-- `src/components/common/DataBackup.tsx`: the notice, the confirmation, the messages; the Android branch (native save, cancel, size).
-- `android/app/src/main/java/com/kcalsync/app/JournalDevicePlugin.java`: `exportBackup`, `exportFile`, `backupDestination` (see the section above). `src/utils/android.ts`: the typed bridge.
+- `src/components/common/DataBackup.tsx`: the notice, the confirmation, the messages; `runExport` (one path and one grammar for the three exports), the recovered-export message.
+- `android/app/src/main/java/com/kcalsync/app/ExportStore.java`: staging, records, write + verify, cleanup, recovery. `JournalDevicePlugin.java`: `exportBackup`, `exportFile`, `takeLastExport`, `deliver`. `MainActivity.java`: the picker launcher, the result handler and `recover()` on every start. `src/utils/android.ts`: the typed bridge; `src/utils/nativeExport.ts`: `takeNativeExports`, `onNativeExportFinished`; `src/utils/planSharing.ts`: `saveLocalFile`, `withSize`.
 - `tests/backup-ui.test.tsx`: the notice, the confirmation (nothing exported before the user confirms) and that the downloaded file has no picture data.
-- `tests/backup-android.test.tsx`: the Android export path.
+- `tests/backup-android.test.tsx`: the Android export path (JSON, Excel, pictures, recovered exports). `ExportStoreTest.java`: the native copy loop (Robolectric).
 - `tests/backup.test.tsx`: contents, no picture data in the file, round trip to an empty device and onto a device that still has the picture, old `1.2` import, refusal of a newer file.
 
-No new package, permission, storage key or remote API (the Android native export code was hardened, see above).
+No new permission or remote API. Android adds private export staging (`filesDir/exports`) and the `journal_export` SharedPreferences records; `android/app/build.gradle` gets Robolectric test dependencies only.
 
 ## Verifying by hand
 

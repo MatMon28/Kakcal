@@ -1,28 +1,25 @@
 package com.kcalsync.app;
 
-import android.app.Activity;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.provider.DocumentsContract;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Base64;
-import androidx.activity.result.ActivityResult;
+import android.util.Log;
+import android.widget.Toast;
+import com.getcapacitor.Bridge;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
+import com.getcapacitor.PluginHandle;
 import com.getcapacitor.PluginMethod;
-import com.getcapacitor.annotation.ActivityCallback;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.regex.Pattern;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.json.JSONObject;
 
 @CapacitorPlugin(name = "JournalDevice")
@@ -103,48 +100,11 @@ public class JournalDevicePlugin extends Plugin {
     }
 
     // ---- Export to a user-chosen file (JSON backup, ZIP, Excel, text) --------------------------------------------
-    // Flow: the bytes are staged in a private cache file, the system "create document" picker opens, and the callback
-    // copies the staged file into the chosen document. Hardened so that the picked document never stays 0 bytes:
-    //  - an empty payload is rejected before the picker opens;
-    //  - the staged file name is also kept in SharedPreferences, so the copy still happens when Capacitor no longer has
-    //    the PluginCall (activity re-created while the picker was open);
-    //  - the copy tries "wt" and then "w" (some document providers fail with one of them), checks the byte count and
-    //    syncs the file descriptor;
-    //  - on failure the empty document is removed and the JS call is rejected, never left pending;
-    //  - on success the number of bytes written is returned to JS.
-    private static final String EXPORT_PREFS = "journal_export";
-    private static final String PENDING_KEY = "pendingFile";
-    private static final Pattern PENDING_NAME = Pattern.compile("journal-backup-[-0-9]+\\.(json|zip|txt|xlsx)");
-    private static final int MAX_EXPORT_BYTES = 32000000;
-
-    private SharedPreferences exportPrefs() {
-        return getContext().getSharedPreferences(EXPORT_PREFS, Context.MODE_PRIVATE);
-    }
-
-    /** Writes `bytes` to a private cache file and remembers its name (in the call and in SharedPreferences). */
-    private File stageExport(PluginCall call, String kind, byte[] bytes) throws IOException {
-        File dir = getContext().getCacheDir();
-        String previous = exportPrefs().getString(PENDING_KEY, "");
-        if (previous != null && PENDING_NAME.matcher(previous).matches()) new File(dir, previous).delete();
-        File pending = File.createTempFile("journal-backup-", "." + kind, dir);
-        try (FileOutputStream stream = new FileOutputStream(pending)) {
-            stream.write(bytes);
-            stream.flush();
-            try { stream.getFD().sync(); } catch (IOException ignored) { /* best effort */ }
-        } catch (IOException | RuntimeException error) {
-            pending.delete();
-            throw error;
-        }
-        if (pending.length() != bytes.length) { pending.delete(); throw new IOException("Short write"); }
-        exportPrefs().edit().putString(PENDING_KEY, pending.getName()).commit();
-        call.getData().put("pendingFile", pending.getName());
-        return pending;
-    }
-
-    private void forgetPending(File pending) {
-        if (pending != null) pending.delete();
-        exportPrefs().edit().remove(PENDING_KEY).commit();
-    }
+    // Round 2 design (see ExportStore and docs/backup-update.md): the bytes are staged in filesDir under an id, the
+    // system "create document" picker is launched by MainActivity (its launcher survives activity re-creation and
+    // process death), the result is copied on a background thread in one pass and verified, and the outcome is given
+    // to this call, or, when the call is gone, kept for takeLastExport() / the "exportFinished" event.
+    private static final Map<String, PluginCall> CALLS = new ConcurrentHashMap<>();
 
     private static String safeFilename(String requested, String fallback) {
         if (requested == null || requested.trim().isEmpty()) return fallback;
@@ -152,17 +112,12 @@ public class JournalDevicePlugin extends Plugin {
         return clean.length() > 120 ? fallback : clean;
     }
 
-    /** Opens the system "save as" picker; the result is handled by backupDestination. */
-    private void launchSave(PluginCall call, File pending, String mimeType, String filename) {
-        Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT)
-            .addCategory(Intent.CATEGORY_OPENABLE)
-            .setType(mimeType)
-            .putExtra(Intent.EXTRA_TITLE, filename);
-        try {
-            startActivityForResult(call, save, "backupDestination");
-        } catch (RuntimeException error) {
-            forgetPending(pending);
-            call.reject("No file picker available");
+    private static String mimeType(String kind) {
+        switch (kind) {
+            case "json": return "application/json";
+            case "zip": return "application/zip";
+            case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            default: return "text/plain";
         }
     }
 
@@ -170,103 +125,112 @@ public class JournalDevicePlugin extends Plugin {
     public void exportFile(PluginCall call) {
         String encoded = call.getString("base64");
         String kind = call.getString("kind", "zip");
-        if (encoded == null || encoded.length() > MAX_EXPORT_BYTES || !("zip".equals(kind) || "txt".equals(kind) || "xlsx".equals(kind))) {
+        if (encoded == null || encoded.length() > ExportStore.MAX_BYTES / 3 * 4 + 16 || !ExportStore.isKind(kind)) {
             call.reject("Invalid export"); return;
         }
-        File pending;
-        try {
-            byte[] bytes = Base64.decode(encoded, Base64.DEFAULT);
-            if (bytes.length == 0) { call.reject("Nothing to export"); return; }
-            pending = stageExport(call, kind, bytes);
-            call.getData().remove("base64");
-        } catch (Exception error) {
-            call.reject("Could not prepare export"); return;
-        }
-        launchSave(call, pending,
-            "zip".equals(kind) ? "application/zip"
-                : "xlsx".equals(kind) ? "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" : "text/plain",
-            safeFilename(call.getString("filename"), "kakcal-export." + kind));
+        byte[] bytes;
+        try { bytes = Base64.decode(encoded, Base64.DEFAULT); }
+        catch (IllegalArgumentException error) { call.reject("Invalid export: the data is not valid base64"); return; }
+        call.getData().remove("base64");
+        startExport(call, kind, bytes, safeFilename(call.getString("filename"), "kakcal-export." + kind));
     }
 
     @PluginMethod
     public void exportBackup(PluginCall call) {
         String json = call.getString("json");
         if (json == null || json.trim().isEmpty()) { call.reject("Missing backup"); return; }
-        File pending;
-        try {
-            // Keep the journal out of the Activity's size-limited saved-state Bundle.
-            byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
-            if (bytes.length > MAX_EXPORT_BYTES) { call.reject("Backup too large"); return; }
-            pending = stageExport(call, "json", bytes);
-            call.getData().remove("json");
-        } catch (Exception error) { call.reject("Could not prepare backup"); return; }
-        launchSave(call, pending, "application/json",
+        // Keeps the journal out of the Activity's size-limited saved-state Bundle.
+        byte[] bytes = json.getBytes(StandardCharsets.UTF_8);
+        call.getData().remove("json");
+        startExport(call, "json", bytes,
             safeFilename(call.getString("filename"), "kakcal-" + JournalWidgetProvider.localDate() + ".json"));
     }
 
-    /** Copies `source` into the chosen document and returns the byte count. Tries "wt" first, then "w". */
-    private long copyToDocument(Uri target, File source) throws IOException {
-        ContentResolver resolver = getContext().getContentResolver();
-        long expected = source.length();
-        IOException failure = new IOException("Could not write the selected file");
-        for (String mode : new String[] { "wt", "w" }) {
-            try (FileInputStream in = new FileInputStream(source);
-                 OutputStream out = resolver.openOutputStream(target, mode)) {
-                if (out == null) throw new IOException("No output stream");
-                byte[] buffer = new byte[16384];
-                long total = 0;
-                int count;
-                while ((count = in.read(buffer)) != -1) { out.write(buffer, 0, count); total += count; }
-                out.flush();
-                if (out instanceof FileOutputStream) {
-                    try { ((FileOutputStream) out).getFD().sync(); } catch (IOException ignored) { /* not syncable */ }
-                }
-                if (total != expected) throw new IOException("Short write");
-                return total; // the stream is closed (and close errors are raised) before this value is used
-            } catch (IOException | RuntimeException error) {
-                failure = error instanceof IOException ? (IOException) error : new IOException(error);
-            }
+    /** Stages the bytes (so they exist before the picker does), then opens the picker through MainActivity. */
+    private void startExport(PluginCall call, String kind, byte[] bytes, String filename) {
+        if (bytes.length == 0) { call.reject("Nothing to export"); return; }
+        if (bytes.length > ExportStore.MAX_BYTES) { call.reject("Backup too large"); return; }
+        ExportStore store = new ExportStore(getContext());
+        final ExportStore.Pending pending;
+        try {
+            pending = store.stage(kind, filename, bytes);
+        } catch (IOException | RuntimeException error) {
+            Log.e(ExportStore.TAG, "staging failed", error);
+            call.reject("Could not prepare the export: stage " + error.getClass().getSimpleName() + ": " + error.getMessage());
+            return;
         }
-        throw failure;
+        if (!(getActivity() instanceof MainActivity)) {
+            store.forget(pending.id);
+            call.reject("No file picker available");
+            return;
+        }
+        Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT)
+            .addCategory(Intent.CATEGORY_OPENABLE)
+            .setType(mimeType(kind))
+            .putExtra(Intent.EXTRA_TITLE, filename);
+        CALLS.put(pending.id, call);
+        store.beginPicker(pending.id);
+        ((MainActivity) getActivity()).launchExportPicker(save, error -> {
+            Log.e(ExportStore.TAG, "could not open the file picker", error);
+            CALLS.remove(pending.id);
+            store.takeInflight();
+            store.forget(pending.id);
+            call.reject("No file picker available: " + error.getClass().getSimpleName() + ": " + error.getMessage());
+        });
     }
 
-    @ActivityCallback
-    private void backupDestination(PluginCall call, ActivityResult result) {
-        // `call` is null when Capacitor lost it (activity re-created while the picker was open): the staged file is
-        // still found through SharedPreferences, so the document is written anyway; only the JS answer is missing.
-        String name = call != null ? call.getString("pendingFile", "") : "";
-        if (name == null || name.isEmpty()) name = exportPrefs().getString(PENDING_KEY, "");
-        if (name == null || !PENDING_NAME.matcher(name).matches()) {
-            if (call != null) call.reject("Backup expired");
-            return;
+    /** Outcomes of exports whose call was lost (activity re-created, process killed); read once, then cleared. */
+    @PluginMethod
+    public void takeLastExport(PluginCall call) {
+        try {
+            JSObject result = new JSObject();
+            result.put("exports", new ExportStore(getContext()).takeLast());
+            call.resolve(result);
+        } catch (RuntimeException error) {
+            call.reject("Could not read the last export");
         }
-        final File pending = new File(getContext().getCacheDir(), name);
-        final Uri target = result.getData() != null ? result.getData().getData() : null;
-        if (result.getResultCode() != Activity.RESULT_OK || target == null) {
-            forgetPending(pending);
-            if (call != null) {
-                JSObject cancelled = new JSObject();
-                cancelled.put("cancelled", true);
-                call.resolve(cancelled);
-            }
-            return;
-        }
-        bridge.execute(() -> {
+    }
+
+    /**
+     * Hands an outcome to the PluginCall that started the export, or, when that call is gone, keeps it for
+     * takeLastExport(), tells a listening web layer and shows a toast (so a recovered export is never silent).
+     */
+    static void deliver(Context context, Bridge bridge, ExportStore.Outcome outcome) {
+        if (outcome == null) return;
+        PluginCall call = CALLS.remove(outcome.id);
+        if (call != null) {
             try {
-                if (!pending.isFile() || pending.length() == 0) throw new IOException("Nothing to write");
-                long written = copyToDocument(target, pending);
-                if (call != null) {
+                if (ExportStore.Outcome.CANCELLED.equals(outcome.status)) {
+                    JSObject cancelled = new JSObject();
+                    cancelled.put("cancelled", true);
+                    call.resolve(cancelled);
+                } else if (ExportStore.Outcome.SAVED.equals(outcome.status)) {
                     JSObject done = new JSObject();
-                    done.put("bytes", written);
+                    done.put("bytes", outcome.bytes);
                     call.resolve(done);
+                } else {
+                    call.reject(outcome.detail != null ? outcome.detail : "Could not write the selected file");
                 }
-            } catch (Throwable error) {
-                // Do not leave an empty (0 B) document behind.
-                try { DocumentsContract.deleteDocument(getContext().getContentResolver(), target); } catch (Throwable ignored) { /* provider may not allow it */ }
-                if (call != null) call.reject("Could not write the selected file");
-            } finally {
-                forgetPending(pending);
+            } catch (RuntimeException error) {
+                Log.e(ExportStore.TAG, "could not answer the web layer", error);
             }
-        });
+            return;
+        }
+        if (ExportStore.Outcome.CANCELLED.equals(outcome.status)) return;
+        new ExportStore(context).addLast(outcome);
+        toast(context, outcome);
+        PluginHandle handle = bridge != null ? bridge.getPlugin("JournalDevice") : null;
+        if (handle != null && handle.getInstance() instanceof JournalDevicePlugin) {
+            ((JournalDevicePlugin) handle.getInstance()).notifyListeners("exportFinished", new JSObject());
+        }
+    }
+
+    private static void toast(Context context, ExportStore.Outcome outcome) {
+        boolean italian = "it".equals(JournalWidgetProvider.store(context).getString("language", "en"));
+        boolean saved = ExportStore.Outcome.SAVED.equals(outcome.status);
+        String text = saved
+            ? (italian ? "File salvato" : "File saved") + (outcome.filename != null ? ": " + outcome.filename : "") + " (" + outcome.bytes + " B)"
+            : (italian ? "Esportazione non riuscita. Apri Impostazioni > Backup per i dettagli." : "Export failed. Open Settings > Data Backup for details.");
+        new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_LONG).show());
     }
 }

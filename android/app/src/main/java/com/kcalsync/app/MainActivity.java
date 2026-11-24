@@ -1,13 +1,24 @@
 package com.kcalsync.app;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import com.getcapacitor.BridgeActivity;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 public class MainActivity extends BridgeActivity {
     private static final String PENDING = "pendingWidgetAction";
+    /** Fixed key: after process death Android hands an undelivered picker result to the launcher registered under it. */
+    private static final String EXPORT_PICKER_KEY = "kakcal-export-picker";
     private final AtomicReference<String> pending = new AtomicReference<>();
+    private ActivityResultLauncher<Intent> exportPicker;
 
     @Override
     public void onCreate(Bundle state) {
@@ -23,6 +34,43 @@ public class MainActivity extends BridgeActivity {
         LaunchBackground.applySplashThemeWhenIdle(this);
         super.onCreate(state);
         if (getBridge() != null) LaunchBackground.applyToWebView(this, getBridge().getWebView());
+        // The export picker lives here, not in the plugin: this registration is made on every start, so a result that
+        // arrives after the activity (or the whole process) was re-created is still delivered and the copy still runs.
+        exportPicker = getActivityResultRegistry().register(
+            EXPORT_PICKER_KEY, this, new ActivityResultContracts.StartActivityForResult(), this::onExportPicked);
+        // Resume on create: finish, or clean up, every export the previous process left half done.
+        ExportStore.IO.execute(() -> {
+            try {
+                List<ExportStore.Outcome> outcomes = new ExportStore(getApplicationContext()).recover();
+                for (ExportStore.Outcome outcome : outcomes) JournalDevicePlugin.deliver(getApplicationContext(), getBridge(), outcome);
+            } catch (RuntimeException error) {
+                Log.e(ExportStore.TAG, "recovery failed", error);
+            }
+        });
+    }
+
+    /** Opens the system "save as" picker (any thread). `onError` runs when it cannot be launched. */
+    void launchExportPicker(Intent intent, Consumer<RuntimeException> onError) {
+        runOnUiThread(() -> {
+            try { exportPicker.launch(intent); }
+            catch (RuntimeException error) { onError.accept(error); }
+        });
+    }
+
+    private void onExportPicked(ActivityResult result) {
+        final ExportStore store = new ExportStore(getApplicationContext());
+        final String id = store.takeInflight();
+        final Uri target = result.getData() != null ? result.getData().getData() : null;
+        if (id == null) {
+            Log.w(ExportStore.TAG, "picker result without a pending export (target=" + target + ")");
+            return;
+        }
+        if (result.getResultCode() != Activity.RESULT_OK || target == null) {
+            JournalDevicePlugin.deliver(getApplicationContext(), getBridge(), store.cancelled(id));
+            return;
+        }
+        // The write happens off the UI thread; the target was only just created by the picker, so go straight to it.
+        ExportStore.IO.execute(() -> JournalDevicePlugin.deliver(getApplicationContext(), getBridge(), store.complete(id, target)));
     }
 
     @Override

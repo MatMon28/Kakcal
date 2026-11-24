@@ -1,19 +1,34 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle, FileSpreadsheet, TriangleAlert } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
-import { isAndroidApp, JournalDevice } from '../../utils/android';
+import { isAndroidApp, type ExportResult, type NativeExportRecord } from '../../utils/android';
+import { onNativeExportFinished, takeNativeExports } from '../../utils/nativeExport';
 import { Collapsible } from './Collapsible';
 import { useMealJournal } from '../../utils/journalStore';
 import { exportMealPictures } from '../../utils/photoExport';
-import { saveLocalFile } from '../../utils/planSharing';
+import { saveLocalFile, withSize } from '../../utils/planSharing';
 import { useJournalText } from '../../i18n/journal';
 import { buildExcelExport } from '../../utils/excelExport';
 import { useMealSlots } from '../../utils/mealSlots';
 import { StorageInfo } from './StorageInfo';
 import { getLastImportReport } from '../../utils/backupFormat';
 
-const formatBytes = (bytes: number): string => (bytes < 1024 ? `${bytes} B` : bytes < 1048576 ? `${(bytes / 1024).toFixed(1)} KB` : `${(bytes / 1048576).toFixed(1)} MB`);
+/** The native side puts the real failure (mode, exception class, message) in the error: keep it for the device report. */
+const withDetail = (text: string, error: unknown): string => {
+  const detail = (error as { message?: unknown } | null)?.message;
+  return typeof detail === 'string' && detail.trim() ? `${text} (${detail.trim().slice(0, 400)})` : text;
+};
+
+/** The message for an export that finished after the app was away (same grammar: saved (size) / red error). */
+const recoveredNotice = (record: NativeExportRecord | null, j: (en: string, it: string) => string): { text: string; error: boolean } | null => {
+  if (!record) return null;
+  if (record.status === 'saved' && typeof record.bytes === 'number' && record.bytes > 0) {
+    const name = record.filename || j('the file', 'il file');
+    return { text: withSize(j(`Saved after the app restarted: ${name}.`, `Salvato dopo il riavvio dell'app: ${name}.`), record.bytes), error: false };
+  }
+  return { text: withDetail(j('An export could not be completed after the app restarted.', "Un'esportazione non e stata completata dopo il riavvio dell'app."), { message: record.detail }), error: true };
+};
 
 /** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
 export const DataBackup: React.FC = () => {
@@ -27,24 +42,45 @@ export const DataBackup: React.FC = () => {
   // Shown before exporting when pictures exist on this device: the backup does not contain them.
   const [confirmExport, setConfirmExport] = useState(false);
   const { plans } = useMealJournal();
-  const handleExcelExport = async () => {
-    setMessage(null);
+  // An export that finished while the app was away (activity re-created / process killed while the picker was open).
+  const [recovered, setRecovered] = useState<NativeExportRecord | null>(null);
+  useEffect(() => {
+    if (!isAndroidApp()) return undefined; // the browser downloads the Blob itself; there is nothing native to recover
+    let alive = true;
+    const consume = () => { void takeNativeExports().then((records) => { if (alive && records.length) setRecovered(records[records.length - 1]); }); };
+    consume();
+    const stopListening = onNativeExportFinished(consume);
+    return () => { alive = false; stopListening(); };
+  }, []);
+
+  /**
+   * One path for Export JSON, Export to Excel and Export meal pictures, one message grammar:
+   * saved -> "<text> (12.4 KB)"; picker closed -> nothing; failure -> the red error (with the native detail on Android).
+   * A success without a byte count never reaches the screen (saveLocalFile throws instead).
+   */
+  const runExport = async (save: () => Promise<ExportResult>, savedText: (bytes: number) => string, failedText: string): Promise<void> => {
+    setMessage(null); setRecovered(null);
     try {
-      const blob = buildExcelExport({ dayLogs: allDayLogs, profile: userProfile, plans, slotLabel, text: j });
-      const saved = await saveLocalFile(blob, `kakcal_data_${getTodayDateString()}.xlsx`);
-      if (!saved) return;
-      setMessage({ text: j('Excel file exported: days, foods, activities, water and meal plans.', 'File Excel esportato: giorni, alimenti, attivita, acqua e pasti pianificati.'), error: false });
-    } catch { setMessage({ text: j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'), error: true }); }
+      const result = await save();
+      if (result.cancelled || typeof result.bytes !== 'number') return;
+      setMessage({ text: savedText(result.bytes), error: false });
+    } catch (error) { setMessage({ text: withDetail(failedText, error), error: true }); }
   };
+
+  const handleExcelExport = () => runExport(
+    () => saveLocalFile(buildExcelExport({ dayLogs: allDayLogs, profile: userProfile, plans, slotLabel, text: j }), `kakcal_data_${getTodayDateString()}.xlsx`),
+    (bytes) => withSize(j('Excel file exported: days, foods, activities, water and meal plans.', 'File Excel esportato: giorni, alimenti, attivita, acqua e pasti pianificati.'), bytes),
+    j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'),
+  );
   const handlePhotoExport = async () => {
-    setExportingPhotos(true); setMessage(null);
+    setExportingPhotos(true);
     try {
-      const blob = await exportMealPictures(photos);
-      const saved = await saveLocalFile(blob, `kakcal_meal_pictures_${getTodayDateString()}.zip`);
-      if (!saved) return;
-      setMessage({ text: j(`${photos.length} pictures exported with their notes.`, `${photos.length} foto esportate con le note.`), error: false });
-    } catch { setMessage({ text: j('Could not export pictures. Check device storage and try again.', 'Impossibile esportare le foto. Controlla lo spazio e riprova.'), error: true }); }
-    finally { setExportingPhotos(false); }
+      await runExport(
+        async () => saveLocalFile(await exportMealPictures(photos), `kakcal_meal_pictures_${getTodayDateString()}.zip`),
+        (bytes) => withSize(j(`${photos.length} pictures exported with their notes.`, `${photos.length} foto esportate con le note.`), bytes),
+        j('Could not export pictures. Check device storage and try again.', 'Impossibile esportare le foto. Controlla lo spazio e riprova.'),
+      );
+    } finally { setExportingPhotos(false); }
   };
 
   const picturesNote = j(
@@ -54,36 +90,16 @@ export const DataBackup: React.FC = () => {
 
   const handleExport = async () => {
     setConfirmExport(false);
-    if (isAndroidApp()) {
-      setMessage(null);
-      try {
-        const json = await exportDataJson();
-        const result = await JournalDevice.exportBackup({ json, filename: `kakcal_backup_${getTodayDateString()}.json` });
-        if (result?.cancelled) return; // the user closed the picker: nothing was saved, so no success message
-        const size = typeof result?.bytes === 'number' ? ` (${formatBytes(result.bytes)})` : '';
-        setMessage({ text: `${j('Backup saved.', 'Backup salvato.')}${size} ${picturesNote}`, error: false });
-      }
-      catch { setMessage({ text: t.history.exportError, error: true }); }
-      return;
-    }
-    let json: string;
-    try { json = await exportDataJson(); }
-    catch { setMessage({ text: t.history.exportError, error: true }); return; }
-    const blob = new Blob([json], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement('a');
-    anchor.href = url;
-    anchor.download = `kakcal_backup_${getTodayDateString()}.json`;
-    document.body.appendChild(anchor);
-    anchor.click();
-    anchor.remove();
-    window.setTimeout(() => URL.revokeObjectURL(url), 0);
-    setMessage({ text: `${j('Backup saved.', 'Backup salvato.')} ${picturesNote}`, error: false });
+    await runExport(
+      async () => saveLocalFile(await exportDataJson(), `kakcal_backup_${getTodayDateString()}.json`),
+      (bytes) => `${withSize(j('Backup saved.', 'Backup salvato.'), bytes)} ${picturesNote}`,
+      t.history.exportError,
+    );
   };
 
   // With pictures on the device the user has to confirm once that the file will not contain them.
   const handleExportClick = () => {
-    setMessage(null);
+    setMessage(null); setRecovered(null);
     if (photos.length > 0) setConfirmExport(true);
     else void handleExport();
   };
@@ -119,17 +135,19 @@ export const DataBackup: React.FC = () => {
     reader.readAsText(file);
   };
 
+  const notice = message ?? recoveredNotice(recovered, j);
+
   return (
     <Collapsible title={t.history.backupTitle}>
-      {message && (
+      {notice && (
         <div
-          role={message.error ? 'alert' : 'status'}
+          role={notice.error ? 'alert' : 'status'}
           className={`p-2.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            message.error ? 'bg-[#F6D0D0] text-[#7A2727]' : 'bg-[#C9EFD3] text-[#174A2B]'
+            notice.error ? 'bg-[#F6D0D0] text-[#7A2727]' : 'bg-[#C9EFD3] text-[#174A2B]'
           }`}
         >
-          {message.error ? <AlertCircle size={15} /> : <CheckCircle size={15} />}
-          <span>{message.text}</span>
+          {notice.error ? <AlertCircle size={15} /> : <CheckCircle size={15} />}
+          <span>{notice.text}</span>
         </div>
       )}
       <div role="note" className="p-2.5 rounded-xl text-xs font-bold flex items-start gap-2 bg-[#FFE9B8] text-[#6B4A00]">
