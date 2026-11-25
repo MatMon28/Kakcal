@@ -28,6 +28,7 @@ import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MealSlotIcon } from '../common/mealSlotIcon';
 import { MealSummaryCard } from './MealSummaryCard';
+import { plannedMealName } from '../../utils/planMealName';
 import { PlanTransfer } from './PlanTransfer';
 import { PlanWizard } from './PlannerWizard';
 import { PlanLibrary } from './PlanLibrary';
@@ -210,21 +211,28 @@ export function MealPlanner() {
 }
 
 /**
- * One planned meal, laid out like a Meal diary preview: the colourless meal icon Today uses, the date, the meal name and
- * (only when the plan has a note) the note underneath.
+ * One planned meal, laid out like a Meal diary preview: the colourless meal icon Today uses, the meal type with its date
+ * right next to it, the meal name (only when the user gave one) and the note (only when the plan has one) underneath.
  */
 function PlanRow({ plan, onOpen }: { plan: MealPlan; onOpen: () => void }) {
   const { language } = useSettings();
   const { label } = useMealSlots();
   const note = plan.note.trim();
+  const mealName = plannedMealName(plan);
   return (
     <button type="button" className="journal-plan-row" onClick={onOpen}>
       <span className="journal-plan-row-icon">
         <MealSlotIcon slot={plan.slot} size={20} />
       </span>
       <span>
-        <small>{journalDate(plan.date, language, { weekday: 'short', day: 'numeric', month: 'short' })}</small>
-        <strong>{label(plan.slot)}</strong>
+        <strong>
+          {label(plan.slot)}
+          <span className="journal-plan-row-date" data-plan-date>
+            {' · '}
+            {journalDate(plan.date, language, { weekday: 'short', day: 'numeric', month: 'short' })}
+          </span>
+        </strong>
+        {mealName && <span className="journal-plan-row-name" data-plan-meal-name>{mealName}</span>}
         {note && <span className="journal-plan-row-note">{note}</span>}
       </span>
       {plan.loggedAt ? <Check size={16} /> : <ChevronRight size={16} />}

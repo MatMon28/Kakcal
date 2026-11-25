@@ -77,7 +77,9 @@ DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. The "Test mod
 
 | File | Role |
 | --- | --- |
-| `IngredientPicker.tsx` | Ingredient-mode shared food search: quick/recent/favorite foods, catalogue, scanner and custom-food child. |
+| `IngredientPicker.tsx` | Ingredient-mode shared food search: quick/recent/favorite foods, catalogue, scanner and custom-food child. The quick foods are `QuickFoodButtons`; a child is closed before a food is handed over, because callers keep the picker mounted behind their quantity screen. |
+| `QuickFoodButtons.tsx` | The quick-add food tiles (three-column grid: name, kcal per 100 g / ml; no heading) shared by Log food and `IngredientPicker`. |
+| `IngredientRow.tsx` | One ingredient line of the recipe and meal builders: quantity, kcal, macro pills, icon-only pencil (quantity), optional Swap / Search (icon and text), bin. Exports the two button classes. See [ingredient-quantity-update.md](../ingredient-quantity-update.md). |
 | `WorkflowFooter.tsx` | Always-visible right-hand green action and optional left action for add-more workflows. |
 | `UndoRemovalNotice.tsx` | Localized notice in the active modal or above the page dock; draft-scope hook. |
 | `Modal.tsx` | Header Back, step scroll reset, active dialog Undo and accessibility. |

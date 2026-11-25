@@ -21,6 +21,7 @@ vi.mock('../src/utils/layoutStore', () => ({ useLayout: () => ({ enabled: false,
 import { PlanWizard } from '../src/components/journal/PlannerWizard';
 import { exportMealJournal, savePlanGroup } from '../src/utils/journalStore';
 import { planGroupViews } from '../src/utils/planGroups';
+import { plannedMealName } from '../src/utils/planMealName';
 import type { FoodItem } from '../src/types';
 import type { MealPlan } from '../src/types/journal';
 
@@ -37,7 +38,7 @@ function savedPlan() {
 const click = (name: RegExp | string) => fireEvent.click(screen.getByRole('button', { name }));
 
 describe('planner wizard', () => {
-  it('asks for one plan name on page 1 and never for a meal name', () => {
+  it('asks for one plan name on page 1; page 2 asks for no name (a meal name is an option of an open meal)', () => {
     render(<PlanWizard initialDate={FIRST} onClose={() => {}} />);
     const next = () => document.querySelector('.journal-plan-footer .journal-primary-button') as HTMLButtonElement;
     expect(screen.getByLabelText(/name of the plan/i)).toBeTruthy();
@@ -103,6 +104,39 @@ describe('planner wizard', () => {
     const saved = exportMealJournal();
     expect(saved.planGroups.filter((g) => g.id === 'g1')).toEqual([{ id: 'g1', name: 'Cutting v2', createdAt: '2099-01-01T00:00:00.000Z' }]);
     expect(saved.plans.filter((p) => p.groupId === 'g1').map((p) => p.id).sort()).toEqual(['m1', 'm2', 'm3']);
+  });
+
+  it('shows the date next to the meal type on every meal card', () => {
+    const group = savedPlan();
+    render(<PlanWizard initialDate={FIRST} group={group} onClose={() => {}} />);
+    const heads = [...document.querySelectorAll('.journal-meal-card-title strong')].map((el) => el.textContent ?? '');
+    expect(heads).toHaveLength(3);
+    for (const head of heads) expect(head).toMatch(/^Lunch · \S.*Feb/);
+    expect(heads[0]).toContain('1');
+    expect(heads[2]).toContain('4');
+    expect(document.querySelectorAll('.journal-meal-card-title [data-plan-date]')).toHaveLength(3);
+  });
+
+  it('offers "Meal name" as an option of one meal, saves it, and never invents one from the foods', () => {
+    savedPlan();
+    const single = exportMealJournal().plans.find((p) => p.id === 'm2')!;
+    const view = render(<PlanWizard initialDate={FIRST} plan={single} onClose={() => {}} />);
+    // The stored title "Rice" is only the automatic summary: no name field yet, just the option.
+    expect(document.querySelector('[data-meal-name] input')).toBeNull();
+    expect(screen.queryByText(/plan name \(optional\)/i)).toBeNull();
+    click('Meal name');
+    fireEvent.change(screen.getByLabelText('Meal name'), { target: { value: 'Sunday roast' } });
+    click(/save plan/i);
+    const named = exportMealJournal().plans.find((p) => p.id === 'm2')!;
+    expect(named.title).toBe('Sunday roast');
+    expect(plannedMealName(named)).toBe('Sunday roast');
+    view.unmount();
+    // A named meal opens with its name; an unnamed one keeps the food summary as title.
+    render(<PlanWizard initialDate={FIRST} plan={named} onClose={() => {}} />);
+    expect((screen.getByLabelText('Meal name') as HTMLInputElement).value).toBe('Sunday roast');
+    const unnamed = exportMealJournal().plans.find((p) => p.id === 'm1')!;
+    expect(unnamed.title).toBe('Rice');
+    expect(plannedMealName(unnamed)).toBe('');
   });
 
   it('keeps editing a single meal of a plan inside its plan', () => {

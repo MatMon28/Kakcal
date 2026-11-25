@@ -45,4 +45,4 @@
 
 ## Food and recipe workflow update
 
-Log food has a fixed green **Log food/Log all** action (including one food) and **Add more** beside it when a food is selected. **Back** in barcode lookup or the custom-food creator preserves your picker. In Custom, use **Review ingredients → Recipe recap** and collapse **Standard portion** to see more of the dish. Saved meals share the ingredient picker and fixed actions. See [food workflows](food-workflows-update.md).
+Log food has a fixed green **Log food/Log all** action (including one food) and **Add more** beside it when a food is selected. **Back** in barcode lookup or the custom-food creator preserves your picker. In Custom, use **Review ingredients → Recipe recap** and collapse **Standard portion** to see more of the dish. Saved meals share the ingredient picker and fixed actions. See [food workflows](food-workflows-update.md). In both builders a chosen ingredient asks for its quantity first, a line's pencil changes the quantity and (recipes read from a website only) **Swap** replaces the food; the picker's quick-add buttons are the Log food tiles. See [ingredient quantities](ingredient-quantity-update.md).

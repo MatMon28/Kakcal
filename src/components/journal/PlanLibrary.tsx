@@ -10,6 +10,7 @@ import type { MealPlan } from '../../types/journal';
 import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { JournalEmpty, journalDate } from './JournalUI';
+import { plannedMealName } from '../../utils/planMealName';
 
 /** "12 Nov - 18 Nov" (with the year for plans that are over). */
 export function planRange(g: Pick<PlanGroupView, 'start' | 'end'>, language: string, withYear: boolean) {
@@ -107,8 +108,14 @@ export function PlanLibrary({
                     <li key={p.id} className="journal-plan-card">
                       <button type="button" className="journal-plan-card-main" onClick={() => onOpenMeal(p)}>
                         <span>
-                          <strong>{label(p.slot)}</strong>
-                          <small>{journalDate(p.date, language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}</small>
+                          <strong>
+                            {label(p.slot)}
+                            <span className="journal-plan-row-date" data-plan-date>
+                              {' · '}
+                              {journalDate(p.date, language, { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' })}
+                            </span>
+                          </strong>
+                          {plannedMealName(p) && <small data-plan-meal-name>{plannedMealName(p)}</small>}
                         </span>
                         <ChevronRight size={16} />
                       </button>

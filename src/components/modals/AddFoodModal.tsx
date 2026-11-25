@@ -32,6 +32,7 @@ import { scrollFadeRef, scrollFadeX } from '../../utils/scrollFade';
 import { PlannedMeals } from '../journal/MealPlanner';
 import { MealNoteField } from '../journal/MealDiary';
 import { RecentChips, RECENT_MORE, RECENT_SHOWN } from '../common/RecentChips';
+import { QuickFoodButtons } from '../common/QuickFoodButtons';
 import { memoryKey, updateMealMemory, updateMealPlan, useMealJournal } from '../../utils/journalStore';
 import type { MealPlan } from '../../types/journal';
 
@@ -601,26 +602,8 @@ export const AddFoodModal: React.FC = () => {
                 )
               )}
 
-              {/* 3 Quick food shortcuts (salt / bread / olive oil — configurable in settings) */}
-              {quickFoods.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
-                  {quickFoods.map((f) => (
-                    <button
-                      key={f.id}
-                      type="button"
-                      onClick={() => handlePickFood(f)}
-                      className="pressable py-2.5 px-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-center"
-                    >
-                      <span className="block text-xs font-extrabold text-[var(--text)] truncate">
-                        {nameOf(f)}
-                      </span>
-                      <span className="block text-[10px] font-bold tabular-nums text-[var(--muted)] mt-0.5">
-                        {f.calories} kcal/100{f.unit}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
+              {/* 3 Quick food shortcuts (salt / bread / olive oil — configurable in settings); shared with the ingredient picker */}
+              <QuickFoodButtons foods={quickFoods} nameOf={nameOf} onPick={handlePickFood} />
 
               {/* Saved meals tagged for this slot */}
               {slotMeals.length > 0 && (

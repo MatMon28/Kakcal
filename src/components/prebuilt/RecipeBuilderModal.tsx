@@ -1,5 +1,5 @@
 import { useId, useState } from 'react';
-import { CircleAlert, Link2, Pencil, Search, Trash2 } from 'lucide-react';
+import { CircleAlert, Link2 } from 'lucide-react';
 import type { FoodItem } from '../../types';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { isSamePortion, portionFractions } from '../../utils/portionFractions';
@@ -9,6 +9,7 @@ import { AmountSelector } from '../common/AmountSelector';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { IngredientPicker } from '../common/IngredientPicker';
+import { IngredientRow, ingredientTextButton as smallButton } from '../common/IngredientRow';
 import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 import { MacroPills } from '../common/MacroPills';
 import { Modal } from '../common/Modal';
@@ -17,7 +18,15 @@ import { useRemovalScope } from '../common/UndoRemovalNotice';
 import { WorkflowFooter } from '../common/WorkflowFooter';
 import type { LibraryState } from './usePreBuiltMealsState';
 
-const smallButton = 'pressable inline-flex items-center gap-1.5 px-2.5 py-1.5 min-h-8 rounded-xl border border-[var(--border)] bg-[var(--surface)] hover:bg-[var(--hover)] text-xs font-bold text-[var(--text)]';
+/**
+ * The quantity screen (amount selector + nutrition of that amount). `add`: a food just chosen for a new line;
+ * `edit`: the pencil of a line, the food stays; `swap`: the food chosen to replace (or fill) the line `row`.
+ */
+interface AmountDraft {
+  food: FoodItem;
+  mode: 'add' | 'edit' | 'swap';
+  row?: RecipeReviewLine;
+}
 
 export function RecipeBuilderModal({ s }: { s: LibraryState }) {
   const {
@@ -27,7 +36,9 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
   } = s;
   const [step, setStep] = useState<'review' | 'recap'>('review');
   const [picker, setPicker] = useState<{ row?: RecipeReviewLine; query?: string } | null>(null);
-  const [editingAmount, setEditingAmount] = useState<RecipeReviewLine | null>(null);
+  // A new number per opening, so "Add more" starts a fresh search while Back from the quantity keeps the current one.
+  const [pickerSession, setPickerSession] = useState(0);
+  const [draft, setDraft] = useState<AmountDraft | null>(null);
   const [amount, setAmount] = useState(0);
   const [portionOpen, setPortionOpen] = useState(false);
   const [customPortion, setCustomPortion] = useState(false);
@@ -35,44 +46,74 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
   const undoScope = useRemovalScope();
   const missing = recipeRows.filter((row) => !row.optional && (!row.foodId || !foodById.has(row.foodId)));
   const canRecap = recipeIngs.length > 0 && missing.length === 0;
-  const editedFood = editingAmount?.foodId ? foodById.get(editingAmount.foodId) : undefined;
   const safeAmount = Number.isFinite(amount) && amount > 0;
 
-  const chooseFood = (food: FoodItem, pickedAmount?: number, row = picker?.row) => {
+  const openPicker = (row?: RecipeReviewLine) => {
+    setPickerSession((session) => session + 1);
+    setPicker(row ? { row, query: row.query } : {});
+  };
+  /** The quantity a food starts with on a line: the line's own quantity when the unit is the same, else the remembered portion. */
+  const amountFor = (food: FoodItem, row?: RecipeReviewLine) => {
+    const previousUnit = (row?.foodId ? foodById.get(row.foodId)?.unit : undefined) ?? row?.automatic?.unit ?? 'g';
+    return row && row.amount > 0 && previousUnit === food.unit ? row.amount : getDefaultAmount(food);
+  };
+  /** A food chosen in the picker goes to the quantity screen first; nothing is written to the recipe yet. */
+  const pickFood = (food: FoodItem, pickedAmount?: number) => {
     if (food.id === editingRecipeId) return;
     rememberFood(food);
-    const previousUnit = (row?.foodId ? foodById.get(row.foodId)?.unit : undefined) ?? row?.automatic?.unit ?? 'g';
-    const nextAmount = pickedAmount ?? (row && row.amount > 0 && previousUnit === food.unit ? row.amount : getDefaultAmount(food));
-    if (row) setRecipeRows((current) => current.map((item) => item.id === row.id ? { ...item, foodId: food.id, amount: nextAmount } : item));
-    else setRecipeRows((current) => [...current, { id: `added-${Date.now()}-${Math.random().toString(36).slice(2)}`, foodId: food.id, amount: nextAmount }]);
-    setPicker(null);
+    const row = picker?.row;
+    setAmount(pickedAmount ?? amountFor(food, row));
+    setDraft({ food, mode: row ? 'swap' : 'add', row });
+  };
+  const acceptMatch = (row: RecipeReviewLine) => {
+    const food = row.automatic;
+    if (!food || food.id === editingRecipeId) return;
+    rememberFood(food);
+    const next = amountFor(food, row);
+    setRecipeRows((current) => current.map((item) => item.id === row.id ? { ...item, foodId: food.id, amount: next } : item));
+  };
+  const editAmount = (row: RecipeReviewLine, food: FoodItem) => {
+    setAmount(row.amount);
+    setDraft({ food, mode: 'edit', row });
+  };
+  const commit = (another = false) => {
+    if (!draft || !safeAmount) return;
+    const { food, row } = draft;
+    setLastAmount(food.id, amount);
+    if (row) setRecipeRows((rows) => rows.map((item) => item.id === row.id ? { ...item, foodId: food.id, amount } : item));
+    else setRecipeRows((rows) => [...rows, { id: `added-${Date.now()}-${Math.random().toString(36).slice(2)}`, foodId: food.id, amount }]);
+    setDraft(null);
+    if (another) openPicker();
+    else setPicker(null);
   };
   const effectivePortion = importSummary && !customPortion
     ? (importSummary.servings ? Math.max(1, Math.round(recipeTotals.grams / importSummary.servings)) : 100)
     : recipePortion;
   const enterRecap = () => { if (canRecap) setStep('recap'); };
   const setPortion = (value: number) => { setCustomPortion(true); setRecipePortion(value); };
-  const add = () => { setStep('review'); setPicker({}); };
-  const back = picker ? () => setPicker(null) : editingAmount ? () => setEditingAmount(null) : step === 'recap' ? () => setStep('review') : undefined;
+  const add = () => { setStep('review'); openPicker(); };
+  // Back from the quantity returns to the search it came from (the picker stays mounted), or to the list for the pencil.
+  const back = draft ? () => setDraft(null) : picker ? () => setPicker(null) : step === 'recap' ? () => setStep('review') : undefined;
   const remove = (index: number) => removeWithUndo(recipeRows, index, setRecipeRows, undoScope, (a, b) => a.id === b.id);
   const suggestions = picker?.row ? [picker.row.automatic, ...(picker.row.alternatives ?? [])]
     .filter((food): food is FoodItem => Boolean(food)).filter((food, i, list) => list.findIndex((entry) => entry.id === food.id) === i) : [];
+  const quantityLabel = (name: string) => j(`Change amount for ${name}`, `Modifica quantità per ${name}`);
 
   return (
     <>
       <Modal
         dockId="recipe" isOpen={isRecipeOpen} onClose={back ?? requestCloseRecipeModal} onBack={back} maxWidth="max-w-xl"
-        bodyKey={picker ? 'picker' : editingAmount ? 'amount' : step}
-        title={picker ? j('Choose an ingredient', 'Scegli un ingrediente') : editedFood ? nameOf(editedFood) : step === 'review'
+        bodyKey={picker ? 'picker' : draft ? 'amount' : step}
+        title={draft ? nameOf(draft.food) : picker ? j('Choose an ingredient', 'Scegli un ingrediente') : step === 'review'
           ? j('Review ingredients', 'Controlla gli ingredienti') : j('Recipe recap', 'Riepilogo ricetta')}
-        subtitle={picker?.row?.raw ?? (!picker && !editingAmount ? (step === 'review' ? j('Step 1 of 2', 'Passaggio 1 di 2') : j('Step 2 of 2', 'Passaggio 2 di 2')) : undefined)}
-        footer={editingAmount ? <WorkflowFooter
-          primary={j('Save amount', 'Salva quantità')} disabled={!safeAmount} onPrimary={() => {
-            if (!editedFood || !safeAmount) return;
-            setLastAmount(editedFood.id, amount);
-            setRecipeRows((rows) => rows.map((row) => row.id === editingAmount.id ? { ...row, amount } : row));
-            setEditingAmount(null);
-          }}
+        subtitle={draft ? (draft.row?.raw ?? j('Choose the quantity', 'Scegli la quantità'))
+          : picker ? picker.row?.raw : step === 'review' ? j('Step 1 of 2', 'Passaggio 1 di 2') : j('Step 2 of 2', 'Passaggio 2 di 2')}
+        footer={draft ? <WorkflowFooter
+          more={draft.mode === 'add' ? j('Add more', 'Aggiungi altro') : undefined}
+          onMore={draft.mode === 'add' ? () => commit(true) : undefined} moreDisabled={!safeAmount}
+          primary={draft.mode === 'add' ? j('Add to recipe', 'Aggiungi alla ricetta')
+            : draft.mode === 'swap' ? j('Use this food', 'Usa questo alimento') : j('Save amount', 'Salva quantità')}
+          onPrimary={() => commit()} disabled={!safeAmount}
         /> : !picker && (step === 'review' ? <WorkflowFooter
           more={t.prebuilt.addIngredient} onMore={add} primary={j('Continue to portions', 'Continua alle porzioni')}
           onPrimary={enterRecap} disabled={!canRecap}
@@ -81,13 +122,16 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
           onPrimary={() => saveRecipe(effectivePortion)} disabled={!recipeName.trim() || !canRecap}
         />)}
       >
-        {picker ? (
-          <IngredientPicker onPick={chooseFood} initialQuery={picker.query} suggestions={suggestions} excludeId={editingRecipeId} />
-        ) : editedFood && editingAmount ? (
-          <div className="space-y-3.5">
-            <AmountSelector value={amount} onChange={setAmount} unit={editedFood.unit} />
-            <FoodMacroGrid food={editedFood} amount={amount} />
-          </div>
+        {picker || draft ? (
+          <>
+            {picker && <div hidden={Boolean(draft)}>
+              <IngredientPicker key={pickerSession} onPick={pickFood} initialQuery={picker.query} suggestions={suggestions} excludeId={editingRecipeId} />
+            </div>}
+            {draft && <div className="space-y-3.5" data-ingredient-amount-step={draft.mode}>
+              <AmountSelector value={amount} onChange={setAmount} unit={draft.food.unit} />
+              <FoodMacroGrid food={draft.food} amount={amount} />
+            </div>}
+          </>
         ) : (
           <div className="space-y-3.5">
             <label className="block text-xs font-bold text-[var(--muted)]">
@@ -101,14 +145,14 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                   <Link2 size={16} className="shrink-0" />
                   <div className="min-w-0">
                     <p className="font-extrabold text-[var(--text)]">{j('Imported recipe', 'Ricetta importata')}{importSummary.source ? ` · ${importSummary.source}` : ''}</p>
-                    <p>{j('Compare the original ingredient with the matched food. Replace or remove any line before continuing.', 'Confronta l’ingrediente originale con l’alimento abbinato. Sostituisci o rimuovi le righe prima di continuare.')}</p>
+                    <p>{j('Compare the original ingredient with the matched food. Use the pencil to change a quantity, Swap to choose another food, or remove a line before continuing.', 'Confronta l’ingrediente originale con l’alimento abbinato. Usa la matita per cambiare una quantità, Sostituisci per scegliere un altro alimento, oppure rimuovi una riga prima di continuare.')}</p>
                     {importSummary.warnings.includes('multiple-recipes') && <p>{j('This page listed several recipes; the first was used.', 'La pagina elencava più ricette; è stata usata la prima.')}</p>}
                     {importSummary.warnings.includes('duplicates') && <p>{j('Duplicate source lines were omitted.', 'Le righe duplicate sono state omesse.')}</p>}
                   </div>
                 </div>}
                 {missing.length > 0 && <p className="flex gap-1.5 text-xs font-bold text-[var(--text)]"><CircleAlert size={15} className="shrink-0" />
                   {j(`Choose a food for each unmatched ingredient or remove it (${missing.length} left).`, `Scegli un alimento per ogni ingrediente senza abbinamento o rimuovilo (${missing.length} rimasti).`)}</p>}
-                {recipeRows.length === 0 && <p className="text-sm text-[var(--muted)]">{j('Add ingredients first. You can set their amounts and the recipe portion on the next screen.', 'Aggiungi prima gli ingredienti. Puoi impostare le quantità e la porzione nel passaggio successivo.')}</p>}
+                {recipeRows.length === 0 && <p className="text-sm text-[var(--muted)]">{j('Add ingredients first. You choose the quantity of each food as you add it; the recipe portion is on the next screen.', 'Aggiungi prima gli ingredienti. Scegli la quantità di ogni alimento mentre lo aggiungi; la porzione della ricetta è nel passaggio successivo.')}</p>}
                 {recipeRows.map((row, index) => {
                   const selected = row.foodId ? foodById.get(row.foodId) : undefined;
                   const rowName = row.raw ?? (selected ? nameOf(selected) : row.foodId ?? '');
@@ -122,20 +166,17 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                           {row.automatic && row.confidence && row.confidence !== 'high' && <span className="text-[10px] font-bold text-[var(--muted)]">{j('Check match', 'Verifica abbinamento')}</span>}
                         </div>
                       </div>}
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <p className="text-xs min-w-0 break-words font-bold">
-                          {row.raw && <span className="text-[var(--muted)] mr-1">{j('Selected:', 'Selezionato:')}</span>}
-                          {selected ? nameOf(selected) : row.optional ? j('Optional · not counted', 'Facoltativo · non conteggiato') : j('Needs a food', 'Scegli un alimento')}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          {!selected && row.automatic && <button type="button" className={smallButton} onClick={() => chooseFood(row.automatic!, undefined, row)}>{j('Use match', 'Usa abbinamento')}</button>}
-                          <button type="button" className={smallButton} aria-label={selected ? j(`Change ${rowName}`, `Sostituisci ${rowName}`) : j(`Search for ${rowName}`, `Cerca ${rowName}`)}
-                            onClick={() => setPicker({ row, query: row.query })}>
-                            {selected ? <Pencil size={13} /> : <Search size={13} />}{selected ? j('Change', 'Sostituisci') : j('Search', 'Cerca')}
-                          </button>
-                          <button type="button" className={`${smallButton} px-2.5`} onClick={() => remove(index)} aria-label={`${t.common.delete}: ${rowName}`}><Trash2 size={14} /></button>
-                        </div>
-                      </div>
+                      <IngredientRow
+                        food={selected} amount={selected ? row.amount : undefined} prefix={row.raw ? j('Selected:', 'Selezionato:') : undefined}
+                        name={selected ? nameOf(selected) : row.optional ? j('Optional · not counted', 'Facoltativo · non conteggiato') : j('Needs a food', 'Scegli un alimento')}
+                        onEdit={selected ? () => editAmount(row, selected) : undefined} editLabel={quantityLabel(rowName)}
+                        // A line read from a website can be swapped for another food; a line the user chose is only re-weighed.
+                        swap={!selected ? { icon: 'search', text: j('Search', 'Cerca'), label: j(`Search for ${rowName}`, `Cerca ${rowName}`), onClick: () => openPicker(row) }
+                          : row.raw ? { icon: 'swap', text: j('Swap', 'Sostituisci'), label: j(`Swap ${rowName}`, `Sostituisci ${rowName}`), onClick: () => openPicker(row) } : undefined}
+                        onDelete={() => remove(index)} deleteLabel={`${t.common.delete}: ${rowName}`}
+                      >
+                        {!selected && row.automatic && <button type="button" className={smallButton} onClick={() => acceptMatch(row)}>{j('Use match', 'Usa abbinamento')}</button>}
+                      </IngredientRow>
                     </article>
                   );
                 })}
@@ -176,11 +217,10 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                   {recipeRows.map((row, index) => {
                     const food = row.foodId ? foodById.get(row.foodId) : undefined;
                     if (!food) return null;
-                    return <div key={row.id} className="rounded-xl bg-[var(--surface)] px-3 py-1.5 flex items-center gap-2 text-xs">
-                      <span className="flex-1 min-w-0 font-bold break-words">{nameOf(food)}</span>
-                      <button type="button" className={smallButton} onClick={() => { setEditingAmount(row); setAmount(row.amount); }}
-                        aria-label={j(`Change amount for ${nameOf(food)}`, `Modifica quantità per ${nameOf(food)}`)}><Pencil size={12} />{row.amount} {food.unit}</button>
-                      <button type="button" className={smallButton} onClick={() => remove(index)} aria-label={`${t.common.delete}: ${nameOf(food)}`}><Trash2 size={14} /></button>
+                    return <div key={row.id} className="rounded-xl bg-[var(--surface)] px-3 py-2">
+                      <IngredientRow food={food} name={nameOf(food)} amount={row.amount}
+                        onEdit={() => editAmount(row, food)} editLabel={quantityLabel(nameOf(food))}
+                        onDelete={() => remove(index)} deleteLabel={`${t.common.delete}: ${nameOf(food)}`} />
                     </div>;
                   })}
                 </div>

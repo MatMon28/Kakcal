@@ -13,6 +13,7 @@
 | [rounds-ui-brand.md](rounds-ui-brand.md) | Meal totals, logo-click poop, meal by time of day, new logo, meal nutrients + left / right, Log food / water polish, tidy-up, Android handoff. |
 
 The newest round (planner / Custom dock) is summarised at the top of the root [README.md](../../README.md) and described in [../planner-dock-update.md](../planner-dock-update.md).
+The ingredient quantities round (quantity step, pencil / Swap, meal builder, quick-add tiles, planner date and Meal name) is described in [../ingredient-quantity-update.md](../ingredient-quantity-update.md).
 The file-organisation round (CSS, `AppContext`, translations and the Custom page split into smaller files) is described in [../file-organisation.md](../file-organisation.md).
 
 The search and animation performance round (food search work moved off the typing path, catalogue search in a Web Worker, dialogs animated without cloning) is described in [../search-and-animation-performance.md](../search-and-animation-performance.md); the status table is [../performance-review.md](../performance-review.md).

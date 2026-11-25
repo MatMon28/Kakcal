@@ -1,5 +1,7 @@
 # File map: `src/components/modals/`
 
+(Ingredient quantities round) `AddFoodModal.tsx`: the quick food shortcuts are drawn by `common/QuickFoodButtons.tsx`, shared with the ingredient picker of the meal and recipe builders (no visual change in Log food). See [ingredient-quantity-update.md](../ingredient-quantity-update.md).
+
 (New features round) `AdvancedSettings.tsx`: protein basis switch (grams per day / per kg) and the *Intake / burned difference* row (deficit / surplus + kcal); `SettingsModal.tsx`: *Meal planner button* and *Photo diary button* switches. See [new-features-update.md](../new-features-update.md).
 
 > **Scope:** All dialogs: add food, activity, water, weight, poop, settings, profile, notifications, period sheet.

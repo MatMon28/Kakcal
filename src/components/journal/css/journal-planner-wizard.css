@@ -250,3 +250,32 @@
   font-weight: 800;
 }
 .journal-save-meal-row:hover { color: var(--text); background: var(--hover, var(--inset)); }
+
+/* Planner: the date right next to the meal type (wizard meal card and planner row) and the optional "Meal name" of one meal. */
+.journal-meal-card-date,
+.journal-plan-row-date {
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.journal-plan-row-date { color: inherit; opacity: 0.7; }
+.journal-plan-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 10px;
+  font-weight: 650;
+  margin-bottom: 2px;
+}
+.journal-meal-name {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.journal-meal-name label { width: 100%; }
+/* An option, not a required field: a small pill until it is used. */
+.journal-meal-name .journal-secondary-button {
+  min-height: 34px;
+  padding: 6px 12px;
+  font-size: 12px;
+}

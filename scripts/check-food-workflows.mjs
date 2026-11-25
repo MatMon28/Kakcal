@@ -56,7 +56,17 @@ try {
   await button('Add custom food').click();
   await sheet().getByLabel('Food name', { exact: true }).fill('Test custom ingredient');
   await button('Save and select').click();
+  // A chosen food goes to its quantity first (amount + nutrition); "Use this food" swaps it into the line.
+  await sheet().locator('[data-ingredient-amount-step="swap"]').waitFor();
+  await button('Use this food').click();
   await sheet().locator('[data-review-line]').filter({ hasText: 'Test custom ingredient' }).waitFor();
+  // Imported lines: an icon-only pencil for the quantity and a Swap button with icon and text.
+  const banana = sheet().locator('[data-review-line]').filter({ hasText: '200 g banana' });
+  assert.equal((await banana.locator('[data-ingredient-edit]').innerText()).trim(), '');
+  assert.equal((await banana.locator('[data-ingredient-swap]').innerText()).trim(), 'Swap');
+  await banana.locator('[data-ingredient-edit]').click();
+  await sheet().locator('[data-ingredient-amount-step="edit"]').waitFor();
+  await button('Save amount').click();
   await button('Continue to portions').click();
   const standard = button(/Standard portion/);
   assert.equal(await standard.getAttribute('aria-expanded'), 'false');
@@ -74,6 +84,12 @@ try {
   await button('Add Ingredient').click();
   await sheet().getByRole('searchbox').fill('banana');
   await sheet().getByRole('button', { name: /^Banana\b/i }).first().click();
+  await sheet().locator('[data-ingredient-amount-step="add"]').waitFor();
+  assert.ok(await fixed('Add more'));
+  await button('Add to recipe').click();
+  // A recipe made by hand: the pencil changes the quantity, there is no Swap.
+  assert.equal(await sheet().locator('[data-ingredient-swap]').count(), 0);
+  assert.equal(await sheet().locator('[data-ingredient-edit]').count(), 1);
   await button('Continue to portions').click();
   await sheet().getByRole('heading', { name: 'Recipe recap' }).waitFor();
   await button('Save recipe').click();
@@ -81,10 +97,13 @@ try {
   await dock('meal').click();
   await sheet().getByLabel('Meal name', { exact: true }).fill('Test saved meal');
   await button('Add Ingredient').click();
-  await sheet().getByRole('heading', { name: 'Quick foods', exact: true }).waitFor();
+  // The quick-add buttons are the Log food tiles (three-column grid), not a "Quick foods" list of pills.
+  await sheet().locator('[data-quick-foods]').waitFor();
   await sheet().getByRole('searchbox').fill('banana');
   await sheet().getByRole('button', { name: /^Banana\b/i }).first().click();
   assert.ok(await fixed('Add more'));
+  await button('Add to meal').click();
+  assert.equal(await sheet().locator('[data-review-line]').count(), 1);
   assert.ok(await fixed('Save Meal'));
   await button('Save Meal').click();
   await leave();

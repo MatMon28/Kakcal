@@ -15,6 +15,7 @@ import {
   Trash2,
   Utensils,
   UtensilsCrossed,
+  Tag,
   X,
 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
@@ -22,6 +23,7 @@ import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString, getTodayDateString } from '../../utils/formatters';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
+import { plannedMealName } from '../../utils/planMealName';
 import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
@@ -136,13 +138,14 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
         out[`${addDaysToDateString(first, dayDiff(source.start, p.date))}|${p.slot}`] = {
           kind: p.kind,
           items: p.items.map((i) => ({ ...i })),
-          title: p.title,
+          // Only a name the user chose is a meal name; the automatic summary is rebuilt from the foods.
+          title: plannedMealName(p),
           note: p.note,
           ...(group ? { planId: p.id, loggedAt: p.loggedAt, read: p.read } : {}),
         };
       return out;
     }
-    return plan ? { [`${plan.date}|${plan.slot}`]: { kind: plan.kind, items: plan.items, title: plan.title, note: plan.note } } : {};
+    return plan ? { [`${plan.date}|${plan.slot}`]: { kind: plan.kind, items: plan.items, title: plannedMealName(plan), note: plan.note } } : {};
   });
   const [preferredKind, setPreferredKind] = useState<PlanEntry['kind']>(plan?.kind ?? 'food');
   const [activeKey, setActiveKey] = useState<string | null>(plan ? `${plan.date}|${plan.slot}` : null);
@@ -277,7 +280,7 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
     plans
       .filter((p) => p.slot === target.slot && p.date < target.date && p.id !== plan?.id && (!group || p.groupId !== group.id))
       .sort((a, b) => b.date.localeCompare(a.date))
-      .forEach((p) => add(`saved-${p.id}`, p.date, { kind: p.kind, items: p.items, title: p.title, note: p.note }));
+      .forEach((p) => add(`saved-${p.id}`, p.date, { kind: p.kind, items: p.items, title: plannedMealName(p), note: p.note }));
     return found.slice(0, 6);
   };
 
@@ -578,7 +581,13 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
                           <MealSlotIcon slot={t.slot} size={20} />
                         </span>
                         <span className="journal-meal-card-title">
-                          <strong>{label(t.slot)}</strong>
+                          <strong>
+                            {label(t.slot)}
+                            <span className="journal-meal-card-date" data-plan-date>
+                              {' · '}
+                              {journalDate(t.date, language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                            </span>
+                          </strong>
                           <small>
                             {done ? summary(entry) : j('Still to plan', 'Ancora da pianificare')}
                             {already > 0 && ` · ${j(`${already} already planned`, `${already} gia pianificati`)}`}
@@ -690,6 +699,8 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
   };
   const { kind, items, title, note } = entry;
   const patch = (next: Partial<PlanEntry>) => onChange({ ...entry, ...next });
+  // "Meal name" is an option: a button until it is used ('new' = just opened, so the field takes the focus).
+  const [naming, setNaming] = useState<'off' | 'new' | 'saved'>(() => (title.trim() ? 'saved' : 'off'));
   const q = query.trim();
   // Results follow the typing a moment later; the catalogue is searched in a worker (utils/catalogueSearch.ts) and
   // only once two characters are typed.
@@ -809,6 +820,26 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
         </button>
       </div>
 
+      <div className="journal-meal-name" data-meal-name>
+        {naming === 'off' ? (
+          <button type="button" className="journal-secondary-button" aria-expanded={false} onClick={() => setNaming('new')}>
+            <Tag size={15} />
+            {j('Meal name', 'Nome del pasto')}
+          </button>
+        ) : (
+          <label>
+            {j('Meal name', 'Nome del pasto')}
+            <input
+              value={title}
+              maxLength={160}
+              autoFocus={naming === 'new'}
+              onChange={(e) => patch({ title: e.target.value })}
+              placeholder={j('Optional, e.g. Pasta night', 'Facoltativo, es. Serata pasta')}
+            />
+          </label>
+        )}
+      </div>
+
       {kind === 'food' ? (
         <>
           {pending ? (
@@ -831,7 +862,7 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
                 disabled={amount <= 0}
                 onClick={() => {
                   setLastAmount(pending.id, amount);
-                  patch({ items: [...items, { food: pending, amount }], title: title || name(pending) });
+                  patch({ items: [...items, { food: pending, amount }] });
                   setPending(null);
                   setQuery('');
                 }}
@@ -956,11 +987,6 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
         </label>
         </>
       )}
-
-      <label>
-        {j('Plan name (optional)', 'Nome (facoltativo)')}
-        <input value={title} maxLength={160} onChange={(e) => patch({ title: e.target.value })} placeholder={j('Something to look forward to', 'Qualcosa di buono in programma')} />
-      </label>
     </div>
   );
 }

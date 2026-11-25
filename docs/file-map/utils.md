@@ -1,6 +1,8 @@
 # File map: `src/utils/`
 
 
+(Ingredient quantities round) `planMealName.ts` (new): `plannedMealName` (the *Meal name* the user gave to a planned meal, `''` when `MealPlan.title` is only the automatic summary) and `automaticPlanTitles`. See [ingredient-quantity-update.md](../ingredient-quantity-update.md#planner).
+
 (Backup round) `backupFormat.ts` (new): backup version constants (`BACKUP_VERSION` 2.0, `isSupportedBackup`), picture notes without images (`journalWithoutPictures`, `readPhotoNotes`, `mergePictureNotes`), interface preferences (`collectPreferences`, `applyPreferences`, `isPreferenceKey`) and the import report (`getLastImportReport`); `amountMemory.ts`: `exportLastAmounts` / `importLastAmounts`; `plannerDraft.ts`: `parsePlannerDraft` (validation shared with the backup); `journalStore.ts`: `exportMealJournalForBackup` has no pictures, `prepareMealJournalImport` handles old and new files. See [../backup-update.md](../backup-update.md).
 
 (Plans round) `planGroups.ts` (new): `planGroupViews`, `splitPlans`, `isCurrentPlan`, `copyName`, `UNGROUPED_PLAN_ID`. `shoppingList.ts` (new): `buildShoppingItems` (totals, recipes broken into ingredients), `createShoppingList`, `syncShoppingList`, `removeShoppingItem`, `addCustomShoppingItem`, `toggleShoppingItem`, `isShoppingListOutdated`, `formatQuantity`. `journalStore.ts`: `savePlanGroup`, `removePlanGroup`, `saveShoppingList`, `removeShoppingList`, normalising of `planGroups` / `shoppingLists`. `plannerDraft.ts`: `PlanEntry.planId / loggedAt / read`, `PlannerDraft.name`. See [plans-shopping-update.md](../plans-shopping-update.md).
