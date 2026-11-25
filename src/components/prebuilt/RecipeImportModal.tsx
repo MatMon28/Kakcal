@@ -65,8 +65,8 @@ const iconFor = (code: RecipeImportErrorCode) => {
 };
 
 /**
- * "Import from a link": the only screen the import adds. After a successful read the draft is handed
- * to the normal recipe builder, which is where the user checks and edits the ingredients.
+ * "Import from a link": after a successful read the draft opens in ingredient review, before the
+ * recap and standard portion. Imported lines are never silently discarded.
  */
 export const RecipeImportModal: React.FC<{ s: LibraryState }> = ({ s }) => {
   const { j, isImportOpen, closeImportModal, importUrl, setImportUrl, importBusy, importStage, importError, runImport } = s;

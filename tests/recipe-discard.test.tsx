@@ -19,7 +19,7 @@ afterEach(async () => { cleanup(); await flushWrites(); });
 /** Open the recipe builder with one ingredient in it, as an import leaves it. */
 const openWithOneIngredient = (result: { current: ReturnType<typeof usePreBuiltMealsState> }) => {
   act(() => result.current.openRecipeModal());
-  act(() => result.current.setRecipeIngs([{ foodId: food.id, amount: 120 }]));
+  act(() => result.current.setRecipeRows([{ id: 'row', foodId: food.id, amount: 120 }]));
 };
 
 describe('closing the recipe builder', () => {

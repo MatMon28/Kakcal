@@ -1,22 +1,29 @@
 import { useCallback, useDeferredValue, useMemo, useRef, useState } from 'react';
 import {
   ArrowUpRight,
+  CalendarDays,
   Check,
   ChevronRight,
   NotebookPen,
+  Pencil,
   RotateCcw,
   SlidersHorizontal,
   Star,
+  Trash2,
   Utensils,
 } from 'lucide-react';
-import { useJournalData, useSettings } from '../../context/AppContext';
+import { useJournalData, useNavActions, useSettings, useUiState } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { calculateMacros, calculateTotalCalories } from '../../utils/calculations';
 import { getTodayDateString } from '../../utils/formatters';
+import { revealMealSlot } from '../../utils/journalNavigation';
+import { setLastAmount } from '../../utils/amountMemory';
 import { memoryKey, updateMealMemory, useMealJournal } from '../../utils/journalStore';
 import type { FoodItem, LoggedFoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
+import { AmountSelector } from '../common/AmountSelector';
+import { WorkflowFooter } from '../common/WorkflowFooter';
 import { MealSlotIcon } from '../common/mealSlotIcon';
 import { MealSummaryCard } from './MealSummaryCard';
 import { SaveAsMeal } from './SaveAsMeal';
@@ -511,7 +518,23 @@ function DiaryBrowser({
 
 function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }) {
   const { language } = useSettings();
-  const { logItemsToSlot } = useJournalData();
+  const { allDayLogs, logItemsToSlot, removeLoggedFoodItem, updateLoggedFoodItemAmount } = useJournalData();
+  const { setSelectedDate, setTargetMealSlot, setIsAddFoodOpen } = useUiState();
+  const { setActiveTab } = useNavActions();
+  const items = allDayLogs[meal.date]?.meals[meal.slot] ?? [];
+  const [editing, setEditing] = useState(false);
+  const [amountEdit, setAmountEdit] = useState<{ id: string; value: number } | null>(null);
+  const goToDay = () => {
+    onClose();
+    setSelectedDate(meal.date);
+    setActiveTab('today');
+    revealMealSlot(meal.slot);
+  };
+  const addFood = () => {
+    setSelectedDate(meal.date);
+    setTargetMealSlot(meal.slot);
+    setIsAddFoodOpen(true);
+  };
   const { label } = useMealSlots();
   const { memories } = useMealJournal();
   const j = useJournalText();
@@ -523,6 +546,10 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
     <Modal
       isOpen
       onClose={onClose}
+      onBack={editing ? () => { setEditing(false); setAmountEdit(null); } : undefined}
+      bodyKey={editing ? 'edit-meal' : 'meal-detail'}
+      footer={editing ? <WorkflowFooter more={j('Add food', 'Aggiungi alimento')} onMore={addFood}
+        primary={j('Done editing', 'Fine modifica')} onPrimary={() => { setEditing(false); setAmountEdit(null); }} /> : undefined}
       title={journalDate(meal.date, language, {
         weekday: 'long',
         day: 'numeric',
@@ -531,12 +558,44 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
       })}
       maxWidth="max-w-lg"
     >
-      <div className="journal-form">
+      {editing ? (
+        <div className="space-y-3">
+          <h3 className="font-extrabold">{j('Edit meal', 'Modifica pasto')} · {label(meal.slot)}</h3>
+          {!items.length && <p className="text-sm text-[var(--muted)]">{j('No foods logged', 'Nessun alimento')}</p>}
+          {items.map((item) => <div key={item.id} className="space-y-2 rounded-2xl p-3 border border-[var(--border)] bg-[var(--inset)]">
+            <div className="flex items-center gap-2">
+              <p className="flex-1 min-w-0 font-bold text-sm break-words">{item.name}</p>
+              <button type="button" className="journal-secondary-button" aria-label={j(`Edit amount for ${item.name}`, `Modifica quantità per ${item.name}`)}
+                onClick={() => setAmountEdit({ id: item.id, value: item.amount })}><Pencil size={14} /> {item.amount} {item.unit}</button>
+              <button type="button" className="pressable size-9 rounded-full grid place-items-center hover:bg-[#F6D0D0] hover:text-[#7A2727]"
+                aria-label={j(`Delete ${item.name}`, `Elimina ${item.name}`)} onClick={() => {
+                  if (amountEdit?.id === item.id) setAmountEdit(null);
+                  removeLoggedFoodItem(meal.slot, item.id, meal.date);
+                }}><Trash2 size={15} /></button>
+            </div>
+            {amountEdit?.id === item.id && <>
+              <AmountSelector value={amountEdit.value} onChange={(value) => setAmountEdit({ id: item.id, value })} unit={item.unit} />
+              <div className="journal-form-actions">
+                <button type="button" className="journal-secondary-button" onClick={() => setAmountEdit(null)}>{j('Cancel', 'Annulla')}</button>
+                <button type="button" className="journal-primary-button" disabled={!Number.isFinite(amountEdit.value) || amountEdit.value <= 0} onClick={() => {
+                  setLastAmount(item.foodId, amountEdit.value);
+                  updateLoggedFoodItemAmount(meal.slot, item.id, amountEdit.value, meal.date);
+                  setAmountEdit(null);
+                }}><Check size={15} /> {j('Save amount', 'Salva quantità')}</button>
+              </div>
+            </>}
+          </div>)}
+        </div>
+      ) : <div className="journal-form">
+        <div className="journal-form-actions">
+          <button type="button" className="journal-secondary-button" onClick={() => setEditing(true)}><Pencil size={15} /> {j('Edit meal', 'Modifica pasto')}</button>
+          <button type="button" className="journal-secondary-button" onClick={goToDay}><CalendarDays size={15} /> {j('Go to day', 'Vai al giorno')}</button>
+        </div>
         {/* The same card as an expanded meal in Today: icon, name, kcal, macro pills, then every food. */}
         <MealSummaryCard
           slot={meal.slot}
           title={label(meal.slot)}
-          items={meal.items}
+          items={items}
           emptyText={j('No foods logged', 'Nessun alimento')}
           trailing={<FavoriteMeal date={meal.date} slot={meal.slot} />}
         >
@@ -563,13 +622,13 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
           </p>
         )}
         <div className="journal-form-actions">
-          {meal.items.length > 0 && (
+          {items.length > 0 && (
             <button
               type="button"
               disabled={copied}
               className="journal-secondary-button"
               onClick={() => {
-                logItemsToSlot(meal.slot, meal.items, getTodayDateString());
+                logItemsToSlot(meal.slot, items, getTodayDateString());
                 setCopied(true);
               }}
             >
@@ -577,7 +636,7 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
               {copied ? j('Logged today', 'Registrato oggi') : j('Log today', 'Registra oggi')}
             </button>
           )}
-          <SaveAsMeal slot={meal.slot} date={meal.date} items={meal.items} />
+          <SaveAsMeal slot={meal.slot} date={meal.date} items={items} />
           <button
             type="button"
             className="journal-primary-button"
@@ -596,7 +655,7 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
             {saved ? j('Note saved', 'Nota salvata') : j('Save note', 'Salva nota')}
           </button>
         </div>
-      </div>
+      </div>}
     </Modal>
   );
 }

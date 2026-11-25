@@ -92,3 +92,7 @@ Delete all data is unchanged: `src/components/common/DeleteAllData.tsx` and `src
 `npm run typecheck`, `npm run lint` (0 errors; the 10 warnings were already there), `npm test` (86 passed), `npm run build` all pass. `scripts/verify-interaction-update.mjs` now opens the **Today** group instead of a *Custom buttons* button.
 
 **Not verified in a browser in this round:** the visual result on a phone, every theme, the delete flows on Android (IndexedDB photo clear and the reload). Check these by hand before a release.
+
+### Delete data grace period
+
+After confirmation, a bulk category or **Delete all data** waits 6.5 seconds before erasing and reloading. **Undo** cancels while the scheduled deletion is visible; there is no second stored copy or recovery after commit. Deleting a custom button separately can be undone without removing or recreating its history. See [food workflows](food-workflows-update.md).

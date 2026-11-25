@@ -3,7 +3,7 @@ import { Check, ChevronRight, Pencil, Plus, RefreshCw, ShoppingCart, Trash2 } fr
 import { useJournalData, useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useToday } from '../../utils/useToday';
-import { journalId, removeShoppingList, saveShoppingList, useMealJournal } from '../../utils/journalStore';
+import { journalId, removeSavedShoppingItem, removeShoppingList, saveShoppingList, useMealJournal } from '../../utils/journalStore';
 import { planGroupViews, splitPlans, type PlanGroupView } from '../../utils/planGroups';
 import {
   addCustomShoppingItem,
@@ -12,7 +12,6 @@ import {
   createShoppingList,
   formatQuantity,
   isShoppingListOutdated,
-  removeShoppingItem,
   syncShoppingList,
   toggleShoppingItem,
 } from '../../utils/shoppingList';
@@ -204,7 +203,7 @@ function ShoppingListModal({ group, onClose }: { group: PlanGroupView; onClose: 
                         type="button"
                         className="journal-shopping-remove"
                         aria-label={`${j('Remove', 'Rimuovi')} ${item.name}`}
-                        onClick={() => saveShoppingList(removeShoppingItem(list, item.id))}
+                        onClick={() => removeSavedShoppingItem(list.planId, item.id)}
                       >
                         <Trash2 size={15} />
                       </button>

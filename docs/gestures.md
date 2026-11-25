@@ -28,3 +28,5 @@ All numbers are named constants at the top of `PageSwiper.tsx` / inside `Modal.t
 | **Today: swipe the calendar row** | `DayNavigator.tsx`: swipe left = next day, right = previous day, exactly the arrows' action (`setSelectedDate(addDaysToDateString(...))`). 20 px (or a 12 px quick flick) = one day per swipe; a swipe never also taps the calendar button; ignored while the calendar popover is open. |
 
 During rail movement the viewport clips both axes. Adjacent previews cannot enlarge scrollable document height when swiping from the bottom of Today.
+
+In food and ingredient pickers, **Back**, Escape and the child dialog's Close leave only scanner/custom food and preserve the originating picker. See [food workflows](food-workflows-update.md#log-food--scanner-or-custom-food).

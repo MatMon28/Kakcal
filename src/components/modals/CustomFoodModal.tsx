@@ -4,7 +4,8 @@ import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { Modal } from '../common/Modal';
 import { FoodCategory, FoodItem, Supermarket } from '../../types';
 import { setLastAmount } from '../../utils/amountMemory';
-import { Check, Plus } from 'lucide-react';
+import { WorkflowFooter } from '../common/WorkflowFooter';
+import { useJournalText } from '../../i18n/journal';
 
 const parseOptionalNum = (raw: string): number | null => {
   const s = raw.trim().replace(',', '.');
@@ -18,7 +19,13 @@ const cleanDec = (raw: string) => {
   return s === '' || /^\d*\.?\d*$/.test(s) ? s : null;
 };
 
-export const CustomFoodModal: React.FC = () => {
+interface CustomFoodModalProps {
+  onReturn?: () => void;
+  onPick?: (food: FoodItem) => void;
+  initialName?: string;
+}
+
+export const CustomFoodModal: React.FC<CustomFoodModalProps> = ({ onReturn, onPick, initialName = '' }) => {
   const {
     isCustomFoodOpen,
     setIsCustomFoodOpen,
@@ -30,7 +37,9 @@ export const CustomFoodModal: React.FC = () => {
     t,
   } = useApp();
 
-  const [name, setName] = useState('');
+  const j = useJournalText();
+  const close = onReturn ?? (() => setIsCustomFoodOpen(false));
+  const [name, setName] = useState(initialName);
   const [brand, setBrand] = useState('');
   const [store, setStore] = useState<Supermarket>('Custom');
   const [category, setCategory] = useState<FoodCategory>('prepared');
@@ -95,11 +104,12 @@ export const CustomFoodModal: React.FC = () => {
     const newFood = buildFood();
     if (!newFood) return;
     addCustomFood(newFood);
-    if (alsoLog) {
+    if (onPick) onPick(newFood);
+    else if (alsoLog) {
       setLastAmount(newFood.id, 100);
       logFoodItem(targetMealSlot, newFood, 100);
     }
-    setIsCustomFoodOpen(false);
+    close();
     reset();
   };
 
@@ -136,17 +146,24 @@ export const CustomFoodModal: React.FC = () => {
   return (
     <Modal
       dockId="food"
-      isOpen={isCustomFoodOpen}
-      onClose={() => setIsCustomFoodOpen(false)}
+      isOpen={Boolean(onReturn) || isCustomFoodOpen}
+      onClose={close}
+      onBack={close}
+      footer={<WorkflowFooter
+        primary={onPick ? j('Save and select', 'Salva e seleziona') : j(`Save and log (100${unit})`, `Salva e registra (100${unit})`)}
+        onPrimary={() => handleSave(true)} disabled={!name.trim()}
+        more={t.common.save} onMore={onPick ? undefined : () => handleSave(false)} moreDisabled={!name.trim()}
+      />}
       title={t.database.createCustom}
       maxWidth="max-w-md"
     >
       <div className="space-y-3">
         <div>
-          <label className="block text-xs font-bold text-[var(--muted)] mb-1">
+          <label htmlFor={`${fieldId}-name`} className="block text-xs font-bold text-[var(--muted)] mb-1">
             {t.database.foodName}
           </label>
           <input
+            id={`${fieldId}-name`}
             type="text"
             autoFocus
             value={name}
@@ -286,28 +303,6 @@ export const CustomFoodModal: React.FC = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1.5">
-          <button
-            type="button"
-            onClick={() => handleSave(false)}
-            disabled={!name.trim()}
-            className="pressable w-full py-3 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
-          >
-            <Check size={16} strokeWidth={2.5} />
-            <span>{t.common.save}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => handleSave(true)}
-            disabled={!name.trim()}
-            className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
-          >
-            <Plus size={16} strokeWidth={2.5} />
-            <span>
-              {t.barcodeModal.saveToDatabase} (100{unit})
-            </span>
-          </button>
-        </div>
       </div>
     </Modal>
   );

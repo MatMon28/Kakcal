@@ -6,6 +6,14 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Glass opacity and scroll performance
+
+**Patch (Glass opacity & scroll-performance round, base `514fc03de0803646fd9000b1fdfa4b4833e5ec43`):** no `package.json` / lock-file change, no IndexedDB, storage or backup change, no new translation key, no native code change. Increases Glass panel / tile / section opacity across Light, Lite Dark and Dark so content reads crisply, and eliminates scroll lag in Glass by promoting the backdrop to a single fixed `body::before` GPU layer, removing live `backdrop-filter` from scrolling cards (keeping Liquid Glass `--glass-sheen` and specular rims), and using a constant `14px` blur on floating chrome (header, nav, dock, dialogs).
+
+- **Edited (code):** `src/styles/theme-glass.css`, `src/styles/themed-glass.css`, `src/components/widgets/widget-preview.css`, `tests/themes.test.ts`.
+- **Edited (docs):** `README.md`, `docs/styles-guide.md`, `docs/glass-material-update.md`, `docs/changes-patch.md`, `docs/changes-patch-history.md`.
+- **Verified here:** on a clean checkout of `514fc03` ("More style fixes"): `git apply --check --whitespace=error changes.patch` clean, `npm ci`, `npm run typecheck` (0 errors), `npm run lint` (0 errors, 10 base warnings), `npm test` (14 files, 110/110 passed), `npm run build` OK. **Not verified here:** a physical phone or Android WebView.
+
 ## Liquid Glass, Recipes pill fix, translucent Big Widgets & Pop 3D widgets round
 
 **Patch (Liquid Glass, Recipes pill fix, translucent Big Widgets & Pop 3D widgets round, base `de72bb68cf70b32a61e53e4fb5835fd3d02b4beb`):** fixed the Glass Recipes stretched-999px-pill ingredient container, upgraded Glass to Liquid Glass specular highlights, matched Big/Medium widget translucency to Small trays, and added Pop 3D hard offset-shadow `<layer-list>` drawables. Landed in `514fc03`.

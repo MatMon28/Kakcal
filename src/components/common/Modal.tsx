@@ -1,25 +1,42 @@
-import React, { useLayoutEffect, useId, useRef, useState } from 'react';
+import React, { useLayoutEffect, useId, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { SPRING } from '../../utils/spring';
 import { prefersReducedMotion } from '../../utils/motion';
 import { useSettings } from '../../context/AppContext';
 import { armTapRescue, createDialogHost, finishExitAnimations, type ExitContext } from './dialogExit';
 import { scrollFadeY } from '../../utils/scrollFade';
+import { UndoRemovalNotice } from './UndoRemovalNotice';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Explicit parent-step navigation, independent of the dismiss button. */
+  onBack?: () => void;
   title: string;
   subtitle?: string;
   children: React.ReactNode;
   maxWidth?: string;
   footer?: React.ReactNode;
+  /** Changing steps resets the scroll body without tearing down the dialog. */
+  bodyKey?: string;
   /** Id of the bottom-bar button that opens this dialog: on close the dialog is sucked into it. */
   dockId?: string;
 }
 
 const openModalStack: Array<() => void> = [];
+const modalListeners = new Set<() => void>();
+const getTopModal = () => openModalStack.at(-1);
+const subscribeToModals = (listener: () => void) => {
+  modalListeners.add(listener);
+  return () => { modalListeners.delete(listener); };
+};
+const notifyModalStack = () => modalListeners.forEach((listener) => listener());
+
+export function PageUndoRemoval() {
+  const top = useSyncExternalStore(subscribeToModals, getTopModal, getTopModal);
+  return top ? null : <UndoRemovalNotice floating />;
+}
 let previousBodyOverflow = '';
 let anchor: { page: Element | null; x: number; y: number } | null = null;
 
@@ -39,14 +56,17 @@ const focusSelector = 'button:not(:disabled), input:not(:disabled), select:not(:
 export const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
+  onBack,
   title,
   subtitle,
   children,
   maxWidth = 'max-w-lg',
   footer,
+  bodyKey,
   dockId,
 }) => {
   const { t } = useSettings();
+  const top = useSyncExternalStore(subscribeToModals, getTopModal, getTopModal);
   const titleId = useId();
   const viewportRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -84,6 +104,7 @@ export const Modal: React.FC<ModalProps> = ({
       document.documentElement.classList.add('kc-sheet-open');
     }
     openModalStack.push(closeHandler);
+    notifyModalStack();
     document.dispatchEvent(new Event('kc:overlay-open'));
     document.body.style.overflow = 'hidden';
 
@@ -153,6 +174,7 @@ export const Modal: React.FC<ModalProps> = ({
       const wasTop = isTop();
       const idx = openModalStack.lastIndexOf(closeHandler);
       if (idx >= 0) openModalStack.splice(idx, 1);
+      notifyModalStack();
       // Closed for any reason (X, backdrop, swipe, Back, or the parent after saving): the exit animation is played by
       // the dialog host when React removes the overlay (dialogExit.ts). `swiped` is read and cleared there.
       if (!openModalStack.length) {
@@ -268,7 +290,7 @@ export const Modal: React.FC<ModalProps> = ({
   // Phones: a sheet anchored to the bottom of the visual viewport (so it stays above the
   // keyboard). Wider screens: centred. The backdrop blur is desktop-only; it is costly on mobile GPUs.
   return createPortal(
-    <div ref={viewportRef} className="dialog-viewport fixed z-50 flex items-end sm:items-center justify-center" data-no-swipe>
+    <div ref={viewportRef} className="dialog-viewport fixed z-50 flex items-end sm:items-center justify-center" data-no-swipe aria-hidden={top !== undefined && top !== closeHandlerRef.current ? true : undefined}>
       <div ref={backdropRef} data-sheet-scrim className="absolute inset-0 bg-black/45 sm:backdrop-blur-xs anim-backdrop" aria-hidden="true" onClick={onClose} />
       <div
         ref={panelRef}
@@ -284,7 +306,12 @@ export const Modal: React.FC<ModalProps> = ({
           <span className="h-1.5 w-11 rounded-full bg-[var(--border)]" />
         </div>
         <div className="px-5 py-3.5 sm:py-4 border-b border-[var(--border)] flex items-center justify-between gap-3 shrink-0 touch-none" {...dragHandlers}>
-          <div className="min-w-0">
+          {onBack && (
+            <button type="button" onClick={onBack} aria-label={t.common.back} title={t.common.back} className="pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center">
+              <ArrowLeft size={17} />
+            </button>
+          )}
+          <div className="min-w-0 flex-1">
             <h2 id={titleId} className="text-base sm:text-lg font-extrabold text-[var(--text)] tracking-tight break-words">
               {title}
             </h2>
@@ -299,9 +326,10 @@ export const Modal: React.FC<ModalProps> = ({
             <X size={17} />
           </button>
         </div>
-        <div ref={scrollFadeY} data-dialog-scroll className="p-4 sm:p-5 overflow-y-auto overscroll-contain min-h-0 flex-1 text-[var(--text)]">
+        <div key={bodyKey} ref={scrollFadeY} data-dialog-scroll className="p-4 sm:p-5 overflow-y-auto overscroll-contain min-h-0 flex-1 text-[var(--text)]">
           {children}
         </div>
+        {top !== undefined && top === closeHandlerRef.current && <UndoRemovalNotice />}
         {footer && (
           <div className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)] px-4 sm:px-5 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
             {footer}

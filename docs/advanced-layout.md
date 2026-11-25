@@ -75,3 +75,5 @@ Original widths are Tailwind spans on a 6-column grid (`LayoutItem.span`): Intak
 - **Header:** the top row of the page header is only clipped while it collapses; fully shown it is not, so the Pop shadows of Profile / Settings are whole (`Header.tsx`).
 
 Custom meal types have optional built-in or uploaded icons. Choose an icon when adding a type in Today > Edit > Add, or edit an existing category icon there. Icons appear in Today, diary/planner details and photo meal selection. Multiple custom trackers retain the generic dock picker.
+
+Removing a field or deleting a custom meal type offers **Undo** while the notice is visible. Restoring a meal type restores its labels/layout references; removing it still does not delete logged meals. See [food workflows](food-workflows-update.md).

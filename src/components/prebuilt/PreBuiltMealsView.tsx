@@ -135,9 +135,9 @@ export const PreBuiltMealsView: React.FC = () => {
 
       <LogRecipeToSlotModal s={s} />
 
-      <CreateMealModal s={s} />
+      {s.isCreateOpen && <CreateMealModal s={s} />}
 
-      <RecipeBuilderModal s={s} />
+      {s.isRecipeOpen && <RecipeBuilderModal s={s} />}
       <RecipeImportModal s={s} />
     </div>
     </>

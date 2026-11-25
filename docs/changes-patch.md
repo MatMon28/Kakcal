@@ -6,11 +6,10 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md), [changes-patch-history.md](changes-patch-history.md) (what earlier patches contained)
 
-**Current patch (Glass opacity & scroll-performance round, base `514fc03de0803646fd9000b1fdfa4b4833e5ec43`):** no `package.json` / lock-file change, no IndexedDB, storage or backup change, no new translation key, no native code change. Increases Glass panel / tile / section opacity across Light, Lite Dark and Dark so content reads crisply, and eliminates scroll lag in Glass by promoting the backdrop to a single fixed `body::before` GPU layer, removing live `backdrop-filter` from scrolling cards (keeping Liquid Glass `--glass-sheen` and specular rims), and using a constant `14px` blur on floating chrome (header, nav, dock, dialogs).
+**Current patch (Food workflows round, base `a8eb790362062919a64992ff5b25655faf1493a6`):** recipe ingredient review with replacement/custom food, a compact recap/portion field, a shared ingredient picker and fixed food/meal/recipe actions, nested Back, historical meal editing/navigation and transient Undo. Includes English/Italian UI copy, tests and workflow docs. No package, native Android, persistence schema or backup format changes.
 
-- **Edited (code):** `src/styles/theme-glass.css`, `src/styles/themed-glass.css`, `src/components/widgets/widget-preview.css`, `tests/themes.test.ts`.
-- **Edited (docs):** `README.md`, `docs/styles-guide.md`, `docs/glass-material-update.md`, `docs/changes-patch.md`, `docs/changes-patch-history.md`.
-- **Verified here:** on a clean checkout of `514fc03` ("More style fixes"): `git apply --check --whitespace=error changes.patch` clean, `npm ci`, `npm run typecheck` (0 errors), `npm run lint` (0 errors, 10 base warnings), `npm test` (14 files, 110/110 passed), `npm run build` OK. **Not verified here:** a physical phone or Android WebView.
+- **Scope:** upstream Kakcal source, tests and documentation only. The separate update-report site and its generated demo build are excluded.
+- **Verified:** `git apply --check --whitespace=error` against the base, type check, lint (no errors), 226 unit/component tests, Vite production build, and the Chromium workflow regression. Native camera and Android WebView are not covered by the browser test. See [food workflows](food-workflows-update.md#verify) for the commands.
 
 Apply from that repository revision (the base commit above):
 

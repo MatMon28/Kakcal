@@ -1,5 +1,5 @@
 import { STORAGE_KEYS } from '../context/appStorage';
-import { replaceAllDays } from '../storage/dayStore';
+import { loadDayLogs, replaceAllDays } from '../storage/dayStore';
 import { STORE_PHOTOS, withStores } from '../storage/idb';
 import { flushWrites } from '../storage/writeQueue';
 import type { DayLog } from '../types';
@@ -49,14 +49,15 @@ function readArray(key: string): Json[] {
 }
 
 /** Rewrites every stored journal day with `change` (IndexedDB or localStorage, whichever backend is in use). */
-async function changeEveryDay(dayLogs: Record<string, DayLog>, change: (day: DayLog) => DayLog): Promise<void> {
+async function changeEveryDay(dayLogs: Record<string, DayLog> | undefined, change: (day: DayLog) => DayLog): Promise<void> {
   const next: Record<string, DayLog> = {};
-  for (const date in dayLogs) next[date] = change(dayLogs[date]);
+  const logs = dayLogs ?? (await loadDayLogs()).logs;
+  for (const date in logs) next[date] = change(logs[date]);
   await replaceAllDays(next);
 }
 
 /** Deletes one category. Resolves when the change is stored; throws when storage refuses the write. */
-export async function deleteCategory(category: DeleteCategory, dayLogs: Record<string, DayLog>): Promise<void> {
+export async function deleteCategory(category: DeleteCategory, dayLogs?: Record<string, DayLog>): Promise<void> {
   // Nothing still queued may be written back over the deletion.
   await flushWrites().catch(() => undefined);
 

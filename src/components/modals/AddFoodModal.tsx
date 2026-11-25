@@ -1,6 +1,10 @@
 import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
+import { WorkflowFooter } from '../common/WorkflowFooter';
+import { CustomFoodModal } from './CustomFoodModal';
+import { useRemovalScope } from '../common/UndoRemovalNotice';
+import { removeWithUndo } from '../../utils/undoRemoval';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { AmountSelector } from '../common/AmountSelector';
 import { FoodItem, LoggedFoodItem, PreBuiltMeal } from '../../types';
@@ -18,12 +22,9 @@ import { SaveBeforeCloseDialog } from '../common/SaveBeforeCloseDialog';
 import {
   Search,
   ScanBarcode,
-  ArrowLeft,
   UtensilsCrossed,
   History,
-  Check,
   Trash2,
-  Plus,
   PlusCircle,
   X,
 } from 'lucide-react';
@@ -41,6 +42,8 @@ interface QueuedEntry {
   planId?: string;
 }
 
+const BarcodeLookupModal = React.lazy(() => import('./BarcodeLookupModal').then((module) => ({ default: module.BarcodeLookupModal })));
+
 const RECENT_CHIP_CLASS =
   'pressable px-3 py-1.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-xs font-bold text-[var(--text)]';
 
@@ -48,18 +51,18 @@ export const AddFoodModal: React.FC = () => {
   const {
     isAddFoodOpen,
     setIsAddFoodOpen,
+    foodLogSeed,
+    setFoodLogSeed,
     targetMealSlot,
     setTargetMealSlot,
     allFoods,
     language,
-    setIsBarcodeOpen,
     preBuiltMeals,
     logItemsToSlot,
     allDayLogs,
     selectedDate,
     settings,
     favoriteFoods,
-    setIsCustomFoodOpen,
     rememberFood,
     t,
   } = useApp();
@@ -69,10 +72,14 @@ export const AddFoodModal: React.FC = () => {
   const noteKey = memoryKey(selectedDate, targetMealSlot);
   const mealNote = noteDrafts[noteKey] ?? journal.memories[noteKey]?.note ?? '';
 
+  const undoScope = useRemovalScope();
+  const [child, setChild] = useState<'barcode' | 'custom' | null>(null);
+  const [editingKey, setEditingKey] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeFood, setActiveFood] = useState<FoodItem | null>(null);
   const [currentAmount, setCurrentAmount] = useState<number>(100);
-  const [queuedItems, setQueuedItems] = useState<QueuedEntry[]>([]);
+  const [queuedItems, setQueuedItems] = useState<QueuedEntry[]>(() => (foodLogSeed ?? []).map((item, index) => ({ ...item, key: `seed-${index}` })));
+  useEffect(() => { if (foodLogSeed?.length) setFoodLogSeed([]); }, [foodLogSeed, setFoodLogSeed]);
   const [searchFocused, setSearchFocused] = useState(false);
   const [confirmCloseOpen, setConfirmCloseOpen] = useState(false);
   const activeSlotRef = useRef<HTMLButtonElement | null>(null);
@@ -223,15 +230,16 @@ export const AddFoodModal: React.FC = () => {
     else close();
   };
 
-  const handlePickFood = (food: FoodItem) => {
+  const handlePickFood = (food: FoodItem, amount = getDefaultAmount(food)) => {
+    setEditingKey(null);
     rememberFood(food);
     setActiveFood(food);
     // Last weight used for this food, else its classic portion, else 100 g/ml.
-    setCurrentAmount(getDefaultAmount(food));
+    setCurrentAmount(amount);
   };
 
   const handleEditQueued = (entry: QueuedEntry) => {
-    setQueuedItems((prev) => prev.filter((q) => q.key !== entry.key));
+    setEditingKey(entry.key);
     setActiveFood(entry.food);
     setCurrentAmount(entry.amount);
   };
@@ -239,10 +247,9 @@ export const AddFoodModal: React.FC = () => {
   const handleAddAnother = () => {
     if (!activeFood || currentAmount <= 0) return;
     setLastAmount(activeFood.id, currentAmount);
-    setQueuedItems((prev) => [
-      ...prev,
-      { key: `${activeFood.id}-${Date.now()}`, food: activeFood, amount: currentAmount },
-    ]);
+    const entry = { key: editingKey ?? `${activeFood.id}-${Date.now()}`, food: activeFood, amount: currentAmount };
+    setQueuedItems((prev) => editingKey ? prev.map((item) => item.key === editingKey ? { ...item, ...entry } : item) : [...prev, entry]);
+    setEditingKey(null);
     setActiveFood(null);
     setSearchTerm('');
   };
@@ -292,13 +299,11 @@ export const AddFoodModal: React.FC = () => {
 
   const handleLogNow = () => {
     const finalEntries: QueuedEntry[] = [...queuedItems];
-    if (activeFood && currentAmount > 0) {
+    if (activeFood && Number.isFinite(currentAmount) && currentAmount > 0) {
       setLastAmount(activeFood.id, currentAmount);
-      finalEntries.push({
-        key: `${activeFood.id}-${Date.now()}`,
-        food: activeFood,
-        amount: currentAmount,
-      });
+      const index = finalEntries.findIndex((item) => item.key === editingKey);
+      if (index >= 0) finalEntries[index] = { ...finalEntries[index], amount: currentAmount };
+      else finalEntries.push({ key: `${activeFood.id}-${Date.now()}`, food: activeFood, amount: currentAmount });
     }
     if (finalEntries.length === 0) return;
 
@@ -329,10 +334,12 @@ export const AddFoodModal: React.FC = () => {
   };
 
   const removeQueued = (key: string) =>
-    setQueuedItems((prev) => prev.filter((item) => item.key !== key));
+    removeWithUndo(queuedItems, queuedItems.findIndex((item) => item.key === key), setQueuedItems, undoScope, (a, b) => a.key === b.key);
 
   const portionKcal = activeFood ? kcalOf(activeFood, currentAmount) : 0;
-  const queuedTotalKcal = queuedItems.reduce((s, e) => s + kcalOf(e.food, e.amount), 0);
+  const otherQueued = queuedItems.filter((item) => item.key !== editingKey);
+  const validAmount = Number.isFinite(currentAmount) && currentAmount > 0;
+  const logCount = queuedItems.length + (activeFood && !editingKey && validAmount ? 1 : 0);
 
   // Panel shown while the search field is empty/focused or only one char is typed.
   const favoritesPanel = (items: FoodItem[]) => (
@@ -368,6 +375,14 @@ export const AddFoodModal: React.FC = () => {
       dockId="food"
       isOpen={isAddFoodOpen}
       onClose={requestClose}
+      bodyKey={activeFood?.id ?? 'picker'}
+      onBack={activeFood ? () => { setActiveFood(null); setEditingKey(null); } : undefined}
+      footer={<WorkflowFooter
+        onMore={activeFood ? handleAddAnother : undefined}
+        more={language === 'it' ? 'Aggiungi altro' : 'Add more'} moreDisabled={!validAmount}
+        primary={logCount <= 1 ? (language === 'it' ? 'Registra' : 'Log food') : t.foodModal.finishBatchBtn.replace('{count}', String(logCount))}
+        onPrimary={handleLogNow} disabled={!logCount || Boolean(activeFood && !validAmount)}
+      />}
       title={activeFood ? nameOf(activeFood) : t.foodModal.title}
       subtitle={slotLabel(targetMealSlot)}
       maxWidth="max-w-xl"
@@ -375,15 +390,7 @@ export const AddFoodModal: React.FC = () => {
       {activeFood ? (
         /* ---------- QUANTITY SELECTION ---------- */
         <div className="space-y-4">
-          <div className="flex items-center justify-between gap-2">
-            <button
-              type="button"
-              onClick={() => setActiveFood(null)}
-              className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
-            >
-              <ArrowLeft size={14} />
-              <span>{t.common.back}</span>
-            </button>
+          <div className="flex items-center justify-end">
             <FavoriteButton foodId={activeFood.id} />
           </div>
 
@@ -401,12 +408,12 @@ export const AddFoodModal: React.FC = () => {
 
           <FoodMacroGrid food={activeFood} amount={currentAmount} />
 
-          {queuedItems.length > 0 && (
+          {otherQueued.length > 0 && (
             <div className="bg-[var(--inset)] rounded-2xl p-3 space-y-1.5">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--muted)] block">
-                {t.foodModal.queuedTitle} ({queuedItems.length})
+                {t.foodModal.queuedTitle} ({otherQueued.length})
               </span>
-              {queuedItems.map((q) => (
+              {otherQueued.map((q) => (
                 <div
                   key={q.key}
                   className="flex items-center justify-between text-xs bg-[var(--surface)] rounded-xl px-3 py-2"
@@ -435,32 +442,6 @@ export const AddFoodModal: React.FC = () => {
             </div>
           )}
 
-          {/* By default the food is added to a batch, so more items can be added next. The explicit
-              finish button only appears once at least one item is queued. */}
-          <div className="space-y-2 pt-1">
-            <button
-              type="button"
-              onClick={handleAddAnother}
-              disabled={currentAmount <= 0}
-              className="pressable w-full py-3 px-4 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#17432A] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm disabled:opacity-40"
-            >
-              <Plus size={16} strokeWidth={2.5} />
-              <span>{t.foodModal.addAnotherBtn} · {portionKcal} kcal</span>
-            </button>
-
-            {queuedItems.length > 0 && (
-              <button
-                type="button"
-                onClick={handleLogNow}
-                className="pressable w-full py-3 px-4 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums"
-              >
-                <Check size={17} strokeWidth={2.5} />
-                <span>
-                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length + 1))} · {queuedTotalKcal + portionKcal} kcal
-                </span>
-              </button>
-            )}
-          </div>
         </div>
       ) : (
         /* ---------- PICK STEP ---------- */
@@ -526,10 +507,7 @@ export const AddFoodModal: React.FC = () => {
               </div>
               <button
                 type="button"
-                onClick={() => {
-                  setIsAddFoodOpen(false);
-                  setIsBarcodeOpen(true);
-                }}
+                onClick={() => setChild('barcode')}
                 className="pressable px-3.5 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] rounded-2xl text-[var(--text)] flex items-center gap-1.5 text-xs font-bold shrink-0"
                 title={t.foodModal.barcodeScan}
                 aria-label={t.foodModal.barcodeScan}
@@ -537,6 +515,9 @@ export const AddFoodModal: React.FC = () => {
                 <ScanBarcode size={17} />
               </button>
             </div>
+            <button type="button" onClick={() => setChild('custom')} className="pressable px-3 min-h-9 inline-flex items-center gap-1.5 rounded-full bg-[var(--inset)] border border-[var(--border)] text-xs font-bold">
+              <PlusCircle size={14} /> {t.foodModal.addCustomFood}
+            </button>
             {trimmedQuery.length === 1 && (
               <p className="text-[11px] font-medium text-[var(--muted)] px-1">
                 {t.foodModal.minCharsHint}
@@ -555,21 +536,7 @@ export const AddFoodModal: React.FC = () => {
                   <div className="flex flex-wrap gap-2 justify-center">
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsAddFoodOpen(false);
-                        setIsCustomFoodOpen(true);
-                      }}
-                      className="pressable px-3.5 py-2 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold flex items-center gap-1.5"
-                    >
-                      <PlusCircle size={14} />
-                      {t.foodModal.addCustomFood}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsAddFoodOpen(false);
-                        setIsBarcodeOpen(true);
-                      }}
+                      onClick={() => setChild('barcode')}
                       className="pressable px-3.5 py-2 rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183F66] text-xs font-extrabold flex items-center gap-1.5"
                     >
                       <ScanBarcode size={14} />
@@ -773,23 +740,14 @@ export const AddFoodModal: React.FC = () => {
                   </span>
                 ))}
               </div>
-              <button
-                type="button"
-                onClick={handleLogNow}
-                className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums"
-              >
-                <Check size={17} strokeWidth={2.5} />
-                <span>
-                  {t.foodModal.finishBatchBtn.replace('{count}', String(queuedItems.length))} ·{' '}
-                  {queuedTotalKcal} kcal
-                </span>
-              </button>
             </div>
           )}
         </div>
       )}
       {settings.inlineMealNotes && <div className="mt-4"><MealNoteField value={mealNote} onChange={(value) => setNoteDrafts((prev) => ({ ...prev, [noteKey]: value }))} /></div>}
     </Modal>
+    {child === 'barcode' && <React.Suspense fallback={null}><BarcodeLookupModal onReturn={() => setChild(null)} onPick={handlePickFood} /></React.Suspense>}
+    {child === 'custom' && <CustomFoodModal onReturn={() => setChild(null)} onPick={handlePickFood} />}
     <SaveBeforeCloseDialog
       open={confirmCloseOpen && isAddFoodOpen}
       onSave={handleLogNow}

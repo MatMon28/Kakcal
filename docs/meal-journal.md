@@ -98,3 +98,7 @@ The store persists before publishing; storage errors are not reported as success
 - Desktop camera capture was tested with Chromium's fake camera, not physical hardware. Android builds, physical Android/iOS camera/file pickers and native permissions were not tested in this environment; verify those on your devices before releasing an APK.
 - Photos are subject to browser storage capacity. Since backup version 2 the unencrypted JSON backup holds everything **except the picture files** (it keeps the pictures' notes, which are re-attached on import to pictures already on the device); export the pictures separately (ZIP) before clearing browser data or uninstalling. Imported backup data is normalized; old backups without the new section do not wipe it.
 Photo composer: clickable calendar icon with the date below it, next to a meal select that shows only the chosen meal; Save photo sits in the pop-up footer. The gallery has full-width search and date fields, no Add photo button, and the viewer has a Go to the meal button. See [custom-photo-share-update.md](custom-photo-share-update.md).
+
+## Edit a logged meal or open its day
+
+A Meal diary detail offers **Edit meal** (amounts, delete with Undo, add more food) and **Go to day** (Today on the original date with the meal expanded). It displays the updated journal after edits. Planner and shopping-list deletions also show Undo; see [food workflows](food-workflows-update.md).

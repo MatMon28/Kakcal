@@ -6,7 +6,7 @@ import { calculateBMR, calculateMacros, calculateTEF, calculateTotalActivityCalo
 import { addDaysToDateString, getTodayDateString } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../utils/customTrackers';
-import { getDefaultPeriodTags, periodTagListKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
+import { getDefaultPeriodTags, periodTagListKey, periodTagSelectionKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
 import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
 import { isPageHiddenBySettings } from '../utils/pageVisibility';
@@ -24,6 +24,7 @@ import { JournalDataContext, NavActionsContext, NavContext, SettingsContext, UiC
 /** One empty day per date (C4): a new object on every read would defeat memoisation. Never written into state. */
 const emptyDays = new Map<string, DayLog>();
 import { allMealItems } from '../utils/mealItems';
+import { offerRemovalUndo, removeWithUndo, restoreAt } from '../utils/undoRemoval';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
 import { DEFAULT_NOTIFICATION_SETTINGS, normalizeNotificationSettings } from '../utils/notifications';
@@ -42,6 +43,7 @@ import {
   normalizeTheme,
 } from './appStorage';
 import { createDemoSeedDays } from './demoSeeds';
+import type { AppContextType } from './appContextType';
 
 // Still exported from here for existing importers; the value lives in `appStorage.ts`.
 export { DEFAULT_QUICK_FOODS };
@@ -105,7 +107,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteCustomFood = (foodId: string) => {
-    setCustomFoods((prev) => prev.filter((f) => f.id !== foodId));
+    removeWithUndo(customFoods, customFoods.findIndex((f) => f.id === foodId), setCustomFoods, undefined, (a, b) => a.id === b.id);
   };
   usePersistLocal(STORAGE_KEYS.CUSTOM_FOODS, customFoods);
 
@@ -181,6 +183,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setDayLogs((prev) => ({ ...prev, [date]: fn(prev[date] || emptyDayFor(date)) }));
   };
 
+  /** Inverse operations act on the same date and live array, even if the user changed days since deleting. */
+  const removeDayItem = <T extends { id: string },>(
+    date: string, id: string, read: (day: DayLog) => T[], write: (day: DayLog, items: T[]) => DayLog,
+  ) => {
+    const items = read(dayLogs[date] ?? emptyDayFor(date));
+    removeWithUndo(items, items.findIndex((item) => item.id === id), (change) => {
+      mutateDay(date, (day) => write(day, change(read(day))));
+    }, undefined, (a, b) => a.id === b.id);
+  };
+
   // 6. Prebuilt Meals
   const [preBuiltMeals, setPreBuiltMeals] = useState<PreBuiltMeal[]>(() => {
     const saved = localStorage.getItem(STORAGE_KEYS.PREBUILT_MEALS);
@@ -208,12 +220,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deletePreBuiltMeal = (mealId: string) => {
-    setPreBuiltMeals((prev) => prev.filter((m) => m.id !== mealId));
+    removeWithUndo(preBuiltMeals, preBuiltMeals.findIndex((m) => m.id === mealId), setPreBuiltMeals, undefined, (a, b) => a.id === b.id);
   };
   usePersistLocal(STORAGE_KEYS.PREBUILT_MEALS, preBuiltMeals);
 
   // Modals state
   const [isAddFoodOpen, setIsAddFoodOpen] = useState(false);
+  const [foodLogSeed, setFoodLogSeed] = useState<AppContextType['foodLogSeed']>([]);
   const [targetMealSlot, setTargetMealSlot] = useState<MealSlotId>('breakfast');
   const [isLogActivityOpen, setIsLogActivityOpen] = useState(false);
   const [isBarcodeOpen, setIsBarcodeOpen] = useState(false);
@@ -292,9 +305,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const clearPeriodDay = (date: string) => {
     const cur = periodRef.current;
+    const removed = cur.logs[date];
+    if (!removed) return;
     const nextLogs = { ...cur.logs };
     delete nextLogs[date];
     savePeriodData({ ...cur, logs: nextLogs });
+    offerRemovalUndo(() => {
+      const latest = periodRef.current;
+      if (!latest.logs[date]) savePeriodData({ ...latest, logs: { ...latest.logs, [date]: removed } });
+    });
   };
 
   /** Mark `date` and the following periodDuration-1 days as period days. */
@@ -356,9 +375,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deletePeriodTag = (group: PeriodTagGroup, id: string) => {
     const cur = periodRef.current;
     const key = periodTagListKey(group);
+    const selectionKey = periodTagSelectionKey(group);
+    const index = cur.settings[key].findIndex((tag) => tag.id === id);
+    const tag = cur.settings[key][index];
+    if (!tag) return;
+    const affected = Object.entries(cur.logs).filter(([, log]) => log[selectionKey].includes(id)).map(([date]) => date);
     savePeriodData({
       settings: { ...cur.settings, [key]: cur.settings[key].filter((tag) => tag.id !== id) },
       logs: prunePeriodTags(cur.logs, group, (tagId) => tagId !== id),
+    });
+    offerRemovalUndo(() => {
+      const latest = periodRef.current;
+      const logs = { ...latest.logs };
+      for (const date of affected) {
+        const log = logs[date];
+        if (log && !log[selectionKey].includes(id)) logs[date] = { ...log, [selectionKey]: [...log[selectionKey], id] };
+      }
+      savePeriodData({ settings: { ...latest.settings, [key]: restoreAt(latest.settings[key], tag, index, (a, b) => a.id === b.id) }, logs });
     });
   };
 
@@ -508,7 +541,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeCustomActivity = (id: string) => {
-    setCustomActivities((prev) => prev.filter((x) => x.id !== id));
+    removeWithUndo(customActivities, customActivities.findIndex((x) => x.id === id), setCustomActivities, undefined, (a, b) => a.id === b.id);
   };
 
   const toggleFavoriteFood = (foodId: string) => {
@@ -536,6 +569,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const updateSettings = (partial: Partial<Settings>) => {
+    if (partial.customButtons) {
+      const incomingIds = new Set(partial.customButtons.map((button) => button.id));
+      const removed = settings.customButtons.flatMap((button, index) => incomingIds.has(button.id) ? [] : [{ button, index }]);
+      if (removed.length) offerRemovalUndo(() => setSettingsState((current) => ({
+        ...current,
+        customButtons: removed.reduce((buttons, { button, index }) => restoreAt(buttons, button, index, (a, b) => a.id === b.id), current.customButtons),
+      })));
+    }
     setSettingsState((prev) => {
       // Switching the app to Dark also sets the home-screen widgets to Dark; both stay independent after that.
       const followDark = partial.theme === 'dark' && partial.widgetStyle === undefined ? { widgetStyle: 'dark' as const } : {};
@@ -618,18 +659,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Remove logged food item
-  const removeLoggedFoodItem = (
-    mealSlot: MealSlotId,
-    loggedItemId: string,
-    date: string = selectedDate
-  ) => {
-    mutateDay(date, (day) => ({
-      ...day,
-      meals: {
-        ...day.meals,
-        [mealSlot]: (day.meals[mealSlot] ?? []).filter((item) => item.id !== loggedItemId),
-      },
-    }));
+  const removeLoggedFoodItem = (mealSlot: MealSlotId, loggedItemId: string, date: string = selectedDate) => {
+    removeDayItem(date, loggedItemId, (day) => day.meals[mealSlot] ?? [], (day, items) => (
+      { ...day, meals: { ...day.meals, [mealSlot]: items } }
+    ));
   };
 
   // Update logged food item amount
@@ -668,10 +701,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Remove activity
   const removeActivity = (activityId: string, date: string = selectedDate) => {
-    mutateDay(date, (day) => ({
-      ...day,
-      activities: day.activities.filter((act) => act.id !== activityId),
-    }));
+    removeDayItem(date, activityId, (day) => day.activities ?? [], (day, items) => ({ ...day, activities: items }));
   };
 
   // Log a water entry (each addition is its own voice/block)
@@ -689,10 +719,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Remove a single water entry
   const removeWaterEntry = (id: string, date: string = selectedDate) => {
-    mutateDay(date, (day) => ({
-      ...day,
-      waterEntries: (day.waterEntries || []).filter((w) => w.id !== id),
-    }));
+    removeDayItem(date, id, (day) => day.waterEntries ?? [], (day, items) => ({ ...day, waterEntries: items }));
   };
 
   // Quantities append one entry; done/not-done trackers still store one value per day.
@@ -714,7 +741,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeCustomEntry = (buttonId: string, entryId: string, date: string = selectedDate) => {
-    mutateDay(date, (day) => withCustomEntries(day, buttonId, getCustomEntries(day, buttonId).filter((entry) => entry.id !== entryId)));
+    removeDayItem(date, entryId, (day) => getCustomEntries(day, buttonId), (day, items) => withCustomEntries(day, buttonId, items));
   };
 
   // Keep the selected day's measurement and profile weight in sync on save.
@@ -748,10 +775,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Remove a poop entry for a day
   const removePoop = (poopId: string, date: string = selectedDate) => {
-    mutateDay(date, (day) => ({
-      ...day,
-      poops: (day.poops || []).filter((p) => p.id !== poopId),
-    }));
+    removeDayItem(date, poopId, (day) => day.poops ?? [], (day, items) => ({ ...day, poops: items }));
   };
 
   // Copy yesterday's meals
@@ -981,7 +1005,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const ui = useMemo<UiSlice>(() => ({
     selectedDate, setSelectedDate, targetMealSlot, setTargetMealSlot,
-    isAddFoodOpen, setIsAddFoodOpen, isLogActivityOpen, setIsLogActivityOpen,
+    isAddFoodOpen, setIsAddFoodOpen, foodLogSeed, setFoodLogSeed, isLogActivityOpen, setIsLogActivityOpen,
     isBarcodeOpen, setIsBarcodeOpen, isProfileOpen, setIsProfileOpen,
     isSettingsOpen, setIsSettingsOpen, isWaterOpen, setIsWaterOpen,
     isPoopOpen, setIsPoopOpen, isWeightOpen, setIsWeightOpen,
@@ -989,7 +1013,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isCustomPickerOpen, setIsCustomPickerOpen, isPeriodSheetOpen, setIsPeriodSheetOpen,
     periodSelectedDate, setPeriodSelectedDate,
   }), [
-    selectedDate, targetMealSlot, isAddFoodOpen, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
+    selectedDate, targetMealSlot, isAddFoodOpen, foodLogSeed, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
     isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId, isCustomPickerOpen,
     isPeriodSheetOpen, periodSelectedDate,
   ]);

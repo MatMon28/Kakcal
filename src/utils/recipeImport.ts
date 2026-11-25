@@ -688,6 +688,19 @@ function safeHostname(url: string): string {
 /** Things the user should know about a successful import. The UI turns these into sentences. */
 export type ImportWarning = 'no-matches' | 'few-matches' | 'no-servings' | 'seasonings' | 'multiple-recipes' | 'duplicates';
 
+/** Screen-only ingredient identity and provenance. Raw text stays with the row through replacements. */
+export interface RecipeReviewLine {
+  id: string;
+  raw?: string;
+  query?: string;
+  automatic?: FoodItem | null;
+  alternatives?: FoodItem[];
+  confidence?: IngredientMatch['confidence'];
+  optional?: boolean;
+  foodId?: string;
+  amount: number;
+}
+
 export interface ImportedRecipeDraft {
   name: string;
   imageUrl?: string;
@@ -698,6 +711,8 @@ export interface ImportedRecipeDraft {
   /** Standard portion in g, ready for `FoodItem.portion`. */
   portion: number;
   portionSource: 'servings' | 'default';
+  /** Source order, including unmatched rows and optional seasonings. */
+  reviewLines: RecipeReviewLine[];
   /** Matched ingredients, ready for `recipeIngredients`. */
   items: Array<{ food: FoodItem; amount: number; raw: string; confidence: IngredientMatch['confidence'] }>;
   /** Lines with no product in the database: shown to the user to search manually. */
@@ -724,11 +739,20 @@ export function buildImportedRecipe(page: ParsedRecipePage, matches: readonly In
   const items: ImportedRecipeDraft['items'] = [];
   const unmatched: ImportedRecipeDraft['unmatched'] = [];
   const seasonings: ImportedRecipeDraft['seasonings'] = [];
+  const reviewLines: RecipeReviewLine[] = [];
   let totalGrams = 0;
   let matchedGrams = 0;
 
   for (const match of matches) {
     const { parsed } = match;
+    const optional = parsed.amountKind === 'vague';
+    const usable = !optional && match.food && match.amount !== null && match.amount > 0 && parsed.amountKind !== 'none';
+    reviewLines.push({
+      id: `import-${reviewLines.length}`, raw: parsed.raw, query: parsed.query,
+      automatic: match.food, alternatives: match.alternatives, confidence: match.confidence, optional,
+      foodId: usable ? match.food?.id : undefined,
+      amount: usable ? round1(match.amount!) : optional ? (parsed.grams || 1) : (parsed.grams || 0),
+    });
     // "Sale quanto basta" is not an ingredient with a weight: it is a seasoning. Counting a pinch as
     // 0.5 g would not hurt, but inventing 100 g would, and either way it is noise in the totals.
     if (parsed.amountKind === 'vague') {
@@ -781,6 +805,7 @@ export function buildImportedRecipe(page: ParsedRecipePage, matches: readonly In
     servings,
     portion,
     portionSource: servings && totalGrams > 0 ? 'servings' : 'default',
+    reviewLines,
     items,
     unmatched,
     seasonings,

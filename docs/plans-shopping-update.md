@@ -26,3 +26,5 @@
 ## Verification
 
 `tests/plans-shopping.test.tsx` (chips, grouping, shopping maths, storage normalising) and `tests/planner-wizard.test.tsx` (name on page 1, reuse with extra days, moving the first day, whole-plan edit, single-meal edit keeps its plan) run in `npm test`. `npx tsc --noEmit`, `npm run lint` (no new warnings) and `npm run build` pass. Not exercised in a real browser or on a device (no browser binary in the authoring environment): check with `VITE_DEMO_DATA=true npm run dev` > Custom.
+
+Deleting a saved plan/draft, shopping list, shopping line, or draft ingredient offers **Undo**. Restoring a deleted plan restores its scheduled meals and its shopping list without changing logged food. See [food workflows](food-workflows-update.md).

@@ -18,6 +18,7 @@
 | Understand header / dialogs | [journal-shell.md](journal-shell.md) |
 | Understand a page (Today, Food, Movement, Custom, Statistics, Period, Settings), or how the meal is preselected by the time of day | [journal-pages.md](journal-pages.md) |
 | Change meal planning, meal notes, meal diary or photo diary | [meal-journal.md](meal-journal.md) |
+| Review imported ingredients, collapse the recipe portion, add ingredients, go Back from scan/custom food, use fixed Log/Save, edit a diary meal, or undo a deletion | [food-workflows-update.md](food-workflows-update.md) |
 | Planner wizard (days, weekdays, specific days), Excel export, *Add to Meals*, recipe portion, protein per kg, intake / burned target, water in Statistics, Custom shortcuts, photo time range, recent / favourite foods | [new-features-update.md](new-features-update.md) |
 | Change the Custom grid in Minimal mode, header icons, photo diary pop-ups, "Go to the meal", short share links, when the share pop-up opens | [custom-photo-share-update.md](custom-photo-share-update.md) |
 | Custom bottom bar (Plan / Photo diary), planner first / last day, planner drafts, earlier-plan and quick-food shortcuts, Foods pills, header icon order, removed taglines, deleted Next.js leftovers | [planner-dock-update.md](planner-dock-update.md) |
@@ -65,6 +66,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | Persisted keys / backup | [storage-and-privacy.md](storage-and-privacy.md), [backup-update.md](backup-update.md) (a new key must also go into `exportDataJson` / `importDataJson`, unless it is a `kcak_*` interface preference) |
 | Goals / limits, Body page, Profile body section, body-part icons | [advanced-personalisation.md](advanced-personalisation.md), `file-map/components-pages.md`, `file-map/components-modals.md`, `file-map/components-common.md`, `file-map/utils.md` |
 | Advanced layout (editable grid, pencil toolbar, layout store, meal types) | [advanced-layout.md](advanced-layout.md), `file-map/components-common.md`, `file-map/components-dashboard.md`, `file-map/components-pages.md`, `file-map/components-modals.md`, `file-map/utils.md` |
+| Recipe, food logging, meal diary or Undo workflows | [food-workflows-update.md](food-workflows-update.md), [journal-pages.md](journal-pages.md) and the corresponding file map |
 | Page behaviour or Settings layout | [journal-pages.md](journal-pages.md) / [journal-shell.md](journal-shell.md) |
 | Animation constants | [motion.md](motion.md), [launch-intro.md](launch-intro.md) |
 | Mount / render / layout cost of a page, collapsible bodies, benchmark script, container-query fitting of a card | [performance.md](performance.md), [verification.md](verification.md#page-change-benchmark), `file-map/components-common.md`, `file-map/scripts-public.md` |

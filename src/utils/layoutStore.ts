@@ -1,3 +1,4 @@
+import { offerRemovalUndo, restoreAt } from './undoRemoval';
 import { useSyncExternalStore } from 'react';
 import type {
   CustomMealType,
@@ -269,11 +270,19 @@ export function applyItemChanges(page: LayoutPageId, changes: Record<string, Par
  * Removes a field. `others` can change the remaining fields at the same time. A removed field forgets its place.
  */
 export function hideItem(page: LayoutPageId, id: string, others: Record<string, Partial<LayoutItemPrefs>> = {}) {
+  const previous = state.pages[page];
   updatePage(page, (layout) => {
     let next = layout.hidden.includes(id) ? layout : { ...layout, hidden: [...layout.hidden, id] };
     for (const [other, patch] of Object.entries(others)) next = patchItem(next, other, patch);
     return patchItem(next, id, { col: undefined, top: undefined, row: undefined });
   });
+  if (!previous.hidden.includes(id)) offerRemovalUndo(() => updatePage(page, (layout) => {
+    if (!layout.hidden.includes(id)) return layout;
+    const items = { ...layout.items };
+    if (previous.items[id]) items[id] = previous.items[id];
+    else delete items[id];
+    return { ...layout, hidden: layout.hidden.filter((item) => item !== id), items };
+  }));
 }
 
 /** Brings a removed field back. It has no place any more, so it appears after the placed fields. */
@@ -307,6 +316,10 @@ export function setMealTypeIcon(id: string, icon: string) {
 
 /** Deletes a meal type. Food already logged in it stays in the journal and in the totals. */
 export function removeMealType(id: string) {
+  const index = state.mealTypes.findIndex((meal) => meal.id === id);
+  const removed = state.mealTypes[index];
+  if (!removed) return;
+  const original = state.pages;
   const key = mealItemId(id);
   const pages = { ...state.pages };
   for (const page of LAYOUT_PAGES) {
@@ -316,6 +329,19 @@ export function removeMealType(id: string) {
     pages[page] = { order: layout.order.filter((x) => x !== key), hidden: layout.hidden.filter((x) => x !== key), items };
   }
   commit({ ...state, mealTypes: state.mealTypes.filter((m) => m.id !== id), pages });
+  offerRemovalUndo(() => {
+    const nextPages = { ...state.pages };
+    for (const page of LAYOUT_PAGES) {
+      const prior = original[page];
+      const latest = nextPages[page];
+      nextPages[page] = {
+        order: prior.order.includes(key) ? restoreAt(latest.order, key, prior.order.indexOf(key)) : latest.order,
+        hidden: prior.hidden.includes(key) ? restoreAt(latest.hidden, key, prior.hidden.indexOf(key)) : latest.hidden,
+        items: prior.items[key] ? { ...latest.items, [key]: prior.items[key] } : latest.items,
+      };
+    }
+    commit({ ...state, mealTypes: restoreAt(state.mealTypes, removed, index, (a, b) => a.id === b.id), pages: nextPages });
+  });
 }
 
 // ----- Backup -----

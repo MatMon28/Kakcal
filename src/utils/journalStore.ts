@@ -3,9 +3,11 @@ import type { Language, LoggedFoodItem, MealSlotId } from '../types';
 import type { MealJournalData, MealMemory, MealPhoto, MealPlan, PlanGroup, ShoppingItem, ShoppingList } from '../types/journal';
 import { DEMO_MODE } from '../config/demo';
 import { makeDemoJournal } from '../data/journalDemo';
-import { deletePhotoBlob, isPhotoRef, migrateInlinePhotos, photoIdOf, photosFromBackup, PHOTO_REF_PATTERN, putPhotoBlob, photoRef } from '../storage/photoStore';
+import { deletePhotoBlob, getPhotoBlob, isPhotoRef, migrateInlinePhotos, photoIdOf, photosFromBackup, PHOTO_REF_PATTERN, putPhotoBlob, photoRef } from '../storage/photoStore';
 import { journalWithoutPictures, mergePictureNotes, readPhotoNotes, type PhotoNote } from './backupFormat';
 import { scheduleWrite } from '../storage/writeQueue';
+import { offerRemovalUndo, removeWithUndo, restoreAt } from './undoRemoval';
+import { removeShoppingItem } from './shoppingList';
 
 export const JOURNAL_KEY = 'kcalsync_meal_journal';
 const empty = (): MealJournalData => ({ version: 1, plans: [], planGroups: [], shoppingLists: [], memories: {}, photos: [] });
@@ -252,8 +254,8 @@ export async function migrateJournalPhotos(): Promise<void> {
 }
 export const saveMealPlans = (plans: MealPlan[], replacing?: string) =>
   commit({ ...snapshot, plans: [...snapshot.plans.filter((p) => p.id !== replacing), ...plans] });
-export const removeMealPlan = (id: string) =>
-  commit({ ...snapshot, plans: snapshot.plans.filter((p) => p.id !== id) });
+export const removeMealPlan = (id: string) => removeWithUndo(snapshot.plans, snapshot.plans.findIndex((p) => p.id === id),
+  (change) => commit({ ...snapshot, plans: change(snapshot.plans) }), undefined, (a, b) => a.id === b.id);
 /**
  * Saves a named plan: its meals replace every meal that already belongs to the group (so meals taken out of the plan
  * disappear) and the group itself is created or renamed.
@@ -265,18 +267,43 @@ export const savePlanGroup = (group: PlanGroup, plans: MealPlan[]) =>
     planGroups: [...snapshot.planGroups.filter((g) => g.id !== group.id), group],
   });
 /** Deletes a named plan with all its meals and its shopping list. Logged food is not touched. */
-export const removePlanGroup = (id: string) =>
+export function removePlanGroup(id: string) {
+  const group = snapshot.planGroups.find((item) => item.id === id);
+  const plans = snapshot.plans.filter((item) => item.groupId === id);
+  const list = snapshot.shoppingLists.find((item) => item.planId === id);
+  if (!group && !plans.length && !list) return;
   commit({
     ...snapshot,
     plans: snapshot.plans.filter((p) => p.groupId !== id),
     planGroups: snapshot.planGroups.filter((g) => g.id !== id),
     shoppingLists: snapshot.shoppingLists.filter((l) => l.planId !== id),
   });
+  offerRemovalUndo(() => commit({
+    ...snapshot,
+    plans: [...snapshot.plans, ...plans.filter((plan) => !snapshot.plans.some((p) => p.id === plan.id))],
+    planGroups: group && !snapshot.planGroups.some((g) => g.id === id) ? [...snapshot.planGroups, group] : snapshot.planGroups,
+    shoppingLists: list && !snapshot.shoppingLists.some((l) => l.planId === id) ? [...snapshot.shoppingLists, list] : snapshot.shoppingLists,
+  }));
+}
 /** Creates or replaces the shopping list of one plan (one list per plan). */
 export const saveShoppingList = (list: ShoppingList) =>
   commit({ ...snapshot, shoppingLists: [...snapshot.shoppingLists.filter((l) => l.planId !== list.planId), list] });
-export const removeShoppingList = (planId: string) =>
-  commit({ ...snapshot, shoppingLists: snapshot.shoppingLists.filter((l) => l.planId !== planId) });
+export const removeShoppingList = (planId: string) => removeWithUndo(snapshot.shoppingLists, snapshot.shoppingLists.findIndex((l) => l.planId === planId),
+  (change) => commit({ ...snapshot, shoppingLists: change(snapshot.shoppingLists) }), undefined, (a, b) => a.planId === b.planId);
+
+export function removeSavedShoppingItem(planId: string, itemId: string) {
+  const list = snapshot.shoppingLists.find((l) => l.planId === planId);
+  const index = list?.items.findIndex((item) => item.id === itemId) ?? -1;
+  const item = list?.items[index];
+  if (!list || !item) return;
+  saveShoppingList(removeShoppingItem(list, itemId));
+  offerRemovalUndo(() => {
+    const latest = snapshot.shoppingLists.find((l) => l.planId === planId);
+    if (!latest) return;
+    saveShoppingList({ ...latest, items: restoreAt(latest.items, item, index, (a, b) => a.id === b.id),
+      dismissed: latest.dismissed.filter((key) => key !== itemId), updatedAt: new Date().toISOString() });
+  });
+}
 export const updateMealPlan = (id: string, partial: Partial<Pick<MealPlan, 'read' | 'loggedAt'>>) =>
   commit({ ...snapshot, plans: snapshot.plans.map((p) => (p.id === id ? { ...p, ...partial } : p)) });
 export const updateMealMemory = (date: string, slot: MealSlotId, partial: MealMemory) => {
@@ -298,9 +325,23 @@ export async function addMealPhoto(photo: Omit<MealPhoto, 'src'>, blob: Blob): P
   saveMealPhoto({ ...photo, src: photoRef(photo.id) });
 }
 export function removeMealPhoto(id: string) {
-  const photo = snapshot.photos.find((p) => p.id === id);
+  const index = snapshot.photos.findIndex((p) => p.id === id);
+  const photo = snapshot.photos[index];
+  if (!photo) return;
+  const blobId = isPhotoRef(photo.src) ? photoIdOf(photo.src) : null;
+  const removedBlob = blobId ? getPhotoBlob(blobId).then(async (blob) => {
+    await deletePhotoBlob(blobId).catch((error) => console.error('Photo delete failed', error));
+    return blob;
+  }).catch(() => null) : null;
   commit({ ...snapshot, photos: snapshot.photos.filter((p) => p.id !== id) });
-  if (photo && isPhotoRef(photo.src)) void deletePhotoBlob(photoIdOf(photo.src)).catch((error) => console.error('Photo delete failed', error));
+  const restore = () => commit({ ...snapshot, photos: restoreAt(snapshot.photos, photo, index, (a, b) => a.id === b.id) });
+  offerRemovalUndo(() => {
+    if (!blobId || !removedBlob) { restore(); return; }
+    void removedBlob.then(async (blob) => {
+      if (blob) await putPhotoBlob(blobId, blob);
+      restore();
+    }).catch((error) => console.error('Photo restore failed', error));
+  });
 }
 
 export function plannedLogItems(plan: MealPlan, language: Language): LoggedFoodItem[] {

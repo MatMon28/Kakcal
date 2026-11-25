@@ -58,6 +58,8 @@ export interface AppContextType {
   netBalance: number;
   // Modals state
   isAddFoodOpen: boolean;
+  foodLogSeed: { food: FoodItem; amount: number }[];
+  setFoodLogSeed: (items: { food: FoodItem; amount: number }[]) => void;
   setIsAddFoodOpen: (open: boolean) => void;
   targetMealSlot: MealSlotId;
   setTargetMealSlot: (slot: MealSlotId) => void;

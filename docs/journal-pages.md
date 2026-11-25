@@ -42,3 +42,7 @@
 **Today-style meals round:** Custom opens straight on the Meal diary (no title, tagline or Create new button); diary / planner previews and details match Today's meal field; empty Today meals have no *+ Log Food*; Compact note / photo icons live in the header bar. Details: [meal-journal.md](meal-journal.md).
 
 **Glass and Material styles:** every page, dialog and dock follows them (Custom sections take a tone each, see [glass-material-update.md](glass-material-update.md)); Classic keeps its own inline section pastels.
+
+## Food and recipe workflow update
+
+Log food has a fixed green **Log food/Log all** action (including one food) and **Add more** beside it when a food is selected. **Back** in barcode lookup or the custom-food creator preserves your picker. In Custom, use **Review ingredients → Recipe recap** and collapse **Standard portion** to see more of the dish. Saved meals share the ingredient picker and fixed actions. See [food workflows](food-workflows-update.md).

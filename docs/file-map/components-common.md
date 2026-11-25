@@ -72,3 +72,12 @@ DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. The "Test mod
 | `src/components/common/Collapsible.tsx` | Settings group header takes an `icon` and a `tone` (badge colours from `settings/SettingsParts.tsx` `TONE`). |
 | `src/components/common/DeleteAllData.tsx` | Still the last item of Delete data (two confirmations). Rendered inside `settings/DeleteDataSettings.tsx`. |
 | `src/components/common/DataBackup.tsx`, `InstallApp.tsx` | Group headers now carry an icon and a colour. |
+
+## Food workflows
+
+| File | Role |
+| --- | --- |
+| `IngredientPicker.tsx` | Ingredient-mode shared food search: quick/recent/favorite foods, catalogue, scanner and custom-food child. |
+| `WorkflowFooter.tsx` | Always-visible right-hand green action and optional left action for add-more workflows. |
+| `UndoRemovalNotice.tsx` | Localized notice in the active modal or above the page dock; draft-scope hook. |
+| `Modal.tsx` | Header Back, step scroll reset, active dialog Undo and accessibility. |

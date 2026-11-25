@@ -53,3 +53,7 @@ Regression tests that need no browser: `tests/page-change.test.tsx` (a settings-
 **Earlier, Android export fix round (round 1, superseded):** verified by `tsc`, lint, `npm test` (new `tests/backup-android.test.tsx`: the APK path with the plugin mocked). The Java change in `JournalDevicePlugin.java` could not be compiled or run in the authoring sandbox (no Android SDK): build the APK and run the device check in [../android/BUILD_APK.md](../android/BUILD_APK.md) (step 6: the exported file must not be 0 B).
 
 `tests/themes.test.ts` (Glass / Material round): both styles are valid theme styles with a Settings preset, `applyThemeAttributes` sets the attributes, each style defines `light` / `lite-dark` / `dark` with an opaque `--bg` and every required token and section tone, and `src/index.css` imports the new parts in cascade order.
+
+## Food workflow regressions
+
+`tests/undo-removal.test.ts` checks time-bounded restore, scope and bulk cancel; `tests/recipe-builder-ui.test.tsx` checks staged review and compact portion controls. To exercise the Vite production build with a fixture recipe and simulated online barcode: `VITE_DEMO_DATA=true npm run build`, `npx playwright install chromium`, then `node scripts/check-food-workflows.mjs`. It uses a mobile Chromium viewport and does not test physical hardware. See [food workflows](food-workflows-update.md#verify).

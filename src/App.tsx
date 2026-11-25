@@ -2,7 +2,7 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp, useNav, useNavActions, useShell } from './context/AppContext';
 import { Header } from './components/common/Header';
-import { closeTopModal, getOpenModalCount } from './components/common/Modal';
+import { closeTopModal, getOpenModalCount, PageUndoRemoval } from './components/common/Modal';
 import { TodayView } from './components/dashboard/TodayView';
 import { PreBuiltMealsView } from './components/prebuilt/PreBuiltMealsView';
 import { FoodDatabaseView } from './components/database/FoodDatabaseView';
@@ -418,6 +418,7 @@ function MainContent() {
       {isCustomFoodOpen && <CustomFoodModal />}
       {customButtonOpenId && <CustomButtonModal key={customButtonOpenId} />}
       {isCustomPickerOpen && <CustomPickerModal />}
+      <PageUndoRemoval />
     </div>
   );
 }

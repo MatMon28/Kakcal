@@ -52,3 +52,5 @@ See also [advanced-layout.md](advanced-layout.md) for the *Advanced layout* swit
 - **Texts:** `side` block in `i18n/advanced.ts` (English *Left / Right*, Italian *Lato sinistro / Lato destro*, short *Sx / Dx*).
 
 **Protein per kg and intake / burned target (new features round):** the protein goal can be grams per day or grams per kg of the profile weight (`perKg`), and Goals & limits has an *Intake / burned difference* row for a daily deficit or surplus shown as a card on Today and Statistics. See [new-features-update.md](new-features-update.md).
+
+Deleting a Body measurement entry or a custom measure (including its history) now offers a short **Undo** notice. See [food workflows](food-workflows-update.md).

@@ -50,3 +50,7 @@
 (Round: container queries) `scripts/measure-meal-card.mjs`: Playwright script that forces the Today meal card to every width, with the container-query hiding off, and prints the last width at which the calorie figure / the note and photo icons fit and the `@container` max-width to use (see [../performance.md](../performance.md#meal-card-container-queries)). `scripts/bench-page-change.mjs`: `rows` is now declared before the scenario loop (it crashed with `ReferenceError` before printing the table).
 
 (Glass / Material round) `scripts/generate-splash-themes.mjs` also reads the `glass` and `material` `--bg` values (8 style presets x 3 modes). The `tests/` folder gained `themes.test.ts`.
+
+| File | Role |
+| --- | --- |
+| `scripts/check-food-workflows.mjs` | Runs import, recipe/meal builder, food batch, diary edit and Undo checks in Chromium against a demo Vite build. See [verification](../verification.md#food-workflow-regressions). |

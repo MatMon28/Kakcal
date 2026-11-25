@@ -21,3 +21,7 @@ Continuous Koink-style page selector, bottom-of-page swipes, cleaner Custom head
 **Journal consistency round:** Meal diary, Meal planner and Photo diary now use the same section header (new `LibrarySectionHeader.tsx`), search, chips and buttons as Meals, Recipes and Foods; the Meal diary icon is a notebook; and the planner offers *Same for all* or *Different for each* when several days / meals are selected.
 
 **Today-style meals round:** the Custom page no longer has the heading block (title, "Your favorites…" line, *Create new* button); the Meal diary and Meal planner use the same colourless meal icons as Today, previews show the note (or nothing) under the meal name, pressing a meal or plan opens a Today-style meal card (new `MealSummaryCard.tsx`, `common/mealSlotIcon.tsx`), the diary filter Reset is an icon, Today's empty meals lose *+ Log Food*, and Compact note / photo icons join the header bar. See [docs/meal-journal.md](../meal-journal.md).
+
+## Ingredient review and food workflows
+
+Source-vs-match review comes before a compactable recipe recap; manual recipes and saved meals share the ingredient picker. Scanner and custom food return to the existing draft, Log and Save stay fixed, Meal diary opens the original date or edits a logged meal, and a transient Undo covers deletions. See [food workflows](../food-workflows-update.md).

@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 const labels = new Proxy({}, { get: () => 'label' });
 const base = {
   common: { back: 'Back', close: 'Close', cancel: 'Cancel', confirmTitle: 'Confirm' },
-  prebuilt: { edit: 'Edit recipe', recipeTitle: 'New recipe', ingredientsCount: '{count} ingredients' },
+  prebuilt: { addIngredient: 'Add ingredient', edit: 'Edit recipe', recipeTitle: 'New recipe', ingredientsCount: '{count} ingredients' },
   macros: { fiber: 'Fiber', salt: 'Salt', sugar: 'Sugar' },
   foodModal: { searchPlaceholder: 'Search' },
 };
@@ -35,7 +35,7 @@ interface Stubs {
 
 /** The builder needs its whole library state; only the parts these tests read are meaningful. */
 const state = (stubs: Stubs) => ({
-  allFoods: [food],
+  foodById: new Map([[food.id, food]]),
   rememberFood: () => {},
   settings: { trackSugar: false },
   t,
@@ -45,25 +45,14 @@ const state = (stubs: Stubs) => ({
   recipeName: 'Patate',
   setRecipeName: () => {},
   recipeIngs: [{ foodId: food.id, amount: 716 }],
-  setRecipeIngs: () => {},
-  recipePendingFood: null,
-  setRecipePendingFood: () => {},
-  recipePendingAmt: 100,
-  setRecipePendingAmt: () => {},
-  recipeSearch: '',
-  setRecipeSearch: () => {},
+  recipeRows: [{ id: 'row', foodId: food.id, amount: 716 }],
+  setRecipeRows: () => {},
   recipePortion: 0,
   setRecipePortion: () => {},
   nameOf: () => food.name_en,
-  recipeResults: [],
-  favoriteOneChar: () => [],
   recipeTotals: { grams: 716, kcal100: 90, c100: 10, p100: 2, f100: 1, fib100: 1, salt100: 0.1, sugar100: 1 },
   saveRecipe: () => {},
-  searchInput: () => null,
   importSummary: null,
-  clearImportSummary: () => {},
-  searchUnmatched: () => {},
-  addSeasoning: () => {},
   requestCloseRecipeModal: () => {},
   confirmCloseRecipe: false,
   confirmDiscardRecipe: () => {},
@@ -77,15 +66,21 @@ describe('quick portions in the builder', () => {
   it('shows fractions of the whole dish even when the portion is already set', () => {
     // An imported 716 g recipe for 2 servings: the portion arrived at 358 g. 1/2 must still be 358.
     render(<RecipeBuilderModal s={state({ recipePortion: 358 })} />);
+    fireEvent.click(chip('Continue to portions'));
+    const section = screen.getByRole('button', { name: /Standard portion/ });
+    expect(section.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(section);
     expect(chip('1/2 · 358 g').getAttribute('aria-pressed')).toBe('true');
     expect(screen.queryByRole('button', { name: '1/2 · 179 g' })).toBeNull();
     expect(chip('1/3 · 238.7 g').getAttribute('aria-pressed')).toBe('false');
-    expect(screen.getByText(/Fractions of the whole recipe \(716 g\)/)).toBeTruthy();
+    expect(screen.getByText(/Whole recipe: 716 g/)).toBeTruthy();
   });
 
   it('sets the fraction of the whole dish, and the active chip goes back to 100 g', () => {
     const setRecipePortion = vi.fn();
     render(<RecipeBuilderModal s={state({ recipePortion: 358, setRecipePortion })} />);
+    fireEvent.click(chip('Continue to portions'));
+    fireEvent.click(screen.getByRole('button', { name: /Standard portion/ }));
     fireEvent.click(chip('1/4 · 179 g'));
     expect(setRecipePortion).toHaveBeenLastCalledWith(179);
     fireEvent.click(chip('1/2 · 358 g'));
@@ -106,7 +101,7 @@ describe('closing the builder from the UI', () => {
     const cancelDiscardRecipe = vi.fn();
     render(<RecipeBuilderModal s={state({ confirmCloseRecipe: true, confirmDiscardRecipe, cancelDiscardRecipe })} />);
     expect(screen.getByText('Discard this recipe?')).toBeTruthy();
-    expect(screen.getByText('The 1 ingredient you added will be lost.')).toBeTruthy();
+    expect(screen.getByText('Your unsaved recipe changes will be lost.')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Discard' }));
     expect(confirmDiscardRecipe).toHaveBeenCalledTimes(1);
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));

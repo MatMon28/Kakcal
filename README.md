@@ -1,6 +1,10 @@
 # Kakcal
 
-## Current Update
+## Current update — Food workflows
+
+Imported recipes now open in **Review ingredients** before **Recipe recap**. Compare original lines and automatic matches, replace or remove a food, or create one from the ingredient picker. Manual recipes also start with ingredients; **Standard portion** can collapse on the recap. Log food and the meal builder keep **Add more** and **Log/Save** in reach, the scanner and custom-food creator return to the existing draft, deleted entries have a short **Undo** window, and the Meal diary can edit logged food or jump to the original date. See [food workflows](docs/food-workflows-update.md) and [the patch guide](docs/changes-patch.md).
+
+## Earlier updates
 
 **Glass opacity & scroll-performance round:** calibrated Glass opacity across Light (`0.72` panels, `0.64–0.66` tinted sections, `0.76–0.84` energy/macro tiles, `0.92` dialogs) and Lite Dark / Dark (`0.66–0.68` smoked crystal panels) so cards are crisp and never overly see-through, and eliminated scroll lag in Glass by moving the backdrop gradient onto a single GPU-promoted `body::before` layer (removing `background-attachment: fixed` repaints), removing per-card `backdrop-filter` from scrolling cards (keeping `--glass-sheen` + multi-rim specular `--card-shadow`), and locking floating chrome (header, nav pill, dock, dialogs) to a constant `blur(14px) saturate(160%)` instead of rebuilding the blur kernel on every scroll pixel. See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
 

@@ -1,3 +1,5 @@
+import { offerRemovalUndo, removeWithUndo } from '../../utils/undoRemoval';
+import { useRemovalScope } from '../common/UndoRemovalNotice';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ArrowLeft,
@@ -124,6 +126,7 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
   });
   const [selectedSlots, setSelectedSlots] = useState<MealSlotId[]>(() => (source ? [...new Set(source.plans.map((p) => p.slot))] : [plan?.slot ?? 'lunch']));
 
+  const undoScope = useRemovalScope();
   const [entries, setEntries] = useState<Record<string, PlanEntry>>(() => {
     if (source) {
       // The same foods, day by day (day 1 of the saved plan = the first day here).
@@ -317,8 +320,12 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
     setDraft(null);
   };
   const deleteDraft = () => {
+    const removed = loadPlannerDraft();
     clearPlannerDraft();
     setDraft(null);
+    if (removed) offerRemovalUndo(() => {
+      if (!loadPlannerDraft()) { savePlannerDraft(removed); setDraft(removed); }
+    });
   };
 
   // The plan's name; a plan saved without one (an old draft) gets its dates as name.
@@ -590,6 +597,10 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
                               setPreferredKind(next.kind);
                               setEntries((prev) => ({ ...prev, [t.key]: next }));
                             }}
+                            removeItem={(index) => removeWithUndo(entry.items, index, (change) => setEntries((prev) => {
+                              const current = prev[t.key];
+                              return current ? { ...prev, [t.key]: { ...current, items: change(current.items) } } : prev;
+                            }), undoScope)}
                             name={foodName}
                           />
                           {targets.length > 1 && done && targets.some((o) => !entryValid(entryFor(o.key))) && (
@@ -652,11 +663,12 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
  * Food / note editor of one meal. Same flow as logging food: search (favourites first, offline catalogue included),
  * favourites and recent foods one tap away, then the amount with its macros before adding.
  */
-function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
+function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name }: {
   entry: PlanEntry;
   slot: MealSlotId;
   suggestions: PlanSuggestion[];
   onChange: (entry: PlanEntry) => void;
+  removeItem: (index: number) => void;
   name: (f: PlannedFood['food']) => string;
 }) {
   const { allFoods, preBuiltMeals, favoriteFoods, allDayLogs, rememberFood, language, settings, t } = useApp();
@@ -919,7 +931,7 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, name }: {
                     onChange={(e) => patch({ items: items.map((v, i) => (i === index ? { ...v, amount: Number(e.target.value) } : v)) })}
                   />
                   <small>{item.food.unit}</small>
-                  <button aria-label={`${j('Remove', 'Rimuovi')} ${name(item.food)}`} type="button" onClick={() => patch({ items: items.filter((_, i) => i !== index) })}>
+                  <button aria-label={`${j('Remove', 'Rimuovi')} ${name(item.food)}`} type="button" onClick={() => removeItem(index)}>
                     <X size={15} />
                   </button>
                 </div>

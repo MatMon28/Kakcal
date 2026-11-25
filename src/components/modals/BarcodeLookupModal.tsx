@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
+import { WorkflowFooter } from '../common/WorkflowFooter';
+import { CustomFoodModal } from './CustomFoodModal';
+import { useJournalText } from '../../i18n/journal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { FoodItem, MealSlotId } from '../../types';
 import { AmountSelector } from '../common/AmountSelector';
@@ -12,8 +15,6 @@ import {
   Loader2,
   CheckCircle2,
   AlertCircle,
-  Plus,
-  Check,
   Camera,
   CameraOff,
   X,
@@ -50,11 +51,15 @@ const classicPortion = (value: number | string | undefined) => {
 };
 const reported = (value: number | undefined) => typeof value === 'number' && Number.isFinite(value) && value >= 0 ? value : null;
 
-export const BarcodeLookupModal: React.FC = () => {
+interface BarcodeLookupModalProps {
+  onReturn?: () => void;
+  onPick?: (food: FoodItem, amount: number) => void;
+}
+
+export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn, onPick }) => {
   const {
     isBarcodeOpen,
     setIsBarcodeOpen,
-    setIsCustomFoodOpen,
     allFoods,
     rememberFood,
     language,
@@ -66,6 +71,8 @@ export const BarcodeLookupModal: React.FC = () => {
     t,
   } = useApp();
   const { options: slotOptions } = useMealSlots();
+  const j = useJournalText();
+  const [customOpen, setCustomOpen] = useState(false);
 
   const [barcode, setBarcode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -99,7 +106,8 @@ export const BarcodeLookupModal: React.FC = () => {
 
   const close = () => {
     stopCamera();
-    setIsBarcodeOpen(false);
+    if (onReturn) onReturn();
+    else setIsBarcodeOpen(false);
   };
 
   const startCamera = async () => {
@@ -279,17 +287,27 @@ export const BarcodeLookupModal: React.FC = () => {
   const handleSaveAndLog = (mealSlot: MealSlotId = targetMealSlot) => {
     if (!fetchedProduct || !Number.isFinite(logAmount) || logAmount <= 0) return;
     if (!foundLocally) addCustomFood(fetchedProduct);
-    setLastAmount(fetchedProduct.id, logAmount);
-    logFoodItem(mealSlot, fetchedProduct, logAmount);
+    if (onPick) onPick(fetchedProduct, logAmount);
+    else {
+      setLastAmount(fetchedProduct.id, logAmount);
+      logFoodItem(mealSlot, fetchedProduct, logAmount);
+    }
     close();
     setFetchedProduct(null);
     setBarcode('');
   };
 
   return (
+    <>
     <Modal
-      isOpen={isBarcodeOpen}
+      isOpen={Boolean(onReturn) || isBarcodeOpen}
       onClose={close}
+      onBack={close}
+      footer={fetchedProduct && !isLoading ? <WorkflowFooter
+        primary={onPick ? j('Use this food', 'Usa questo alimento') : j('Log food', 'Registra alimento')}
+        onPrimary={() => handleSaveAndLog()} disabled={logAmount <= 0 || !Number.isFinite(logAmount)}
+        more={t.barcodeModal.saveOnly} onMore={!onPick && !foundLocally ? handleSaveOnly : undefined}
+      /> : undefined}
       title={t.barcodeModal.title}
       maxWidth="max-w-lg"
     >
@@ -390,7 +408,7 @@ export const BarcodeLookupModal: React.FC = () => {
             <p role="status" className="flex items-start gap-2">
               <AlertCircle size={16} className="shrink-0" /> {errorMsg}
             </p>
-            <button type="button" onClick={() => { close(); setIsCustomFoodOpen(true); }} className="pressable rounded-full bg-[#FBF8F2] px-3 py-2">
+            <button type="button" onClick={() => { stopCamera(); setCustomOpen(true); }} className="pressable rounded-full bg-[#FBF8F2] px-3 py-2">
               {t.foodModal.addCustomFood}
             </button>
           </div>
@@ -416,7 +434,7 @@ export const BarcodeLookupModal: React.FC = () => {
               </span>
             </div>
 
-            <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
+            {!onPick && <div className="flex gap-1.5 overflow-x-auto no-scrollbar">
               {slotOptions.map(({ id: s, label }) => (
                 <button
                   key={s}
@@ -431,7 +449,7 @@ export const BarcodeLookupModal: React.FC = () => {
                   {label}
                 </button>
               ))}
-            </div>
+            </div>}
 
             <AmountSelector
               value={logAmount}
@@ -440,32 +458,15 @@ export const BarcodeLookupModal: React.FC = () => {
             />
             <FoodMacroGrid food={fetchedProduct} amount={logAmount} />
 
-            <div className={`grid grid-cols-1 gap-2 ${foundLocally ? '' : 'sm:grid-cols-2'}`}>
-              {!foundLocally && (
-                <button
-                  type="button"
-                  onClick={handleSaveOnly}
-                  className="pressable w-full py-3 bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm"
-                >
-                  <Check size={16} strokeWidth={2.5} />
-                  <span>{t.barcodeModal.saveOnly}</span>
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => handleSaveAndLog(targetMealSlot)}
-                disabled={logAmount <= 0}
-                className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-1.5 text-xs sm:text-sm tabular-nums disabled:opacity-40"
-              >
-                <Plus size={16} strokeWidth={2.5} />
-                <span>
-                  {foundLocally ? t.foodModal.addBtn : t.barcodeModal.saveToDatabase} · {Math.round((fetchedProduct.calories * logAmount) / 100)} kcal
-                </span>
-              </button>
-            </div>
+
           </div>
         )}
       </div>
     </Modal>
+    {customOpen && <CustomFoodModal
+      onReturn={() => setCustomOpen(false)}
+      onPick={onPick ? (food) => { onPick(food, getDefaultAmount(food)); close(); } : undefined}
+    />}
+    </>
   );
 };

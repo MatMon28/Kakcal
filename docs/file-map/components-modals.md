@@ -46,3 +46,5 @@ SettingsModal delegates custom button icons to common/IconPicker.tsx. LayoutTool
 | `src/components/modals/settings/DeleteDataSettings.tsx` | Delete data group: one confirmed row per kind of record, then *Delete all data*. |
 | `src/components/modals/NotificationSettings.tsx` | Test notification button removed; group now has a bell icon and colour. |
 | `src/components/modals/AdvancedSettings.tsx` | Body measurements switch moved to Pages; group has an icon. |
+
+**Food workflow round:** `AddFoodModal.tsx` keeps the batch and picker mounted while scanner/custom food is open and uses a fixed footer. `BarcodeLookupModal.tsx` and `CustomFoodModal.tsx` work both standalone and as child selectors; `DeleteDataSettings.tsx` uses the bulk erasure countdown. See [food workflows](../food-workflows-update.md).

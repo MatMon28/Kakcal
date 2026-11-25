@@ -1,3 +1,4 @@
+import { offerRemovalUndo, restoreAt } from './undoRemoval';
 import { useSyncExternalStore } from 'react';
 import type {
   AdvancedSettings,
@@ -363,6 +364,11 @@ export function addCustomMeasure(name: string, unit: string): string | null {
 
 /** Removes a personalised measure together with its recorded values. */
 export function removeCustomMeasure(id: string) {
+  const index = settings.body.custom.findIndex((measure) => measure.id === id);
+  const removed = settings.body.custom[index];
+  if (!removed) return;
+  const wasTracked = settings.body.tracked.includes(id);
+  const history = entries[id];
   commitSettings({
     ...settings,
     body: {
@@ -376,6 +382,14 @@ export function removeCustomMeasure(id: string) {
     void _removed;
     commitEntries(rest);
   }
+  offerRemovalUndo(() => {
+    const body = settings.body;
+    commitSettings({ ...settings, body: { ...body,
+      custom: restoreAt(body.custom, removed, index, (a, b) => a.id === b.id),
+      tracked: wasTracked && !body.tracked.includes(id) ? [...body.tracked, id] : body.tracked,
+    } });
+    if (history && !entries[id]) commitEntries({ ...entries, [id]: history });
+  });
 }
 
 /** Saves one value for a day (replacing the day's previous value). */
@@ -389,10 +403,15 @@ export function setBodyEntry(id: string, date: string, value: number) {
 }
 
 export function removeBodyEntry(id: string, date: string) {
+  const removed = entries[id]?.find((entry) => entry.date === date);
+  if (!removed) return;
   const list = (entries[id] ?? []).filter((e) => e.date !== date);
   const { [id]: _old, ...rest } = entries;
   void _old;
   commitEntries(list.length ? { ...rest, [id]: list } : rest);
+  offerRemovalUndo(() => {
+    if (!entries[id]?.some((entry) => entry.date === date)) setBodyEntry(id, date, removed.value);
+  });
 }
 
 /** Entries of one measure inside an inclusive date range. */

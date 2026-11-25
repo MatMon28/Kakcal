@@ -3,13 +3,13 @@ import { Modal } from '../common/Modal';
 import { AmountSelector } from '../common/AmountSelector';
 import { setLastAmount } from '../../utils/amountMemory';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
-import { Check } from 'lucide-react';
+import { WorkflowFooter } from '../common/WorkflowFooter';
 import type { LibraryState } from './usePreBuiltMealsState';
 
 export const LogMealToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
   const {
-    t, mealSlots, slotLabel, activeMealToLog, setActiveMealToLog, selectedSlot, setSelectedSlot,
-    confirmLogToSlot,
+    t, mealSlots, activeMealToLog, setActiveMealToLog, selectedSlot, setSelectedSlot,
+    confirmLogToSlot, foodById, j, startFoodBatch,
   } = s;
   return (
     <>
@@ -19,6 +19,14 @@ export const LogMealToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
         onClose={() => setActiveMealToLog(null)}
         title={t.prebuilt.selectSlotPrompt}
         subtitle={activeMealToLog?.name}
+        footer={<WorkflowFooter primary={t.prebuilt.logMeal} onPrimary={confirmLogToSlot} more={j('Add more', 'Aggiungi altro')} onMore={() => {
+          if (!activeMealToLog) return;
+          startFoodBatch(selectedSlot, activeMealToLog.ingredients.flatMap(({ foodId, amount }) => {
+            const food = foodById.get(foodId);
+            return food && amount > 0 ? [{ food, amount }] : [];
+          }));
+          setActiveMealToLog(null);
+        }} />}
         maxWidth="max-w-md"
       >
         <div className="space-y-4">
@@ -38,16 +46,6 @@ export const LogMealToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
               </button>
             ))}
           </div>
-          <button
-            type="button"
-            onClick={confirmLogToSlot}
-            className="kc-primary-btn pressable w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
-          >
-            <Check size={18} strokeWidth={2.5} />
-            <span>
-              {t.prebuilt.logMeal} → {slotLabel(selectedSlot)}
-            </span>
-          </button>
         </div>
       </Modal>
     </>
@@ -56,9 +54,16 @@ export const LogMealToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
 
 export const LogRecipeToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
   const {
-    logFoodItem, selectedDate, t, mealSlots, slotLabel, activeRecipeToLog, setActiveRecipeToLog,
+    logFoodItem, selectedDate, t, j, startFoodBatch, mealSlots, activeRecipeToLog, setActiveRecipeToLog,
     recipeLogSlot, setRecipeLogSlot, recipeLogAmount, setRecipeLogAmount, nameOf,
   } = s;
+  const valid = Number.isFinite(recipeLogAmount) && recipeLogAmount > 0;
+  const log = () => {
+    if (!activeRecipeToLog || !valid) return;
+    setLastAmount(activeRecipeToLog.id, recipeLogAmount);
+    logFoodItem(recipeLogSlot, activeRecipeToLog, recipeLogAmount, selectedDate);
+    setActiveRecipeToLog(null);
+  };
   return (
     <>
       {/* ============ Log recipe to slot (amount selectable) ============ */}
@@ -67,6 +72,11 @@ export const LogRecipeToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
         onClose={() => setActiveRecipeToLog(null)}
         title={t.prebuilt.logRecipe}
         subtitle={activeRecipeToLog ? nameOf(activeRecipeToLog) : undefined}
+        footer={<WorkflowFooter primary={t.prebuilt.logRecipe} onPrimary={log} disabled={!valid} more={j('Add more', 'Aggiungi altro')} moreDisabled={!valid} onMore={() => {
+          if (!activeRecipeToLog || !valid) return;
+          startFoodBatch(recipeLogSlot, [{ food: activeRecipeToLog, amount: recipeLogAmount }]);
+          setActiveRecipeToLog(null);
+        }} />}
         maxWidth="max-w-md"
       >
         <div className="space-y-4">
@@ -92,24 +102,6 @@ export const LogRecipeToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
               <FoodMacroGrid food={activeRecipeToLog} amount={recipeLogAmount} />
             </>
           )}
-          <button
-            type="button"
-            onClick={() => {
-              if (activeRecipeToLog && recipeLogAmount > 0) {
-                setLastAmount(activeRecipeToLog.id, recipeLogAmount);
-                logFoodItem(recipeLogSlot, activeRecipeToLog, recipeLogAmount, selectedDate);
-                setActiveRecipeToLog(null);
-              }
-            }}
-            disabled={recipeLogAmount <= 0}
-            className="kc-primary-btn pressable w-full py-3 bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
-          >
-            <Check size={18} strokeWidth={2.5} />
-            <span>
-              {t.prebuilt.logRecipe} → {slotLabel(recipeLogSlot)} ·{' '}
-              {activeRecipeToLog ? Math.round((activeRecipeToLog.calories * recipeLogAmount) / 100) : 0} kcal
-            </span>
-          </button>
         </div>
       </Modal>
     </>
