@@ -15,6 +15,13 @@
 - **Summary:** a closed meal or tracker has no body in the DOM; the tab no longer re-renders the Today page; the header's layout work waits for the paint. See [performance.md](performance.md#today-performance-round-collapsed-means-not-mounted).
 - **Verified here:** on a fresh clone of `a3459c1` with this patch applied: `git apply --check` clean, `npm ci`, `npm run typecheck` clean, `npm run lint` 0 errors (the 10 warnings are unchanged from the base), `npm test` 92/92 (the 86 base tests, plus the 4 new `today-performance` tests and 2 in `page-change`/`context`), `npm run build` OK. **Not verified here:** the Chromium benchmarks (see the notes in the final report), a real phone, Android WebView, Safari.
 
+**Current patch (APK naming round, "one fixed name: kakcal.apk", base `9dac5ae6f6e21dcdecdd271ee9636cb08e8bbbbb`):** no `package.json` / lock-file change, no native code, no IndexedDB or backup change, no visual change. The only user-visible difference is the file name of the downloaded APK (`kakcal.apk`).
+
+- **Edited (code):** `src/components/common/InstallGuide.tsx` (`APK_URL = './downloads/kakcal.apk'`, the old `Kakcalculator.apk` accepted as a fallback, `download="kakcal.apk"`).
+- **Edited (workflow):** `.github/workflows/pages.yml` fetches **any** `*.apk` asset from the latest release and publishes it as `public/downloads/kakcal.apk`, so the asset name in the release never has to match the site.
+- **Edited (docs):** `docs/apk-download.md` (rewritten around the fixed name), `docs/brand.md`, `docs/pwa.md`, `docs/pwa-setup.md`, `docs/android-apk.md`, `docs/known-gaps.md`, `docs/performance-review.md`, `README.md`.
+- **Verified:** `npm run typecheck`, `npm test` (92 passed), `npm run build`. **Not verified:** a real GitHub release download (no release in the authoring environment).
+
 Apply from that repository revision (the base commit above):
 
 ```sh

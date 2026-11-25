@@ -23,22 +23,32 @@ jobs:
           node-version: 22
           cache: npm
 
+      # The APK is published as `public/downloads/kakcal.apk` (one fixed name, the version lives in the release tag and
+      # in versionName/versionCode). Whatever the asset is called in the release, it is renamed here. docs/apk-download.md
       - name: Fetch APK from latest release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          mkdir -p public/downloads
+          set -eu
+          mkdir -p public/downloads/release
           gh release download \
             --repo "$GITHUB_REPOSITORY" \
-            --pattern 'Kakcalculator.apk' \
-            --dir public/downloads \
+            --pattern '*.apk' \
+            --dir public/downloads/release \
             || echo "No APK found; using fallback."
-          # Validate the download: an APK is a ZIP. A broken or HTML file must never be published as the APK.
-          if [ -f public/downloads/Kakcalculator.apk ]; then
-            unzip -tq public/downloads/Kakcalculator.apk >/dev/null \
-              && unzip -l public/downloads/Kakcalculator.apk | grep -q AndroidManifest.xml \
-              || { echo "Downloaded APK is invalid; removing it."; rm -f public/downloads/Kakcalculator.apk; }
+          apk=$(find public/downloads/release -name '*.apk' -type f 2>/dev/null | sort | tail -n 1)
+          if [ -n "${apk}" ]; then
+            mv "$apk" public/downloads/kakcal.apk
+            echo "Published public/downloads/kakcal.apk (from $(basename "$apk"))"
           fi
+          rm -rf public/downloads/release
+          # Validate the download: an APK is a ZIP. A broken or HTML file must never be published as the APK.
+          if [ -f public/downloads/kakcal.apk ]; then
+            unzip -tq public/downloads/kakcal.apk >/dev/null \
+              && unzip -l public/downloads/kakcal.apk | grep -q AndroidManifest.xml \
+              || { echo "Downloaded APK is invalid; removing it."; rm -f public/downloads/kakcal.apk; }
+          fi
+          ls -la public/downloads
 
       - name: Build application
         run: |

@@ -22,7 +22,9 @@ The product name is **Kakcal**. The wordmark text changed from `kcalculator` to 
 
 Changed (user-visible): `src/i18n/translations.ts`, `tourContent.ts`, `InstallGuide.tsx` (texts and the saved APK name `Kakcal.apk`), `index.html` (title, description, iOS app title), `public/manifest.webmanifest`, `capacitor.config.json` (`appName`), Android `strings.xml`, `widget_strings.xml` (en + it), backup file name `kakcal_backup_<date>.json`, Android export name `kakcal-<date>.json`, wordmark SVGs in `src/assets/brand/` and `src/assets/kakcalculator_intro/` (logos, lockups), `android/BUILD_APK.md` headline.
 
-Kept on purpose (not visible to users): repository name and GitHub URLs, asset file names `kakcalculator-*.svg`, `src/assets/kakcalculator_intro/`, `WIDGET_CHANNEL`, service-worker cache names, `./downloads/Kakcalculator.apk` and `Kakcalculator-Android-Studio.zip` paths (produced by `pages.yml` / `package-android.py`), package id `com.kcalsync.app`, Gradle log messages.
+Kept on purpose (not visible to users): repository name and GitHub URLs, asset file names `kakcalculator-*.svg`, `src/assets/kakcalculator_intro/`, `WIDGET_CHANNEL`, service-worker cache names, the `Kakcalculator-Android-Studio.zip` path (produced by `package-android.py`), package id `com.kcalsync.app`, Gradle log messages.
+
+**The APK is `kakcal.apk`** (`public/downloads/kakcal.apk`, saved by the browser as `kakcal.apk`). One fixed name for every release: Android identifies an app by package id and signing key, so the version belongs in `versionName` / `versionCode` and the release tag, not in the file name. The workflow renames whatever asset the release carries. `Kakcalculator.apk` is still accepted as a fallback by the install guide. See [apk-download.md](apk-download.md).
 
 ## The icon
 

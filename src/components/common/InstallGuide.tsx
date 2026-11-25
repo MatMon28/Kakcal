@@ -24,8 +24,12 @@ import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
 
 import { detectInstallTarget, OPEN_INSTALL_GUIDE, type GuideLanguage, type InstallTarget, type OpenDetail } from './installGuideEvents';
 
-/** The APK is placed here by the release workflow (see android/BUILD_APK.md). */
-const APK_URL = './downloads/Kakcalculator.apk';
+/**
+ * The APK is placed here by the release workflow (see android/BUILD_APK.md and docs/apk-download.md). One fixed name,
+ * no version: Android identifies an app by package id + signing key, so the file name never has to change. The version
+ * lives in `versionName` / `versionCode` and in the release tag.
+ */
+const APK_URL = './downloads/kakcal.apk';
 const RELEASES_URL = 'https://github.com/MatMon28/Kakcalculator/releases/latest';
 const BUILD_APK_URL = 'https://github.com/MatMon28/Kakcalculator/blob/main/android/BUILD_APK.md';
 
@@ -388,11 +392,15 @@ const InstallGuideDialog: React.FC<{ target: InstallTarget; language: GuideLangu
     setMessage(null);
     setApkBusy(true);
     try {
-      const response = await fetch(APK_URL, { method: 'HEAD', cache: 'no-store' });
-      const type = response.headers.get('content-type') ?? '';
-      if (response.ok && !type.includes('text/html')) {
-        window.location.href = APK_URL;
-        return;
+      // `kakcal.apk` is the name; the old `Kakcalculator.apk` is still accepted so a release published before the
+      // rename keeps working (the workflow renames it at build time, this is the belt-and-braces case).
+      for (const url of [APK_URL, './downloads/Kakcalculator.apk']) {
+        const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+        const type = response.headers.get('content-type') ?? '';
+        if (response.ok && !type.includes('text/html')) {
+          window.location.href = url;
+          return;
+        }
       }
     } catch {
       // A missing file or a host that blocks HEAD falls through to the explanation below.
@@ -539,7 +547,7 @@ const InstallGuideDialog: React.FC<{ target: InstallTarget; language: GuideLangu
                   </div>
                   <a
                     href={APK_URL}
-                    download="Kakcal.apk"
+                    download="kakcal.apk"
                     onClick={(event) => void handleApk(event)}
                     className="pressable mt-3 inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1E5E3A] px-4 text-sm font-extrabold text-[#EAF7EE] hover:bg-[#174A2B] sm:w-auto"
                   >

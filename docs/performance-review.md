@@ -26,7 +26,7 @@
 | 16 | Checks not enforced | **Done** | `.github/workflows/ci.yml`: typecheck, lint, tests, build, worker stamp check, widget layouts. Browser scripts stay manual (`npm run test:browser`). |
 | 17 | Android guard bypass | **Done** | `npm run android:prepare` = widget check + `scripts/prepare-android.mjs` (now also type-checks and verifies every referenced `assets/*` file was synced). This repository has no Android release workflow; any future one must call this script. |
 | 18 | Large mixed files | **Partial** | New `src/storage/*` (services), `contexts.ts`, `useToday.ts`, `widgetDates.ts`, `LazyInstallGuideHost.tsx`, `installGuideEvents.ts`. `AppContext.tsx` (about 900 lines) and the big dialogs are still large. |
-| 19 | Repo hygiene | **Partial** | `.idea/` and `scripts/smoke.bundle.js` untracked and ignored, package name / version set, APK validated in `pages.yml` before publishing. The `Kakcalculator.apk` file name stays on purpose ([brand.md](brand.md)). |
+| 19 | Repo hygiene | **Partial** | `.idea/` and `scripts/smoke.bundle.js` untracked and ignored, package name / version set, APK validated in `pages.yml` before publishing. The APK is published as `kakcal.apk` ([apk-download.md](apk-download.md)). |
 | 20 | Docs and code disagree | **Partial** | This file is the one authoritative review document; behaviour docs were updated in the same change. Shared animation constants were not centralised yet. |
 
 ## Behaviour changes you can see
