@@ -76,7 +76,6 @@ html.kc-page-moving [data-page-viewport] { overflow: clip; }
 html[data-style]:not([data-style='classic']) .kc-following-indicator > span { background: var(--text) !important; }
 html[data-style]:not([data-style='classic']) .kc-following-tab { color: color-mix(in srgb, var(--on-text) calc(var(--tab-weight) * 100%), var(--muted)); }
 .journal-mobile-demo { margin: 0 3px 10px; color: var(--muted); font-size: 10px; letter-spacing: .03em; }
-@media (min-width: 1100px) { .journal-mobile-demo { display: none; } }
 
 .kc-following-pill { overflow-x: auto; scrollbar-width: none; }
 .kc-following-pill::-webkit-scrollbar { display: none; }

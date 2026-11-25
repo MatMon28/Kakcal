@@ -69,11 +69,11 @@ Use the share icon to share this week/all plans by self-contained link, or impor
 
 ## Implementation files
 
-The existing mobile header, swipe navigation and creation dock are retained. At 1100 px and wider, a quiet sidebar / breadcrumb header replaces the mobile header; Custom uses two columns with the diary first, Meals / Recipes next, and Planner / Photo diary beneath. The Custom page has no title block, tagline or *Create new* menu any more: it starts directly with the Meal diary, and every field creates through its own **+** (and the mobile dock). Theme colours, fonts, geometry and reduced-motion preferences are respected.
+The existing mobile header, swipe navigation and creation dock are retained. There is no separate desktop layout any more (the sidebar and breadcrumb header were removed, see [desktop-and-fields-update.md](desktop-and-fields-update.md)): wide screens show the same centred single column as phones, with Meal diary first, Meals / Recipes next, and Planner / Photo diary beneath. The Custom page has no title block, tagline or *Create new* menu any more: it starts directly with the Meal diary, and every field creates through its own **+** (and the mobile dock). Theme colours, fonts, geometry and reduced-motion preferences are respected.
 
-The Custom creation dock is hidden on desktop only (including its portal); Today and the mobile dock are unaffected. Classic's two dark appearances use dark neutral inner diary/search rows, while keeping the established pastel section headers.
+The Custom creation dock is shown at every width. Classic's two dark appearances use dark neutral inner diary/search rows, while keeping the established pastel section headers.
 
-Desktop fields align at their own content height rather than stretching a short saved-meal field into an empty panel when a neighboring recipe is expanded. Journal text uses the existing app's compact type scale, with readable labels in light and dark appearances.
+Journal text uses the existing app's compact type scale, with readable labels in light and dark appearances.
 
 | File | Role |
 | --- | --- |
@@ -86,7 +86,7 @@ Desktop fields align at their own content height rather than stretching a short 
 | `src/components/common/LibrarySectionHeader.tsx` | The collapsible section header shared by Meals, Recipes, Foods and the journal sections. |
 | `src/components/journal/MealDiary.tsx` | Searchable/filterable meal history, favourites, notes, detail dialog and inline Today/logging controls. |
 | `src/components/journal/PhotoDiary.tsx` | Camera/import composer, searchable gallery, lightbox, saved-meal/recipe attachments and Today photos. |
-| `src/components/journal/JournalChrome.tsx` | Responsive desktop navigation, help, existing Settings/Profile entry points and Custom heading/create menu. |
+| ~~`src/components/journal/JournalChrome.tsx`~~ | Deleted (desktop sidebar / top bar / help pop-up); see [desktop-and-fields-update.md](desktop-and-fields-update.md). |
 | `src/components/journal/journal.css` (an `@import` list; parts in `journal/css/`, see [file-organisation.md](file-organisation.md)) | Responsive journal additions, theme-token overrides, accessible interaction states and reduced-motion-aware entrances/accordions/photo hover. |
 
 The store persists before publishing; storage errors are not reported as successful saves. The new key is `kcalsync_meal_journal`. No backend or account is involved.

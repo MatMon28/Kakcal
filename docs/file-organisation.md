@@ -24,7 +24,7 @@
 
 | Part (`src/components/journal/css/`) | Contents |
 | --- | --- |
-| `journal-base.css` | Sidebar / topbar, Minimal grid, feature cards, search, recent meals, week and plan lists. |
+| `journal-base.css` | Minimal grid, feature cards, search, recent meals, week and plan lists. |
 | `journal-forms.css` | Photo grid, forms, slot options, segmented control, pickers, buttons. |
 | `journal-diary.css` | Diary browser and results, meal detail, inline plans, photos, camera, lightbox, help, settings toggle, library grid. |
 | `journal-responsive.css` | `journal-arrive` keyframes and the responsive / reduced-motion media queries. |

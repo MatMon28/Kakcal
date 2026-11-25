@@ -40,6 +40,33 @@ html[data-style]:not([data-style="classic"]) [data-library-card] {
   clip-path: var(--clip-sm, none);
 }
 
+/* Meal / Recipe card actions: the same quiet look as Classic.
+   Classic draws the edit / delete buttons in the card's own colour (they read as bare icons) and the Log button as
+   a soft tinted pill. The other styles tint the card with --inset, so the buttons are made transparent (no white
+   boxes) and Log takes the tone of its field from the style's own macro colours (Meals: protein, Recipes: fat),
+   like the macro pills next to it, instead of the loud navigation-active colour. */
+html[data-style]:not([data-style="classic"]) [data-library-card] [data-library-actions] > button:not(.kc-action-pill) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  clip-path: none !important;
+  color: var(--muted) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-library-card] [data-library-actions] > button:not(.kc-action-pill):hover {
+  background: var(--hover) !important;
+  color: var(--text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-library-section="meals"] [data-library-card] .kc-action-pill {
+  background: var(--protein-bg) !important;
+  color: var(--protein-text) !important;
+  border: var(--pill-border, none) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-library-section="recipes"] [data-library-card] .kc-action-pill {
+  background: var(--fat-bg) !important;
+  color: var(--fat-text) !important;
+  border: var(--pill-border, none) !important;
+}
+
 html[data-style]:not([data-style="classic"]) [data-library-ingredients] {
   background: var(--surface) !important;
   color: var(--text) !important;

@@ -276,45 +276,6 @@ html[data-theme='lite-dark'] .journal-feature .journal-see-all { color: var(--te
 .plan-import-preview small { font-size: 10px; color: var(--muted); }
 .plan-import-preview strong { font-size: 12px; }
 .plan-transfer-success { display: flex; align-items: center; gap: 9px; padding: 12px; border-radius: 11px; color: #24533a; background: #deeee1; font-size: 12px; line-height: 1.7; }
-.journal-demo-label { display: inline-flex; align-items: center; white-space: nowrap; gap: 6px; font-size: 10px; color: var(--muted); }
-.journal-demo-label > i { width: 5px; height: 5px; border-radius: 50%; background: #9a8c46; }
-@media (min-width: 1100px) {
-  .journal-desktop-selector { position: absolute; left: calc(50% + 112px); transform: translateX(-50%); }
-  .journal-desktop-selector .kc-following-pill { background: transparent; }
-  .journal-sidebar { width: 224px; }
-  .journal-sidebar-brand { width: 140px; margin-top: 2px; }
-  .journal-nav-link { font-size: 12px; padding-block: 13px; }
-  .journal-desktop-topbar { margin-left: 224px; height: 79px; }
-  .journal-desktop-topbar > div { font-size: 11px; gap: 13px; }
-  .journal-topbar-date { font-size: 10px; }
-  .journal-main-container { padding-top: 25px; }
-  .custom-library-grid { gap: 19px; }
-  .custom-library-grid > section { border-radius: 20px; }
-  html[data-style='classic'] .custom-library-grid > [data-library-section='meals'] { background: #f9e6c6; border-color: #ebd2ab; }
-  html[data-style='classic'] .custom-library-grid > [data-library-section='recipes'] { background: #e9e1f7; border-color: #d7c8ee; }
-  html[data-style='classic'] .custom-library-grid > [data-library-section='foods'] { background: #dbeee0; border-color: #bfdec8; }
-  html[data-style='classic'] .journal-feature[data-tone='yellow'] { --feature-bg: #f8ecbe; --feature-border: #ead99a; }
-  html[data-style='classic'] .journal-feature[data-tone='blue'] { --feature-bg: #dceaf8; --feature-border: #c2d8ed; }
-  html[data-style='classic'] .journal-feature[data-tone='red'] { --feature-bg: #f4dedb; --feature-border: #e9c9c5; }
-  html[data-style='classic'] .journal-feature[data-tone='teal'] { --feature-bg: #d6ece9; --feature-border: #b5d9d4; }
-  .custom-library-grid [data-library-card] { padding: 12px 14px; row-gap: 6px; border-radius: 12px; }
-  .custom-library-grid [data-library-card] h3 { font-size: 12px !important; font-weight: 750; }
-  .custom-library-grid [data-library-card] [data-macro-pills] { flex: 0 0 auto; width: auto; margin-left: auto; }
-  .custom-library-grid [data-library-card] [data-macro] { min-width: 48px; padding: 5px 9px; border-radius: 6px; }
-  .journal-recent-meal { padding-top: 13px; padding-bottom: 9px; border-radius: 13px; }
-  .journal-plan-list { max-height: 260px; overflow-y: auto; }
-  .journal-plan-row { min-height: 63px; padding: 10px 13px; }
-  .journal-plan-row small { font-size: 9px; }
-  .journal-plan-row strong { font-size: 12px; }
-  .journal-photo-grid { gap: 11px; }
-  .journal-photo-preview > span { border-radius: 13px; }
-  .journal-photo-preview strong { font-size: 11px; line-height: 1.6; margin-top: 9px; }
-}
-@media (min-width: 1100px) and (max-width: 1290px) {
-  .journal-desktop-topbar .journal-demo-label { display: none; }
-  .journal-desktop-selector { left: calc(50% + 120px); }
-  .journal-topbar-date { display: none; }
-}
 @media (prefers-reduced-motion: reduce) {
   .personal-icon-options { animation: none; }
   .library-browse-search { transition: none; }

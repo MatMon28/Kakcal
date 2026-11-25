@@ -9,7 +9,7 @@
 - The selector follows the finger and blends adjacent page colors continuously, including settling and cancellation, using Koink's rail/pill pattern. It also appears on desktop.
 - Preview clipping prevents the adjacent page from growing the document while swiping from the bottom of Today. Taps, reduced motion, interrupted gestures and native vertical scrolling remain supported.
 - Labels are remeasured after font loads and desktop/mobile resizes. Long optional tab lists remain horizontally scrollable, and the selected tab stays in view.
-- Recipes and Foods lose their descriptive text. Foods retains a search shortcut when collapsed. Classic's warmer surfaces preserve the established sidebar/two-column layout; other themes keep their own surfaces.
+- Recipes and Foods lose their descriptive text. Foods retains a search shortcut when collapsed. Classic's warmer surfaces are kept (the desktop sidebar of this round was later removed, see desktop-and-fields-update.md); other themes keep their own surfaces.
 - Settings > Custom buttons offers 24 built-in icons or private image upload. Images are decoded and reduced to 96 px PNG; SVG is not accepted. One tracker uses its selected icon in the dock and Today field; several use the default Sparkles picker.
 - Custom meal categories get their own icons through Today > Edit > Add when Advanced layout is enabled. Existing categories can be edited there. Icons survive settings/layout backup and restore.
 

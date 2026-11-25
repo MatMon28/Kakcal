@@ -2,7 +2,6 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp, useNav, useNavActions, useShell } from './context/AppContext';
 import { Header } from './components/common/Header';
-import { JournalChrome } from './components/journal/JournalChrome';
 import { closeTopModal, getOpenModalCount } from './components/common/Modal';
 import { TodayView } from './components/dashboard/TodayView';
 import { PreBuiltMealsView } from './components/prebuilt/PreBuiltMealsView';
@@ -391,7 +390,6 @@ function MainContent() {
       <WidgetAppBridge />
       <StorageNotice />
       <Header />
-      <JournalChrome />
       <main data-journal-surface className="flex-1 min-w-0">
         <div className={`journal-main-container w-full max-w-4xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-4 ${hasDock ? 'pb-[calc(7rem+env(safe-area-inset-bottom))]' : 'pb-8'}`}>
           {DEMO_MODE && <p className="journal-mobile-demo">Test mode / sample journal</p>}

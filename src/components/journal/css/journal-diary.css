@@ -350,18 +350,6 @@
 .journal-photo-next:disabled {
   opacity: 0.3;
 }
-.journal-help-content {
-  display: flex;
-  flex-direction: column;
-  gap: 17px;
-  font-size: 12px;
-  line-height: 1.9;
-  color: var(--muted);
-}
-.journal-help-content h3 {
-  color: var(--text);
-  font-weight: 700;
-}
 .journal-settings-toggle {
   width: 100%;
   display: flex;

@@ -1,8 +1,4 @@
 /* Journal additions reuse the existing theme's ink, geometry and motion. */
-.journal-sidebar,
-.journal-desktop-topbar {
-  display: none;
-}
 .custom-library-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

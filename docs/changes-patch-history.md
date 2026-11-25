@@ -6,6 +6,25 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Today performance round and APK naming round
+
+**Patch (Today performance round, "collapsed means not mounted", base `a3459c1b03f8a56a13327dd122f283fac7edae93`):** no `package.json` / lock-file change, no IndexedDB schema or backup change, no native code, no visual change except the intended one (a meal or tracker left open shows the existing deferred skeleton for a frame or two on entry).
+
+- **New (code):** `src/components/dashboard/MealSlotBody.tsx` (the meal body, extracted), `src/utils/knownFoods.ts` (`knownFoodIds`), `tests/today-performance.test.tsx` (regression tests).
+- **Edited (code):** `context/contexts.ts` (`NavSlice`, `NavContext`, `NavActionsContext`, `useNav`, `useNavActions`; the tab is out of `UiSlice`), `context/AppContext.tsx` (nav providers, one empty day per date), `context/appContextType.ts` (tab fields removed), `App.tsx` (`pageElements` without the tab, `hideDock` removed, `useNav` in `MainContent`), `common/ActionDock.tsx` (`activeOn`), `common/Header.tsx` (`afterPaint`, skipped unchanged writes, `useNav`), `common/Tabs.tsx`, `journal/JournalChrome.tsx`, `journal/PhotoDiary.tsx`, `journal/MealPlanner.tsx` (`usePlansForSlot`), `journal/SaveAsMeal.tsx` (`knownFoodIds`), `dashboard/MealSlotCard.tsx` (body via `LazyBody`), `dashboard/TrackerCard.tsx` (children via `LazyBody`), `dashboard/TodayView.tsx` (field list only with the advanced layout), `dashboard/QuickAddBar.tsx`, `modals/SettingsModal.tsx`, `modals/settings/PagesSettings.tsx`, `period/PeriodDayInfoModal.tsx`, `period/PeriodView.tsx`, `body/BodyView.tsx`, `prebuilt/PreBuiltMealsView.tsx`, `prebuilt/usePreBuiltMealsState.tsx`, `database/FoodDatabaseView.tsx`, `utils/journalStore.ts` (`plansForSlotOf`, `usePlansForSlot`), `scripts/bench-page-change.mjs` (`X -> Today` gate), `tests/context.test.tsx` and `tests/page-change.test.tsx` (tab read through `useNav` / `useNavActions`).
+- **Edited (docs):** `README.md`, `docs/performance.md` (new section and rules), `docs/changes-patch.md`, `docs/changes-patch-history.md`, `docs/file-map/components-dashboard.md`, `docs/file-map/components-common.md`.
+- **Rebased by hand:** this patch was written against `774698f`; the Settings restructure round (`a3459c1`) landed on top of it. `App.tsx`, `SettingsModal.tsx` and `PreBuiltMealsView.tsx` are re-authored here against the Settings version (the nav props keep their new hook-based form; `hideDock` stays gone). `MealSlotBody.tsx`, `MealSlotCard.tsx`, `TrackerCard.tsx` and the `hideDock` removal in `PeriodView` / `BodyView` apply unchanged. The tab in `PagesSettings` (the Settings round moved those switches out of `SettingsModal`) is read through `useNav` / `useNavActions`, and `SettingsModal` no longer touches the tab at all.
+- **Summary:** a closed meal or tracker has no body in the DOM; the tab no longer re-renders the Today page; the header's layout work waits for the paint. See [performance.md](performance.md#today-performance-round-collapsed-means-not-mounted).
+- **Verified here:** on a fresh clone of `a3459c1` with this patch applied: `git apply --check` clean, `npm ci`, `npm run typecheck` clean, `npm run lint` 0 errors (the 10 warnings are unchanged from the base), `npm test` 92/92 (the 86 base tests, plus the 4 new `today-performance` tests and 2 in `page-change`/`context`), `npm run build` OK. **Not verified here:** the Chromium benchmarks (see the notes in the final report), a real phone, Android WebView, Safari.
+
+**Patch (APK naming round, "one fixed name: kakcal.apk", base `9dac5ae6f6e21dcdecdd271ee9636cb08e8bbbbb`):** no `package.json` / lock-file change, no native code, no IndexedDB or backup change, no visual change. The only user-visible difference is the file name of the downloaded APK (`kakcal.apk`).
+
+- **Edited (code):** `src/components/common/InstallGuide.tsx` (`APK_URL = './downloads/kakcal.apk'`, the old `Kakcalculator.apk` accepted as a fallback, `download="kakcal.apk"`).
+- **Edited (workflow):** `.github/workflows/pages.yml` fetches **any** `*.apk` asset from the latest release and publishes it as `public/downloads/kakcal.apk`, so the asset name in the release never has to match the site.
+- **Edited (docs):** `docs/apk-download.md` (rewritten around the fixed name), `docs/brand.md`, `docs/pwa.md`, `docs/pwa-setup.md`, `docs/android-apk.md`, `docs/known-gaps.md`, `docs/performance-review.md`, `README.md`.
+- **Verified:** `npm run typecheck`, `npm test` (92 passed), `npm run build`. **Not verified:** a real GitHub release download (no release in the authoring environment).
+
+
 ## Settings restructure round
 
 **Current patch (Settings restructure round, base `774698fd198fbefa1374663f7d63d72dafdb107b`):** no `package.json` / lock-file change (no `npm ci` change needed), no native code, no new permission or remote API; the web build is the only one that changes. Details: [settings-update.md](settings-update.md).

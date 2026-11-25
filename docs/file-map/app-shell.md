@@ -1,6 +1,6 @@
 # File map: App shell, config and contracts
 
-Meal-journal additions: `App.tsx` mounts `JournalChrome`; `index.css` imports `components/journal/journal.css` (both are lists of `@import`s; see [file organisation](../file-organisation.md)). The existing mobile app shell and tour are preserved. See [meal journal](../meal-journal.md).
+Meal-journal additions: `App.tsx` mounts only `Header` and the page surface (the desktop `JournalChrome` was deleted); `index.css` imports `components/journal/journal.css` (both are lists of `@import`s; see [file organisation](../file-organisation.md)). The existing mobile app shell and tour are preserved. See [meal journal](../meal-journal.md).
 
 > **Scope:** Entry HTML/TSX, `App.tsx`, context, types, i18n, themes/CSS, brand assets, root config files, leftovers.
 >

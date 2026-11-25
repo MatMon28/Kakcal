@@ -88,7 +88,7 @@ export const MealsSection: React.FC<{ s: LibraryState }> = ({ s }) => {
                       />
                     </button>
 
-                    <div className="flex items-center gap-1 shrink-0">
+                    <div data-library-actions className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => openEditMealModal(meal)}

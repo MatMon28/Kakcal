@@ -26,7 +26,7 @@ Settings has one collapsible group per area. Every group has its own colour badg
 Rules that matter:
 
 - Every switch in Custom page and Pages reads **on = shown**. Stored values are inverted where the key is a "hide" flag (`hideCustomButtons`, `hideCustomFields`, `hideCustomPage`, `hideStatisticsPage`; `hidePeriod` and `hidePoop` already were).
-- A page that is hidden (or switched off) while it is open sends the user back to Today. Hidden pages leave the bottom bar, the desktop sidebar and the swipe order (`src/App.tsx` `visibleTabs`).
+- A page that is hidden (or switched off) while it is open sends the user back to Today. Hidden pages leave the bottom bar, and the swipe order (`src/App.tsx` `visibleTabs`).
 - **Log water** is the existing `quickAdd.water` flag (it drives the water card and the dock button). **Log poop** sets `hidePoop` and `quickAdd.poop` together, so turning it on restores the dock button.
 - Hiding a Custom section or button only hides it. No data is deleted.
 - **Delete data** never touches settings (custom buttons, quick foods, reminder times, theme, goals). After a deletion the page reloads so every screen reads the stored data again.
@@ -85,7 +85,7 @@ Delete all data is unchanged: `src/components/common/DeleteAllData.tsx` and `src
 | `src/utils/pageVisibility.ts` | `isPageHiddenBySettings(tab, settings)` |
 | `src/utils/deleteData.ts` | The per-category deletes |
 | `src/components/prebuilt/PreBuiltMealsView.tsx` | Hides Custom sections and creation buttons from the settings |
-| `src/App.tsx`, `src/components/common/Tabs.tsx`, `src/components/journal/JournalChrome.tsx`, `src/context/AppContext.tsx` | Hidden pages in navigation, fallback to Today, defaults and loading of the new keys |
+| `src/App.tsx`, `src/components/common/Tabs.tsx`, `src/context/AppContext.tsx` | Hidden pages in navigation, fallback to Today, defaults and loading of the new keys |
 
 ## Verification
 

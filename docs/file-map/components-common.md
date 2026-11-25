@@ -8,7 +8,7 @@
 
 `IconPicker.tsx`: shared built-in/local-image chooser for custom trackers and meal categories, with image resizing and validation.
 
-Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed sections/search; `JournalChrome.tsx` supplies the desktop sidebar/topbar and Custom create menu. `journal.css` contains their responsive and theme-aware styles. The original `Header.tsx` retains the mobile header and is hidden only above 1100 px. See [meal journal](../meal-journal.md).
+Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed sections/search; `JournalChrome.tsx` (desktop sidebar/topbar) was **deleted**: `Header.tsx` is the only header at every width. `journal.css` contains the responsive and theme-aware styles. See [meal journal](../meal-journal.md).
 
 > **Scope:** Shared UI: modal, header, tabs, swiper, icons, amount selectors, backup, brand.
 >
@@ -50,7 +50,7 @@ Journal additions: `src/components/journal/JournalUI.tsx` supplies shared themed
 
 Continuous selector: `Tabs.tsx` keeps labels mounted and blends pastel indicator layers from `utils/pagePosition.ts`; `PageSwiper.tsx` publishes progress throughout the gesture and settlement.
 
-DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. JournalChrome.tsx also displays the continuous page pill on desktop and marks demo builds as Test mode.
+DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. The "Test mode / sample journal" line is `.journal-mobile-demo` in `App.tsx` (shown at every width).
 
 (Round: page-change performance) `src/components/common/LazyBody.tsx`: `useMountedOnce(open)` / `<LazyBody open>` mount a collapsed accordion body only once it has been opened (then it stays mounted); used by the Custom cards / sections and `JournalSection`. `Tabs.tsx` measures the tab label widths only when the labels change (it used to read `scrollWidth` after every render, forcing a layout). See [../performance.md](../performance.md).
 
