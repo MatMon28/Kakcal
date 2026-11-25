@@ -176,7 +176,7 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
  * tracked measure for the last 3 months / 6 months / 1 year / a custom period, and Upper body / Lower body /
  * Custom buttons at the bottom that open a pop-up to update a single body part.
  */
-export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false }) => {
+export const BodyView: React.FC = () => {
   const { settings, setIsProfileOpen } = useApp();
   const text = useAdvancedText();
   const layoutText = useLayoutText();
@@ -301,7 +301,7 @@ export const BodyView: React.FC<{ hideDock?: boolean }> = ({ hideDock = false })
       )}
 
       <BodyMeasureModal group={group} onClose={() => setGroup(null)} />
-      {!hideDock && <ActionDock label={text.body.dock} actions={actions} />}
+      <ActionDock activeOn="body" label={text.body.dock} actions={actions} />
     </div>
   );
 };

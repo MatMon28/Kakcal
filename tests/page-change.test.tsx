@@ -1,7 +1,7 @@
 import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { AppProvider, useApp } from '../src/context/AppContext';
+import { AppProvider, useApp, useNavActions } from '../src/context/AppContext';
 import { useJournalText } from '../src/i18n/journal';
 import { useLayoutText } from '../src/i18n/layout';
 import { useAdvancedText } from '../src/i18n/advanced';
@@ -44,8 +44,8 @@ describe('narrow subscriptions', () => {
       useApp();
       return null;
     }
-    let api!: ReturnType<typeof useApp>;
-    function Grab() { api = useApp(); return null; }
+    let api!: ReturnType<typeof useApp> & ReturnType<typeof useNavActions>;
+    function Grab() { api = { ...useApp(), ...useNavActions() }; return null; }
     render(<><TextConsumer /><SlotsConsumer /><Everything /><Grab /></>, { wrapper });
     const before = { ...renders };
     act(() => api.setActiveTab('prebuilt'));

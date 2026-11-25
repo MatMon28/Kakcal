@@ -1,6 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
-import { AppProvider, useApp, useShell } from './context/AppContext';
+import { AppProvider, useApp, useNav, useNavActions, useShell } from './context/AppContext';
 import { Header } from './components/common/Header';
 import { JournalChrome } from './components/journal/JournalChrome';
 import { closeTopModal, getOpenModalCount } from './components/common/Modal';
@@ -85,7 +85,8 @@ const ACTION_SCREEN: Record<WidgetAction, TourScreen> = {
 const targetOrigin = () => (window.location.origin === 'null' ? '*' : window.location.origin);
 
 function WidgetAppBridge() {
-  const app = useApp();
+  // The bridge only changes tabs (through the stable functions), so it does not re-render on a tab change.
+  const app = { ...useApp(), ...useNavActions() };
   const autoMealSlot = useAutoMealSlot();
   const today = useToday();
   const snapshot = useMemo(
@@ -272,8 +273,9 @@ function WidgetAppBridge() {
 }
 
 function MainContent() {
+  const { activeTab, setActiveTab, returnFromDatabase } = useNav();
   const {
-    activeTab, setActiveTab, returnFromDatabase, settings,
+    settings,
     isAddFoodOpen, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
     isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId,
     isCustomPickerOpen, isPeriodSheetOpen,
@@ -309,16 +311,17 @@ function MainContent() {
   );
   // The page elements are memoised: `useShell()` changes whenever ANY dialog opens, which re-renders MainContent and
   // PageSwiper; with a fresh element per render React would re-render both whole pages for it. With these stable
-  // elements (they depend only on the active tab and the two optional pages) it skips them. `hideDock` is the only
-  // prop, and it is true exactly for the page that is not the active one.
+  // elements (they depend only on the two optional pages, never on the active tab) it skips them. The dock of a page
+  // decides by itself whether it is shown (`ActionDock activeOn`, read from NavContext), so a tab change re-renders
+  // only the bar, the header and the page switch, never a page.
   const pageElements = useMemo(() => {
     const page = (tab: ActiveTab) => {
       switch (tab) {
         case 'today': return <TodayView />;
-        case 'prebuilt': return <PreBuiltMealsView hideDock={tab !== activeTab} />;
-        case 'period': return periodShown ? <PeriodView hideDock={tab !== activeTab} /> : null;
+        case 'prebuilt': return <PreBuiltMealsView />;
+        case 'period': return periodShown ? <PeriodView /> : null;
         case 'database': return <FoodDatabaseView />;
-        case 'body': return bodyShown ? <BodyView hideDock={tab !== activeTab} /> : null;
+        case 'body': return bodyShown ? <BodyView /> : null;
         case 'history': return <HistoryView />;
         default: return null;
       }
@@ -328,7 +331,7 @@ function MainContent() {
       elements.set(tab, <Suspense fallback={null}>{page(tab)}</Suspense>);
     }
     return elements;
-  }, [activeTab, periodShown, bodyShown]);
+  }, [periodShown, bodyShown]);
   const renderMainTab = useCallback((tab: ActiveTab) => pageElements.get(tab) ?? null, [pageElements]);
 
   // A single history guard lets browser/Android Back dismiss the actual top dialog,

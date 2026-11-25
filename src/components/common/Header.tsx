@@ -1,5 +1,6 @@
 import React from 'react';
-import { useShell } from '../../context/AppContext';
+import { useNav, useNavActions, useShell } from '../../context/AppContext';
+import { afterPaint } from '../../utils/idle';
 import { User, Settings } from 'lucide-react';
 import { Tabs } from './Tabs';
 import { Wordmark } from './Brand';
@@ -18,7 +19,9 @@ const smoothstep = (value: number) => {
 };
 
 export const Header: React.FC = () => {
-  const { t, activeTab, setActiveTab, setIsProfileOpen, setIsSettingsOpen } = useShell();
+  const { t, setIsProfileOpen, setIsSettingsOpen } = useShell();
+  const { activeTab } = useNav();
+  const { setActiveTab } = useNavActions();
   const surfaceRef = React.useRef<HTMLDivElement>(null);
   const topRowRef = React.useRef<HTMLDivElement>(null);
   const tabsRowRef = React.useRef<HTMLDivElement>(null);
@@ -33,7 +36,12 @@ export const Header: React.FC = () => {
     lastFrameTime: 0,
   });
 
+  // The last values written: a call with the same values writes nothing (no style write, no invalidation).
+  const appliedRef = React.useRef('');
   const applyHeaderProgress = React.useCallback((topProgress: number, tabsProgress: number) => {
+    const signature = `${clamp01(topProgress).toFixed(3)}|${clamp01(tabsProgress).toFixed(3)}`;
+    if (signature === appliedRef.current) return;
+    appliedRef.current = signature;
     const surface = surfaceRef.current;
     const topRow = topRowRef.current;
     const tabsRow = tabsRowRef.current;
@@ -121,13 +129,15 @@ export const Header: React.FC = () => {
     [applyHeaderProgress]
   );
 
-  React.useEffect(() => {
+  // A tab change reads the scroll position and rewrites the header. That is layout work, so it runs after the new page
+  // has been painted (afterPaint), never inside the commit: a read there forces a whole-document layout of the new page.
+  React.useEffect(() => afterPaint(() => {
     const state = scrollStateRef.current;
     state.lastY = Math.max(0, window.scrollY || document.documentElement.scrollTop || 0);
     state.topProgress = clamp01(1 - state.lastY / TOP_HIDE_SCROLL_PX);
     state.tabsProgress = state.lastY <= 4 ? 1 : state.tabsProgress;
     scheduleSmoothUpdate(true);
-  }, [activeTab, scheduleSmoothUpdate]);
+  }), [activeTab, scheduleSmoothUpdate]);
 
   React.useEffect(() => {
     const state = scrollStateRef.current;

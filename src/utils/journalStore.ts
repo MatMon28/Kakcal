@@ -174,6 +174,34 @@ export function usePhotosForLinked(linkedId: string): MealPhoto[] {
 export function usePhotosForSlot(date: string, slot: MealSlotId): MealPhoto[] {
   return photoIndex(useMealJournal().photos).bySlot.get(memoryKey(date, slot)) ?? NO_PHOTOS;
 }
+
+/**
+ * The planned meals of one day and meal that are not logged yet, in the order a Today card shows them: notes first,
+ * then the rest in the order of `plans` (the sort is stable). Indexed like the photos (C5): the index is built once per
+ * `plans` array (a `WeakMap`), so a card no longer filters and sorts the whole, never-pruned plan list on every render.
+ * `plansForSlotOf` is the pure form; the test suite checks it against the old filter + sort.
+ */
+const planIndexes = new WeakMap<MealPlan[], Map<string, MealPlan[]>>();
+const NO_PLANS: MealPlan[] = [];
+const slotKey = (date: string, slot: MealSlotId) => `${date}\u0001${slot}`;
+export function plansForSlotOf(plans: MealPlan[], date: string, slot: MealSlotId): MealPlan[] {
+  let index = planIndexes.get(plans);
+  if (!index) {
+    index = new Map();
+    for (const plan of plans) {
+      if (plan.loggedAt) continue;
+      const key = slotKey(plan.date, plan.slot);
+      const list = index.get(key);
+      if (list) list.push(plan); else index.set(key, [plan]);
+    }
+    for (const list of index.values()) list.sort((a, b) => Number(b.kind === 'note') - Number(a.kind === 'note'));
+    planIndexes.set(plans, index);
+  }
+  return index.get(slotKey(date, slot)) ?? NO_PLANS;
+}
+export function usePlansForSlot(date: string, slot: MealSlotId): MealPlan[] {
+  return plansForSlotOf(useMealJournal().plans, date, slot);
+}
 export const exportMealJournal = () => snapshot;
 /**
  * Backup form (backup version 2): the whole journal WITHOUT any picture data. The notes of the pictures are kept in

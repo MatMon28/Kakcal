@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Today performance round ("collapsed means not mounted"):** Today's meal and tracker cards no longer mount their closed bodies (the item rows, food grids, planned meals, photos and notes): the body is `MealSlotBody`, mounted through `LazyBody` (a meal open on arrival shows the skeleton for a frame, then its rows). Tab state moved out of the UI slice into `NavContext` / `NavActionsContext`, so a tab change re-renders only what displays the tab; the page docks gate themselves (`ActionDock activeOn`); the Header's tab effect runs after paint and skips unchanged writes; the planned-meal lookup and the known-food set are indexed; the empty day is one object per date. Covered by `tests/today-performance.test.tsx` and a new `X -> Today` gate in `scripts/bench-page-change.mjs`. See [docs/performance.md](docs/performance.md#today-performance-round-collapsed-means-not-mounted) and [docs/changes-patch.md](docs/changes-patch.md).
+
+### Previous update (Settings restructure round)
+
 **Settings restructure round:** Settings is now one collapsible group per area, each with its own colour and icon: **Today** (quick-add buttons, **Log water**, **Log poop**, **Track sugar**, meal notes, quick food shortcuts and the Custom buttons as a sub-section), **Custom page** (Photo diary feature, the bottom-bar buttons and every section can be hidden), **Pages** (hide Custom, Statistics, Track period and Body measurements; Today is always shown), **Advanced**, **Notifications** (the *Send a test notification* button is removed), **Backup**, **Install app** and **Delete data** (one confirmed row per kind of record: plans, saved meals, recipes, photos, meal notes, logged food, activities, water, weight, poop, custom tracker entries, body measurements, period records; *Delete all data* stays at the bottom). Hidden pages leave the navigation and the swipe order. See [docs/settings-update.md](docs/settings-update.md).
 
 ### Previous update (Today meal-card round)

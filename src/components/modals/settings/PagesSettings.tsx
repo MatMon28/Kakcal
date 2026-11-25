@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarDays, Droplet, LayoutGrid, Ruler, TrendingUp, User } from 'lucide-react';
-import { useApp } from '../../../context/AppContext';
+import { useApp, useNav, useNavActions } from '../../../context/AppContext';
 import { useAdvancedText } from '../../../i18n/advanced';
 import { useJournalText } from '../../../i18n/journal';
 import { setBodyEnabled, useAdvanced } from '../../../utils/advancedStore';
@@ -14,7 +14,9 @@ import { SubSection, TONE, ToggleRow } from './SettingsParts';
 export const PagesSettings: React.FC = () => {
   const j = useJournalText();
   const text = useAdvancedText();
-  const { t, settings, updateSettings, activeTab, setActiveTab, setIsSettingsOpen, setIsProfileOpen } = useApp();
+  const { activeTab } = useNav();
+  const { setActiveTab } = useNavActions();
+  const { t, settings, updateSettings, setIsSettingsOpen, setIsProfileOpen } = useApp();
   const bodyOn = useAdvanced().body.enabled;
 
   const hideCustom = () => {

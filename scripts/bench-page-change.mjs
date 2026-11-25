@@ -113,7 +113,9 @@ for (let rep = 0; rep < 3; rep++) {
   for (const label of others) {
     const task = await tap(`${home} -> ${label}`, label);
     if (label === custom && THROTTLE >= 4 && task > BUDGET_MS) failures.push(`${scenario}: ${home} -> ${label} took ${task} ms (budget ${BUDGET_MS} ms)`);
-    await tap(`${label} -> ${home}`, home);
+    const back = await tap(`${label} -> ${home}`, home);
+    // Today budget (rich seed: 20 logged items today): X -> Today must stay within the same budget as Today -> Custom.
+    if (THROTTLE >= 4 && back > BUDGET_MS) failures.push(`${scenario}: ${label} -> ${home} took ${back} ms (budget ${BUDGET_MS} ms)`);
   }
 }
 await ctx.close();

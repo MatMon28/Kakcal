@@ -42,7 +42,7 @@ SettingsModal delegates custom button icons to common/IconPicker.tsx. LayoutTool
 | `src/components/modals/settings/TodaySettings.tsx` | Today group: quick-add buttons, Log water / Log poop / Track sugar, Meal notes, quick food shortcuts (picker), Custom buttons. |
 | `src/components/modals/settings/CustomButtonsSettings.tsx` | Custom buttons list, add / edit form and widget switch (inside Today). Moved unchanged from the old group. |
 | `src/components/modals/settings/CustomPageSettings.tsx` | Custom page group: Photo diary feature, bottom-bar buttons, sections. |
-| `src/components/modals/settings/PagesSettings.tsx` | Pages group: hide Custom, Statistics, Track period, Body measurements; body profile shortcut. |
+| `src/components/modals/settings/PagesSettings.tsx` | Pages group: hide Custom, Statistics, Track period, Body measurements; body profile shortcut. Reads the tab through `useNav()` and the setter through `useNavActions()` (not `useApp()`). |
 | `src/components/modals/settings/DeleteDataSettings.tsx` | Delete data group: one confirmed row per kind of record, then *Delete all data*. |
 | `src/components/modals/NotificationSettings.tsx` | Test notification button removed; group now has a bell icon and colour. |
 | `src/components/modals/AdvancedSettings.tsx` | Body measurements switch moved to Pages; group has an icon. |

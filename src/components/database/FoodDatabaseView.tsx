@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, useNavActions } from '../../context/AppContext';
 import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { catalogueScore, getLoadedOffCatalog, loadOffCatalog } from '../../data/offCatalog';
 import { FoodCategory, FoodItem, MealSlotId } from '../../types';
@@ -60,11 +60,11 @@ export const FoodDatabaseView: React.FC = () => {
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
     setTargetMealSlot,
-    returnFromDatabase,
     favoriteFoods,
     language,
     t,
   } = useApp();
+  const { returnFromDatabase } = useNavActions();
   const { options: mealSlots, label: slotLabel } = useMealSlots();
   const autoMealSlot = useAutoMealSlot();
   // This page is not opened from a meal: the barcode and custom food popups log to the meal of the moment.

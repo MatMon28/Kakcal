@@ -1,5 +1,5 @@
 import { useDeferredValue, useEffect, useState, useMemo } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, useNavActions } from '../../context/AppContext';
 import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../../types';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
@@ -14,6 +14,7 @@ import { useCustomDockActions } from '../journal/CustomShortcuts';
 
 /** All state, derived lists and handlers of the Custom page (Meals / Recipes / Foods). Rendered by `PreBuiltMealsView.tsx`. */
 export function usePreBuiltMealsState() {
+  const { setActiveTab } = useNavActions();
   const {
     preBuiltMeals,
     addPreBuiltMeal,
@@ -31,7 +32,6 @@ export function usePreBuiltMealsState() {
     setIsBarcodeOpen,
     setIsCustomFoodOpen,
     setTargetMealSlot,
-    setActiveTab,
     settings,
 
     t,

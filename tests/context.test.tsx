@@ -1,7 +1,7 @@
 import { act, cleanup, render, renderHook } from '@testing-library/react';
 import { StrictMode, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { AppProvider, useApp, useSettings } from '../src/context/AppContext';
+import { AppProvider, useApp, useNav, useNavActions, useSettings } from '../src/context/AppContext';
 import { VERIFIED_FOODS } from '../src/data/verifiedFoods';
 import { deleteDatabase, resetDbForTests } from '../src/storage/idb';
 import { flushWrites } from '../src/storage/writeQueue';
@@ -37,7 +37,7 @@ describe('food logging', () => {
 
 describe('navigation', () => {
   it('changes tab and returns from the food database to the previous tab', () => {
-    const { result } = renderHook(() => useApp(), { wrapper });
+    const { result } = renderHook(() => ({ ...useNav(), ...useNavActions() }), { wrapper });
     act(() => result.current.setActiveTab('history'));
     expect(result.current.activeTab).toBe('history');
     act(() => result.current.setActiveTab('database'));
@@ -83,9 +83,9 @@ describe('backup export and import', () => {
 describe('context split (item 1)', () => {
   it('does not re-render a settings consumer when journal data changes', () => {
     let renders = 0;
-    let api: ReturnType<typeof useApp> | undefined;
+    let api: (ReturnType<typeof useApp> & ReturnType<typeof useNavActions>) | undefined;
     const Settings = () => { useSettings(); renders++; return null; };
-    const Api = () => { api = useApp(); return null; };
+    const Api = () => { api = { ...useApp(), ...useNavActions() }; return null; };
     render(<AppProvider><Settings /><Api /></AppProvider>);
     const before = renders;
     act(() => api!.logFoodItem('lunch', food, 100));

@@ -3,6 +3,7 @@ import { BookmarkPlus, Check } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
+import { knownFoodIds } from '../../utils/knownFoods';
 import type { LoggedFoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
 import { journalDate } from './JournalUI';
@@ -30,7 +31,7 @@ export function SaveAsMeal({
   const [done, setDone] = useState<number | null>(null);
   if (items.length === 0) return null;
 
-  const known = new Set(allFoods.map((f) => f.id));
+  const known = knownFoodIds(allFoods);
   const usable = items.filter((item) => known.has(item.foodId));
   const skipped = items.length - usable.length;
   const defaultName = `${label(slot)} · ${journalDate(date, language, { day: 'numeric', month: 'short' })}`;

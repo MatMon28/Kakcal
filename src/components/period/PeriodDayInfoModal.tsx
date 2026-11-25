@@ -1,6 +1,6 @@
 import React from 'react';
 import { Footprints, Scale, Droplets, ArrowUpRight, Sparkles } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useApp, useNavActions } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { PoopIcon } from '../common/PoopIcon';
@@ -25,13 +25,13 @@ interface PeriodDayInfoModalProps {
 }
 
 export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, onClose }) => {
+  const { setActiveTab } = useNavActions();
   const {
     allDayLogs,
     userProfile,
     settings,
     language,
     setSelectedDate,
-    setActiveTab,
     t,
   } = useApp();
 

@@ -1,4 +1,4 @@
-import { ActiveTab, ActivityLog, DayLog, EnergyExpenditureSummary, FoodItem, Language, LoggedFoodItem, MacroSummary, MealSlotId, PeriodData, PeriodDayLog, PeriodSettings, PoopSize, BristolType, PreBuiltMeal, Settings, UserProfile, CustomActivityDef } from '../types';
+import { ActivityLog, DayLog, EnergyExpenditureSummary, FoodItem, Language, LoggedFoodItem, MacroSummary, MealSlotId, PeriodData, PeriodDayLog, PeriodSettings, PoopSize, BristolType, PreBuiltMeal, Settings, UserProfile, CustomActivityDef } from '../types';
 import { translations } from '../i18n/translations';
 import { type PeriodTagGroup } from '../utils/period';
 
@@ -69,9 +69,6 @@ export interface AppContextType {
   setIsProfileOpen: (open: boolean) => void;
   settings: Settings;
   updateSettings: (partial: Partial<Settings>) => void;
-  activeTab: ActiveTab;
-  setActiveTab: (tab: ActiveTab) => void;
-  returnFromDatabase: () => void;
   isSettingsOpen: boolean;
   setIsSettingsOpen: (open: boolean) => void;
   isWaterOpen: boolean;

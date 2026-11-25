@@ -19,7 +19,7 @@ import { useApp } from '../../context/AppContext';
 import type { DockAction } from '../common/ActionDock';
 import type { CustomFieldId } from '../../types';
 
-export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
+export const PreBuiltMealsView: React.FC = () => {
   const s = usePreBuiltMealsState();
   const {
     deleteCustomFood, deletePreBuiltMeal, setTargetMealSlot, setActiveTab, t, autoMealSlot,
@@ -121,8 +121,9 @@ export const PreBuiltMealsView: React.FC<{ hideDock: boolean }> = ({ hideDock })
         }}
       />
 
-      {!hideDock && dockActions.length > 0 && (
+      {dockActions.length > 0 && (
         <ActionDock
+          activeOn="prebuilt"
           label={t.prebuilt.creationDock}
           actions={dockActions}
         />

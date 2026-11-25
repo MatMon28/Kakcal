@@ -23,12 +23,13 @@ import { DEMO_MODE } from '../../config/demo';
 import { Tabs } from '../common/Tabs';
 import { Wordmark } from '../common/Brand';
 import { Modal } from '../common/Modal';
+import { useNav, useNavActions } from '../../context/AppContext';
 import { journalDate } from './JournalUI';
 
 export function JournalChrome() {
+  const { activeTab } = useNav();
+  const { setActiveTab } = useNavActions();
   const {
-    activeTab,
-    setActiveTab,
     settings,
     setIsSettingsOpen,
     setIsProfileOpen,

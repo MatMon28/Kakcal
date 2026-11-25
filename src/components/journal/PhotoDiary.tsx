@@ -12,7 +12,7 @@ import {
   Upload,
   X,
 } from 'lucide-react';
-import { useSettings, useUiState } from '../../context/AppContext';
+import { useNavActions, useSettings, useUiState } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString, getTodayDateString } from '../../utils/formatters';
@@ -641,7 +641,8 @@ function PhotoViewer({
   /** Closes the parents of the viewer (e.g. the gallery) when the user jumps to the meal. */
   onLeave?: () => void;
 }) {
-  const { setActiveTab, setSelectedDate } = useUiState();
+  const { setSelectedDate } = useUiState();
+  const { setActiveTab } = useNavActions();
   const [id, setId] = useState(selectedId);
   const index = photos.findIndex((p) => p.id === id);
   const photo = photos[index];

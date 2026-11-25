@@ -94,6 +94,31 @@ The first round got Today -> Custom from 1000-1250 ms to 260-320 ms **in the bes
 - **Anything indexed by a key that a list render asks for belongs in the store as an O(1) lookup** (`usePhotosFor...`, `foodById`), not in a `filter` inside the card.
 - **Do not keep the outgoing page longer than its own animation.**
 
+## Today performance round (collapsed means not mounted)
+
+**Problem.** Opening Today from another tab blocked the main thread for 300-830 ms (4x CPU, desktop Chromium; treat as ratios). Two causes, measured: (C1, primary) every Today meal and tracker card rendered its whole hidden body inside a `0fr` accordion - per logged item a row and a six-field `FoodMacroGrid`, plus planned meals, photos and the note; a 72-item day had 4,625 DOM nodes, 92 % of them in closed accordions. (C2, amplifier) the active tab lived in the UI slice that every Today card subscribed to through `useApp()`, so the outgoing page re-rendered in full during the ~300 ms fade and `pageElements` was rebuilt on every tab change.
+
+| # | Change | Where |
+| --- | --- | --- |
+| C1 | The meal body is `MealSlotBody` and is mounted through `LazyBody`: closed = not mounted; open on arrival (`kcak_today_meals_open`) = mounted after the first paint behind `DeferredBody` (`defer`); opened by a tap = mounted at once; once mounted it stays mounted so the closing animation plays. `MealNutrientTotals` (the header's fibre / salt / sugar row) uses `LazyBody`. `TrackerCard` wraps its children in `<LazyBody open defer>`, so every tracker body gets the same rules. | `dashboard/MealSlotCard.tsx`, new `dashboard/MealSlotBody.tsx`, `dashboard/TrackerCard.tsx` |
+| C2 | `NavContext` carries `{ activeTab, setActiveTab, returnFromDatabase }`; `NavActionsContext` carries the two functions only (stable identity, so a setter-only caller never re-renders on a tab change). The tab is out of the UI slice and out of `useApp()`. `pageElements` depends only on the two optional pages; the page dock decides by itself with `<ActionDock activeOn>` (reads `NavContext`), so `hideDock` is gone. Components that show the tab read it with `useNav()`. | `context/contexts.ts`, `context/AppContext.tsx`, `context/appContextType.ts`, `App.tsx`, `common/ActionDock.tsx` |
+| C3 | The Header's tab effect reads `scrollY` and writes styles: it runs in `afterPaint()`, and `applyHeaderProgress` skips the whole write when the rounded values are unchanged. | `common/Header.tsx` |
+| C4 | One empty `DayLog` per date (`emptyDayOnce`) instead of a new object per read. It is never written into state. | `context/AppContext.tsx` |
+| C5 | `plansForSlotOf` / `usePlansForSlot`: a `WeakMap` index by day and slot, built once per `plans` array (the same pattern as the photo index); the output equals the old filter + stable sort (tested). `knownFoodIds(allFoods)`: the food-id set is built once per `allFoods` array, not once per card. | `utils/journalStore.ts`, new `utils/knownFoods.ts`, `journal/MealPlanner.tsx` (`PlannedMeals`), `journal/SaveAsMeal.tsx` |
+| C6 | `TodayView` builds the advanced-layout field list only while the layout is on. | `dashboard/TodayView.tsx` |
+
+**Tests.** `tests/today-performance.test.tsx`: a collapsed meal has zero item rows; re-closing keeps the body mounted; a meal open on arrival shows the skeleton first and the rows after; changing the tab does not re-render a mounted meal card (`Profiler` commit count); `plansForSlotOf` equals the old filter + sort for a seeded fixture; `knownFoodIds` is built once per list. `tests/context.test.tsx` and `tests/page-change.test.tsx` now read the tab through `useNav` / `useNavActions`.
+
+**Benchmark.** `scripts/bench-page-change.mjs` also gates `X -> Today` (rich seed: 20 logged items on the current day) against the same 250 ms budget. The base commit fails it; the patched tree must pass it where Chromium runs. Numbers from the environment that wrote this round are in the patch notes (see [changes-patch.md](changes-patch.md)).
+
+**Not done (on purpose, or left for later):** the other pages still call `useApp()` (see *Not changed*); Statistics' accordions are not wrapped in `LazyBody` yet; `NavContext` has no transition direction (the swipe code derives it from the tab order and no consumer needed it yet); keep-alive Today, a display snapshot / `startViewTransition` for the leaving page, and the swipe-mount change are not done.
+
+**Rules (for every page, from now on)**
+
+- **Collapsed means not mounted.** Every accordion body on every page is wrapped in `<LazyBody open={open}>` (or `defer` when it may be open on arrival), unless it is a single line of text.
+- **A component that does not display the active tab must not subscribe to it.** Read the tab with `useNav()` only where the tab is displayed; use `useNavActions()` (or the UI slice's dialog setters) for changing it. `useApp()` inside a page tree is a latent bug: it re-renders the page on every dialog and data change.
+- **No read-then-write of layout during a page change, in any effect.** Defer the read with `afterPaint()`, and skip a style write whose value did not change.
+
 ## Meal card container queries
 
 **Problem.** Every `MealSlotCard` ran two layout effects on mount (`useCramped`, `useExtrasFit`) that read `clientWidth` / `offsetWidth` / `getBoundingClientRect()` and called `setState` before the first paint. Today builds up to ~10 cards, so entering Today did a forced whole-document layout (a trace of Custom -> Today shows it as the first, largest `Layout` of the entry: ~830 dirty nodes) and a re-render of the cards, on every entry.

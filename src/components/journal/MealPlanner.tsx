@@ -20,6 +20,7 @@ import {
   removeMealPlan,
   updateMealPlan,
   useMealJournal,
+  usePlansForSlot,
 } from '../../utils/journalStore';
 import type { MealSlotId } from '../../types';
 import type { MealPlan } from '../../types/journal';
@@ -343,12 +344,10 @@ export function PlannedMeals({
 }) {
   const { language } = useSettings();
   const { logItemsToSlot } = useJournalData();
-  const { plans } = useMealJournal();
   const j = useJournalText();
   const [error, setError] = useState('');
-  const matching = plans
-    .filter((p) => p.date === date && p.slot === slot && !p.loggedAt)
-    .sort((a, b) => Number(b.kind === 'note') - Number(a.kind === 'note'));
+  // Indexed (C5): the planned, not yet logged meals of this day and slot, in the same order as the old filter + sort.
+  const matching = usePlansForSlot(date, slot);
   if (!matching.length) return null;
   return (
     <div className="journal-inline-plans">

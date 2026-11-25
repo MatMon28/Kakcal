@@ -1,5 +1,7 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useContext, useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { NavContext } from '../../context/contexts';
+import type { ActiveTab } from '../../types';
 
 export interface DockAction {
   id: string;
@@ -90,12 +92,20 @@ function useHideOnScroll(): boolean {
   return hidden;
 }
 
-export function ActionDock({ label, actions }: {
+/**
+ * `activeOn`: the dock of one page. It is drawn only while that tab is the active one, so a page does not need to know
+ * the tab (and a page that is not shown does not re-render when the tab changes; only this small dock does). Without
+ * `activeOn` (the tour, the dialogs) the dock is always drawn. Reads NavContext directly: it also works outside the app.
+ */
+export function ActionDock({ label, actions, activeOn }: {
   label: string;
   actions: DockAction[];
+  activeOn?: ActiveTab;
 }) {
+  const nav = useContext(NavContext);
   const hidden = useHideOnScroll();
   if (!actions.length) return null;
+  if (activeOn && nav && nav.activeTab !== activeOn) return null;
 
   return createPortal(
     <div

@@ -21,7 +21,7 @@ import { Droplet, ChevronRight, Plus, Check, Pill, CalendarHeart, Trash2, Sticky
 
 const FLOWS: PeriodFlow[] = ['none', 'light', 'medium', 'heavy'];
 
-export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
+export const PeriodView: React.FC = () => {
   const {
     t,
     language,
@@ -374,9 +374,7 @@ export const PeriodView: React.FC<{ hideDock: boolean }> = ({ hideDock }) => {
       {/* 6. Settings accordion */}
       <PeriodSettingsAccordion />
       <PeriodDayInfoModal date={inspectedDay} onClose={() => setInspectedDay(null)} />
-      {!hideDock && (
-        <ActionDock label={t.period.dockLabel} actions={cycleActions} />
-      )}
+      <ActionDock activeOn="period" label={t.period.dockLabel} actions={cycleActions} />
     </div>
   );
 };

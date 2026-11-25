@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, PersonStanding } from 'lucide-react';
-import { useShell } from '../../context/AppContext';
+import { useNav, useNavActions, useShell } from '../../context/AppContext';
 import type { ActiveTab } from '../../types';
 import { isPeriodShown } from '../../utils/tourPreview';
 import { useAdvanced } from '../../utils/advancedStore';
@@ -8,7 +8,9 @@ import { getPagePosition, subscribePagePosition } from '../../utils/pagePosition
 
 export function Tabs() {
   // Navigation + settings only: no journal data, so a logged meal does not re-render the tab bar.
-  const { t, activeTab, setActiveTab, settings } = useShell();
+  const { t, settings } = useShell();
+  const { activeTab } = useNav();
+  const { setActiveTab } = useNavActions();
   const bodyShown = useAdvanced().body.enabled;
   const nav = useRef<HTMLElement>(null);
   const indicator = useRef<HTMLSpanElement>(null);

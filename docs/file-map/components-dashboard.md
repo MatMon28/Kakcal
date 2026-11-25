@@ -1,5 +1,7 @@
 # File map: `src/components/dashboard/`
 
+(Round: Today performance) `MealSlotBody.tsx` (new): the expandable body of a Today meal (planned meals, photos, note, logged items with their editors); mounted only through `LazyBody` in `MealSlotCard.tsx`, which keeps the header. `TrackerCard.tsx` wraps its children in `<LazyBody open defer>`. `TodayView.tsx` builds the advanced-layout field list only when that layout is on. See [../performance.md](../performance.md#today-performance-round-collapsed-means-not-mounted).
+
 (New features round) `BalanceTargetCard.tsx`: intake - burned target card (deficit or surplus) used on Today (`TodayBalanceTarget`, also an advanced-layout field `balance`) and in Statistics (`BalanceTargetCard`, average); `EnergyBalanceCards.tsx` renders it under the two cards; `MealSlotCard.tsx` shows *Add to Meals* at the end of an expanded meal. See [new-features-update.md](../new-features-update.md).
 
 > **Scope:** Today page widgets: day navigator, energy, macros, meal slots, tracker cards.

@@ -19,7 +19,10 @@ import { loadPlannerDraft, parsePlannerDraft, savePlannerDraft } from '../utils/
 import { bootedDays } from '../storage/boot';
 import { persistDayChanges, replaceAllDays } from '../storage/dayStore';
 import { usePersistLocal } from '../storage/usePersist';
-import { JournalDataContext, SettingsContext, UiContext, useStableActions, type JournalSlice, type SettingsSlice, type UiSlice } from './contexts';
+import { JournalDataContext, NavActionsContext, NavContext, SettingsContext, UiContext, useStableActions, type JournalSlice, type NavSlice, type SettingsSlice, type UiSlice } from './contexts';
+
+/** One empty day per date (C4): a new object on every read would defeat memoisation. Never written into state. */
+const emptyDays = new Map<string, DayLog>();
 import { allMealItems } from '../utils/mealItems';
 import { applyThemeAttributes, DEFAULT_MONO_HUE, normalizeMonoHue, normalizeThemeStyle } from '../utils/themes';
 import { DEMO_MODE } from '../config/demo';
@@ -565,7 +568,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [language]);
 
   // Helper to get or create DayLog
-  const getDayLog = (date: string): DayLog => dayLogs[date] || emptyDayFor(date);
+  const emptyDayOnce = (date: string): DayLog => {
+    let day = emptyDays.get(date);
+    if (!day) {
+      day = emptyDayFor(date);
+      emptyDays.set(date, day);
+    }
+    return day;
+  };
+  const getDayLog = (date: string): DayLog => dayLogs[date] || emptyDayOnce(date);
 
   const currentDayLog = getDayLog(selectedDate);
 
@@ -954,7 +965,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [currentDayLog, userProfile]);
 
   // Stable function identities: a slice's value changes only when its data changes.
-  const uiActions = useStableActions({ setActiveTab, returnFromDatabase });
+  // Tab navigation has its own contexts (contexts.ts): the tab (NavContext) and the stable functions (NavActionsContext).
+  // Neither is in the UI slice, so a tab change does not re-render the components that use only dialogs or data.
+  const navActions = useStableActions({ setActiveTab, returnFromDatabase });
+  const navValue = useMemo<NavSlice>(() => ({ activeTab, ...navActions }), [activeTab, navActions]);
   const settingsActions = useStableActions({ setLanguage, updateUserProfile, updateSettings, toggleFavoriteFood, toggleFavoriteActivity });
   const journalActions = useStableActions({
     addCustomFood, deleteCustomFood, rememberFood, logFoodItem, removeLoggedFoodItem, updateLoggedFoodItemAmount,
@@ -973,11 +987,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isPoopOpen, setIsPoopOpen, isWeightOpen, setIsWeightOpen,
     isCustomFoodOpen, setIsCustomFoodOpen, customButtonOpenId, setCustomButtonOpenId,
     isCustomPickerOpen, setIsCustomPickerOpen, isPeriodSheetOpen, setIsPeriodSheetOpen,
-    activeTab, periodSelectedDate, setPeriodSelectedDate, ...uiActions,
+    periodSelectedDate, setPeriodSelectedDate,
   }), [
     selectedDate, targetMealSlot, isAddFoodOpen, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
     isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId, isCustomPickerOpen,
-    isPeriodSheetOpen, activeTab, periodSelectedDate, uiActions,
+    isPeriodSheetOpen, periodSelectedDate,
   ]);
 
   const settingsValue = useMemo<SettingsSlice>(() => ({
@@ -997,12 +1011,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }), [allFoods, currentDayLog, preBuiltMeals, periodData, customActivities, dayLogs, derived, journalActions]);
 
   return (
+    <NavContext.Provider value={navValue}>
+    <NavActionsContext.Provider value={navActions}>
     <UiContext.Provider value={ui}>
       <SettingsContext.Provider value={settingsValue}>
         <JournalDataContext.Provider value={journal}>{children}</JournalDataContext.Provider>
       </SettingsContext.Provider>
     </UiContext.Provider>
+    </NavActionsContext.Provider>
+    </NavContext.Provider>
   );
 };
 
-export { useApp, useJournalData, useSettings, useShell, useUiState } from './contexts';
+export { useApp, useJournalData, useNav, useNavActions, useSettings, useShell, useUiState } from './contexts';

@@ -6,6 +6,18 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Settings restructure round
+
+**Current patch (Settings restructure round, base `774698fd198fbefa1374663f7d63d72dafdb107b`):** no `package.json` / lock-file change (no `npm ci` change needed), no native code, no new permission or remote API; the web build is the only one that changes. Details: [settings-update.md](settings-update.md).
+
+- **New (code):** `src/components/modals/settings/SettingsParts.tsx`, `TodaySettings.tsx`, `CustomButtonsSettings.tsx`, `CustomPageSettings.tsx`, `PagesSettings.tsx`, `DeleteDataSettings.tsx`; `src/utils/deleteData.ts`, `src/utils/pageVisibility.ts`.
+- **New (docs):** `docs/settings-update.md`.
+- **Edited (code):** `src/components/modals/SettingsModal.tsx` (rewritten as a composition of the groups), `AdvancedSettings.tsx` (body switch moved to Pages), `NotificationSettings.tsx` (test button removed), `src/components/common/Collapsible.tsx` (icon and tone), `DataBackup.tsx`, `InstallApp.tsx`, `src/components/prebuilt/PreBuiltMealsView.tsx` (hidden sections and creation buttons), `src/components/common/Tabs.tsx`, `src/components/journal/JournalChrome.tsx` (hidden pages), `src/App.tsx` (visible tabs, fallback to Today), `src/context/AppContext.tsx` (new settings defaults and loading, fallback), `src/types/index.ts` (`CustomFieldId`, four settings keys), `src/utils/notifications.ts` (`sendTestNotification` removed), `src/components/tour/tourContent.ts`, `src/i18n/translations.en.ts` / `.it.ts` / `advanced.ts` (test strings and old group name removed, help text updated), `src/components/journal/CustomShortcuts.tsx` and `src/components/modals/settings` comments, `scripts/verify-interaction-update.mjs` (opens the Today group).
+- **Edited (docs):** `README.md`, `docs/README.md`, `docs/journal-pages.md`, `docs/notifications.md`, `docs/storage-and-privacy.md`, `docs/changelog/README.md`, `docs/file-map/components-modals.md`, `docs/file-map/components-common.md`, `docs/file-map/utils.md`, `docs/changes-patch.md`, `docs/changes-patch-history.md`.
+- **Summary:** Settings is one collapsible group per area with its own colour and icon. Today holds the quick-add toggles, Log water, Log poop, Track sugar, the meal notes toggle, the quick food shortcuts and the Custom buttons. Custom page hides any of its bottom-bar buttons and sections. Pages hides Custom, Statistics, Track period and Body measurements (Today is always shown). The test notification button is removed. Delete data removes one kind of record at a time after a confirmation, and Delete all data stays at the bottom.
+- **Verified:** `npm run typecheck`, `npm run lint` (0 errors), `npm test` (86 passed), `npm run build`.
+- **Not verified:** a browser / phone check of the new layout in every theme, and the delete flows on Android (IndexedDB photo clear and the reload).
+
 **Earlier patch (Android export fix round 3, "false failure on Downloads", base `757527edb0c32e59769acfa5f1e134d756c24d97`):** no `package.json` / lock-file change (no `npm ci` needed), no `src/` change, no new permission or remote API, **the APK must be rebuilt** (`node scripts/prepare-android.mjs && npx cap open android`): native code only. Details: [backup-update.md](backup-update.md#round-3-the-false-failure-on-downloads-and-the-deleted-good-file).
 
 - **New:** `changes.patch` is regenerated; no new source file.

@@ -181,7 +181,8 @@ export const TodayView: React.FC = () => {
   const names = layoutText.names;
   const j = useJournalText();
   const advanced = useAdvanced();
-  const items: LayoutItem[] = [
+  // The field list only drives the advanced layout (C6): it is built when that layout is on, not on every render.
+  const items: LayoutItem[] = !layoutState.enabled ? [] : [
     { id: 'intake', label: names.intake, node: <IntakeCard compact={compact} />, span: 'col-span-3' },
     { id: 'burned', label: names.burned, node: <BurnedCard compact={compact} />, span: 'col-span-3' },
     { id: 'balance', label: j('Intake vs burned', 'Introdotte vs bruciate'), node: <TodayBalanceTarget />, span: 'col-span-6', show: advanced.balance.enabled },

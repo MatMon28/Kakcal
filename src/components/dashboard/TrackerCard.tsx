@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronDown, Plus } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { LazyBody } from '../common/LazyBody';
 
 const palettes = {
   activity: { surface: 'var(--color-activity)', text: 'var(--color-activity-ink)', muted: 'var(--color-activity-accent)', inset: 'var(--color-activity-soft)', border: 'var(--color-activity-border)', hover: 'var(--color-activity-hover)' },
@@ -132,7 +133,7 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
 
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
-          <div className={`${compact ? 'px-3' : 'px-4'} py-3 border-t border-[var(--border)]`}>{children}</div>
+          <div className={`${compact ? 'px-3' : 'px-4'} py-3 border-t border-[var(--border)]`}><LazyBody open={open} defer>{children}</LazyBody></div>
         </div>
       </div>
     </section>

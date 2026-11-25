@@ -1,5 +1,6 @@
 import { createContext, useContext, useMemo, useRef } from 'react';
 import type { AppContextType } from './appContextType';
+import type { ActiveTab } from '../types';
 
 /**
  * The app state is published through THREE contexts instead of one (item 1 of the performance review):
@@ -21,7 +22,7 @@ export type UiSlice = Pick<AppContextType,
   | 'isPoopOpen' | 'setIsPoopOpen' | 'isWeightOpen' | 'setIsWeightOpen'
   | 'isCustomFoodOpen' | 'setIsCustomFoodOpen' | 'customButtonOpenId' | 'setCustomButtonOpenId'
   | 'isCustomPickerOpen' | 'setIsCustomPickerOpen' | 'isPeriodSheetOpen' | 'setIsPeriodSheetOpen'
-  | 'activeTab' | 'setActiveTab' | 'returnFromDatabase' | 'periodSelectedDate' | 'setPeriodSelectedDate'>;
+  | 'periodSelectedDate' | 'setPeriodSelectedDate'>;
 
 export type SettingsSlice = Pick<AppContextType,
   | 'language' | 'setLanguage' | 't' | 'userProfile' | 'updateUserProfile' | 'settings' | 'updateSettings'
@@ -32,6 +33,18 @@ export type JournalSlice = Omit<AppContextType, keyof UiSlice | keyof SettingsSl
 export const UiContext = createContext<UiSlice | undefined>(undefined);
 export const SettingsContext = createContext<SettingsSlice | undefined>(undefined);
 export const JournalDataContext = createContext<JournalSlice | undefined>(undefined);
+
+/**
+ * Tab navigation (docs/performance.md > Navigation contexts). `NavContext` carries the active tab and changes on every
+ * tab change: only the components that DISPLAY the tab read it (the bar, the header, the page switch, the bottom bar).
+ * `NavActionsContext` carries the two functions only; their identity never changes, so a component that only needs to
+ * change the tab never re-renders because of it. Neither lives in the UI slice: a tab change no longer re-renders the
+ * Today cards or any other page that reads dialogs or data.
+ */
+export type NavSlice = { activeTab: ActiveTab; setActiveTab: (tab: ActiveTab) => void; returnFromDatabase: () => void };
+export type NavActionsSlice = Pick<NavSlice, 'setActiveTab' | 'returnFromDatabase'>;
+export const NavContext = createContext<NavSlice | undefined>(undefined);
+export const NavActionsContext = createContext<NavActionsSlice | undefined>(undefined);
 
 function need<T>(value: T | undefined, hook: string): T {
   if (!value) throw new Error(`${hook} must be used within an AppProvider`);
@@ -44,6 +57,10 @@ export const useUiState = () => need(useContext(UiContext), 'useUiState');
 export const useSettings = () => need(useContext(SettingsContext), 'useSettings');
 /** Journal data, derived totals and logging actions only. */
 export const useJournalData = () => need(useContext(JournalDataContext), 'useJournalData');
+/** The active tab (and the two functions). Re-renders on a tab change: use it only where the tab is displayed. */
+export const useNav = () => need(useContext(NavContext), 'useNav');
+/** The tab-changing functions only. Stable identity: using it never re-renders a component on a tab change. */
+export const useNavActions = () => need(useContext(NavActionsContext), 'useNavActions');
 
 /** Dialog state plus settings (no journal data): for chrome such as the header, dock and main layout. */
 export function useShell(): UiSlice & SettingsSlice {

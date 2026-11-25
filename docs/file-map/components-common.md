@@ -1,5 +1,7 @@
 # File map: `src/components/common/`
 
+(Round: Today performance) `ActionDock.tsx`: optional `activeOn` prop (the dock of one page is drawn only while that tab is active; it reads `NavContext` directly, so it also works in the tour). `Header.tsx`: the tab effect runs in `afterPaint()` and `applyHeaderProgress` skips unchanged writes; the tab comes from `useNav()`, the setter from `useNavActions()`. `Tabs.tsx`: the same split. See [../performance.md](../performance.md#today-performance-round-collapsed-means-not-mounted).
+
 (Plans round) `RecentChips.tsx` (new): the 5 recent foods + "..." chip that reveals 10 more, used by Log food and the planner. `LibrarySectionHeader.tsx`: palette `shopping` (teal). See [plans-shopping-update.md](../plans-shopping-update.md).
 
 (New features round) `DataBackup.tsx`: *Export to Excel* button; `GoalBadge.tsx`: passes the profile weight to `goalState` so a per-kg protein goal works.
