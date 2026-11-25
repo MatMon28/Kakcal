@@ -20,12 +20,18 @@ html[data-style="material"] [data-sheet-scrim] {
 
 /* Material chips are 8 px rounded rectangles, not pills (meal choice chips, journal filter chips). */
 html[data-style="material"] :is([data-slot-chip], .journal-chip, .journal-slot-options button) {
-  border-radius: 10px !important;
+  border-radius: var(--pill-radius, 8px) !important;
 }
 
-/* Filled-tonal controls: inputs read as tonal containers with a bottom-heavy, borderless look. */
-html[data-style="material"] :is(.journal-search, .journal-secondary-button, .journal-danger-button) {
-  border-color: transparent;
+/* Filled-tonal controls: match specificity of journal-diary.css so search inputs stay borderless. */
+html[data-style="material"]:not([data-style="classic"]) :is(.journal-search, .journal-secondary-button, .journal-danger-button) {
+  border-color: transparent !important;
+}
+html[data-style="material"] main section.rounded-3xl,
+html[data-style="material"] main div.rounded-3xl {
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 24px) !important;
 }
 
 /* State layers: hover / press tint the container instead of lifting or scaling it a lot. */

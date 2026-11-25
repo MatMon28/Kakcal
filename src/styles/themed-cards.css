@@ -57,13 +57,13 @@ html[data-style]:not([data-style="classic"]) [data-library-card] [data-library-a
   color: var(--text) !important;
 }
 html[data-style]:not([data-style="classic"]) [data-library-section="meals"] [data-library-card] .kc-action-pill {
-  background: var(--protein-bg) !important;
-  color: var(--protein-text) !important;
+  background: var(--pill-p-bg, var(--protein-bg)) !important;
+  color: var(--pill-p-text, var(--protein-text)) !important;
   border: var(--pill-border, none) !important;
 }
 html[data-style]:not([data-style="classic"]) [data-library-section="recipes"] [data-library-card] .kc-action-pill {
-  background: var(--fat-bg) !important;
-  color: var(--fat-text) !important;
+  background: var(--pill-f-bg, var(--fat-bg)) !important;
+  color: var(--pill-f-text, var(--fat-text)) !important;
   border: var(--pill-border, none) !important;
 }
 
@@ -119,7 +119,7 @@ html[data-style]:not([data-style="classic"]) .kc-water-track {
   border-radius: var(--bar-radius, 6px) !important;
 }
 html[data-style]:not([data-style="classic"]) .kc-water-fill {
-  background: var(--carbs-text, var(--nav-active-bg)) !important;
+  background: var(--water-fill, var(--carbs-text, var(--nav-active-bg))) !important;
   border-radius: var(--bar-radius, 6px) !important;
 }
 
@@ -234,6 +234,15 @@ html[data-style="aurora"] .kc-dock {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
 }
+@media (prefers-reduced-transparency: reduce) {
+  html[data-style="aurora"] :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, .kc-nav-pill, .kc-icon-btn, .kc-dock) {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+  html[data-style="aurora"][data-theme="light"] { --surface: #ffffff; --header-btn-bg: #ffffff; --nav-bg: #ffffff; --dock-bg: #ffffff; }
+  html[data-style="aurora"][data-theme="lite-dark"] { --surface: #322f50; --header-btn-bg: #322f50; --nav-bg: #322f50; --dock-bg: #2d2a48; }
+  html[data-style="aurora"][data-theme="dark"] { --surface: #1b1630; --header-btn-bg: #1b1630; --nav-bg: #1b1630; --dock-bg: #18142c; }
+}
 
 html[data-style]:not([data-style="classic"]) .kc-dock-btn {
   border: var(--dock-btn-border, none) !important;
@@ -261,6 +270,31 @@ html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 5) {
   color: var(--dock-icon-5) !important;
 }
 html[data-style]:not([data-style="classic"]) .kc-dock-btn:nth-child(6n + 6) {
+  background: var(--dock-6) !important;
+  color: var(--dock-icon-6) !important;
+}
+/* Semantic dock bindings: hiding a Today shortcut must not shift the remaining buttons' colours. */
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="food"] {
+  background: var(--dock-1) !important;
+  color: var(--dock-icon-1) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="activity"] {
+  background: var(--dock-2) !important;
+  color: var(--dock-icon-2) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="water"] {
+  background: var(--dock-3) !important;
+  color: var(--dock-icon-3) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="poop"] {
+  background: var(--dock-4) !important;
+  color: var(--dock-icon-4) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="weight"] {
+  background: var(--dock-5) !important;
+  color: var(--dock-icon-5) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="custom"] {
   background: var(--dock-6) !important;
   color: var(--dock-icon-6) !important;
 }

@@ -129,16 +129,16 @@ html[data-style="aurora"][data-theme="lite-dark"] {
 html[data-style="aurora"][data-theme="light"] {
   --bg: #ede9fe;
   --app-bg-image: linear-gradient(160deg, #e7e3f7 0%, #ede9fe 60%, #fce7f3 100%);
-  --surface: #ffffff;
+  --surface: rgba(255, 255, 255, 0.78);
   --surface-solid: #ffffff;
-  --inset: #f3f0ff;
+  --inset: rgba(243, 240, 255, 0.84);
   --hover: #e9e4fc;
   --border: rgba(79, 70, 229, 0.16);
   --text: #17143b;
   --muted: #334155;
-  --header-btn-bg: #ffffff;
+  --header-btn-bg: rgba(255, 255, 255, 0.78);
   --header-icon-color: #17143b;
-  --nav-bg: #ffffff;
+  --nav-bg: rgba(255, 255, 255, 0.78);
   --nav-inactive-color: #1e293b;
   --meal-icon-color: #17143b;
 
@@ -159,7 +159,10 @@ html[data-style="aurora"][data-theme="light"] {
   --pill-f-bg: #ede9fe;
   --pill-f-text: #4c1d95;
 
-  --dock-bg: #ffffff;
+  --dock-bg: rgba(255, 255, 255, 0.82);
   --dock-border: 1px solid rgba(79, 70, 229, 0.16);
   --dock-shadow: 0 10px 28px rgba(55, 48, 107, 0.14);
+  --color-intake-accent: #047857;
+  --color-activity-accent: #be123c;
+  --color-weight-accent: #6d28d9;
 }

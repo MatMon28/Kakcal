@@ -211,6 +211,9 @@ export function getMonoVariables(baseHex: string, mode: Theme): Record<string, s
   const dock6Text = cardText;
   const intakeTrack = intakeText === '#ffffff' ? 'rgba(255,255,255,0.28)' : 'rgba(9,14,23,0.22)';
   const burnedTrack = burnedText === '#ffffff' ? 'rgba(255,255,255,0.28)' : 'rgba(9,14,23,0.22)';
+  const intakeOnSurface = mode === 'light' ? mixHex(safeHex, '#090e17', 0.36) : mixHex(safeHex, '#ffffff', 0.62);
+  const activityOnSurface = mode === 'light' ? mixHex(safeHex, '#090e17', 0.48) : mixHex(safeHex, '#ffffff', 0.52);
+  const weightOnSurface = mode === 'light' ? mixHex(safeHex, '#090e17', 0.28) : mixHex(safeHex, '#ffffff', 0.68);
 
   return {
     '--mono-accent': accent,
@@ -280,19 +283,23 @@ export function getMonoVariables(baseHex: string, mode: Theme): Record<string, s
     '--sugar-text': dock6Text,
     '--color-nutrient': dock6Bg,
     '--color-nutrient-ink': dock6Text,
+    '--water-fill': accent,
+    '--intake-on-surface': intakeOnSurface,
+    '--activity-on-surface': activityOnSurface,
+    '--weight-on-surface': weightOnSurface,
     '--color-intake': intakeBg,
     '--color-intake-ink': intakeText,
-    '--color-intake-accent': intakeText,
+    '--color-intake-accent': intakeOnSurface,
     '--color-intake-soft': intakeTrack,
     '--color-activity': burnedBg,
     '--color-activity-ink': burnedText,
-    '--color-activity-accent': burnedText,
+    '--color-activity-accent': activityOnSurface,
     '--color-activity-soft': burnedTrack,
     '--color-activity-border': borderCol,
     '--color-activity-hover': hoverBg,
     '--color-weight': cardBg,
     '--color-weight-ink': cardText,
-    '--color-weight-accent': accent,
+    '--color-weight-accent': weightOnSurface,
     '--color-weight-soft': pillBg,
   };
 }

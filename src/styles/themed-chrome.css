@@ -67,16 +67,6 @@ html[data-style]:not([data-style="classic"]) .kc-header-surface[data-pill-floati
   -webkit-backdrop-filter: blur(14px);
 }
 
-html[data-style]:not([data-style="classic"]) .kc-nav-tab {
-  border-radius: var(--nav-pill-radius, 999px) !important;
-  clip-path: var(--clip-xs, none);
-  color: var(--nav-inactive-color, var(--muted));
-}
-
-html[data-style]:not([data-style="classic"]) .kc-nav-tab-active {
-  background: var(--nav-active-bg) !important;
-  color: var(--nav-active-color) !important;
-}
 
 /* Hero Intake & Burned cards (Today, Statistics, Day Overview) */
 html[data-style]:not([data-style="classic"]) .kc-hero-intake {

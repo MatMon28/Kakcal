@@ -110,12 +110,13 @@ html[data-style="angular"][data-theme="lite-dark"] {
   --intake-fill: #090e17;
   --intake-badge-bg: #090e17; --intake-badge-text: #f1f5f9;
 
-  --carbs-bg: #8eb4fa;
-  --carbs-text: #0f1f4b;
-  --protein-bg: #f5d758;
-  --protein-text: #381a04;
-  --fat-bg: #c6b0f7;
-  --fat-text: #250b57;
+  --carbs-bg: #254a8f;
+  --carbs-text: #dbeafe;
+  --protein-bg: #6b5312;
+  --protein-text: #fef08a;
+  --fat-bg: #4a2c7a;
+  --fat-text: #f3e8ff;
+  --water-fill: #60a5fa;
 
   --pill-c-bg: #1e3a73;
   --pill-c-text: #dbeafe;
@@ -150,7 +151,11 @@ html[data-style="angular"][data-theme="light"] {
   --header-icon-color: #090e17;
   --nav-bg: #ffffff;
   --nav-inactive-color: #1e293b;
-  --card-shadow: 0 3px 10px rgba(11, 16, 25, 0.08);
+  --card-shadow: none;
+  --water-fill: #1d4ed8;
+  --color-intake-accent: #0f5132;
+  --color-activity-accent: #c2410c;
+  --color-weight-accent: #4c1d95;
 
   --intake-bg: #0b1019;
   --intake-text: #ffffff;

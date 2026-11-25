@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Style consistency audit round:** audited all nine theme styles against the Classic baseline and across Light, Lite Dark and Dark modes. Wired the continuous page pill (`.kc-following-indicator` / `.kc-following-tab`) to each style's `--nav-active-bg` / `--nav-active-color` / `--nav-pill-radius` tokens; fixed 1.00:1 invisible Mono `--*-on-surface` text and 1.11:1 Pop dark water bars (`--water-fill`); bound Today dock colours semantically via `[data-dock-action]`; aligned Playful Dark carbs/contrast/widgets, Aurora Light frosting + reduced-transparency, Minimal hairline + Food icon ink, Angular Lite Dark macro cards, Material 8 px chips / borderless search inputs, Glass dark accents / reduced-transparency, generic `rounded-3xl` sections and `index.html` pre-paint colours across all styles. Expanded `tests/themes.test.ts`. See [docs/style-audit.md](docs/style-audit.md) and [docs/changes-patch.md](docs/changes-patch.md).
+
+### Previous update (Glass and Material styles round)
+
 **Glass and Material styles round:** Settings > Theme style now has two more styles. **Glass**: frosted translucent panels over a lavender-blue gradient, gradient Intake / Burned / macro tiles, a blurred header, dock and dialogs, and a tinted Custom page (Meal diary yellow, Meals tan, Recipes purple, Meal planner blue, Photo diary rose, Foods mint, Shopping list teal). **Material**: Material You tonal containers (flat, borderless, 24 px cards, rounded-square dock buttons, 8 px chips, scrim-dimmed 28 px dialogs, Roboto where available). Both exist in Light, Lite Dark and Dark and cover every page, the Log food and other dialogs, the dock, the Android widgets (button plates, tray) and the launch-screen colour. The app's own icons are unchanged. New parts: `src/styles/theme-glass.css`, `theme-material.css`, `themed-tones.css`, `themed-glass.css`, `themed-material.css`, `tests/themes.test.ts`. See [docs/glass-material-update.md](docs/glass-material-update.md) and [docs/changes-patch.md](docs/changes-patch.md).
 
 ### Previous update (Desktop layout and Custom field round)

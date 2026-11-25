@@ -6,13 +6,12 @@
 >
 > **Related:** [setup-build.md](setup-build.md), [apk-download.md](apk-download.md), [changes-patch-history.md](changes-patch-history.md) (what earlier patches contained)
 
-**Current patch (Glass and Material styles round, base `d806d2945b914d854e20eff7da9a52f713680db1`):** no `package.json` / lock-file change, no IndexedDB, storage or backup change, no new translation key, no new dependency or font file. Two new theme styles, **Glass** and **Material**, in every mode, on every page, dialog and dock, and in the Android widgets and launch screen.
+**Current patch (Style consistency audit round, base `018a6cc9707d437f238984206ffc3aac90cdf33e`):** no `package.json` / lock-file change, no IndexedDB, storage or backup change, no new translation key, no new dependency. Resolves cross-style (vs. Classic baseline) and intra-style (Light / Lite Dark / Dark) inconsistencies across all nine styles, the continuous page pill, Today dock bindings, pre-paint colours and Android widget parity.
 
-- **New (code):** `src/styles/theme-glass.css`, `theme-material.css` (tokens), `themed-tones.css` (tinted Custom sections), `themed-glass.css`, `themed-material.css` (component rules), `android/app/src/main/res/drawable/widget_tray_material.xml`, `widget_tray_material_dark.xml`, `tests/themes.test.ts`.
-- **Edited (code):** `src/index.css` (five new `@import`s), `src/types/index.ts` (`ThemeStyle`), `src/utils/themes.ts` (list + two presets), `src/components/common/GoalBadge.tsx`, `src/components/widgets/widget-preview.css`, `scripts/generate-splash-themes.mjs`, `android/.../res/values/splash_themes.xml` (regenerated, 54 colours), `android/.../JournalDevicePlugin.java`, `JournalWidgetProvider.java`.
-- **New (docs):** `docs/glass-material-update.md`.
-- **Edited (docs):** `README.md`, `docs/README.md`, `docs/file-organisation.md`, `docs/file-map/app-shell.md`, `components-common.md`, `android-native.md`, `scripts-public.md`, `docs/widgets.md`, `docs/calculations-colors.md`, `docs/journal-pages.md`, `docs/verification.md`, `docs/changelog/rounds-ui-brand.md`, `docs/changes-patch.md`, `docs/changes-patch-history.md`.
-- **Verified here:** on a fresh copy of `d806d29` with this patch applied: `npm ci`, `npm run typecheck`, `npm run lint`, `npm test`, `npm run build` (results in [glass-material-update.md](glass-material-update.md#verified-here)), splash generator reproduces the committed XML, screenshots in headless Chromium at 390 px (Glass and Material, light and dark). **Not verified here:** a real phone, Android WebView, Safari, native widgets on a device, an Android build (no SDK).
+- **Edited (code):** `index.html`, `src/styles/theme-tokens.css`, `theme-angular.css`, `theme-aurora.css`, `theme-pop.css`, `theme-playful.css`, `theme-minimal-mono.css`, `theme-glass.css`, `themed-chrome.css`, `themed-cards.css`, `themed-overrides.css`, `themed-glass.css`, `themed-material.css`, `src/utils/themes.ts`, `android/.../JournalWidgetProvider.java`, `tests/themes.test.ts`.
+- **New (docs):** `docs/style-audit.md`.
+- **Edited (docs):** `README.md`, `docs/README.md`, `docs/glass-material-update.md`, `docs/calculations-colors.md`, `docs/widgets.md`, `docs/changes-patch.md`, `docs/changes-patch-history.md`.
+- **Verified here:** `git apply --check changes.patch` clean on `018a6cc`, automated WCAG AA contrast verification across all 10 Mono hues × 3 modes (90/90 >= 4.5:1) and static token parity checks across all 9 styles × 3 modes. **Not verified here:** an Android APK build (no SDK) or a physical phone.
 
 Apply from that repository revision (the base commit above):
 

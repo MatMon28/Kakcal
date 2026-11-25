@@ -73,8 +73,17 @@ html[data-style="aurora"]:not([data-style="classic"]) span[data-period-cell] {
 html.kc-page-moving [data-page-viewport] { overflow: clip; }
 
 .kc-following-tab { color: color-mix(in srgb, #3f3429 calc(var(--tab-weight) * 100%), var(--text)); }
-html[data-style]:not([data-style='classic']) .kc-following-indicator > span { background: var(--text) !important; }
-html[data-style]:not([data-style='classic']) .kc-following-tab { color: color-mix(in srgb, var(--on-text) calc(var(--tab-weight) * 100%), var(--muted)); }
+html[data-style]:not([data-style='classic']) .kc-following-indicator {
+  border-radius: var(--nav-pill-radius, 99px);
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style='classic']) .kc-following-indicator > span {
+  background: var(--nav-active-bg, var(--text)) !important;
+}
+html[data-style]:not([data-style='classic']) .kc-following-tab {
+  border-radius: var(--nav-pill-radius, 99px);
+  color: color-mix(in srgb, var(--nav-active-color, var(--on-text)) calc(var(--tab-weight) * 100%), var(--nav-inactive-color, var(--muted)));
+}
 .journal-mobile-demo { margin: 0 3px 10px; color: var(--muted); font-size: 10px; letter-spacing: .03em; }
 
 .kc-following-pill { overflow-x: auto; scrollbar-width: none; }

@@ -59,7 +59,7 @@ html[data-style="minimal"][data-theme="dark"] {
   --dock-bg: #0d1320;
   --dock-border: 1px solid #1e293b;
   --dock-btn-border: 1px solid #1e293b;
-  --dock-1: #060911; --dock-icon-1: #93c5fd;
+  --dock-1: #060911; --dock-icon-1: #34d399;
   --dock-2: #060911; --dock-icon-2: #fda4af;
   --dock-3: #060911; --dock-icon-3: #93c5fd;
   --dock-4: #060911; --dock-icon-4: #fde047;
@@ -89,7 +89,7 @@ html[data-style="minimal"][data-theme="lite-dark"] {
   --meal-icon-color: #60a5fa;
 
   --card-border: 1px solid #475569;
-  --card-shadow: 0 4px 12px rgba(9, 14, 23, 0.25);
+  --card-shadow: none;
   --intake-bg: #263347; --intake-text: #dbeafe; --intake-label: #93c5fd;
   --intake-track: #475569; --intake-fill: #93c5fd;
   --intake-badge-bg: #1e3a8a; --intake-badge-text: #dbeafe;
@@ -109,7 +109,7 @@ html[data-style="minimal"][data-theme="lite-dark"] {
   --dock-bg: #263347;
   --dock-border: 1px solid #475569;
   --dock-btn-border: 1px solid #475569;
-  --dock-1: #172030; --dock-icon-1: #bfdbfe;
+  --dock-1: #172030; --dock-icon-1: #6ee7b7;
   --dock-2: #172030; --dock-icon-2: #fda4af;
   --dock-3: #172030; --dock-icon-3: #bfdbfe;
   --dock-4: #172030; --dock-icon-4: #fde68a;
@@ -138,8 +138,8 @@ html[data-style="minimal"][data-theme="light"] {
   --nav-active-color: #090e17;
   --meal-icon-color: #2563eb;
 
-  --card-border: 1.5px solid #cbd5e1;
-  --card-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --card-border: 1px solid #cbd5e1;
+  --card-shadow: none;
   --intake-bg: #ffffff; --intake-text: #172554; --intake-label: #1d4ed8;
   --intake-track: #e2e8f0; --intake-fill: #1d4ed8;
   --intake-badge-bg: #dbeafe; --intake-badge-text: #172554;
@@ -157,18 +157,21 @@ html[data-style="minimal"][data-theme="light"] {
   --pill-f-bg: #e2e8f0; --pill-f-text: #3b0764;
 
   --dock-bg: #ffffff;
-  --dock-border: 1.5px solid #cbd5e1;
+  --dock-border: 1px solid #cbd5e1;
   --dock-btn-border: 1px solid #cbd5e1;
-  --dock-1: #ffffff; --dock-icon-1: #172554;
-  --dock-2: #ffffff; --dock-icon-2: #9f1239;
-  --dock-3: #ffffff; --dock-icon-3: #172554;
-  --dock-4: #ffffff; --dock-icon-4: #713f12;
-  --dock-5: #ffffff; --dock-icon-5: #3b0764;
-  --dock-6: #ffffff; --dock-icon-6: #090e17;
+  --dock-1: #f1f5f9; --dock-icon-1: #15803d;
+  --dock-2: #f1f5f9; --dock-icon-2: #9f1239;
+  --dock-3: #f1f5f9; --dock-icon-3: #172554;
+  --dock-4: #f1f5f9; --dock-icon-4: #713f12;
+  --dock-5: #f1f5f9; --dock-icon-5: #3b0764;
+  --dock-6: #f1f5f9; --dock-icon-6: #090e17;
 
-  --fiber-bg: #ffffff; --fiber-text: #090e17;
-  --salt-bg: #ffffff; --salt-text: #090e17;
-  --sugar-bg: #ffffff; --sugar-text: #090e17;
+  --fiber-bg: #f1f5f9; --fiber-text: #090e17;
+  --salt-bg: #f1f5f9; --salt-text: #090e17;
+  --sugar-bg: #f1f5f9; --sugar-text: #090e17;
+  --color-intake-accent: #15803d;
+  --color-activity-accent: #b91c1c;
+  --color-weight-accent: #4c1d95;
 }
 
 /* 6. MONO THEME (Dynamic Monochromatic Palette Driven by JS in src/utils/themes.ts) */

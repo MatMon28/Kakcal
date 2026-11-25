@@ -39,6 +39,7 @@ html[data-style="playful"][data-theme="dark"] {
   --nav-active-bg: #e11d48;
   --nav-active-color: #ffffff;
   --meal-icon-color: #fb7185;
+  --card-border: 1px solid rgba(165, 180, 252, 0.22);
   --card-shadow: 0 6px 18px rgba(10, 8, 35, 0.35);
 
   --intake-bg: #065f46;
@@ -56,7 +57,7 @@ html[data-style="playful"][data-theme="dark"] {
   --badge-bg: rgba(0, 0, 0, 0.28);
   --badge-text: #ffe4e6;
 
-  --carbs-bg: #312e81; --carbs-text: #e0e7ff;
+  --carbs-bg: #1e3a8a; --carbs-text: #dbeafe;
   --protein-bg: #713f12; --protein-text: #fef08a;
   --fat-bg: #4c1d95; --fat-text: #e9d5ff;
 
@@ -65,17 +66,18 @@ html[data-style="playful"][data-theme="dark"] {
   --pill-f-bg: #4c1d95; --pill-f-text: #e9d5ff;
 
   --dock-bg: #312e81;
+  --dock-border: 1px solid rgba(165, 180, 252, 0.22);
   --dock-shadow: 0 8px 24px rgba(10, 8, 35, 0.4);
   --dock-1: #065f46; --dock-icon-1: #d1fae5;
   --dock-2: #9f1239; --dock-icon-2: #ffe4e6;
   --dock-3: #1e3a8a; --dock-icon-3: #bfdbfe;
   --dock-4: #854d0e; --dock-icon-4: #fde68a;
   --dock-5: #4c1d95; --dock-icon-5: #e9d5ff;
-  --dock-6: #a16207; --dock-icon-6: #fef08a;
+  --dock-6: #854d0e; --dock-icon-6: #fef08a;
 
-  --fiber-bg: #a16207; --fiber-text: #fef08a;
-  --salt-bg: #a16207; --salt-text: #fef08a;
-  --sugar-bg: #a16207; --sugar-text: #fef08a;
+  --fiber-bg: #854d0e; --fiber-text: #fef08a;
+  --salt-bg: #854d0e; --salt-text: #fef08a;
+  --sugar-bg: #854d0e; --sugar-text: #fef08a;
 }
 
 html[data-style="playful"][data-theme="lite-dark"] {
@@ -148,7 +150,7 @@ html[data-style="playful"][data-theme="light"] {
   --header-icon-color: #17143b;
   --nav-bg: #ffffff;
   --nav-inactive-color: #1e1b4b;
-  --nav-active-bg: #f43f5e;
+  --nav-active-bg: #e11d48;
   --nav-active-color: #ffffff;
   --meal-icon-color: #e11d48;
   --card-border: 1px solid rgba(76, 29, 149, 0.14);
@@ -190,4 +192,7 @@ html[data-style="playful"][data-theme="light"] {
   --fiber-bg: #fcd34d; --fiber-text: #422006;
   --salt-bg: #fcd34d; --salt-text: #422006;
   --sugar-bg: #fcd34d; --sugar-text: #422006;
+  --color-intake-accent: #065f46;
+  --color-activity-accent: #9f1239;
+  --color-weight-accent: #581c87;
 }

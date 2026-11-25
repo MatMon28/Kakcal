@@ -34,7 +34,7 @@
 ## Material
 
 * Flat, tonal and borderless: `--card-border: none`, `--card-shadow: none`. Elevation is only on floating things (dock, dialogs), as in Material 3. Light is a warm lilac-white (`#FFF7FF`) with pastel containers; Dark is the Material baseline dark (`#141218`); Lite Dark is a step lighter.
-* Shapes: 24 px cards, 28 px dialogs and dock, 16 px rounded-square dock buttons, 8 px macro pills, 10 px chips (`[data-slot-chip]`, `.journal-chip`), round header buttons and page pill.
+* Shapes: 24 px cards, 28 px dialogs and dock, 16 px rounded-square dock buttons, 8 px macro pills and chips (`var(--pill-radius, 8px)` on `[data-slot-chip]`, `.journal-chip`), round header buttons and page pill. Generic `main section.rounded-3xl` containers and `.journal-search` stay borderless (matched specificity).
 * Dialog scrim is plain black at 32 / 50 / 60 % (no blur). Hover and press tint the container (`.pressable`), keyboard focus gets a 3 px ring.
 * Font: `Roboto, 'Google Sans', 'Plus Jakarta Sans Variable', system-ui` (Android has Roboto; elsewhere the bundled Plus Jakarta Sans is used, so **no font file or package was added**).
 * Nested cards lose their 1 px `--border` (`themed-material.css`, last rule).

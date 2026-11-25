@@ -24,6 +24,7 @@
 | Plan name on planner page 1, planner colours, *See all plans* (current / past, edit, reuse), shopping list per plan, "5 recent foods + ..." chips | [plans-shopping-update.md](plans-shopping-update.md) |
 | Desktop layout (no sidebar, same as the phone), Custom Meals / Recipes card buttons in non-Classic styles (edit / delete / Log) | [desktop-and-fields-update.md](desktop-and-fields-update.md) |
 | Glass and Material theme styles (tokens, tinted Custom sections, frosted blur, Material tonal rules, widgets / splash for the two styles, adding another style) | [glass-material-update.md](glass-material-update.md) |
+| Style consistency audit (cross-style vs. Classic baseline, mode parity, Mono contrast, tab pill, semantic dock colours, Material / Glass fixes) | [style-audit.md](style-audit.md) |
 | Change animations / springs / swipe feel / the page-change (tap / Back) transition / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
@@ -82,4 +83,4 @@ Then regenerate the patch ([changes-patch.md](changes-patch.md)). Keep each docu
 
 ## Last audit
 
-The audit history (what was checked against which commit, round by round) is in [audit-log.md](audit-log.md). The newest entries are the *page-change performance round* (see [performance.md](performance.md); the tree was read at commit **`2f61652`**) and the *file-organisation round* (no behaviour change; see [file-organisation.md](file-organisation.md)). The source tree was checked against commit **`cee71f4`** ("Fixes") for that round.
+The audit history (what was checked against which commit, round by round) is in [audit-log.md](audit-log.md). The newest entries are the *style consistency audit round* (see [style-audit.md](style-audit.md); audited against commit **`018a6cc`**), the *page-change performance round* (see [performance.md](performance.md); the tree was read at commit **`2f61652`**) and the *file-organisation round* (no behaviour change; see [file-organisation.md](file-organisation.md)). The source tree was checked against commit **`cee71f4`** ("Fixes") for that round.

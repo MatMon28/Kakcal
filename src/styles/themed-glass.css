@@ -2,9 +2,15 @@
 /* ---- Frosted-glass specifics (all three modes) ---- */
 
 /* Every panel is frosted: the blurred gradient shows through the translucent fill. */
-html[data-style="glass"]:not([data-style="classic"]) :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, .kc-nav-pill, .kc-icon-btn, .kc-dock, [data-period-card], [data-day-overview-card], .kc-modal-banner) {
+html[data-style="glass"]:not([data-style="classic"]) :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, .kc-nav-pill, .kc-icon-btn, .kc-dock, [data-period-card], [data-day-overview-card], .kc-modal-banner, main section.rounded-3xl, main div.rounded-3xl) {
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
+}
+html[data-style="glass"] main section.rounded-3xl,
+html[data-style="glass"] main div.rounded-3xl {
+  border: var(--card-border) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: var(--card-radius) !important;
 }
 html[data-style="glass"]:not([data-style="classic"]) :is([data-library-card], [data-library-ingredients], [data-day-overview-row], .journal-search, .journal-recent-meal, .journal-plan-row) {
   backdrop-filter: blur(12px);
@@ -66,7 +72,13 @@ html[data-style="glass"] :is([class~="bg-[#C9EFD3]"], [class~="bg-[#CFE7FE]"], [
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-  html[data-style="glass"][data-theme="light"] { --surface: rgba(255, 255, 255, 0.82); --glass-dialog: #e4defc; }
-  html[data-style="glass"][data-theme="lite-dark"] { --surface: #3a346a; --glass-dialog: #342e64; }
-  html[data-style="glass"][data-theme="dark"] { --surface: #241d4a; --glass-dialog: #221c48; }
+  html[data-style="glass"][data-theme="light"] {
+    --surface: #ece8fc; --inset: #e2dcf9; --header-btn-bg: #ece8fc; --nav-bg: #ece8fc; --dock-bg: #ece8fc; --glass-dialog: #e4defc;
+  }
+  html[data-style="glass"][data-theme="lite-dark"] {
+    --surface: #3a346a; --inset: #322c5e; --header-btn-bg: #3a346a; --nav-bg: #3a346a; --dock-bg: #342e64; --glass-dialog: #342e64;
+  }
+  html[data-style="glass"][data-theme="dark"] {
+    --surface: #241d4a; --inset: #1d173d; --header-btn-bg: #241d4a; --nav-bg: #241d4a; --dock-bg: #1e1840; --glass-dialog: #221c48;
+  }
 }

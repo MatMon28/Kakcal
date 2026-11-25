@@ -306,19 +306,23 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 border = dark ? Color.parseColor("#fef9c3") : Color.BLACK;
                 borderWidth = 4.5f;
             } else if ("playful".equals(themeStyle)) {
-                String[] fills = { "#34d399", "#fb7185", "#60a5fa", "#fbbf24", "#c084fc", "#fcd34d" };
-                String[] inks = { "#042f2e", "#3b0413", "#172554", "#422006", "#2e1065", "#422006" };
+                String[] fills = dark
+                    ? new String[]{ "#065f46", "#9f1239", "#1e3a8a", "#854d0e", "#4c1d95", "#854d0e" }
+                    : new String[]{ "#34d399", "#fb7185", "#60a5fa", "#fbbf24", "#c084fc", "#fcd34d" };
+                String[] inks = dark
+                    ? new String[]{ "#d1fae5", "#ffe4e6", "#bfdbfe", "#fde68a", "#e9d5ff", "#fef08a" }
+                    : new String[]{ "#042f2e", "#3b0413", "#172554", "#422006", "#2e1065", "#422006" };
                 fill = Color.parseColor(fills[index]);
                 ink = Color.parseColor(inks[index]);
             } else if ("minimal".equals(themeStyle)) {
                 if (dark) {
                     fill = Color.parseColor("#060911");
-                    String[] inks = { "#93c5fd", "#fda4af", "#93c5fd", "#fde047", "#d8b4fe", "#f8fafc" };
+                    String[] inks = { "#34d399", "#fda4af", "#93c5fd", "#fde047", "#d8b4fe", "#f8fafc" };
                     ink = Color.parseColor(inks[index]);
                     border = Color.parseColor("#1e293b");
                 } else {
-                    fill = Color.WHITE;
-                    String[] inks = { "#172554", "#9f1239", "#172554", "#713f12", "#3b0764", "#090e17" };
+                    fill = Color.parseColor("#f1f5f9");
+                    String[] inks = { "#15803d", "#9f1239", "#172554", "#713f12", "#3b0764", "#090e17" };
                     ink = Color.parseColor(inks[index]);
                     border = Color.parseColor("#cbd5e1");
                 }

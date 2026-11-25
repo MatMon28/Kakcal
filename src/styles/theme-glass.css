@@ -117,6 +117,7 @@ html[data-style="glass"][data-theme="lite-dark"] {
   --nav-active-bg: linear-gradient(135deg, #f9a8c4 0%, #e879a8 100%);
   --nav-active-color: #3d0a22;
   --meal-icon-color: #ffffff;
+  --brand-flame-color: #c4b5fd;
   --card-border: 1px solid rgba(255, 255, 255, 0.2);
   --card-shadow: 0 10px 30px rgba(12, 8, 40, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   --dock-bg: rgba(52, 46, 100, 0.6);
@@ -183,6 +184,7 @@ html[data-style="glass"][data-theme="dark"] {
   --nav-active-bg: linear-gradient(135deg, #f9a8c4 0%, #e879a8 100%);
   --nav-active-color: #3d0a22;
   --meal-icon-color: #ffffff;
+  --brand-flame-color: #c4b5fd;
   --card-border: 1px solid rgba(255, 255, 255, 0.14);
   --card-shadow: 0 10px 30px rgba(4, 2, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   --dock-bg: rgba(30, 24, 64, 0.58);

@@ -6,6 +6,14 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Glass and Material styles round
+
+**Patch (Glass and Material styles round, base `d806d2945b914d854e20eff7da9a52f713680db1`):** added the **Glass** and **Material** theme styles in Light, Lite Dark and Dark across every page, dialog, dock, Android widget and launch screen.
+
+- **New (code):** `src/styles/theme-glass.css`, `theme-material.css`, `themed-tones.css`, `themed-glass.css`, `themed-material.css`, `android/.../drawable/widget_tray_material*.xml`, `tests/themes.test.ts`.
+- **Edited (code):** `src/index.css`, `src/types/index.ts`, `src/utils/themes.ts`, `src/components/common/GoalBadge.tsx`, `src/components/widgets/widget-preview.css`, `scripts/generate-splash-themes.mjs`, `android/.../splash_themes.xml`, `JournalDevicePlugin.java`, `JournalWidgetProvider.java`.
+- **Docs:** `docs/glass-material-update.md` and matching index / file-map updates.
+
 ## Desktop layout and Custom field round
 
 **Patch (Desktop layout and Custom field round, base `0b071a5a34f385b0cc93f097eb9cc4709e523224`):** no `package.json` / lock-file change, no native code, no IndexedDB, storage or backup change, no new translation key. The visible changes: the desktop sidebar / top bar is gone (desktop shows the phone layout) and the Meals / Recipes card buttons look like Classic in the other styles.
