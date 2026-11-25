@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Glass opacity & scroll-performance round:** calibrated Glass opacity across Light (`0.72` panels, `0.64–0.66` tinted sections, `0.76–0.84` energy/macro tiles, `0.92` dialogs) and Lite Dark / Dark (`0.66–0.68` smoked crystal panels) so cards are crisp and never overly see-through, and eliminated scroll lag in Glass by moving the backdrop gradient onto a single GPU-promoted `body::before` layer (removing `background-attachment: fixed` repaints), removing per-card `backdrop-filter` from scrolling cards (keeping `--glass-sheen` + multi-rim specular `--card-shadow`), and locking floating chrome (header, nav pill, dock, dialogs) to a constant `blur(14px) saturate(160%)` instead of rebuilding the blur kernel on every scroll pixel. See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
+
+### Previous update (Liquid Glass, Recipes pill fix, translucent Big Widgets & Pop 3D widgets round)
+
 **Liquid Glass, Recipes pill fix, translucent Big Widgets & Pop 3D widgets round:** fixed the stretched-pill overflow artefact on expanded Recipes / Meals ingredient lists in Glass (`themed-overrides.css` now caps `[data-library-ingredients]` at `16px` for Glass just like Aurora, and aligns nested `[data-nutrient]` tiles to `18px`); upgraded Glass to an **iOS Liquid Glass** look (translucent crystal surfaces `0.44` alpha, `blur(28px) saturate(195%)`, diagonal `--glass-sheen`, multi-rim specular highlights and airy crystal `0.38–0.42` section washes over pearl-white `#eef2fa`); matched Large / Medium widget background transparency to the Small widgets in both browser and Android; and gave Pop's Big / Medium widgets authentic 3D hard offset shadows and bold borders (CSS + 12 Android `<layer-list>` `widget_*_pop*.xml` drawables). See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
 
 ### Previous update (Widget shapes, concentric squircles & Glass polish round)

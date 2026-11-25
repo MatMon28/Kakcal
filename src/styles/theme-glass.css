@@ -30,74 +30,74 @@ html[data-style="glass"][data-theme="light"] {
     radial-gradient(54% 38% at 92% 24%, #d8e7fe 0%, transparent 72%),
     radial-gradient(52% 40% at 24% 88%, #e2f2ee 0%, transparent 72%),
     linear-gradient(165deg, #f8faff 0%, #eef3fb 52%, #e6eefb 100%);
-  --surface: rgba(255, 255, 255, 0.44);
+  --surface: rgba(255, 255, 255, 0.72);
   --surface-solid: #f4f7fd;
-  --inset: rgba(255, 255, 255, 0.54);
-  --hover: rgba(255, 255, 255, 0.76);
-  --border: rgba(255, 255, 255, 0.82);
+  --inset: rgba(255, 255, 255, 0.76);
+  --hover: rgba(255, 255, 255, 0.90);
+  --border: rgba(210, 220, 242, 0.88);
   --text: #181d38;
   --muted: #464e73;
-  --header-btn-bg: rgba(255, 255, 255, 0.48);
+  --header-btn-bg: rgba(255, 255, 255, 0.78);
   --header-icon-color: #181d38;
-  --nav-bg: rgba(255, 255, 255, 0.42);
+  --nav-bg: rgba(255, 255, 255, 0.74);
   --nav-inactive-color: #363e64;
-  --nav-active-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(224, 238, 255, 0.86) 100%);
+  --nav-active-bg: linear-gradient(145deg, rgba(255, 255, 255, 0.96) 0%, rgba(218, 234, 255, 0.94) 100%);
   --nav-active-color: #122c5c;
   --meal-icon-color: #181d38;
-  --card-border: 1px solid rgba(255, 255, 255, 0.85);
+  --card-border: 1px solid rgba(255, 255, 255, 0.92);
   --card-shadow:
-    0 12px 32px rgba(24, 42, 92, 0.09),
-    0 2px 6px rgba(24, 42, 92, 0.05),
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.96),
-    inset 1px 0 0 rgba(255, 255, 255, 0.65),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.42);
-  --dock-bg: rgba(255, 255, 255, 0.46);
-  --dock-border: 1px solid rgba(255, 255, 255, 0.9);
-  --dock-shadow:
-    0 16px 38px rgba(24, 42, 92, 0.14),
-    0 3px 10px rgba(24, 42, 92, 0.06),
+    0 10px 26px rgba(24, 42, 92, 0.08),
+    0 2px 5px rgba(24, 42, 92, 0.04),
     inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
+    inset 1px 0 0 rgba(255, 255, 255, 0.72),
     inset 0 -1px 1px rgba(255, 255, 255, 0.48);
-  --dock-btn-border: 1px solid rgba(255, 255, 255, 0.84);
-  --glass-dialog: rgba(246, 250, 255, 0.78);
-  --glass-scrim: rgba(24, 34, 68, 0.28);
-  --glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.56) 0%, rgba(255, 255, 255, 0.14) 38%, rgba(255, 255, 255, 0.04) 66%, rgba(255, 255, 255, 0.30) 100%);
+  --dock-bg: rgba(255, 255, 255, 0.78);
+  --dock-border: 1px solid rgba(255, 255, 255, 0.94);
+  --dock-shadow:
+    0 14px 34px rgba(24, 42, 92, 0.13),
+    0 3px 8px rgba(24, 42, 92, 0.05),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
+    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+  --dock-btn-border: 1px solid rgba(255, 255, 255, 0.88);
+  --glass-dialog: rgba(246, 250, 255, 0.92);
+  --glass-scrim: rgba(24, 34, 68, 0.34);
+  --glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.58) 0%, rgba(255, 255, 255, 0.16) 36%, rgba(255, 255, 255, 0.03) 64%, rgba(255, 255, 255, 0.28) 100%);
 
-  --intake-bg: linear-gradient(145deg, rgba(110, 214, 186, 0.52) 0%, rgba(168, 232, 214, 0.38) 100%);
+  --intake-bg: linear-gradient(145deg, rgba(114, 216, 188, 0.82) 0%, rgba(168, 234, 216, 0.74) 100%);
   --intake-text: #07332a; --intake-label: #07332a;
   --intake-track: rgba(255, 255, 255, 0.56); --intake-fill: #0b5244;
-  --intake-badge-bg: rgba(8, 53, 45, 0.88); --intake-badge-text: #d6faf0;
-  --burned-bg: linear-gradient(145deg, rgba(242, 154, 186, 0.50) 0%, rgba(250, 188, 210, 0.36) 100%);
+  --intake-badge-bg: rgba(8, 53, 45, 0.92); --intake-badge-text: #d6faf0;
+  --burned-bg: linear-gradient(145deg, rgba(242, 158, 188, 0.82) 0%, rgba(250, 192, 214, 0.74) 100%);
   --burned-text: #4a0f2c; --burned-label: #4a0f2c;
   --burned-track: rgba(255, 255, 255, 0.54); --burned-fill: #8c2653;
-  --badge-bg: rgba(91, 26, 58, 0.88); --badge-text: #ffe0ee;
+  --badge-bg: rgba(91, 26, 58, 0.92); --badge-text: #ffe0ee;
 
-  --carbs-bg: linear-gradient(145deg, rgba(128, 174, 250, 0.48) 0%, rgba(176, 206, 254, 0.34) 100%); --carbs-text: #0f2562;
-  --protein-bg: linear-gradient(145deg, rgba(244, 188, 146, 0.52) 0%, rgba(252, 214, 182, 0.36) 100%); --protein-text: #5a2a12;
-  --fat-bg: linear-gradient(145deg, rgba(178, 160, 252, 0.48) 0%, rgba(212, 200, 255, 0.34) 100%); --fat-text: #2a1a6e;
-  --pill-c-bg: rgba(120, 166, 248, 0.28); --pill-c-text: #122e76;
-  --pill-p-bg: rgba(240, 170, 118, 0.32); --pill-p-text: #65300d;
-  --pill-f-bg: rgba(162, 142, 248, 0.28); --pill-f-text: #321d84;
-  --fiber-bg: linear-gradient(145deg, rgba(242, 224, 142, 0.52) 0%, rgba(250, 238, 186, 0.36) 100%); --fiber-text: #4a3c0d;
+  --carbs-bg: linear-gradient(145deg, rgba(134, 178, 250, 0.80) 0%, rgba(180, 210, 254, 0.72) 100%); --carbs-text: #0f2562;
+  --protein-bg: linear-gradient(145deg, rgba(244, 190, 148, 0.82) 0%, rgba(252, 216, 186, 0.74) 100%); --protein-text: #5a2a12;
+  --fat-bg: linear-gradient(145deg, rgba(182, 164, 252, 0.80) 0%, rgba(214, 202, 255, 0.72) 100%); --fat-text: #2a1a6e;
+  --pill-c-bg: rgba(120, 166, 248, 0.34); --pill-c-text: #122e76;
+  --pill-p-bg: rgba(240, 170, 118, 0.38); --pill-p-text: #65300d;
+  --pill-f-bg: rgba(162, 142, 248, 0.34); --pill-f-text: #321d84;
+  --fiber-bg: linear-gradient(145deg, rgba(244, 226, 146, 0.84) 0%, rgba(252, 240, 192, 0.76) 100%); --fiber-text: #4a3c0d;
   --salt-bg: var(--fiber-bg); --salt-text: var(--fiber-text);
   --sugar-bg: var(--fiber-bg); --sugar-text: var(--fiber-text);
 
-  --dock-1: rgba(130, 222, 192, 0.78); --dock-icon-1: #09382b;
-  --dock-2: rgba(248, 164, 190, 0.78); --dock-icon-2: #52122e;
-  --dock-3: rgba(148, 190, 250, 0.78); --dock-icon-3: #10264f;
-  --dock-4: rgba(250, 196, 138, 0.80); --dock-icon-4: #5a3208;
-  --dock-5: rgba(192, 168, 250, 0.78); --dock-icon-5: #2b1a6b;
-  --dock-6: rgba(246, 226, 134, 0.80); --dock-icon-6: #4a3c0d;
+  --dock-1: rgba(132, 222, 192, 0.88); --dock-icon-1: #09382b;
+  --dock-2: rgba(248, 166, 192, 0.88); --dock-icon-2: #52122e;
+  --dock-3: rgba(150, 192, 250, 0.88); --dock-icon-3: #10264f;
+  --dock-4: rgba(250, 198, 142, 0.90); --dock-icon-4: #5a3208;
+  --dock-5: rgba(194, 170, 250, 0.88); --dock-icon-5: #2b1a6b;
+  --dock-6: rgba(246, 228, 138, 0.90); --dock-icon-6: #4a3c0d;
 
-  /* Liquid Glass translucent tinted washes (refractive glass, not solid milky pastels) */
-  --tone-diary: rgba(246, 224, 128, 0.42);   --tone-diary-in: rgba(255, 252, 236, 0.62);
-  --tone-meals: rgba(242, 194, 154, 0.42);   --tone-meals-in: rgba(255, 248, 240, 0.62);
-  --tone-recipes: rgba(182, 164, 250, 0.38); --tone-recipes-in: rgba(248, 245, 255, 0.62);
-  --tone-planner: rgba(146, 184, 252, 0.40); --tone-planner-in: rgba(242, 248, 255, 0.64);
-  --tone-photo: rgba(246, 162, 184, 0.38);   --tone-photo-in: rgba(255, 245, 248, 0.62);
-  --tone-foods: rgba(134, 218, 190, 0.40);   --tone-foods-in: rgba(242, 253, 248, 0.62);
-  --tone-teal: rgba(132, 214, 220, 0.40);    --tone-teal-in: rgba(242, 252, 253, 0.62);
-  --tone-pale: rgba(255, 255, 255, 0.68);
+  /* Balanced Liquid Glass tinted sections: crisp legibility + specular sheen */
+  --tone-diary: rgba(246, 226, 138, 0.66);   --tone-diary-in: rgba(255, 253, 242, 0.82);
+  --tone-meals: rgba(242, 198, 162, 0.66);   --tone-meals-in: rgba(255, 250, 244, 0.82);
+  --tone-recipes: rgba(188, 172, 250, 0.64); --tone-recipes-in: rgba(250, 248, 255, 0.82);
+  --tone-planner: rgba(154, 190, 252, 0.66); --tone-planner-in: rgba(245, 250, 255, 0.84);
+  --tone-photo: rgba(246, 170, 192, 0.64);   --tone-photo-in: rgba(255, 248, 250, 0.82);
+  --tone-foods: rgba(142, 222, 196, 0.66);   --tone-foods-in: rgba(245, 253, 250, 0.82);
+  --tone-teal: rgba(140, 218, 224, 0.66);    --tone-teal-in: rgba(245, 253, 254, 0.82);
+  --tone-pale: rgba(255, 255, 255, 0.80);
 
   /* The shared pastel tokens (statistics, widgets, bg-intake / bg-activity ...) */
   --color-nutrient: #e6d589; --color-nutrient-ink: #4a3c0d;
@@ -114,10 +114,10 @@ html[data-style="glass"][data-theme="lite-dark"] {
     radial-gradient(65% 42% at 12% 0%, #4a3a8c 0%, transparent 70%),
     radial-gradient(60% 40% at 100% 34%, #2d4a8f 0%, transparent 70%),
     linear-gradient(165deg, #2a2652 0%, #302a5e 55%, #2b3463 100%);
-  --surface: rgba(255, 255, 255, 0.12);
+  --surface: rgba(56, 50, 108, 0.66);
   --surface-solid: #3a346a;
-  --inset: rgba(255, 255, 255, 0.09);
-  --hover: rgba(255, 255, 255, 0.19);
+  --inset: rgba(68, 60, 126, 0.62);
+  --hover: rgba(84, 75, 148, 0.72);
   --border: rgba(255, 255, 255, 0.2);
   --text: #f6f3ff;
   --muted: #cdc8ee;
@@ -132,7 +132,7 @@ html[data-style="glass"][data-theme="lite-dark"] {
   --card-border: 1px solid rgba(255, 255, 255, 0.26);
   --card-shadow: 0 12px 32px rgba(10, 8, 36, 0.34), inset 0 1.5px 0 rgba(255, 255, 255, 0.32), inset 1px 0 0 rgba(255, 255, 255, 0.14), inset 0 -1px 1px rgba(255, 255, 255, 0.10);
   --glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0.01) 68%, rgba(255, 255, 255, 0.10) 100%);
-  --dock-bg: rgba(52, 46, 100, 0.6);
+  --dock-bg: rgba(52, 46, 100, 0.80);
   --dock-border: 1px solid rgba(255, 255, 255, 0.22);
   --dock-shadow: 0 14px 36px rgba(12, 8, 40, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   --dock-btn-border: 1px solid rgba(255, 255, 255, 0.22);
@@ -182,10 +182,10 @@ html[data-style="glass"][data-theme="dark"] {
     radial-gradient(60% 40% at 14% 0%, #3a2a78 0%, transparent 70%),
     radial-gradient(55% 40% at 100% 36%, #1f3a7a 0%, transparent 70%),
     linear-gradient(165deg, #15112e 0%, #1a1538 55%, #17203f 100%);
-  --surface: rgba(255, 255, 255, 0.08);
+  --surface: rgba(34, 28, 74, 0.68);
   --surface-solid: #241d4a;
-  --inset: rgba(255, 255, 255, 0.06);
-  --hover: rgba(255, 255, 255, 0.14);
+  --inset: rgba(44, 36, 92, 0.64);
+  --hover: rgba(58, 48, 114, 0.74);
   --border: rgba(255, 255, 255, 0.15);
   --text: #f4f1ff;
   --muted: #b9b3dd;
@@ -200,7 +200,7 @@ html[data-style="glass"][data-theme="dark"] {
   --card-border: 1px solid rgba(255, 255, 255, 0.22);
   --card-shadow: 0 14px 36px rgba(4, 2, 20, 0.48), inset 0 1.5px 0 rgba(255, 255, 255, 0.26), inset 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 -1px 1px rgba(255, 255, 255, 0.08);
   --glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0.01) 68%, rgba(255, 255, 255, 0.08) 100%);
-  --dock-bg: rgba(30, 24, 64, 0.58);
+  --dock-bg: rgba(30, 24, 64, 0.80);
   --dock-border: 1px solid rgba(255, 255, 255, 0.18);
   --dock-shadow: 0 14px 36px rgba(2, 0, 16, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   --dock-btn-border: 1px solid rgba(255, 255, 255, 0.18);

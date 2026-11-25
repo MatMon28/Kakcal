@@ -6,6 +6,10 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Liquid Glass, Recipes pill fix, translucent Big Widgets & Pop 3D widgets round
+
+**Patch (Liquid Glass, Recipes pill fix, translucent Big Widgets & Pop 3D widgets round, base `de72bb68cf70b32a61e53e4fb5835fd3d02b4beb`):** fixed the Glass Recipes stretched-999px-pill ingredient container, upgraded Glass to Liquid Glass specular highlights, matched Big/Medium widget translucency to Small trays, and added Pop 3D hard offset-shadow `<layer-list>` drawables. Landed in `514fc03`.
+
 ## Widget shapes, concentric squircles & Glass polish round
 
 **Patch (Widget shapes, concentric squircles & Glass polish round, base `7ed3810079678bdd1aace8ff4aecd0debecc35f2`):** aligned widget field & container shapes (browser + 10 Android XML shape drawables), made Material / Minimal / Mono pills, docks and trays concentric squircles, guarded Glass section cards from arbitrary-pastel hover filters, and shifted Glass Light to `#eef2fa` (with regenerated `splash_themes.xml`). Landed in `de72bb6`.

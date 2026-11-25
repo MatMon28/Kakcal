@@ -141,10 +141,10 @@ html[data-style]:not([data-style='classic']) .widget-large .widget-large-divider
   border-color: var(--border) !important;
 }
 html[data-style='glass'] .widget-large {
-  background: color-mix(in srgb, var(--surface) 64%, transparent) !important;
+  background: color-mix(in srgb, var(--surface) 74%, transparent) !important;
   background-image: var(--glass-sheen);
-  backdrop-filter: blur(28px) saturate(195%) brightness(1.03);
-  -webkit-backdrop-filter: blur(28px) saturate(195%) brightness(1.03);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
 }
 html[data-style='pop'] .widget-large {
   background: color-mix(in srgb, var(--surface) 64%, transparent) !important;
