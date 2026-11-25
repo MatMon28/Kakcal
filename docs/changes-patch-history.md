@@ -6,6 +6,10 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Widget shapes, concentric squircles & Glass polish round
+
+**Patch (Widget shapes, concentric squircles & Glass polish round, base `7ed3810079678bdd1aace8ff4aecd0debecc35f2`):** aligned widget field & container shapes (browser + 10 Android XML shape drawables), made Material / Minimal / Mono pills, docks and trays concentric squircles, guarded Glass section cards from arbitrary-pastel hover filters, and shifted Glass Light to `#eef2fa` (with regenerated `splash_themes.xml`). Landed in `de72bb6`.
+
 ## Stats, Period/Body icons, Big Widget & Styles Guide round
 
 **Patch (Stats, Period/Body icons, Big Widget & Styles Guide round, base `23227c428d985f775ba9a0e0ea8d8463d77da80e`):** aligned Statistics cards (Poop, Water, Custom, range pills, badges, daily bars), Period cards/icons/dock, Body measurement icon badges, and Large/Medium widget colours (browser & Android), and added `docs/styles-guide.md`. Landed in `7ed3810`.

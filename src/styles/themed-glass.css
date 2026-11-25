@@ -1,10 +1,15 @@
 /* GLASS: component rules (imported AFTER themed-chrome / themed-cards / themed-overrides so they win ties; the tokens are in theme-glass.css). */
 /* ---- Frosted-glass specifics (all three modes) ---- */
 
-/* Every panel is frosted: the blurred gradient shows through the translucent fill. */
+/* iOS Liquid Glass: deeper refractive blur + high saturation + diagonal specular glass sheen. */
 html[data-style="glass"]:not([data-style="classic"]) :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, .kc-nav-pill, .kc-icon-btn, .kc-dock, [data-period-card], [data-day-overview-card], .kc-modal-banner, [data-cal-nav], [data-cal-trigger], [data-layout-switch], [data-range-switch], main section.rounded-3xl, main div.rounded-3xl) {
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(28px) saturate(195%) brightness(1.03);
+  -webkit-backdrop-filter: blur(28px) saturate(195%) brightness(1.03);
+  background-image: var(--glass-sheen);
+}
+html[data-style="glass"]:not([data-style="classic"]) :is(.kc-hero-intake, .kc-hero-burned, .kc-macro-carbs, .kc-macro-protein, .kc-macro-fat, [data-nutrient="fiber"], [data-nutrient="salt"], [data-nutrient="sugar"]) {
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
 }
 html[data-style="glass"] main section.rounded-3xl,
 html[data-style="glass"] main div.rounded-3xl {

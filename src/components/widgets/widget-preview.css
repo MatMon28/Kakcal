@@ -114,15 +114,23 @@ html[data-style='angular'] .quick-widget {
   background: rgb(18 21 27 / 65%);
   border-color: rgb(255 255 255 / 15%);
 }
-.widget-large-dark {
-  background: rgb(23 26 33 / 72%);
+/* Big and Medium widgets share the same translucent background alpha as Small / Extra-small widgets. */
+.widget-large {
+  background: color-mix(in srgb, var(--surface) 58%, transparent) !important;
   backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.widget-large.widget-large-dark {
+  background: rgb(18 21 27 / 65%) !important;
+  border-color: rgb(255 255 255 / 15%) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
-/* Large and Medium widgets follow the active app theme style (surface, cards, macros, badges, chamfer, blur). */
+/* Large and Medium widgets follow the active app theme style (matching Small widget transparency + theme geometry). */
 html[data-style]:not([data-style='classic']) .widget-large {
   font-family: var(--font-family, var(--font-sans));
-  background: var(--surface) !important;
+  background: color-mix(in srgb, var(--surface) 58%, transparent) !important;
   color: var(--text) !important;
   border: var(--card-border, 1px solid var(--border)) !important;
   box-shadow: var(--card-shadow, none) !important;
@@ -133,8 +141,25 @@ html[data-style]:not([data-style='classic']) .widget-large .widget-large-divider
   border-color: var(--border) !important;
 }
 html[data-style='glass'] .widget-large {
-  backdrop-filter: blur(20px) saturate(160%);
-  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  background: color-mix(in srgb, var(--surface) 64%, transparent) !important;
+  background-image: var(--glass-sheen);
+  backdrop-filter: blur(28px) saturate(195%) brightness(1.03);
+  -webkit-backdrop-filter: blur(28px) saturate(195%) brightness(1.03);
+}
+html[data-style='pop'] .widget-large {
+  background: color-mix(in srgb, var(--surface) 64%, transparent) !important;
+  border: var(--card-border) !important;
+  box-shadow: var(--card-shadow) !important;
+  margin-right: 4px;
+  margin-bottom: 4px;
+}
+html[data-style='pop'] .quick-widget {
+  border: var(--dock-border) !important;
+  box-shadow: var(--dock-shadow) !important;
+}
+html[data-style='pop'] .widget-large :is(.kc-hero-intake, .kc-hero-burned, .kc-macro-carbs, .kc-macro-protein, .kc-macro-fat) {
+  border: var(--card-border) !important;
+  box-shadow: var(--card-shadow) !important;
 }
 html[data-style='aurora'] .widget-large {
   backdrop-filter: blur(16px);
@@ -148,6 +173,7 @@ html[data-style='material'] .widget-large .widget-large-divider {
   border-color: transparent !important;
 }
 html[data-style='minimal'] .widget-large {
+  background: color-mix(in srgb, var(--surface) 95%, transparent) !important;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
   box-shadow: none !important;

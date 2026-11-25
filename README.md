@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Liquid Glass, Recipes pill fix, translucent Big Widgets & Pop 3D widgets round:** fixed the stretched-pill overflow artefact on expanded Recipes / Meals ingredient lists in Glass (`themed-overrides.css` now caps `[data-library-ingredients]` at `16px` for Glass just like Aurora, and aligns nested `[data-nutrient]` tiles to `18px`); upgraded Glass to an **iOS Liquid Glass** look (translucent crystal surfaces `0.44` alpha, `blur(28px) saturate(195%)`, diagonal `--glass-sheen`, multi-rim specular highlights and airy crystal `0.38–0.42` section washes over pearl-white `#eef2fa`); matched Large / Medium widget background transparency to the Small widgets in both browser and Android; and gave Pop's Big / Medium widgets authentic 3D hard offset shadows and bold borders (CSS + 12 Android `<layer-list>` `widget_*_pop*.xml` drawables). See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
+
+### Previous update (Widget shapes, concentric squircles & Glass polish round)
+
 **Widget shapes, concentric squircles & Glass polish round:** every widget field and widget container (browser `.widget-wallpaper` / `.widget-large` / `.quick-widget` and Android `widget_{surface,card,pill}_{angular,minimal,mono,material}.xml` + chamfered `widget_tray_angular`) now matches each theme's geometry (Angular sharp/chamfered, Material concentric squircles, Minimal/Mono concentric rounded squares); squircle buttons in Material (and Minimal/Mono) now live inside matching concentric squircle pills, docks and widget trays; fixed the Glass Recipes section hover / nested-`backdrop-filter` artefact; and shifted Glass Light's background to a luminous pearl-white cool mist (`#eef2fa`, closer to white than pink, with regenerated `splash_themes.xml`). See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
 
 ### Previous update (Stats, Period/Body icons, Big Widget & Styles Guide round)

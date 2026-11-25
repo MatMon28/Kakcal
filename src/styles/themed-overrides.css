@@ -50,13 +50,20 @@ html[data-style="aurora"]:not([data-style="classic"]) [data-day-overview-card],
 html[data-style="aurora"]:not([data-style="classic"]) .kc-modal-banner {
   border-radius: 18px !important;
 }
-html[data-style="aurora"]:not([data-style="classic"]) [data-library-ingredients],
-html[data-style="aurora"]:not([data-style="classic"]) [data-day-overview-row],
-html[data-style="aurora"]:not([data-style="classic"]) button[data-period-cell] {
-  border-radius: 14px !important;
+/* Aurora & Glass both use --pill-radius: 999px for small chips; tall containers must keep ordinary rounded corners
+   so text never overflows semicircular ends (e.g. expanded Recipes / Meals ingredient lists). */
+html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) [data-library-ingredients],
+html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) [data-day-overview-row],
+html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) [data-custom-nutrient] .kc-custom-num-input,
+html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) [data-library-food-btn],
+html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) button[data-period-cell] {
+  border-radius: 16px !important;
 }
-html[data-style="aurora"]:not([data-style="classic"]) span[data-period-cell] {
-  border-radius: 5px !important;
+html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) span[data-period-cell] {
+  border-radius: 6px !important;
+}
+html[data-style="glass"]:not([data-style="classic"]) [data-library-card] [data-nutrient] {
+  border-radius: 18px !important;
 }
 
 /* Koink-style continuous selector: one indicator, cross-fading pastel layers. */

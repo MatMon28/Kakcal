@@ -204,8 +204,15 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
     expect(matCss).toContain('--dock-radius: 22px');
     const glassCss = read('themed-glass.css');
     expect(glassCss).toContain(':not([data-library-section])');
+    expect(glassCss).toContain('var(--glass-sheen)');
+    const overridesCss = read('themed-overrides.css');
+    expect(overridesCss).toContain('html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) [data-library-ingredients]');
+    expect(widgetCss).toContain("html[data-style='pop'] .widget-large");
+    expect(widgetCss).toContain("color-mix(in srgb, var(--surface) 58%, transparent)");
     const java = readFileSync(resolve(process.cwd(), 'android/app/src/main/java/com/kcalsync/app/JournalWidgetProvider.java'), 'utf8');
     expect(java).toContain('applyLargeTheme(');
+    expect(java).toContain('widget_surface_pop');
+    expect(java).toContain('widget_card_pop_intake');
     for (const style of ['angular', 'aurora', 'pop', 'playful', 'minimal', 'glass', 'material']) {
       expect(java, style).toContain(`"${style}".equals(themeStyle)`);
     }

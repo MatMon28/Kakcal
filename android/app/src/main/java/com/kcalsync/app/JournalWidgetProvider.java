@@ -282,7 +282,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         int cBg, cText, pBg, pText, fBg, fText;
 
         if ("angular".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#151e2d" : "#ffffff");
+            surface = Color.parseColor(dark ? "#A6151e2d" : "#94ffffff");
             divider = Color.parseColor(dark ? "#25344d" : "#94a3b8");
             inBg = Color.parseColor(dark ? "#e6edf3" : "#0b1019");
             inText = Color.parseColor(dark ? "#0b1019" : "#ffffff");
@@ -295,7 +295,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = Color.parseColor(dark ? "#59480d" : "#f8da57"); pText = Color.parseColor(dark ? "#fde047" : "#4d2806");
             fBg = Color.parseColor(dark ? "#3b2366" : "#d4bcff"); fText = Color.parseColor(dark ? "#d8b4fe" : "#35116e");
         } else if ("aurora".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#E01b1630" : "#D9ffffff");
+            surface = Color.parseColor(dark ? "#A61b1630" : "#94ffffff");
             divider = Color.parseColor(dark ? "#26ffffff" : "#294f46e5");
             inBg = Color.parseColor("#34d399"); inText = Color.parseColor("#06281e");
             inTrack = Color.parseColor("#3306281e"); inFill = inText;
@@ -307,7 +307,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = cBg; pText = Color.parseColor(dark ? "#fbbf24" : "#b45309");
             fBg = cBg; fText = Color.parseColor(dark ? "#c084fc" : "#6d28d9");
         } else if ("pop".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#211c2b" : "#ffffff");
+            surface = Color.parseColor(dark ? "#A6211c2b" : "#94ffffff");
             divider = Color.parseColor(dark ? "#fef9c3" : "#000000");
             inBg = Color.parseColor("#7ef29d"); inText = Color.parseColor("#09080d");
             inTrack = Color.WHITE; inFill = inText;
@@ -319,7 +319,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = Color.parseColor("#ffb84d"); pText = Color.parseColor("#09080d");
             fBg = Color.parseColor("#c99eff"); fText = Color.parseColor("#09080d");
         } else if ("playful".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#312e81" : "#ffffff");
+            surface = Color.parseColor(dark ? "#A6312e81" : "#94ffffff");
             divider = Color.parseColor(dark ? "#38a5b4fc" : "#244c1d95");
             inBg = Color.parseColor(dark ? "#065f46" : "#34d399");
             inText = Color.parseColor(dark ? "#d1fae5" : "#042f2e");
@@ -333,7 +333,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = Color.parseColor(dark ? "#713f12" : "#fef08a"); pText = Color.parseColor(dark ? "#fef08a" : "#422006");
             fBg = Color.parseColor(dark ? "#4c1d95" : "#e9d5ff"); fText = Color.parseColor(dark ? "#e9d5ff" : "#2e1065");
         } else if ("minimal".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#0d1320" : "#ffffff");
+            surface = Color.parseColor(dark ? "#F20d1320" : "#F2eef2f6");
             divider = Color.parseColor(dark ? "#1e293b" : "#cbd5e1");
             inBg = Color.parseColor(dark ? "#151d2e" : "#f1f5f9"); inText = Color.parseColor(dark ? "#bfdbfe" : "#172554");
             inTrack = divider; inFill = Color.parseColor(dark ? "#60a5fa" : "#1d4ed8");
@@ -345,7 +345,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = inBg; pText = Color.parseColor(dark ? "#fde68a" : "#713f12");
             fBg = inBg; fText = Color.parseColor(dark ? "#e9d5ff" : "#3b0764");
         } else if ("glass".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#CC241d4a" : "#D9f4f7fd");
+            surface = Color.parseColor(dark ? "#99241d4a" : "#7Affffff");
             divider = Color.parseColor(dark ? "#26ffffff" : "#99ffffff");
             inBg = Color.parseColor(dark ? "#A62dbe9f" : "#E679d4be");
             inText = Color.parseColor(dark ? "#d5fbef" : "#08352d");
@@ -361,7 +361,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = Color.parseColor(dark ? "#75f09664" : "#E6e4b096"); pText = Color.parseColor(dark ? "#ffe5d2" : "#5a2a12");
             fBg = Color.parseColor(dark ? "#85a082fa" : "#E6a898f8"); fText = Color.parseColor(dark ? "#ece4ff" : "#2a1a6e");
         } else if ("material".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#211f26" : "#f7edf7");
+            surface = Color.parseColor(dark ? "#B8211f26" : "#B8f7edf7");
             divider = Color.TRANSPARENT;
             inBg = Color.parseColor(dark ? "#2b4e37" : "#cfe7d3");
             inText = Color.parseColor(dark ? "#cdebd4" : "#0f3a24");
@@ -379,7 +379,8 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             fBg = Color.parseColor(dark ? "#43385f" : "#e4ddf0"); fText = Color.parseColor(dark ? "#e8defb" : "#3b2d5e");
         } else { // mono
             int base = Color.parseColor(monoHue != null && monoHue.matches("^#[0-9a-fA-F]{6}$") ? monoHue : "#64748b");
-            surface = dark ? mixColor(Color.parseColor("#131926"), base, 0.2f) : Color.WHITE;
+            int baseSurface = dark ? mixColor(Color.parseColor("#131926"), base, 0.2f) : Color.WHITE;
+            surface = Color.argb(dark ? 0xA6 : 0x94, Color.red(baseSurface), Color.green(baseSurface), Color.blue(baseSurface));
             divider = dark ? mixColor(Color.parseColor("#334155"), base, 0.35f) : mixColor(Color.parseColor("#cbd5e1"), base, 0.35f);
             inBg = dark ? mixColor(base, Color.WHITE, 0.28f) : mixColor(base, Color.parseColor("#090e17"), 0.32f);
             inText = contrastText(inBg);
@@ -414,14 +415,25 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
 
         float d = context.getResources().getDisplayMetrics().density;
         int rootPad = Math.round((compact ? 4 : 8) * d);
-        tintShape(view, R.id.widget_root, rootDrawable, surface, rootPad, rootPad);
         int cardPadH = Math.round((compact ? 8 : 10) * d);
         int cardPadV = Math.round((compact ? 4 : 8) * d);
-        tintShape(view, R.id.widget_intake_card, cardDrawable, inBg, cardPadH, cardPadV);
-        tintShape(view, R.id.widget_burned_card, cardDrawable, burnBg, cardPadH, cardPadV);
-        tintShape(view, R.id.widget_carbs_card, cardDrawable, cBg, Math.round(4 * d), Math.round(4 * d));
-        tintShape(view, R.id.widget_protein_card, cardDrawable, pBg, Math.round(4 * d), Math.round(4 * d));
-        tintShape(view, R.id.widget_fat_card, cardDrawable, fBg, Math.round(4 * d), Math.round(4 * d));
+        int macroPad = Math.round(4 * d);
+        if ("pop".equals(themeStyle)) {
+            // Pop uses multi-layer 3D offset-shadow drawables directly (no tint overwrite so border + hard shadow stay crisp).
+            setLayeredBackground(view, R.id.widget_root, dark ? R.drawable.widget_surface_pop_dark : R.drawable.widget_surface_pop, rootPad, rootPad, rootPad + Math.round(3 * d), rootPad + Math.round(3 * d));
+            setLayeredBackground(view, R.id.widget_intake_card, dark ? R.drawable.widget_card_pop_intake_dark : R.drawable.widget_card_pop_intake, cardPadH, cardPadV, cardPadH + Math.round(3 * d), cardPadV + Math.round(3 * d));
+            setLayeredBackground(view, R.id.widget_burned_card, dark ? R.drawable.widget_card_pop_burned_dark : R.drawable.widget_card_pop_burned, cardPadH, cardPadV, cardPadH + Math.round(3 * d), cardPadV + Math.round(3 * d));
+            setLayeredBackground(view, R.id.widget_carbs_card, dark ? R.drawable.widget_card_pop_carbs_dark : R.drawable.widget_card_pop_carbs, macroPad, macroPad, macroPad + Math.round(3 * d), macroPad + Math.round(3 * d));
+            setLayeredBackground(view, R.id.widget_protein_card, dark ? R.drawable.widget_card_pop_protein_dark : R.drawable.widget_card_pop_protein, macroPad, macroPad, macroPad + Math.round(3 * d), macroPad + Math.round(3 * d));
+            setLayeredBackground(view, R.id.widget_fat_card, dark ? R.drawable.widget_card_pop_fat_dark : R.drawable.widget_card_pop_fat, macroPad, macroPad, macroPad + Math.round(3 * d), macroPad + Math.round(3 * d));
+        } else {
+            tintShape(view, R.id.widget_root, rootDrawable, surface, rootPad, rootPad);
+            tintShape(view, R.id.widget_intake_card, cardDrawable, inBg, cardPadH, cardPadV);
+            tintShape(view, R.id.widget_burned_card, cardDrawable, burnBg, cardPadH, cardPadV);
+            tintShape(view, R.id.widget_carbs_card, cardDrawable, cBg, macroPad, macroPad);
+            tintShape(view, R.id.widget_protein_card, cardDrawable, pBg, macroPad, macroPad);
+            tintShape(view, R.id.widget_fat_card, cardDrawable, fBg, macroPad, macroPad);
+        }
         int pillPadH = Math.round(6 * d);
         int pillPadV = Math.round(2 * d);
         tintShape(view, R.id.widget_intake_net, pillDrawable, inBadgeBg, pillPadH, pillPadV);
@@ -452,6 +464,11 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 view.setColorStateList(R.id.widget_burned_bar, "setProgressBackgroundTintList", ColorStateList.valueOf(burnTrack));
             }
         }
+    }
+
+    private static void setLayeredBackground(RemoteViews view, int viewId, int drawableRes, int padL, int padT, int padR, int padB) {
+        view.setInt(viewId, "setBackgroundResource", drawableRes);
+        view.setViewPadding(viewId, padL, padT, padR, padB);
     }
 
     private static void tintShape(RemoteViews view, int viewId, int drawableRes, int color, int padH, int padV) {
