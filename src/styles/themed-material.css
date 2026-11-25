@@ -56,3 +56,10 @@ html[data-style="material"]:not([data-style="classic"]) :is([data-library-card],
 html[data-style="material"]:not([data-style="classic"]) [data-cal-popover] {
   box-shadow: var(--mat-dialog-shadow) !important;
 }
+
+/* Progressive superellipse squircles for Material buttons, pills, docks and trays where supported. */
+@supports (corner-shape: squircle) {
+  html[data-style="material"] :is(.kc-icon-btn, .kc-nav-pill, .kc-following-indicator, .kc-following-tab, .kc-dock, .kc-dock-btn, [data-layout-switch], [data-layout-btn], [data-range-switch], [data-range-btn], [data-cal-nav], [data-cal-trigger], [data-settings-badge], [data-body-icon], .quick-widget, .widget-action-icon, .widget-large) {
+    corner-shape: squircle;
+  }
+}

@@ -24,7 +24,7 @@
 
 ## Glass
 
-* Background: `--app-bg-image` (gradient lavender > blue in Light, dusk violet in Lite Dark, deep violet in Dark), fixed behind the page.
+* Background: `--app-bg-image` (luminous pearl-white cool-mist gradient `--bg: #eef2fa` in Light — closer to white than pink — dusk violet in Lite Dark, deep violet in Dark), fixed behind the page.
 * Panels (meal cards, trackers, Custom sections, nav pill, round header buttons, dock, Period cards) are translucent white (`--surface`) with `backdrop-filter: blur(20px) saturate(160%)`, a white 1 px rim and an inner top highlight (both in `--card-shadow`). Nested cards use a lighter blur (12 px).
 * Intake, Burned, Carbs, Protein, Fat, Fibre / Salt are translucent **gradient tiles**; Today in the page pill is pink; the dock buttons are mint, pink, blue, orange, purple and yellow.
 * Dialogs are frosted panes (`--glass-dialog`, 90 % opaque so text behind never competes) over a tinted scrim (`--glass-scrim`; the scrim blur is desktop-only like the base one, because blur is costly on phones). The header is a thin sheet of glass.
@@ -34,7 +34,7 @@
 ## Material
 
 * Flat, tonal and borderless: `--card-border: none`, `--card-shadow: none`. Elevation is only on floating things (dock, dialogs), as in Material 3. Light is a warm lilac-white (`#FFF7FF`) with pastel containers; Dark is the Material baseline dark (`#141218`); Lite Dark is a step lighter.
-* Shapes: 24 px cards, 28 px dialogs and dock, 16 px rounded-square dock buttons, 8 px macro pills and chips (`var(--pill-radius, 8px)` on `[data-slot-chip]`, `.journal-chip`), round header buttons and page pill. Generic `main section.rounded-3xl` containers and `.journal-search` stay borderless (matched specificity).
+* Shapes: 24 px cards, 28 px dialogs, **concentric squircles** (14 px header/tab buttons inside 18 px nav/layout/range pills; 16 px dock/widget buttons inside 22 px dock and 20–22 px widget trays, with progressive `corner-shape: squircle`), 8 px macro pills and chips. Generic `main section.rounded-3xl` containers and `.journal-search` stay borderless (matched specificity).
 * Dialog scrim is plain black at 32 / 50 / 60 % (no blur). Hover and press tint the container (`.pressable`), keyboard focus gets a 3 px ring.
 * Font: `Roboto, 'Google Sans', 'Plus Jakarta Sans Variable', system-ui` (Android has Roboto; elsewhere the bundled Plus Jakarta Sans is used, so **no font file or package was added**).
 * Nested cards lose their 1 px `--border` (`themed-material.css`, last rule).

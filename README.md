@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Widget shapes, concentric squircles & Glass polish round:** every widget field and widget container (browser `.widget-wallpaper` / `.widget-large` / `.quick-widget` and Android `widget_{surface,card,pill}_{angular,minimal,mono,material}.xml` + chamfered `widget_tray_angular`) now matches each theme's geometry (Angular sharp/chamfered, Material concentric squircles, Minimal/Mono concentric rounded squares); squircle buttons in Material (and Minimal/Mono) now live inside matching concentric squircle pills, docks and widget trays; fixed the Glass Recipes section hover / nested-`backdrop-filter` artefact; and shifted Glass Light's background to a luminous pearl-white cool mist (`#eef2fa`, closer to white than pink, with regenerated `splash_themes.xml`). See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
+
+### Previous update (Stats, Period/Body icons, Big Widget & Styles Guide round)
+
 **Stats, Period/Body icons, Big Widget & Styles Guide round:** Statistics cards (Poop, Water and Custom tracker stats, range pills, Poop/Weight/Net badges and daily energy bars), Period summary cards / header icons / calendar controls / dock actions, Body measurement icon badges, and the **Large & Medium widgets** (both browser gallery `.widget-large` and Android `JournalWidgetProvider.applyLargeTheme` with opaque dark-card swaps) now match all nine styles coherently (Minimal tints only header text & icons on neutral fields). Added [docs/styles-guide.md](docs/styles-guide.md) documenting all nine styles and their full requirements. See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
 
 ### Previous update (Tinted trackers, Custom fields & themed controls round)

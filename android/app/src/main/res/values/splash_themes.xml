@@ -77,8 +77,8 @@
         <item name="windowSplashScreenBackground">#060911</item>
     </style>
     <!-- glass light -->
-    <style name="Splash_c4bdf5" parent="AppTheme.NoActionBarLaunch">
-        <item name="windowSplashScreenBackground">#c4bdf5</item>
+    <style name="Splash_eef2fa" parent="AppTheme.NoActionBarLaunch">
+        <item name="windowSplashScreenBackground">#eef2fa</item>
     </style>
     <!-- glass lite-dark -->
     <style name="Splash_2a2652" parent="AppTheme.NoActionBarLaunch">

@@ -4,15 +4,16 @@
    Plus Jakarta Sans, so no font file or dependency is added. */
 html[data-style="material"] {
   --font-family: Roboto, 'Google Sans', 'Plus Jakarta Sans Variable', system-ui, sans-serif;
-  --icon-btn-radius: 9999px;
-  --nav-radius: 999px;
-  --nav-pill-radius: 999px;
+  /* Concentric squircles: squircle buttons sit inside matching squircle pills / docks / trays. */
+  --icon-btn-radius: 14px;
+  --nav-radius: 18px;
+  --nav-pill-radius: 14px;
   --card-radius: 24px;
   --micro-radius: 16px;
-  --badge-radius: 999px;
-  --bar-radius: 999px;
+  --badge-radius: 8px;
+  --bar-radius: 8px;
   --pill-radius: 8px;
-  --dock-radius: 28px;
+  --dock-radius: 22px;
   --dock-btn-radius: 16px;
   --card-border: none;
   --card-shadow: none;

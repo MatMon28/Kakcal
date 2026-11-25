@@ -1,15 +1,15 @@
 /* 5. MINIMAL THEME (Crisp Bordered Neutral Cards) */
 html[data-style="minimal"] {
   --font-family: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
-  --icon-btn-radius: 9999px;
-  --nav-radius: 12px;
+  --icon-btn-radius: 10px;
+  --nav-radius: 13px;
   --nav-pill-radius: 9px;
   --card-radius: 14px;
   --micro-radius: 14px;
   --badge-radius: 6px;
   --bar-radius: 4px;
   --pill-radius: 6px;
-  --dock-radius: 16px;
+  --dock-radius: 17px;
   --dock-btn-radius: 11px;
   --pill-border: none;
   --card-shadow: none;
@@ -202,7 +202,7 @@ html[data-style="minimal"][data-theme="light"] {
 /* 6. MONO THEME (Dynamic Monochromatic Palette Driven by JS in src/utils/themes.ts) */
 html[data-style="mono"] {
   --font-family: 'Space Grotesk Variable', system-ui, sans-serif;
-  --icon-btn-radius: 14px;
+  --icon-btn-radius: 12px;
   --nav-radius: 16px;
   --nav-pill-radius: 12px;
   --card-radius: 18px;

@@ -65,8 +65,8 @@ export const SIX_NEW_THEMES: ThemePresetMeta[] = [
   {
     id: 'glass',
     name: { en: 'Glass', it: 'Vetro' },
-    tag: { en: 'Frosted · Lavender Blur', it: 'Smerigliato · Lavanda' },
-    swatches: ['#c4bdf5', '#8fdcc2', '#f4a6bd'],
+    tag: { en: 'Frosted · Pearl White Blur', it: 'Smerigliato · Bianco Perla' },
+    swatches: ['#eef2fa', '#8fdcc2', '#f4a6bd'],
   },
   {
     id: 'material',

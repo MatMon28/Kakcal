@@ -345,7 +345,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = inBg; pText = Color.parseColor(dark ? "#fde68a" : "#713f12");
             fBg = inBg; fText = Color.parseColor(dark ? "#e9d5ff" : "#3b0764");
         } else if ("glass".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#CC241d4a" : "#B3dcd6fa");
+            surface = Color.parseColor(dark ? "#CC241d4a" : "#D9f4f7fd");
             divider = Color.parseColor(dark ? "#26ffffff" : "#99ffffff");
             inBg = Color.parseColor(dark ? "#A62dbe9f" : "#E679d4be");
             inText = Color.parseColor(dark ? "#d5fbef" : "#08352d");
@@ -396,23 +396,36 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = cBg; pText = cText; fBg = cBg; fText = cText;
         }
 
-        // Use opaque rounded shapes in Dark mode before tinting so SRC_IN renders exact theme colours without alpha dimming.
+        // Pick exact theme-coherent container, card and pill shapes (Angular chamfered/0dp, Minimal 12/16dp, Mono 14/18dp, Material squircle 18/24dp).
+        int rootDrawable = "angular".equals(themeStyle) ? (dark ? R.drawable.widget_tray_angular_dark : R.drawable.widget_tray_angular)
+            : "minimal".equals(themeStyle) ? R.drawable.widget_surface_minimal
+            : "mono".equals(themeStyle) ? R.drawable.widget_surface_mono
+            : "material".equals(themeStyle) ? R.drawable.widget_surface_material
+            : R.drawable.widget_surface;
+        int cardDrawable = "angular".equals(themeStyle) ? R.drawable.widget_card_angular
+            : "minimal".equals(themeStyle) ? R.drawable.widget_card_minimal
+            : "mono".equals(themeStyle) ? R.drawable.widget_card_mono
+            : "material".equals(themeStyle) ? R.drawable.widget_card_material
+            : R.drawable.widget_card_intake;
+        int pillDrawable = "angular".equals(themeStyle) ? R.drawable.widget_pill_angular
+            : "minimal".equals(themeStyle) ? R.drawable.widget_pill_minimal
+            : "material".equals(themeStyle) ? R.drawable.widget_pill_material
+            : R.drawable.widget_pill_surplus;
+
         float d = context.getResources().getDisplayMetrics().density;
         int rootPad = Math.round((compact ? 4 : 8) * d);
-        if (dark) {
-            view.setInt(R.id.widget_root, "setBackgroundResource", R.drawable.widget_surface);
-            view.setViewPadding(R.id.widget_root, rootPad, rootPad, rootPad, rootPad);
-        }
-        tintCard(view, R.id.widget_root, surface, false, 0, 0);
+        tintShape(view, R.id.widget_root, rootDrawable, surface, rootPad, rootPad);
         int cardPadH = Math.round((compact ? 8 : 10) * d);
         int cardPadV = Math.round((compact ? 4 : 8) * d);
-        tintCard(view, R.id.widget_intake_card, inBg, dark, cardPadH, cardPadV);
-        tintCard(view, R.id.widget_burned_card, burnBg, dark, cardPadH, cardPadV);
-        tintCard(view, R.id.widget_carbs_card, cBg, dark, Math.round(4 * d), Math.round(4 * d));
-        tintCard(view, R.id.widget_protein_card, pBg, dark, Math.round(4 * d), Math.round(4 * d));
-        tintCard(view, R.id.widget_fat_card, fBg, dark, Math.round(4 * d), Math.round(4 * d));
-        tintCard(view, R.id.widget_intake_net, inBadgeBg, false, 0, 0);
-        tintCard(view, R.id.widget_burned_net, burnBadgeBg, false, 0, 0);
+        tintShape(view, R.id.widget_intake_card, cardDrawable, inBg, cardPadH, cardPadV);
+        tintShape(view, R.id.widget_burned_card, cardDrawable, burnBg, cardPadH, cardPadV);
+        tintShape(view, R.id.widget_carbs_card, cardDrawable, cBg, Math.round(4 * d), Math.round(4 * d));
+        tintShape(view, R.id.widget_protein_card, cardDrawable, pBg, Math.round(4 * d), Math.round(4 * d));
+        tintShape(view, R.id.widget_fat_card, cardDrawable, fBg, Math.round(4 * d), Math.round(4 * d));
+        int pillPadH = Math.round(6 * d);
+        int pillPadV = Math.round(2 * d);
+        tintShape(view, R.id.widget_intake_net, pillDrawable, inBadgeBg, pillPadH, pillPadV);
+        tintShape(view, R.id.widget_burned_net, pillDrawable, burnBadgeBg, pillPadH, pillPadV);
 
         view.setTextColor(R.id.widget_intake_value, inText);
         view.setTextColor(R.id.widget_intake_net, inBadgeText);
@@ -441,11 +454,9 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         }
     }
 
-    private static void tintCard(RemoteViews view, int viewId, int color, boolean swapOpaqueCard, int padH, int padV) {
-        if (swapOpaqueCard) {
-            view.setInt(viewId, "setBackgroundResource", R.drawable.widget_card_intake);
-            view.setViewPadding(viewId, padH, padV, padH, padV);
-        }
+    private static void tintShape(RemoteViews view, int viewId, int drawableRes, int color, int padH, int padV) {
+        view.setInt(viewId, "setBackgroundResource", drawableRes);
+        view.setViewPadding(viewId, padH, padV, padH, padV);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             view.setColorStateList(viewId, "setBackgroundTintList", ColorStateList.valueOf(color));
         } else {

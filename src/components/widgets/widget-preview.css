@@ -32,14 +32,14 @@
  */
 /* Minimal: a crisp slate tray with a hairline border (the style's dock: 16px radius, no shadow, no blur), not a soft glass pill. */
 html[data-style='minimal'] .quick-widget {
-  --widget-pill-radius: 16px;
+  --widget-pill-radius: 18px; /* 11px buttons + 7px padding: concentric rounded square */
   background: color-mix(in srgb, var(--surface) 95%, transparent);
   border: 1px solid var(--border);
   box-shadow: none;
   backdrop-filter: none;
 }
-html[data-style='mono'] .quick-widget { --widget-pill-radius: 20px; } /* 12px buttons + 8px */
-html[data-style='material'] .quick-widget { --widget-pill-radius: 24px; } /* 16px buttons + 8px, a tonal tray */
+html[data-style='mono'] .quick-widget { --widget-pill-radius: 20px; } /* 12px squircle buttons + 8px */
+html[data-style='material'] .quick-widget { --widget-pill-radius: 22px; border-color: transparent; } /* concentric squircle tray */
 html[data-style='glass'] .quick-widget { backdrop-filter: blur(14px) saturate(150%); border-color: rgb(255 255 255 / 55%); } /* frosted tray */
 html[data-style='angular'] .quick-widget {
   --widget-pill-radius: 0;
@@ -156,6 +156,43 @@ html[data-style='angular'] .widget-large {
   border-radius: 0 !important;
   border-color: transparent !important;
   box-shadow: none !important;
+  clip-path: var(--clip-lg) !important;
+}
+
+/* Outer widget gallery container (.widget-wallpaper) & every inner widget card obey the active style's shape. */
+html[data-style]:not([data-style='classic']) .widget-wallpaper {
+  border-radius: var(--card-radius, 28px) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  clip-path: var(--clip-lg, none);
+}
+html[data-style='angular'] .widget-wallpaper {
+  border-radius: 0 !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+html[data-style='material'] .widget-wallpaper {
+  border-color: transparent !important;
+}
+html[data-style='angular'] .widget-large :is(.kc-hero-intake, .kc-hero-burned) {
+  border-radius: 0 !important;
+  clip-path: var(--clip-md) !important;
+}
+html[data-style='angular'] .widget-large :is(.kc-macro-carbs, .kc-macro-protein, .kc-macro-fat) {
+  border-radius: 0 !important;
+  clip-path: var(--clip-sm) !important;
+}
+html[data-style='angular'] .widget-large :is(.kc-balance-badge, .kc-hero-track, .kc-hero-fill) {
+  border-radius: 0 !important;
+}
+html[data-style='material'] .widget-large :is(.kc-hero-intake, .kc-hero-burned, .kc-macro-carbs, .kc-macro-protein, .kc-macro-fat) {
+  border-radius: 18px !important;
+}
+html[data-style='minimal'] .widget-large :is(.kc-hero-intake, .kc-hero-burned, .kc-macro-carbs, .kc-macro-protein, .kc-macro-fat) {
+  border-radius: 12px !important;
+}
+html[data-style='mono'] .widget-large :is(.kc-hero-intake, .kc-hero-burned, .kc-macro-carbs, .kc-macro-protein, .kc-macro-fat) {
+  border-radius: 14px !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

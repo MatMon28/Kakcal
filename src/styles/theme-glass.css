@@ -22,35 +22,35 @@ html[data-style="glass"] {
   --brand-flame-color: #6d5ae0;
 }
 
-/* ---- Light: lavender glass ---- */
+/* ---- Light: luminous pearl-white glass (cool mist, closer to white than pink) ---- */
 html[data-style="glass"][data-theme="light"] {
-  --bg: #c4bdf5;
+  --bg: #eef2fa;
   --app-bg-image:
-    radial-gradient(70% 45% at 10% 0%, #d7c6f7 0%, transparent 70%),
-    radial-gradient(60% 40% at 100% 32%, #b3c6f9 0%, transparent 70%),
-    linear-gradient(165deg, #cbbdf3 0%, #bcc0f6 55%, #b9c8f8 100%);
-  --surface: rgba(255, 255, 255, 0.5);
-  --surface-solid: #dcd6fa;
-  --inset: rgba(255, 255, 255, 0.38);
-  --hover: rgba(255, 255, 255, 0.64);
-  --border: rgba(255, 255, 255, 0.6);
-  --text: #1b1745;
-  --muted: #443f74;
-  --header-btn-bg: rgba(255, 255, 255, 0.55);
-  --header-icon-color: #1b1745;
-  --nav-bg: rgba(255, 255, 255, 0.45);
-  --nav-inactive-color: #2b2660;
-  --nav-active-bg: linear-gradient(135deg, #f9c0cf 0%, #f3a9c0 100%);
-  --nav-active-color: #6b1738;
-  --meal-icon-color: #1b1745;
-  --card-border: 1px solid rgba(255, 255, 255, 0.62);
-  --card-shadow: 0 10px 30px rgba(84, 70, 160, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  --dock-bg: rgba(255, 255, 255, 0.5);
-  --dock-border: 1px solid rgba(255, 255, 255, 0.65);
-  --dock-shadow: 0 14px 36px rgba(84, 70, 160, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  --dock-btn-border: 1px solid rgba(255, 255, 255, 0.6);
-  --glass-dialog: rgba(226, 220, 252, 0.9);
-  --glass-scrim: rgba(58, 46, 120, 0.42);
+    radial-gradient(68% 45% at 10% 0%, #ffffff 0%, transparent 70%),
+    radial-gradient(60% 42% at 100% 28%, #dce7fa 0%, transparent 72%),
+    linear-gradient(165deg, #f7f9fe 0%, #eef2fa 55%, #e5ecfa 100%);
+  --surface: rgba(255, 255, 255, 0.72);
+  --surface-solid: #f4f7fd;
+  --inset: rgba(255, 255, 255, 0.56);
+  --hover: rgba(255, 255, 255, 0.84);
+  --border: rgba(203, 213, 238, 0.82);
+  --text: #1b1f3b;
+  --muted: #4b5278;
+  --header-btn-bg: rgba(255, 255, 255, 0.76);
+  --header-icon-color: #1b1f3b;
+  --nav-bg: rgba(255, 255, 255, 0.68);
+  --nav-inactive-color: #363d66;
+  --nav-active-bg: linear-gradient(135deg, #dce9ff 0%, #c8dcfb 100%);
+  --nav-active-color: #163063;
+  --meal-icon-color: #1b1f3b;
+  --card-border: 1px solid rgba(255, 255, 255, 0.88);
+  --card-shadow: 0 10px 28px rgba(36, 56, 112, 0.09), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --dock-bg: rgba(255, 255, 255, 0.72);
+  --dock-border: 1px solid rgba(255, 255, 255, 0.9);
+  --dock-shadow: 0 14px 34px rgba(36, 56, 112, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.92);
+  --dock-btn-border: 1px solid rgba(255, 255, 255, 0.8);
+  --glass-dialog: rgba(246, 249, 255, 0.92);
+  --glass-scrim: rgba(28, 38, 72, 0.34);
 
   --intake-bg: linear-gradient(135deg, rgba(104, 206, 184, 0.9) 0%, rgba(156, 224, 206, 0.9) 100%);
   --intake-text: #08352d; --intake-label: #08352d;

@@ -6,6 +6,10 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Stats, Period/Body icons, Big Widget & Styles Guide round
+
+**Patch (Stats, Period/Body icons, Big Widget & Styles Guide round, base `23227c428d985f775ba9a0e0ea8d8463d77da80e`):** aligned Statistics cards (Poop, Water, Custom, range pills, badges, daily bars), Period cards/icons/dock, Body measurement icon badges, and Large/Medium widget colours (browser & Android), and added `docs/styles-guide.md`. Landed in `7ed3810`.
+
 ## Tinted trackers, Custom fields & themed controls round
 
 **Patch (Tinted trackers, Custom fields & themed controls round, base `df782e65b8729c3be0ae3317195c7aca09c5436b`):** extended `themed-tones.css` to Today trackers and all seven Custom sections (full-field tones for 7 styles, text & icons only for Minimal), and aligned Settings icon badges & switches, Calendar controls, Compact / Normal / Expanded buttons and Meal planner controls across all styles. Landed in `23227c4`.
