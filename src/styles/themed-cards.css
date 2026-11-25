@@ -527,3 +527,114 @@ html[data-style]:not([data-style="classic"]) [role="dialog"] {
   clip-path: var(--clip-lg, none);
   font-family: var(--font-family, var(--font-sans));
 }
+
+/* Statistics range pills, Poop / Water / Custom stat bars & dots, Body & Period icons */
+html[data-style]:not([data-style="classic"]) [data-range-switch] {
+  background: var(--nav-bg, var(--surface)) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--nav-radius, 999px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) [data-range-btn] {
+  border-radius: var(--nav-pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+  color: var(--nav-inactive-color, var(--muted)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-range-btn][data-active="true"] {
+  background: var(--nav-active-bg, var(--text)) !important;
+  color: var(--nav-active-color, var(--on-text)) !important;
+}
+
+/* Water stats bars take --water-fill; Poop & Custom dots follow icon geometry & tone ink */
+html[data-style]:not([data-style="classic"]) [data-water-stats] .kc-custom-stat-bar-active {
+  background: var(--water-fill, var(--carbs-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) :is(.kc-custom-stat-dot-active, .kc-custom-stat-dot-empty) {
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-stats-tone="poop"] .kc-custom-stat-dot-active {
+  background: var(--pill-p-bg, var(--protein-bg)) !important;
+  color: var(--pill-p-text, var(--protein-text)) !important;
+  border: var(--pill-border, none) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-stats-tone="custom"] .kc-custom-stat-dot-active {
+  background: var(--intake-bg) !important;
+  color: var(--intake-text) !important;
+  border: var(--pill-border, none) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-stats-tone="custom"] .kc-custom-stat-bar-active {
+  background: var(--fiber-text, var(--text)) !important;
+}
+html[data-style="minimal"] [data-stats-tone="custom"] .kc-custom-stat-bar-active {
+  background: var(--tone-ink-diary) !important;
+}
+
+/* Statistics & Body semantic pills + daily energy bars */
+html[data-style]:not([data-style="classic"]) [data-stat-pill] {
+  border-radius: var(--pill-radius, 999px) !important;
+  border: var(--pill-border, none) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-stat-pill="poop"] {
+  background: var(--pill-p-bg, var(--protein-bg)) !important;
+  color: var(--pill-p-text, var(--protein-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-stat-pill="weight"] {
+  background: var(--pill-f-bg, var(--fat-bg)) !important;
+  color: var(--pill-f-text, var(--fat-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-stat-pill="intake"] {
+  background: var(--intake-bg) !important;
+  color: var(--intake-text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-stat-pill="burned"] {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-stat-bar-track] {
+  border-radius: var(--bar-radius, 999px) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-stat-bar-track="intake"] { background: var(--intake-track) !important; }
+html[data-style]:not([data-style="classic"]) [data-stat-bar-fill="intake"] { background: var(--intake-fill) !important; border-radius: var(--bar-radius, 999px) !important; }
+html[data-style]:not([data-style="classic"]) [data-stat-bar-track="burned"] { background: var(--burned-track) !important; }
+html[data-style]:not([data-style="classic"]) [data-stat-bar-fill="burned"] { background: var(--burned-fill) !important; border-radius: var(--bar-radius, 999px) !important; }
+
+/* Body measurements icon badges: coherent with dock geometry, Minimal hairline & Mono single-hue */
+html[data-style]:not([data-style="classic"]) [data-body-icon] {
+  background: var(--dock-5, var(--fat-bg)) !important;
+  color: var(--dock-icon-5, var(--fat-text)) !important;
+  border: var(--dock-btn-border, none) !important;
+  border-radius: var(--dock-btn-radius, 16px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style="minimal"] [data-body-icon] {
+  background: var(--dock-5, var(--inset)) !important;
+  color: var(--tone-ink-recipes) !important;
+  border: var(--dock-btn-border, 1px solid var(--border)) !important;
+}
+
+/* Period header icons & semantic Period dock actions */
+html[data-style="minimal"] .kc-period-header-icon {
+  color: var(--tone-ink-photo) !important;
+}
+html[data-style="mono"] .kc-period-header-icon {
+  color: var(--mono-accent, var(--text)) !important;
+}
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) .kc-period-header-icon {
+  color: var(--text-heart, var(--meal-icon-color, var(--text))) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="cycle"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="intercourse"] {
+  background: var(--dock-2) !important;
+  color: var(--dock-icon-2) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="pill"] {
+  background: var(--dock-5) !important;
+  color: var(--dock-icon-5) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="pill"][aria-pressed="true"] {
+  background: var(--dock-1) !important;
+  color: var(--dock-icon-1) !important;
+}

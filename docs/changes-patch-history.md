@@ -6,6 +6,10 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Tinted trackers, Custom fields & themed controls round
+
+**Patch (Tinted trackers, Custom fields & themed controls round, base `df782e65b8729c3be0ae3317195c7aca09c5436b`):** extended `themed-tones.css` to Today trackers and all seven Custom sections (full-field tones for 7 styles, text & icons only for Minimal), and aligned Settings icon badges & switches, Calendar controls, Compact / Normal / Expanded buttons and Meal planner controls across all styles. Landed in `23227c4`.
+
 ## Style consistency audit round
 
 **Patch (Style consistency audit round, base `018a6cc9707d437f238984206ffc3aac90cdf33e`):** wired the continuous page pill (`.kc-following-indicator` / `.kc-following-tab`) to theme tokens, fixed Mono `--*-on-surface` AA contrast and Pop dark water bar visibility (`--water-fill`), bound Today dock buttons semantically via `[data-dock-action]`, fixed Playful / Aurora / Minimal / Angular / Glass / Material mode-parity issues, expanded `index.html` pre-paint colours and aligned Android Playful / Minimal widgets. Landed in `df782e6`.

@@ -105,7 +105,7 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
     for (const tracker of ['activity', 'water', 'poop', 'custom']) {
       expect(tonesCss, tracker).toContain(`[data-tracker="${tracker}"]`);
     }
-    expect(tonesCss).toContain('html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section], [data-tracker])');
+    expect(tonesCss).toContain('html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section], [data-tracker], [data-stats-tone], [data-water-stats], [data-period-card])');
     expect(tonesCss).toContain('html[data-style="minimal"] [data-tracker]');
     expect(tonesCss).toContain('html[data-style="minimal"] [data-library-section] [data-library-header]');
 
@@ -177,6 +177,30 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
       '.journal-shopping-notice',
     ]) {
       expect(cards, hook).toContain(hook);
+    }
+  });
+
+  it('keeps Statistics fields (Poop/Water/Custom), Period cards & Body icons coherent with every style', () => {
+    const tones = read('themed-tones.css');
+    for (const sel of ['[data-stats-tone="poop"]', '[data-stats-tone="custom"]', '[data-water-stats]', '[data-period-card="cycle"]', '[data-period-card="phase"]']) {
+      expect(tones, sel).toContain(sel);
+    }
+    const cards = read('themed-cards.css');
+    for (const sel of ['[data-range-switch]', '[data-stat-pill="poop"]', '[data-stat-pill="weight"]', '[data-body-icon]', '[data-dock-action="pill"]']) {
+      expect(cards, sel).toContain(sel);
+    }
+  });
+
+  it('keeps the Large and Medium widgets coherent with the active style in browser gallery and Android', () => {
+    const widgetCss = readFileSync(resolve(process.cwd(), 'src/components/widgets/widget-preview.css'), 'utf8');
+    expect(widgetCss).toContain("html[data-style]:not([data-style='classic']) .widget-large");
+    expect(widgetCss).toContain("html[data-style='glass'] .widget-large");
+    expect(widgetCss).toContain("html[data-style='material'] .widget-large");
+    expect(widgetCss).toContain("html[data-style='angular'] .widget-large");
+    const java = readFileSync(resolve(process.cwd(), 'android/app/src/main/java/com/kcalsync/app/JournalWidgetProvider.java'), 'utf8');
+    expect(java).toContain('applyLargeTheme(');
+    for (const style of ['angular', 'aurora', 'pop', 'playful', 'minimal', 'glass', 'material']) {
+      expect(java, style).toContain(`"${style}".equals(themeStyle)`);
     }
   });
 });

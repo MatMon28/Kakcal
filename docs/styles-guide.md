@@ -1,0 +1,31 @@
+# Styles guide and requirements
+
+> **Scope:** complete specification of all nine Kakcal theme styles (`classic`, `angular`, `aurora`, `pop`, `playful`, `minimal`, `mono`, `glass`, `material`), how each renders across Light / Lite Dark / Dark, and the mandatory requirements any new or edited style must satisfy.
+>
+> **Read when:** you create a style, modify tokens or component CSS, update widgets or pre-paint splash colours, or check style parity against Classic.
+>
+> **Related:** [glass-material-update.md](glass-material-update.md), [style-audit.md](style-audit.md), [calculations-colors.md](calculations-colors.md), [widgets.md](widgets.md), [file-organisation.md](file-organisation.md)
+
+## The nine styles
+
+| Style | Visual language & typography | Cards, borders & elevation | Trackers, Stats, Period & Custom fields |
+| --- | --- | --- | --- |
+| **Classic** (baseline) | Warm oat & soft pastels (`Plus Jakarta Sans`). | 24 px cards, 1 px `--border`, no shadows, full-pill nav / dock. | Meals neutral `--surface`; trackers, Poop/Water/Custom stats, Period cards & all 7 Custom sections use inline pastel palettes. |
+| **Angular** | Tactical chamfered polygons (`Chakra Petch`). | `0px` radius + `--clip-lg/md/sm/xs/dock` chamfers, borderless, `--card-shadow: none`. | Full-field tactical tones (`--tone-*` / `--tone-*-in`); meals stay neutral. |
+| **Aurora** | Frosted glass on lavender-violet gradient + mint / coral heroes (`Plus Jakarta Sans`). | 22 px cards, translucent surfaces with `backdrop-filter: blur(16px)`, soft shadows, opaque `prefers-reduced-transparency` fallbacks. | Full-field frosted translucent tones (`rgba`) with opaque fallbacks under reduced transparency. |
+| **Pop** | Neo-brutalist bold solids (`Space Grotesk`). | 20 px cards, thick `2px / 2.5px` borders, hard offset shadows (`#000` light, `#fde047` dark & lite-dark). | Full-field vibrant pop tones keeping thick outlines and offset shadows. |
+| **Playful** | Soft bubbly indigo / pastel surfaces (`Space Grotesk`). | 24 px cards, subtle 1 px borders across all 3 modes, soft shadows, rounded 32 / 40 px nav & dock. | Full-field soft bubbly pastel tones; meals stay neutral. |
+| **Minimal** | Hairline crisp slate (`Plus Jakarta Sans`). | 14 px cards, flat `1px solid` borders, `--card-shadow: none`, 11 px rounded-square dock, Body & Settings badges. | **Text & icons only:** fields stay neutral `--surface`; only header text & icons take `--tone-ink-*` (`>= 4.5:1` AA). |
+| **Mono** | Dynamic single-hue tonal palette across 10 hues (`Space Grotesk`, `src/utils/themes.ts`). | 18 px cards, `1.5px solid` hue-tinted borders, flat, uniform dock, Body & Settings badge plates. | Single-hue stepped tonal washes (`toneBase` / `toneIn`) distinct from neutral meal cards. |
+| **Glass** | Frosted translucent panels on lavender-blue gradient + gradient tiles (`Plus Jakarta Sans`). | 26 px cards, `blur(20px) saturate(160%)`, white 1 px rim & top inner highlight, 30 px frosted dialogs, full reduced-transparency fallback. | Full-field frosted translucent tones (`--tone-*`). |
+| **Material** | Material You / M3 flat tonal containers (`Roboto` fallback `Plus Jakarta Sans`). | 24 px flat borderless cards (`--card-border: none`), elevation only on floating dock / dialogs / popovers, 8 px chips, 16 px dock squares. | Full-field flat borderless tonal containers (`--tone-*`). |
+
+## Mandatory requirements for every style
+
+1. **Three modes + opaque `--bg` hex:** define `light`, `lite-dark` and `dark` blocks with an opaque `#rrggbb` `--bg` (required by `scripts/generate-splash-themes.mjs` and `index.html` `BG_MAP` so launch has zero flash).
+2. **Core token contract:** define surfaces, ink, borders, shadows, radii, clip-paths, energy cards (`--intake-*`, `--burned-*`, `--intake-badge-*`, `--badge-*`), macros & pills (`--carbs/protein/fat-*`, `--pill-c/p/f-*`), nutrients (`--fiber/salt/sugar-*`), `--water-fill`, dock plates (`--dock-1..6`, `--dock-icon-1..6`), and Light-mode `--color-*-accent` surface accents.
+3. **Trackers, Stats, Period & Custom sections (`themed-tones.css`):** meals stay neutral `--surface`; Today trackers (`activity`, `water`, `poop`, `custom`), Statistics cards (`poop`, `water`, `custom`), Period summary cards (`cycle`, `phase`, `next`, `ovulation`) and all 7 Custom sections must define either all 7 `--tone-*` / `--tone-*-in` + `--tone-pale` pairs (full-field styles) or all 7 `--tone-ink-*` tokens (text/icon-only styles like Minimal).
+4. **Controls, icons & dialogs coherence:** the continuous page pill (`.kc-following-indicator`), Today / Period / Body docks (`[data-dock-action]`), Settings badges & switches (`[data-settings-badge]`, `[data-settings-switch]`), Body measurement icon badges (`[data-body-icon]`), Period header icons (`.kc-period-header-icon`), Calendar controls (`[data-cal-*]`), Compact / Normal / Expanded & Stats/Body range switchers (`[data-layout-switch]`, `[data-range-switch]`), Statistics pills/bars (`[data-stat-pill]`, `[data-stat-bar-*]`), and Meal planner / Shopping list controls must all follow the active style.
+5. **Widgets (browser gallery + native Android):** Small & Extra-small trays follow button geometry (`widget-preview.css` & `applyTrayShape`); shortcut buttons match `--dock-1..6` (`renderStyledActionBitmap`); **Large & Medium widgets** match the active style's surface, Intake / Burned / Macro cards, badges, icons and progress bars (`.widget-large` in `widget-preview.css` and `applyLargeTheme` in `JournalWidgetProvider.java`).
+6. **Accessibility & contrast:** maintain `>= 4.5:1` WCAG AA contrast for `--text` and `--muted` on `--bg`, `--surface` and every `--tone-*`, for `--*-on-surface` on `--surface` (including all 10 Mono hues × 3 modes), and `>= 3.0:1` for `--water-fill` on its track. Always use `--on-text` (never `--surface`) for text on `var(--text)`. Translucent styles (Aurora, Glass) must provide opaque `@media (prefers-reduced-transparency: reduce)` fallbacks.
+7. **Wiring & automated verification:** register in `src/types/index.ts`, `src/utils/themes.ts`, `src/components/common/GoalBadge.tsx`, `index.html` `BG_MAP`, `scripts/generate-splash-themes.mjs`, `JournalDevicePlugin.java`, `JournalWidgetProvider.java`, and cover in `tests/themes.test.ts`.

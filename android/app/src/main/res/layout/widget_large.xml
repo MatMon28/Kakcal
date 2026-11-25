@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_surface"
@@ -23,6 +24,7 @@
 
             <LinearLayout style="@style/WidgetCardHeader">
                 <ImageView
+                    android:id="@+id/widget_intake_icon"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:importantForAccessibility="no"
@@ -69,6 +71,7 @@
 
             <LinearLayout style="@style/WidgetCardHeader">
                 <ImageView
+                    android:id="@+id/widget_burned_icon"
                     android:layout_width="18dp"
                     android:layout_height="18dp"
                     android:importantForAccessibility="no"
@@ -180,6 +183,7 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/widget_divider"
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="8dp"

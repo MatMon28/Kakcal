@@ -6,6 +6,8 @@ import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.res.ColorStateList;
+import android.os.Build;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
@@ -172,7 +174,10 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         }
         if (!essential) view.setViewVisibility(R.id.widget_custom, customButton ? View.VISIBLE : View.GONE);
         if (!large) applyTrayShape(context, view, themeStyle, dark);
-        if (large) bindLarge(view, strings, prefs, locale, medium);
+        if (large) {
+            bindLarge(view, strings, prefs, locale, medium);
+            applyLargeTheme(context, view, themeStyle, dark, monoHue, medium);
+        }
         return view;
     }
 
@@ -261,6 +266,191 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         view.setTextViewText(value, gramText);
         if (!compact) view.setTextViewText(percent, shareText + "%");
         view.setContentDescription(card, strings.getString(description, gramText, shareText));
+    }
+
+
+    /**
+     * Styles the Large and Medium widgets (surface, Intake/Burned cards, macro cards, badges, icons and progress bars)
+     * to match the active app theme style instead of staying on Classic pastels. In Dark widget layouts, swaps the
+     * translucent dark card drawables to opaque rounded shapes before tinting so SRC_IN produces exact theme colours.
+     */
+    private static void applyLargeTheme(Context context, RemoteViews view, String themeStyle, boolean dark, String monoHue, boolean compact) {
+        if ("classic".equals(themeStyle)) return;
+        int surface, divider;
+        int inBg, inText, inTrack, inFill, inBadgeBg, inBadgeText;
+        int burnBg, burnText, burnTrack, burnFill, burnBadgeBg, burnBadgeText;
+        int cBg, cText, pBg, pText, fBg, fText;
+
+        if ("angular".equals(themeStyle)) {
+            surface = Color.parseColor(dark ? "#151e2d" : "#ffffff");
+            divider = Color.parseColor(dark ? "#25344d" : "#94a3b8");
+            inBg = Color.parseColor(dark ? "#e6edf3" : "#0b1019");
+            inText = Color.parseColor(dark ? "#0b1019" : "#ffffff");
+            inTrack = Color.parseColor(dark ? "#cbd5e1" : "#334155");
+            inFill = inText; inBadgeBg = inText; inBadgeText = inBg;
+            burnBg = Color.parseColor("#ff551a"); burnText = Color.parseColor("#0b1019");
+            burnTrack = Color.parseColor("#400b1019"); burnFill = burnText;
+            burnBadgeBg = burnText; burnBadgeText = burnBg;
+            cBg = Color.parseColor(dark ? "#1d3c78" : "#b8d0ff"); cText = Color.parseColor(dark ? "#93c5fd" : "#112663");
+            pBg = Color.parseColor(dark ? "#59480d" : "#f8da57"); pText = Color.parseColor(dark ? "#fde047" : "#4d2806");
+            fBg = Color.parseColor(dark ? "#3b2366" : "#d4bcff"); fText = Color.parseColor(dark ? "#d8b4fe" : "#35116e");
+        } else if ("aurora".equals(themeStyle)) {
+            surface = Color.parseColor(dark ? "#E01b1630" : "#D9ffffff");
+            divider = Color.parseColor(dark ? "#26ffffff" : "#294f46e5");
+            inBg = Color.parseColor("#34d399"); inText = Color.parseColor("#06281e");
+            inTrack = Color.parseColor("#3306281e"); inFill = inText;
+            inBadgeBg = inText; inBadgeText = Color.parseColor("#d1fae5");
+            burnBg = Color.parseColor("#f43f5e"); burnText = Color.parseColor("#2d0811");
+            burnTrack = Color.parseColor("#382d0811"); burnFill = burnText;
+            burnBadgeBg = burnText; burnBadgeText = Color.parseColor("#ffe4e6");
+            cBg = Color.parseColor(dark ? "#262040" : "#ffffff"); cText = Color.parseColor(dark ? "#60a5fa" : "#1d4ed8");
+            pBg = cBg; pText = Color.parseColor(dark ? "#fbbf24" : "#b45309");
+            fBg = cBg; fText = Color.parseColor(dark ? "#c084fc" : "#6d28d9");
+        } else if ("pop".equals(themeStyle)) {
+            surface = Color.parseColor(dark ? "#211c2b" : "#ffffff");
+            divider = Color.parseColor(dark ? "#fef9c3" : "#000000");
+            inBg = Color.parseColor("#7ef29d"); inText = Color.parseColor("#09080d");
+            inTrack = Color.WHITE; inFill = inText;
+            inBadgeBg = inText; inBadgeText = inBg;
+            burnBg = Color.parseColor("#ff7a7a"); burnText = Color.parseColor("#09080d");
+            burnTrack = Color.parseColor("#4009080d"); burnFill = burnText;
+            burnBadgeBg = burnText; burnBadgeText = Color.WHITE;
+            cBg = Color.parseColor("#7cc4fa"); cText = Color.parseColor("#09080d");
+            pBg = Color.parseColor("#ffb84d"); pText = Color.parseColor("#09080d");
+            fBg = Color.parseColor("#c99eff"); fText = Color.parseColor("#09080d");
+        } else if ("playful".equals(themeStyle)) {
+            surface = Color.parseColor(dark ? "#312e81" : "#ffffff");
+            divider = Color.parseColor(dark ? "#38a5b4fc" : "#244c1d95");
+            inBg = Color.parseColor(dark ? "#065f46" : "#34d399");
+            inText = Color.parseColor(dark ? "#d1fae5" : "#042f2e");
+            inTrack = Color.parseColor(dark ? "#33d1fae5" : "#38042f2e"); inFill = inText;
+            inBadgeBg = inText; inBadgeText = Color.parseColor(dark ? "#065f46" : "#a7f3d0");
+            burnBg = Color.parseColor(dark ? "#9f1239" : "#fb7185");
+            burnText = Color.parseColor(dark ? "#ffe4e6" : "#3b0413");
+            burnTrack = Color.parseColor(dark ? "#38ffe4e6" : "#383b0413"); burnFill = burnText;
+            burnBadgeBg = Color.parseColor(dark ? "#47000000" : "#2e3b0413"); burnBadgeText = burnText;
+            cBg = Color.parseColor(dark ? "#1e3a8a" : "#dbeafe"); cText = Color.parseColor(dark ? "#dbeafe" : "#172554");
+            pBg = Color.parseColor(dark ? "#713f12" : "#fef08a"); pText = Color.parseColor(dark ? "#fef08a" : "#422006");
+            fBg = Color.parseColor(dark ? "#4c1d95" : "#e9d5ff"); fText = Color.parseColor(dark ? "#e9d5ff" : "#2e1065");
+        } else if ("minimal".equals(themeStyle)) {
+            surface = Color.parseColor(dark ? "#0d1320" : "#ffffff");
+            divider = Color.parseColor(dark ? "#1e293b" : "#cbd5e1");
+            inBg = Color.parseColor(dark ? "#151d2e" : "#f1f5f9"); inText = Color.parseColor(dark ? "#bfdbfe" : "#172554");
+            inTrack = divider; inFill = Color.parseColor(dark ? "#60a5fa" : "#1d4ed8");
+            inBadgeBg = Color.parseColor(dark ? "#172554" : "#dbeafe"); inBadgeText = inText;
+            burnBg = inBg; burnText = Color.parseColor(dark ? "#fecaca" : "#7f1d1d");
+            burnTrack = divider; burnFill = Color.parseColor(dark ? "#f87171" : "#dc2626");
+            burnBadgeBg = Color.parseColor(dark ? "#450a0a" : "#fee2e2"); burnBadgeText = burnText;
+            cBg = inBg; cText = Color.parseColor(dark ? "#bfdbfe" : "#172554");
+            pBg = inBg; pText = Color.parseColor(dark ? "#fde68a" : "#713f12");
+            fBg = inBg; fText = Color.parseColor(dark ? "#e9d5ff" : "#3b0764");
+        } else if ("glass".equals(themeStyle)) {
+            surface = Color.parseColor(dark ? "#CC241d4a" : "#B3dcd6fa");
+            divider = Color.parseColor(dark ? "#26ffffff" : "#99ffffff");
+            inBg = Color.parseColor(dark ? "#A62dbe9f" : "#E679d4be");
+            inText = Color.parseColor(dark ? "#d5fbef" : "#08352d");
+            inTrack = Color.parseColor(dark ? "#2Effffff" : "#73ffffff"); inFill = inText;
+            inBadgeBg = inText; inBadgeText = Color.parseColor(dark ? "#0a3b32" : "#c8f5e8");
+            burnBg = Color.parseColor(dark ? "#9Eec5a96" : "#EBde96be");
+            burnText = Color.parseColor(dark ? "#ffe3f0" : "#4a0f2c");
+            burnTrack = Color.parseColor(dark ? "#2Effffff" : "#66ffffff");
+            burnFill = Color.parseColor(dark ? "#ffe3f0" : "#8c2a57");
+            burnBadgeBg = Color.parseColor(dark ? "#8C0a041c" : "#5b1a3a");
+            burnBadgeText = Color.parseColor(dark ? "#ffe3f0" : "#ffd9ea");
+            cBg = Color.parseColor(dark ? "#80608cfa" : "#E07aa0f5"); cText = Color.parseColor(dark ? "#dbe7ff" : "#0f2562");
+            pBg = Color.parseColor(dark ? "#75f09664" : "#E6e4b096"); pText = Color.parseColor(dark ? "#ffe5d2" : "#5a2a12");
+            fBg = Color.parseColor(dark ? "#85a082fa" : "#E6a898f8"); fText = Color.parseColor(dark ? "#ece4ff" : "#2a1a6e");
+        } else if ("material".equals(themeStyle)) {
+            surface = Color.parseColor(dark ? "#211f26" : "#f7edf7");
+            divider = Color.TRANSPARENT;
+            inBg = Color.parseColor(dark ? "#2b4e37" : "#cfe7d3");
+            inText = Color.parseColor(dark ? "#cdebd4" : "#0f3a24");
+            inTrack = Color.parseColor(dark ? "#2Ecdebd4" : "#240f3a24");
+            inFill = Color.parseColor(dark ? "#cdebd4" : "#1e5a3a");
+            inBadgeBg = inFill; inBadgeText = Color.parseColor(dark ? "#143a24" : "#d7f2dd");
+            burnBg = Color.parseColor(dark ? "#5e2a34" : "#f0d4d6");
+            burnText = Color.parseColor(dark ? "#ffd9dd" : "#55151f");
+            burnTrack = Color.parseColor(dark ? "#2Effd9dd" : "#2955151f");
+            burnFill = Color.parseColor(dark ? "#ffd9dd" : "#8e2b3c");
+            burnBadgeBg = Color.parseColor(dark ? "#66000000" : "#8e2b3c");
+            burnBadgeText = Color.parseColor(dark ? "#ffd9dd" : "#ffffff");
+            cBg = Color.parseColor(dark ? "#2b4559" : "#d3e4ee"); cText = Color.parseColor(dark ? "#cfe5f7" : "#17364f");
+            pBg = Color.parseColor(dark ? "#54402a" : "#efdfcb"); pText = Color.parseColor(dark ? "#f3dfc4" : "#4f3213");
+            fBg = Color.parseColor(dark ? "#43385f" : "#e4ddf0"); fText = Color.parseColor(dark ? "#e8defb" : "#3b2d5e");
+        } else { // mono
+            int base = Color.parseColor(monoHue != null && monoHue.matches("^#[0-9a-fA-F]{6}$") ? monoHue : "#64748b");
+            surface = dark ? mixColor(Color.parseColor("#131926"), base, 0.2f) : Color.WHITE;
+            divider = dark ? mixColor(Color.parseColor("#334155"), base, 0.35f) : mixColor(Color.parseColor("#cbd5e1"), base, 0.35f);
+            inBg = dark ? mixColor(base, Color.WHITE, 0.28f) : mixColor(base, Color.parseColor("#090e17"), 0.32f);
+            inText = contrastText(inBg);
+            inTrack = inText == Color.WHITE ? Color.parseColor("#47ffffff") : Color.parseColor("#38090e17");
+            inFill = inText; inBadgeBg = inText; inBadgeText = inBg;
+            burnBg = dark ? mixColor(base, Color.parseColor("#090d16"), 0.05f) : mixColor(base, Color.parseColor("#090e17"), 0.08f);
+            burnText = contrastText(burnBg);
+            burnTrack = burnText == Color.WHITE ? Color.parseColor("#47ffffff") : Color.parseColor("#38090e17");
+            burnFill = burnText;
+            burnBadgeBg = dark ? Color.parseColor("#73000000") : Color.parseColor("#090e17");
+            burnBadgeText = Color.WHITE;
+            cBg = dark ? mixColor(Color.parseColor("#1a2233"), base, 0.24f) : mixColor(Color.WHITE, base, 0.16f);
+            cText = contrastText(cBg);
+            pBg = cBg; pText = cText; fBg = cBg; fText = cText;
+        }
+
+        // Use opaque rounded shapes in Dark mode before tinting so SRC_IN renders exact theme colours without alpha dimming.
+        float d = context.getResources().getDisplayMetrics().density;
+        int rootPad = Math.round((compact ? 4 : 8) * d);
+        if (dark) {
+            view.setInt(R.id.widget_root, "setBackgroundResource", R.drawable.widget_surface);
+            view.setViewPadding(R.id.widget_root, rootPad, rootPad, rootPad, rootPad);
+        }
+        tintCard(view, R.id.widget_root, surface, false, 0, 0);
+        int cardPadH = Math.round((compact ? 8 : 10) * d);
+        int cardPadV = Math.round((compact ? 4 : 8) * d);
+        tintCard(view, R.id.widget_intake_card, inBg, dark, cardPadH, cardPadV);
+        tintCard(view, R.id.widget_burned_card, burnBg, dark, cardPadH, cardPadV);
+        tintCard(view, R.id.widget_carbs_card, cBg, dark, Math.round(4 * d), Math.round(4 * d));
+        tintCard(view, R.id.widget_protein_card, pBg, dark, Math.round(4 * d), Math.round(4 * d));
+        tintCard(view, R.id.widget_fat_card, fBg, dark, Math.round(4 * d), Math.round(4 * d));
+        tintCard(view, R.id.widget_intake_net, inBadgeBg, false, 0, 0);
+        tintCard(view, R.id.widget_burned_net, burnBadgeBg, false, 0, 0);
+
+        view.setTextColor(R.id.widget_intake_value, inText);
+        view.setTextColor(R.id.widget_intake_net, inBadgeText);
+        view.setTextColor(R.id.widget_burned_value, burnText);
+        view.setTextColor(R.id.widget_burned_net, burnBadgeText);
+        view.setTextColor(R.id.widget_carbs_value, cText);
+        view.setTextColor(R.id.widget_protein_value, pText);
+        view.setTextColor(R.id.widget_fat_value, fText);
+
+        if (!compact) {
+            view.setInt(R.id.widget_intake_icon, "setColorFilter", inText);
+            view.setInt(R.id.widget_burned_icon, "setColorFilter", burnText);
+            view.setInt(R.id.widget_divider, "setBackgroundColor", divider);
+            view.setTextColor(R.id.widget_carbs_letter, cText);
+            view.setTextColor(R.id.widget_carbs_percent, cText);
+            view.setTextColor(R.id.widget_protein_letter, pText);
+            view.setTextColor(R.id.widget_protein_percent, pText);
+            view.setTextColor(R.id.widget_fat_letter, fText);
+            view.setTextColor(R.id.widget_fat_percent, fText);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                view.setColorStateList(R.id.widget_intake_bar, "setProgressTintList", ColorStateList.valueOf(inFill));
+                view.setColorStateList(R.id.widget_intake_bar, "setProgressBackgroundTintList", ColorStateList.valueOf(inTrack));
+                view.setColorStateList(R.id.widget_burned_bar, "setProgressTintList", ColorStateList.valueOf(burnFill));
+                view.setColorStateList(R.id.widget_burned_bar, "setProgressBackgroundTintList", ColorStateList.valueOf(burnTrack));
+            }
+        }
+    }
+
+    private static void tintCard(RemoteViews view, int viewId, int color, boolean swapOpaqueCard, int padH, int padV) {
+        if (swapOpaqueCard) {
+            view.setInt(viewId, "setBackgroundResource", R.drawable.widget_card_intake);
+            view.setViewPadding(viewId, padH, padV, padH, padV);
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            view.setColorStateList(viewId, "setBackgroundTintList", ColorStateList.valueOf(color));
+        } else {
+            view.setInt(viewId, "setBackgroundColor", color);
+        }
     }
 
     private static int mixColor(int c1, int c2, float weight) {

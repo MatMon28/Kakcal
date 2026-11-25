@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Stats, Period/Body icons, Big Widget & Styles Guide round:** Statistics cards (Poop, Water and Custom tracker stats, range pills, Poop/Weight/Net badges and daily energy bars), Period summary cards / header icons / calendar controls / dock actions, Body measurement icon badges, and the **Large & Medium widgets** (both browser gallery `.widget-large` and Android `JournalWidgetProvider.applyLargeTheme` with opaque dark-card swaps) now match all nine styles coherently (Minimal tints only header text & icons on neutral fields). Added [docs/styles-guide.md](docs/styles-guide.md) documenting all nine styles and their full requirements. See [docs/styles-guide.md](docs/styles-guide.md) and [docs/changes-patch.md](docs/changes-patch.md).
+
+### Previous update (Tinted trackers, Custom fields & themed controls round)
+
 **Tinted trackers, Custom fields & themed controls round:** Today's Movement, Water, Poop and Custom trackers (`[data-tracker]`) and all seven Custom sections (`[data-library-section]`) now carry Classic's colour identity across every non-Classic style in Light, Lite Dark and Dark (while meal cards stay neutral `--surface`): Angular, Aurora, Pop, Playful, Mono (single-hue stepped tones), Glass and Material tint the field coherently with their own style, whereas **Minimal** keeps the neutral hairline field and tints **only the header text and icons**. Settings icon badges and switches, Today calendar buttons / popover / date pickers, the Compact / Normal / Expanded switcher, and Meal planner / Shopping list buttons, chips, day grids and banners now follow the active theme's palette, radii, borders, chamfers and blur. Covered by `tests/themes.test.ts`. See [docs/style-audit.md](docs/style-audit.md) and [docs/changes-patch.md](docs/changes-patch.md).
 
 ### Previous update (Style consistency audit round)

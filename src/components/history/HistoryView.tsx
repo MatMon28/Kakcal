@@ -191,6 +191,7 @@ export const HistoryView: React.FC = () => {
           <div
             role="group"
             aria-label={t.stats.dateRange}
+            data-range-switch
             className="inline-flex w-fit max-w-full items-center justify-center gap-1 p-1 bg-[var(--surface)] border border-[var(--border)] rounded-full"
           >
               {([
@@ -208,6 +209,8 @@ export const HistoryView: React.FC = () => {
                   setRange(key);
                   setSelectedWeightIdx(null);
                 }}
+                data-range-btn
+                data-active={range === key ? 'true' : undefined}
                 className={`pressable px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap ${
                   range === key ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
@@ -321,7 +324,7 @@ export const HistoryView: React.FC = () => {
             </div>
           ));
   const poopNode = (
-          <div className={`kc-themed-card bg-[#FAE0B4] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
+          <div data-stats-tone="poop" className={`kc-themed-card bg-[#FAE0B4] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
             <div className="kc-custom-stat-header flex items-center justify-between text-[#7D4E14]">
               {ultraMinimal ? <span className="inline-flex items-center" title={t.poop.poopsInPeriod}><PoopIcon size={15} /><span className="sr-only">{t.poop.poopsInPeriod}</span></span> : <span className="text-sm font-extrabold">{t.poop.poopsInPeriod}</span>}
               <span className="text-sm font-extrabold tabular-nums">
@@ -365,7 +368,7 @@ export const HistoryView: React.FC = () => {
               if (button.type === 'toggle') {
                 const doneDays = values.filter((entry) => entry.value === true).length;
                 return (
-                  <div key={button.id} className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
+                  <div key={button.id} data-stats-tone="custom" className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
                     <div className="kc-custom-stat-header flex items-center justify-between text-[#6E5B14]">
                       <span className="flex items-center gap-2 text-sm font-extrabold" aria-label={button.name} title={button.name}>
                         <TrackerIcon icon={button.icon} size={15} /> <span className={ultraMinimal ? 'sr-only' : ''}>{button.name}</span>
@@ -397,7 +400,7 @@ export const HistoryView: React.FC = () => {
               const total = Math.round(numbers.reduce((sum, value) => sum + value, 0) * 10) / 10;
               const max = Math.max(1, ...numbers);
               return (
-                <div key={button.id} className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'relative p-3 pb-8' : 'p-4 sm:p-5'}`}>
+                <div key={button.id} data-stats-tone="custom" className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'relative p-3 pb-8' : 'p-4 sm:p-5'}`}>
                   <div className="kc-custom-stat-header flex items-center justify-between gap-2 text-[#6E5B14]">
                     <span className="flex items-center gap-2 text-sm font-extrabold" aria-label={button.name} title={button.name}>
                       <TrackerIcon icon={button.icon} size={15} /> <span className={ultraMinimal ? 'sr-only' : ''}>{button.name}</span>
@@ -451,7 +454,7 @@ export const HistoryView: React.FC = () => {
                 {wMin === wMax ? wMax.toFixed(1) : `${wMin.toFixed(1)} – ${wMax.toFixed(1)}`} kg
               </span>
               {wp.length >= 2 && wDelta !== 0 && (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
+                <span data-stat-pill="weight" className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
                   {wDelta > 0 ? `+${wDelta.toFixed(1)}` : wDelta.toFixed(1)}
                 </span>
               )}
@@ -558,14 +561,14 @@ export const HistoryView: React.FC = () => {
                               {formatDateDisplay(day.date, language)}
                             </span>
                             {!settings.hidePoop && day.poops.length > 0 && (
-                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]" title={t.quickAdd.poop}>
+                              <span data-stat-pill="poop" className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]" title={t.quickAdd.poop}>
                                 <PoopIcon size={12} />
                                 {day.poops.length > 1 && <span className="text-[10px] font-extrabold">×{day.poops.length}</span>}
                               </span>
                             )}
                           </div>
                           <div className="flex items-center gap-2 tabular-nums">
-                            <span className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${day.net > 0 ? 'bg-intake text-intake-ink' : 'bg-activity text-activity-ink'}`}>
+                            <span data-stat-pill={day.net > 0 ? 'intake' : 'burned'} className={`px-2 py-0.5 rounded-full text-xs font-extrabold ${day.net > 0 ? 'bg-intake text-intake-ink' : 'bg-activity text-activity-ink'}`}>
                               {day.net > 0 ? `+${day.net}` : day.net}{!ultraMinimal && ' kcal'}
                             </span>
                             <ChevronRight size={16} className="text-[var(--muted)] group-hover:translate-x-0.5 transition-transform" />
@@ -580,8 +583,8 @@ export const HistoryView: React.FC = () => {
                               </span>
                               <span className="font-extrabold text-[var(--text)]">{formatKcal(day.intake)}{!ultraMinimal && ' kcal'}</span>
                             </div>
-                            <div className="w-full bg-intake h-2 rounded-full overflow-hidden">
-                              <div className="h-full bg-intake-accent rounded-full" style={{ width: `${day.intake > 0 ? Math.max(4, inWidth) : 0}%` }} />
+                            <div data-stat-bar-track="intake" className="w-full bg-intake h-2 rounded-full overflow-hidden">
+                              <div data-stat-bar-fill="intake" className="h-full bg-intake-accent rounded-full" style={{ width: `${day.intake > 0 ? Math.max(4, inWidth) : 0}%` }} />
                             </div>
                           </div>
                           <div>
@@ -592,8 +595,8 @@ export const HistoryView: React.FC = () => {
                               </span>
                               <span className="font-extrabold text-[var(--text)]">{formatKcal(day.expenditure)}{!ultraMinimal && ' kcal'}</span>
                             </div>
-                            <div className="w-full bg-activity h-2 rounded-full overflow-hidden">
-                              <div className="h-full bg-activity-accent rounded-full" style={{ width: `${Math.max(4, outWidth)}%` }} />
+                            <div data-stat-bar-track="burned" className="w-full bg-activity h-2 rounded-full overflow-hidden">
+                              <div data-stat-bar-fill="burned" className="h-full bg-activity-accent rounded-full" style={{ width: `${Math.max(4, outWidth)}%` }} />
                             </div>
                           </div>
                         </div>

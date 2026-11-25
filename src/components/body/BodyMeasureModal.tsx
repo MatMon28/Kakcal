@@ -83,7 +83,7 @@ const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack:
       </button>
 
       <div className="flex items-center gap-3">
-        <span className="size-12 rounded-2xl bg-weight text-weight-ink flex items-center justify-center shrink-0">
+        <span data-body-icon className="size-12 rounded-2xl bg-weight text-weight-ink flex items-center justify-center shrink-0">
           <BodyPartIcon id={isDefaultMeasure(measure.id) ? measure.id : 'custom'} size={28} />
         </span>
         <div className="min-w-0">
@@ -136,7 +136,7 @@ const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack:
         type="button"
         onClick={save}
         disabled={!(value > 0)}
-        className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-50"
+        className="kc-primary-btn pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm disabled:opacity-50"
       >
         <Check size={18} strokeWidth={2.5} />
         <span>{text.body.save}</span>
@@ -215,7 +215,7 @@ export const BodyMeasureModal: React.FC<{ group: BodyGroup | null; onClose: () =
                 onClick={() => { setSelectedId(m.id); setSavedId(null); }}
                 className="pressable relative flex flex-col items-center gap-1.5 rounded-2xl border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] px-2 py-3.5 text-center"
               >
-                <span className="size-12 rounded-2xl bg-weight text-weight-ink flex items-center justify-center">
+                <span data-body-icon className="size-12 rounded-2xl bg-weight text-weight-ink flex items-center justify-center">
                   <BodyPartIcon id={isDefaultMeasure(m.id) ? m.id : 'custom'} size={28} />
                 </span>
                 <span className="text-xs font-extrabold text-[var(--text)] max-w-full truncate">{m.name}</span>

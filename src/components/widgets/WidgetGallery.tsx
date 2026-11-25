@@ -183,7 +183,7 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
   const percent = (value: number) => (snapshot ? `${Math.round(value)}` : '--');
 
   return (
-    <div role="group" aria-label={compact ? ui.widgetLabels.medium : ui.widgetLabels.large} className={`rounded-[26px] border p-2.5 ${look.style === 'dark' ? 'widget-large-dark border-white/20 text-white' : 'border-[var(--border)] bg-[var(--surface)]'}`}>
+    <div role="group" aria-label={compact ? ui.widgetLabels.medium : ui.widgetLabels.large} className={`widget-large rounded-[26px] border p-2.5 ${look.style === 'dark' ? 'widget-large-dark border-white/20 text-white' : 'border-[var(--border)] bg-[var(--surface)]'}`}>
       <div className="grid grid-cols-2 gap-2">
         <EnergyCard
           tone="intake"
@@ -207,7 +207,7 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
         <MacroCard compact={compact} tone="protein" label={ui.protein} grams={grams(snapshot?.proteinGrams ?? 0)} letter={compact ? undefined : letters[1]} percent={compact ? null : percent(snapshot?.proteinPercent ?? 0)} />
         <MacroCard compact={compact} tone="fat" label={ui.fat} grams={grams(snapshot?.fatGrams ?? 0)} letter={compact ? undefined : letters[2]} percent={compact ? null : percent(snapshot?.fatPercent ?? 0)} />
       </div>
-      <div className={`mt-2.5 border-t pt-2.5 ${look.style === 'dark' ? 'border-white/20' : 'border-[var(--border)]'}`}>
+      <div className={`widget-large-divider mt-2.5 border-t pt-2.5 ${look.style === 'dark' ? 'border-white/20' : 'border-[var(--border)]'}`}>
         <ActionRow
           actions={look.customButton ? WIDGET_ACTIONS : BASE_WIDGET_ACTIONS}
           label={compact ? ui.widgetLabels.medium : ui.widgetLabels.large}

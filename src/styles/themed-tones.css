@@ -3,15 +3,15 @@
    Angular, Aurora, Pop, Playful, Mono, Glass and Material tint the field via --tone / --tone-in / --tone-pale so nested cards
    and controls follow automatically. Minimal keeps the neutral --surface field and tints ONLY the header text and icons via
    --tone-ink-<name>, preserving its crisp hairline-slate aesthetic. */
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-yellow"], [data-tracker="custom"]) { --tone: var(--tone-diary); --tone-in: var(--tone-diary-in); }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="meals"], [data-tracker="poop"]) { --tone: var(--tone-meals); --tone-in: var(--tone-meals-in); }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-library-section="recipes"] { --tone: var(--tone-recipes); --tone-in: var(--tone-recipes-in); }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-blue"], [data-tracker="water"]) { --tone: var(--tone-planner); --tone-in: var(--tone-planner-in); }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-red"], [data-tracker="activity"]) { --tone: var(--tone-photo); --tone-in: var(--tone-photo-in); }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-library-section="foods"] { --tone: var(--tone-foods); --tone-in: var(--tone-foods-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-yellow"], [data-tracker="custom"], [data-stats-tone="custom"]) { --tone: var(--tone-diary); --tone-in: var(--tone-diary-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="meals"], [data-tracker="poop"], [data-stats-tone="poop"], [data-period-card="next"]) { --tone: var(--tone-meals); --tone-in: var(--tone-meals-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="recipes"], [data-period-card="phase"]) { --tone: var(--tone-recipes); --tone-in: var(--tone-recipes-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-blue"], [data-tracker="water"], [data-water-stats]) { --tone: var(--tone-planner); --tone-in: var(--tone-planner-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-red"], [data-tracker="activity"], [data-period-card="cycle"], [data-period-card="empty"]) { --tone: var(--tone-photo); --tone-in: var(--tone-photo-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="foods"], [data-period-card="ovulation"]) { --tone: var(--tone-foods); --tone-in: var(--tone-foods-in); }
 html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-library-section="journal-teal"] { --tone: var(--tone-teal); --tone-in: var(--tone-teal-in); }
 
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section], [data-tracker]) {
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section], [data-tracker], [data-stats-tone], [data-water-stats], [data-period-card]) {
   background: var(--tone) !important;
   --inset: var(--tone-in);
   --surface: color-mix(in srgb, var(--tone-in, transparent) 38%, var(--tone-pale, transparent));
@@ -24,17 +24,23 @@ html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-t
 }
 
 /* Minimal: keep the whole field neutral --surface and colour ONLY the header text and icons. */
-html[data-style="minimal"] :is([data-library-section="journal-yellow"], [data-tracker="custom"]) { --tone-ink: var(--tone-ink-diary); }
-html[data-style="minimal"] :is([data-library-section="meals"], [data-tracker="poop"]) { --tone-ink: var(--tone-ink-meals); }
-html[data-style="minimal"] [data-library-section="recipes"] { --tone-ink: var(--tone-ink-recipes); }
-html[data-style="minimal"] :is([data-library-section="journal-blue"], [data-tracker="water"]) { --tone-ink: var(--tone-ink-planner); }
-html[data-style="minimal"] :is([data-library-section="journal-red"], [data-tracker="activity"]) { --tone-ink: var(--tone-ink-photo); }
-html[data-style="minimal"] [data-library-section="foods"] { --tone-ink: var(--tone-ink-foods); }
+html[data-style="minimal"] :is([data-library-section="journal-yellow"], [data-tracker="custom"], [data-stats-tone="custom"]) { --tone-ink: var(--tone-ink-diary); }
+html[data-style="minimal"] :is([data-library-section="meals"], [data-tracker="poop"], [data-stats-tone="poop"], [data-period-card="next"]) { --tone-ink: var(--tone-ink-meals); }
+html[data-style="minimal"] :is([data-library-section="recipes"], [data-period-card="phase"]) { --tone-ink: var(--tone-ink-recipes); }
+html[data-style="minimal"] :is([data-library-section="journal-blue"], [data-tracker="water"], [data-water-stats]) { --tone-ink: var(--tone-ink-planner); }
+html[data-style="minimal"] :is([data-library-section="journal-red"], [data-tracker="activity"], [data-period-card="cycle"], [data-period-card="empty"]) { --tone-ink: var(--tone-ink-photo); }
+html[data-style="minimal"] :is([data-library-section="foods"], [data-period-card="ovulation"]) { --tone-ink: var(--tone-ink-foods); }
 html[data-style="minimal"] [data-library-section="journal-teal"] { --tone-ink: var(--tone-ink-teal); }
 
 html[data-style="minimal"] [data-tracker] :is(.kc-tracker-icon, h4, [data-tracker-headline], > [role="button"] button) {
   color: var(--tone-ink) !important;
 }
 html[data-style="minimal"] [data-library-section] [data-library-header] :is(h2, svg, button) {
+  color: var(--tone-ink) !important;
+}
+html[data-style="minimal"] :is([data-stats-tone], [data-water-stats]) .kc-custom-stat-header {
+  color: var(--tone-ink) !important;
+}
+html[data-style="minimal"] [data-period-card] [data-period-value] {
   color: var(--tone-ink) !important;
 }

@@ -164,6 +164,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
         <button
           type="button"
           onClick={prevMonth}
+          data-cal-month-nav
           className="pressable w-10 h-10 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center shrink-0"
           aria-label="Previous month"
         >
@@ -184,6 +185,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
         <button
           type="button"
           onClick={nextMonth}
+          data-cal-month-nav
           className="pressable w-10 h-10 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center shrink-0"
           aria-label="Next month"
         >

@@ -89,7 +89,7 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
     return `${side ? `${sideName(side)} · ` : ''}${text.body.pointLabel.replace('{date}', formatDateDisplay(e.date, language)).replace('{value}', `${e.value} ${unit}`)}`;
   };
   const deltaChip = (delta: number) => delta !== 0 && (
-    <span title={text.body.change} className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
+    <span data-stat-pill="weight" title={text.body.change} className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
       {delta > 0 ? `+${delta}` : delta}
     </span>
   );
@@ -98,7 +98,7 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
     <section aria-label={name} className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5" data-measure={id}>
       <div className="flex items-center justify-between gap-2">
         <span className="flex items-center gap-2.5 min-w-0">
-          <span className="size-9 rounded-2xl bg-weight text-weight-ink flex items-center justify-center shrink-0">
+          <span data-body-icon className="size-9 rounded-2xl bg-weight text-weight-ink flex items-center justify-center shrink-0">
             <BodyPartIcon id={isDefaultMeasure(id) ? id : 'custom'} size={22} />
           </span>
           <span className={`text-sm font-extrabold text-[var(--text)] truncate ${ultra ? 'sr-only' : ''}`}>{name}</span>
@@ -219,6 +219,7 @@ export const BodyView: React.FC = () => {
         <div
           role="group"
           aria-label={text.body.range}
+          data-range-switch
           className="inline-flex w-fit max-w-full items-center justify-center gap-1 p-1 bg-[var(--surface)] border border-[var(--border)] rounded-full"
         >
           {ranges.map(([key, short, long]) => (
@@ -229,6 +230,8 @@ export const BodyView: React.FC = () => {
               aria-label={long}
               title={long}
               onClick={() => setRange(key)}
+              data-range-btn
+              data-active={range === key ? 'true' : undefined}
               className={`pressable px-3.5 py-1.5 rounded-full text-xs font-extrabold whitespace-nowrap ${
                 range === key ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
               }`}
@@ -282,7 +285,7 @@ export const BodyView: React.FC = () => {
 
       {measures.length === 0 ? (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-6 text-center space-y-3">
-          <span className="mx-auto size-12 rounded-2xl bg-weight text-weight-ink flex items-center justify-center">
+          <span data-body-icon className="mx-auto size-12 rounded-2xl bg-weight text-weight-ink flex items-center justify-center">
             <Ruler size={22} />
           </span>
           <div className="text-sm font-extrabold text-[var(--text)]">{text.body.noTrackedTitle}</div>
@@ -290,7 +293,7 @@ export const BodyView: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsProfileOpen(true)}
-            className="pressable inline-flex items-center gap-1.5 rounded-2xl bg-[#E2D6FF] text-[#49346F] px-4 py-2.5 text-xs font-extrabold"
+            className="kc-primary-btn pressable inline-flex items-center gap-1.5 rounded-2xl bg-[#E2D6FF] text-[#49346F] px-4 py-2.5 text-xs font-extrabold"
           >
             <User size={14} />
             <span>{text.settings.openProfile}</span>
