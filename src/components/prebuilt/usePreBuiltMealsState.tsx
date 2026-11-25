@@ -1,9 +1,19 @@
 import { useDeferredValue, useEffect, useState, useMemo } from 'react';
 import { useApp, useNavActions } from '../../context/AppContext';
-import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem } from '../../types';
+import { MealSlotId, PreBuiltMeal, PreBuiltMealIngredient, FoodItem, FoodSource } from '../../types';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
+import { searchCatalogue } from '../../utils/catalogueSearch';
+import {
+  importRecipeFromUrl,
+  draftToRecipeIngredients,
+  RecipeImportError,
+  type FetchVia,
+  type ImportStage,
+  type ImportWarning,
+  type RecipeImportErrorCode,
+} from '../../utils/recipeImport';
 import { catalogueScore } from '../../data/offCatalog';
 import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
@@ -11,6 +21,34 @@ import { Search, X } from 'lucide-react';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { useJournalText } from '../../i18n/journal';
 import { useCustomDockActions } from '../journal/CustomShortcuts';
+
+/** A failed import, as the modal shows it: a code to translate (when we have a translation) plus the
+ * English message and the suggested next step from `recipeImport.ts`. */
+export interface ImportErrorInfo {
+  code: RecipeImportErrorCode;
+  message: string;
+  hint: string;
+}
+
+/** What the "imported from …" banner in the recipe builder shows. Null for a manually built recipe. */
+export interface ImportSummary {
+  source?: string;
+  via: FetchVia;
+  servings: number | null;
+  portion: number;
+  portionSource: 'servings' | 'default';
+  coverage: number;
+  matched: number;
+  total: number;
+  totalGrams: number;
+  caloriesPer100: number;
+  unmatched: Array<{ raw: string; query: string; grams: number | null; food: FoodItem | null }>;
+  /** "Sale q.b.", "a pinch of pepper": not counted, one tap to add them. */
+  seasonings: Array<{ raw: string; query: string; food: FoodItem | null; grams: number | null }>;
+  lowConfidence: Array<{ index: number; foodId: string; confidence: 'high' | 'medium' | 'low' | null; raw: string }>;
+  instructions: number;
+  warnings: ImportWarning[];
+}
 
 /** All state, derived lists and handlers of the Custom page (Meals / Recipes / Foods). Rendered by `PreBuiltMealsView.tsx`. */
 export function usePreBuiltMealsState() {
@@ -277,6 +315,123 @@ export function usePreBuiltMealsState() {
       .filter((f): f is FoodItem => Boolean(f) && matchesFirstChar(f as FoodItem, q));
   };
 
+  // ---- Import a recipe from a link ---------------------------------------------------------
+  // The import never saves anything: it fills the recipe builder, which the user checks and saves
+  // with the normal saveRecipe below. `importSummary` drives the "imported from …" banner there.
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState('');
+  const [importBusy, setImportBusy] = useState(false);
+  const [importStage, setImportStage] = useState<ImportStage | null>(null);
+  const [importError, setImportError] = useState<ImportErrorInfo | null>(null);
+  const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
+  // Provenance of an imported recipe, saved into FoodItem.source on save.
+  const [recipeSource, setRecipeSource] = useState<FoodSource | undefined>(undefined);
+
+  const openImportModal = () => {
+    setImportUrl('');
+    setImportError(null);
+    setImportStage(null);
+    setImportStage(null);
+    setIsImportOpen(true);
+  };
+
+  const closeImportModal = () => {
+    setIsImportOpen(false);
+    setImportStage(null);
+  };
+
+  const runImport = async () => {
+    if (importBusy) return;
+    setImportBusy(true);
+    setImportError(null);
+    setImportStage('fetching');
+    try {
+      const result = await importRecipeFromUrl(importUrl, {
+        localFoods: allFoods,
+        search: searchCatalogue,
+        onStage: (stage) => setImportStage(stage),
+      });
+      const { draft } = result;
+      // A product found in the offline catalogue is only usable as a recipe ingredient once it is
+      // in `allFoods` (that is what the recipe totals read), which is exactly what tapping a search
+      // result does — so the import remembers them the same way.
+      for (const item of draft.items) rememberFood(item.food);
+      // Hand the draft to the existing builder: same editing tools, same save path as a manual recipe.
+      setEditingRecipeId(null);
+      setRecipeName(draft.name);
+      setRecipeIngs(draftToRecipeIngredients(draft));
+      setRecipePortion(draft.portion);
+      setRecipeSource(draft.source);
+      setRecipeSearch('');
+      setRecipePendingFood(null);
+      setImportSummary({
+        source: draft.source?.label,
+        via: result.via,
+        servings: draft.servings,
+        portion: draft.portion,
+        portionSource: draft.portionSource,
+        coverage: draft.coverage,
+        matched: draft.items.length,
+        total: draft.items.length + draft.unmatched.length,
+        totalGrams: draft.totalGrams,
+        caloriesPer100: draft.nutritionPer100.calories,
+        unmatched: draft.unmatched,
+        seasonings: draft.seasonings,
+        warnings: draft.warnings,
+        lowConfidence: draft.items
+          .map((item, index) => ({ index, foodId: item.food.id, confidence: item.confidence, raw: item.raw }))
+          .filter((entry) => entry.confidence !== 'high'),
+        instructions: draft.instructions.length,
+      });
+      setIsImportOpen(false);
+      setIsRecipeOpen(true);
+    } catch (error) {
+      setImportError(
+        error instanceof RecipeImportError
+          ? { code: error.code, message: error.message, hint: error.hint }
+          : {
+              code: 'unknown',
+              message: 'Could not import this page.',
+              hint: 'Check the link and your connection, then try again.',
+            },
+      );
+    } finally {
+      setImportBusy(false);
+      setImportStage(null);
+    }
+  };
+
+  /**
+   * "Sale q.b." is a seasoning, not an ingredient: it is kept out of the totals, and one tap adds it
+   * with the pinch the page implied (1 g when the page gave nothing at all).
+   */
+  const addSeasoning = (index: number) => {
+    const entry = importSummary?.seasonings[index];
+    if (!entry) return;
+    if (entry.food) {
+      const food = entry.food;
+      rememberFood(food);
+      const amount = entry.grams && entry.grams > 0 ? entry.grams : 1;
+      setRecipeIngs((prev) => [...prev, { foodId: food.id, amount }]);
+    } else {
+      setRecipeSearch(entry.query); // no product known: let the user pick one
+    }
+    setImportSummary((prev) =>
+      prev ? { ...prev, seasonings: prev.seasonings.filter((_, i) => i !== index) } : prev,
+    );
+  };
+
+  /** Fix one unmatched line by hand: prefill the ingredient search with what the page said. */
+  const searchUnmatched = (query: string, index: number) => {
+    setRecipeSearch(query);
+    setImportSummary((prev) => (prev ? { ...prev, unmatched: prev.unmatched.filter((_, i) => i !== index) } : prev));
+  };
+
+  const clearImportSummary = () => {
+    setImportSummary(null);
+    setRecipeSource(undefined);
+  };
+
   const recipeTotals = useMemo(() => {
     let g = 0, kcal = 0, c = 0, p = 0, f = 0, fib = 0, salt = 0, sugar = 0;
     for (const ing of recipeIngs) {
@@ -312,6 +467,8 @@ export function usePreBuiltMealsState() {
     setRecipeIngs([]);
     setRecipePendingFood(null);
     setRecipeSearch('');
+    setImportSummary(null);
+    setRecipeSource(undefined);
     setIsRecipeOpen(true);
   };
 
@@ -319,6 +476,8 @@ export function usePreBuiltMealsState() {
     setIsRecipeOpen(false);
     setRecipePendingFood(null);
     setEditingRecipeId(null);
+    setImportSummary(null);
+    setRecipeSource(undefined);
   };
 
   const openEditRecipeModal = (recipe: FoodItem) => {
@@ -328,6 +487,8 @@ export function usePreBuiltMealsState() {
     setRecipeIngs(recipe.recipeIngredients ? [...recipe.recipeIngredients] : []);
     setRecipePendingFood(null);
     setRecipeSearch('');
+    setImportSummary(null);
+    setRecipeSource(recipe.source);
     setIsRecipeOpen(true);
   };
 
@@ -358,7 +519,7 @@ export function usePreBuiltMealsState() {
       isRecipe: true,
       recipeIngredients: validIngs,
       portion: recipePortion > 0 ? Math.round(recipePortion * 10) / 10 : undefined,
-      source: existing?.source,
+      source: recipeSource ?? existing?.source,
     };
     addCustomFood(payload); // upsert by id: keeps an edited recipe's identity
     closeRecipeModal();
@@ -514,6 +675,19 @@ export function usePreBuiltMealsState() {
     closeRecipeModal,
     openEditRecipeModal,
     saveRecipe,
+    isImportOpen,
+    openImportModal,
+    closeImportModal,
+    importUrl,
+    setImportUrl,
+    importBusy,
+    importStage,
+    importError,
+    runImport,
+    importSummary,
+    clearImportSummary,
+    searchUnmatched,
+    addSeasoning,
     pendingKcal,
     mealResults,
     recipeListResults,

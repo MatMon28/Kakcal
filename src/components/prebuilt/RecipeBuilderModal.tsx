@@ -4,7 +4,7 @@ import { AmountSelector } from '../common/AmountSelector';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { FoodResultRow } from '../common/FoodResultRow';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
-import { Plus, Trash2, Check, ArrowLeft } from 'lucide-react';
+import { Plus, Trash2, Check, ArrowLeft, Link2, X, Search, AlertTriangle, Info, Sparkles } from 'lucide-react';
 import { MacroPills } from '../common/MacroPills';
 import { NumericInput } from '../common/NumericInput';
 import { scrollFadeY } from '../../utils/scrollFade';
@@ -16,7 +16,7 @@ export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
     setRecipeName, recipeIngs, setRecipeIngs, recipePendingFood, setRecipePendingFood,
     recipePendingAmt, setRecipePendingAmt, recipeSearch, setRecipeSearch, recipePortion,
     setRecipePortion, nameOf, recipeResults, favoriteOneChar, recipeTotals, closeRecipeModal,
-    saveRecipe, searchInput,
+    saveRecipe, searchInput, importSummary, clearImportSummary, searchUnmatched, addSeasoning,
   } = s;
   return (
     <>
@@ -84,6 +84,135 @@ export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
               placeholder={t.prebuilt.recipeNamePlaceholder}
               className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
             />
+
+
+            {/* Imported from a link: what was read, what was matched, and the lines still to fix. */}
+            {importSummary && (
+              <div data-recipe-import className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <span className="min-w-0 flex items-center gap-1.5">
+                    <Link2 size={13} className="shrink-0 text-[var(--muted)]" />
+                    <span className="min-w-0">
+                      <span className="block text-[11px] font-extrabold text-[var(--text)] truncate">
+                        {j('Imported recipe', 'Ricetta importata')}{importSummary.source ? ` · ${importSummary.source}` : ''}
+                      </span>
+                      <span className="block text-[10px] font-medium text-[var(--muted)] tabular-nums">
+                        {importSummary.total > 0
+                          ? j(
+                              `${importSummary.matched} of ${importSummary.total} ingredients matched · ${Math.round(importSummary.coverage * 100)}% of the weight`,
+                              `${importSummary.matched} di ${importSummary.total} ingredienti abbinati · ${Math.round(importSummary.coverage * 100)}% del peso`,
+                            )
+                          : j('No ingredients matched yet', 'Nessun ingrediente abbinato')}
+                      </span>
+                      <span className="block text-[10px] font-medium text-[var(--muted)] tabular-nums">
+                        {importSummary.portionSource === 'servings'
+                          ? j(
+                              `Portion ${importSummary.portion} g computed from ${importSummary.servings} servings`,
+                              `Porzione ${importSummary.portion} g calcolata da ${importSummary.servings} porzioni`,
+                            )
+                          : j('No servings on the page: portion set to 100 g', 'Nessuna porzione nella pagina: porzione a 100 g')}
+                      </span>
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={clearImportSummary}
+                    className="pressable shrink-0 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center"
+                    aria-label={j('Hide import notes', 'Nascondi le note di importazione')}
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+
+                {importSummary.warnings.filter((w) => w === 'no-matches' || w === 'few-matches').map((warning) => (
+                  <p key={warning} className="flex items-start gap-1.5 text-[10px] font-bold leading-relaxed text-[#8C5A16]">
+                    <AlertTriangle size={11} className="shrink-0 mt-0.5" />
+                    <span>
+                      {warning === 'no-matches'
+                        ? j(
+                            'None of the ingredients was found, so this recipe has no nutrition yet. Search for them below.',
+                            'Nessun ingrediente è stato trovato: la ricetta non ha ancora valori nutrizionali. Cercali qui sotto.',
+                          )
+                        : j(
+                            'Only part of the recipe was matched — check the amounts and the products below.',
+                            'Solo una parte della ricetta è stata abbinata — controlla gli importi e i prodotti qui sotto.',
+                          )}
+                    </span>
+                  </p>
+                ))}
+
+                {importSummary.warnings.includes('multiple-recipes') && (
+                  <p className="flex items-start gap-1.5 text-[10px] font-medium leading-relaxed text-[var(--muted)]">
+                    <Info size={11} className="shrink-0 mt-0.5" />
+                    <span>
+                      {j(
+                        'The page lists more than one recipe: the first one was imported.',
+                        'La pagina contiene più di una ricetta: è stata importata la prima.',
+                      )}
+                    </span>
+                  </p>
+                )}
+
+                {importSummary.warnings.includes('duplicates') && (
+                  <p className="flex items-start gap-1.5 text-[10px] font-medium leading-relaxed text-[var(--muted)]">
+                    <Info size={11} className="shrink-0 mt-0.5" />
+                    <span>
+                      {j('Ingredient lines listed twice were removed.', 'Le righe di ingredienti ripetute due volte sono state rimosse.')}
+                    </span>
+                  </p>
+                )}
+
+                {/* "Sale q.b.", "a pinch of pepper": real lines, no real amount. Kept out of the
+                    totals so they cannot distort them, and one tap away when the user wants them. */}
+                {importSummary.seasonings.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-1 text-[10px] font-extrabold text-[var(--muted)]">
+                      <Sparkles size={11} className="shrink-0" />
+                      {j('To taste — not counted. Tap to add:', 'Quanto basta — non conteggiati. Tocca per aggiungere:')}
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {importSummary.seasonings.map((line, idx) => (
+                        <button
+                          key={`${line.query}-${idx}`}
+                          type="button"
+                          onClick={() => addSeasoning(idx)}
+                          className="pressable inline-flex items-center gap-1 max-w-full rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] px-2 py-1 text-[10px] font-bold text-[var(--text)]"
+                          title={line.raw}
+                        >
+                          <Plus size={10} className="shrink-0" />
+                          <span className="truncate">{line.query}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {importSummary.unmatched.length > 0 && (
+                  <div className="space-y-1">
+                    <p className="flex items-center gap-1 text-[10px] font-extrabold text-[#8C5A16]">
+                      <AlertTriangle size={11} className="shrink-0" />
+                      {j('Not found in your foods — tap to search and add:', 'Non trovati nei tuoi alimenti — tocca per cercare e aggiungere:')}
+                    </p>
+                    <div className="space-y-1">
+                      {importSummary.unmatched.map((line, idx) => (
+                        <button
+                          key={`${line.query}-${idx}`}
+                          type="button"
+                          onClick={() => searchUnmatched(line.query, idx)}
+                          className="pressable w-full text-left px-2 py-1 rounded-lg bg-[var(--surface)] hover:bg-[var(--hover)] flex items-center justify-between gap-2"
+                        >
+                          <span className="min-w-0 text-[10px] font-bold text-[var(--text)] truncate">{line.raw}</span>
+                          <span className="shrink-0 flex items-center gap-1 text-[10px] font-extrabold text-[var(--muted)]">
+                            <Search size={11} />
+                            {j('Search', 'Cerca')}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Ingredient search — same behaviour as Add Food (favourites first and starred). Placed ABOVE the ingredients already in the recipe. */}
             <div className="space-y-2">
@@ -211,6 +340,15 @@ export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
                         >
                           {food ? nameOf(food) : ing.foodId} ({ing.amount}
                           {food?.unit || 'g'})
+                          {importSummary?.lowConfidence.some((w) => w.foodId === ing.foodId) && (
+                            <span
+                              className="ml-1 inline-flex items-center gap-0.5 rounded-full bg-[#FAE0B4] px-1.5 py-0.5 text-[9px] font-extrabold text-[#7D4E14] align-middle"
+                              title={j('Check this match', 'Controlla questo abbinamento')}
+                            >
+                              <AlertTriangle size={9} />
+                              {j('check', 'controlla')}
+                            </span>
+                          )}
                         </button>
                         {food && (
                           <span className="ml-auto flex items-center gap-1.5 shrink-0 tabular-nums">

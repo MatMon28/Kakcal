@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionDock } from '../common/ActionDock';
-import { UtensilsCrossed, Plus, Search, ChefHat as ChefHatIcon, BookOpen, ScanBarcode } from 'lucide-react';
+import { UtensilsCrossed, Plus, Search, ChefHat as ChefHatIcon, BookOpen, ScanBarcode, Link2 } from 'lucide-react';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { MealDiary } from '../journal/MealDiary';
 import { MealPlanner } from '../journal/MealPlanner';
@@ -13,6 +13,7 @@ import { RecipesSection } from './RecipesSection';
 import { LogMealToSlotModal, LogRecipeToSlotModal } from './LogToSlotModals';
 import { CreateMealModal } from './CreateMealModal';
 import { RecipeBuilderModal } from './RecipeBuilderModal';
+import { RecipeImportModal } from './RecipeImportModal';
 import { LazyBody } from '../common/LazyBody';
 import { usePreBuiltMealsState } from './usePreBuiltMealsState';
 import { useApp } from '../../context/AppContext';
@@ -24,7 +25,7 @@ export const PreBuiltMealsView: React.FC = () => {
   const {
     deleteCustomFood, deletePreBuiltMeal, setTargetMealSlot, setActiveTab, t, autoMealSlot,
     journalDockActions, openBarcode, openCustomFood, ultraMinimal, sectionsOpen, toggleSection,
-    pendingDelete, setPendingDelete, openNewMealModal, openRecipeModal,
+    pendingDelete, setPendingDelete, openNewMealModal, openRecipeModal, openImportModal, j,
   } = s;
   // Settings > Custom page: hidden sections and hidden creation buttons (the Plan / Photo buttons are in journalDockActions).
   const { settings } = useApp();
@@ -32,6 +33,7 @@ export const PreBuiltMealsView: React.FC = () => {
   const dockActions: DockAction[] = [
     ...(settings.hideCustomButtons.meal ? [] : [{ id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: openNewMealModal }]),
     ...(settings.hideCustomButtons.recipe ? [] : [{ id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openRecipeModal }]),
+    ...(settings.hideCustomButtons.recipe ? [] : [{ id: 'recipe-import', icon: <Link2 size={20} />, label: j('Import recipe', 'Importa ricetta'), tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openImportModal }]),
     ...(settings.hideCustomButtons.food ? [] : [{ id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: openCustomFood }]),
     ...journalDockActions,
   ];
@@ -136,6 +138,7 @@ export const PreBuiltMealsView: React.FC = () => {
       <CreateMealModal s={s} />
 
       <RecipeBuilderModal s={s} />
+      <RecipeImportModal s={s} />
     </div>
     </>
   );
