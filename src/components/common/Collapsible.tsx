@@ -40,6 +40,7 @@ export function Collapsible({ title, children, defaultOpen = false, open: contro
           {icon && (
             <span
               aria-hidden="true"
+              data-settings-badge
               className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone ?? 'bg-[var(--surface)] text-[var(--text)]'}`}
             >
               {icon}

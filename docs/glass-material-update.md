@@ -39,9 +39,9 @@
 * Font: `Roboto, 'Google Sans', 'Plus Jakarta Sans Variable', system-ui` (Android has Roboto; elsewhere the bundled Plus Jakarta Sans is used, so **no font file or package was added**).
 * Nested cards lose their 1 px `--border` (`themed-material.css`, last rule).
 
-## Tinted Custom sections (`themed-tones.css`)
+## Tinted Today trackers and Custom sections (`themed-tones.css`)
 
-Classic paints each Custom section with its own pastel inside the component; the other styles use the neutral `--surface`. For Glass and Material each `[data-library-section]` gets `--tone` / `--tone-in` from its name (`journal-yellow` = Meal diary, `meals`, `recipes`, `journal-blue` = Meal planner, `journal-red` = Photo diary, `foods`, `journal-teal` = Shopping list) and redefines `--inset`, `--surface` and `--hover` **locally**, so everything inside (saved meal cards, ingredient lists, food buttons, search fields, plan rows) follows without per-component CSS. To add a section tone: one line in `themed-tones.css` and the `--tone-<name>` / `--tone-<name>-in` pair in the six mode blocks (the test checks the pairs).
+Classic paints each Today tracker (Movement, Water, Poop, Custom) and each Custom section with its own pastel while keeping meal cards neutral `--surface`. `themed-tones.css` applies the same local `--tone` / `--tone-in` mechanism across Angular, Aurora, Pop, Playful, Mono, Glass and Material for both `[data-tracker]` and `[data-library-section]`, while **Minimal** keeps neutral `--surface` fields and tints only the header text and icons via `--tone-ink-*`.
 
 ## Adding another style
 

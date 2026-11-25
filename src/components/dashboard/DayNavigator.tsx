@@ -158,6 +158,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
     <div className="flex items-center justify-center gap-1.5 flex-wrap touch-pan-y select-none min-w-0 flex-1" data-no-swipe data-day-swipe {...swipeHandlers}>
       <button
         type="button"
+        data-cal-nav
         onClick={() => setSelectedDate(addDaysToDateString(selectedDate, -1))}
         className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
         aria-label="Previous day"
@@ -168,6 +169,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
       <div className="relative">
         <button
           type="button"
+          data-cal-trigger
           onClick={openCalendar}
           aria-expanded={calOpen}
           title={dateLabel}
@@ -201,10 +203,11 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
         {calOpen && (
           <>
             <div className="fixed inset-0 z-40" onClick={() => setCalOpen(false)} />
-            <div className="anim-pop absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-72 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 shadow-xl shadow-black/15">
+            <div data-cal-popover className="anim-pop absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 w-72 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 shadow-xl shadow-black/15">
               <div className="flex items-center justify-between mb-3">
                 <button
                   type="button"
+                  data-cal-month-nav
                   onClick={prevMonth}
                   className="pressable w-8 h-8 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
                   aria-label="Previous month"
@@ -216,6 +219,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
                 </span>
                 <button
                   type="button"
+                  data-cal-month-nav
                   onClick={nextMonth}
                   className="pressable w-8 h-8 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
                   aria-label="Next month"
@@ -240,6 +244,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
                     <button
                       key={i}
                       type="button"
+                      data-cal-day={isSel ? 'selected' : isTodayCell ? 'today' : 'default'}
                       onClick={() => pickDay(day)}
                       className={`pressable relative w-9 h-9 rounded-full text-xs font-bold tabular-nums flex items-center justify-center ${
                         isSel
@@ -252,9 +257,10 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
                       {day}
                       {logged && (
                         <span
+                          data-cal-dot
                           className={`absolute bottom-1 w-1 h-1 rounded-full ${
                             isSel
-                              ? 'bg-[var(--surface)]'
+                              ? 'bg-[var(--on-text)]'
                               : isTodayCell
                               ? 'bg-[#1D5C38]'
                               : 'bg-[var(--muted)]'
@@ -269,6 +275,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
               {!isToday && (
                 <button
                   type="button"
+                  data-cal-today-btn
                   onClick={() => {
                     setSelectedDate(todayStr);
                     setCalOpen(false);
@@ -288,6 +295,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
 
       <button
         type="button"
+        data-cal-nav
         onClick={() => setSelectedDate(addDaysToDateString(selectedDate, 1))}
         className="pressable w-9 h-9 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
         aria-label="Next day"
@@ -298,6 +306,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
       {!isToday && (
         <button
           type="button"
+          data-cal-today-btn
           onClick={() => setSelectedDate(todayStr)}
           title={t.header.todayReturn}
           aria-label={t.header.todayReturn}

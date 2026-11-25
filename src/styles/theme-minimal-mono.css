@@ -69,6 +69,15 @@ html[data-style="minimal"][data-theme="dark"] {
   --fiber-bg: #060911; --fiber-text: #f8fafc;
   --salt-bg: #060911; --salt-text: #f8fafc;
   --sugar-bg: #060911; --sugar-text: #f8fafc;
+
+  /* Minimal keeps cards neutral --surface and tints only header text & icons. */
+  --tone-ink-diary: #fde047;
+  --tone-ink-meals: #fdba74;
+  --tone-ink-recipes: #d8b4fe;
+  --tone-ink-planner: #93c5fd;
+  --tone-ink-photo: #fda4af;
+  --tone-ink-foods: #6ee7b7;
+  --tone-ink-teal: #5eead4;
 }
 
 html[data-style="minimal"][data-theme="lite-dark"] {
@@ -119,6 +128,14 @@ html[data-style="minimal"][data-theme="lite-dark"] {
   --fiber-bg: #172030; --fiber-text: #ffffff;
   --salt-bg: #172030; --salt-text: #ffffff;
   --sugar-bg: #172030; --sugar-text: #ffffff;
+
+  --tone-ink-diary: #fef08a;
+  --tone-ink-meals: #fed7aa;
+  --tone-ink-recipes: #e9d5ff;
+  --tone-ink-planner: #bfdbfe;
+  --tone-ink-photo: #fecdd3;
+  --tone-ink-foods: #a7f3d0;
+  --tone-ink-teal: #99f6e4;
 }
 
 html[data-style="minimal"][data-theme="light"] {
@@ -172,6 +189,14 @@ html[data-style="minimal"][data-theme="light"] {
   --color-intake-accent: #15803d;
   --color-activity-accent: #b91c1c;
   --color-weight-accent: #4c1d95;
+
+  --tone-ink-diary: #854d0e;
+  --tone-ink-meals: #9a3412;
+  --tone-ink-recipes: #5b21b6;
+  --tone-ink-planner: #1d4ed8;
+  --tone-ink-photo: #9f1239;
+  --tone-ink-foods: #15803d;
+  --tone-ink-teal: #0f766e;
 }
 
 /* 6. MONO THEME (Dynamic Monochromatic Palette Driven by JS in src/utils/themes.ts) */

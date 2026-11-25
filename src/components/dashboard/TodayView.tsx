@@ -117,6 +117,7 @@ export const TodayView: React.FC = () => {
     <div className="flex items-center justify-end gap-2 px-1">
       <div
         role="group"
+        data-layout-switch
         aria-label={t.mealSlots.layout}
         className="inline-flex items-center gap-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] p-0.5"
       >
@@ -124,6 +125,8 @@ export const TodayView: React.FC = () => {
           <button
             key={item.id}
             type="button"
+            data-layout-btn
+            data-active={layout === item.id ? 'true' : undefined}
             onClick={() => chooseLayout(item.id)}
             aria-label={item.label}
             aria-pressed={layout === item.id}

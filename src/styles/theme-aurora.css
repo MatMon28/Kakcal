@@ -86,6 +86,15 @@ html[data-style="aurora"][data-theme="dark"] {
   --dock-bg: rgba(24, 20, 44, 0.85);
   --dock-border: 1px solid rgba(255, 255, 255, 0.12);
   --dock-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
+
+  --tone-diary: rgba(250, 204, 21, 0.16);   --tone-diary-in: rgba(250, 204, 21, 0.25);
+  --tone-meals: rgba(251, 146, 60, 0.18);   --tone-meals-in: rgba(251, 146, 60, 0.27);
+  --tone-recipes: rgba(167, 139, 250, 0.2); --tone-recipes-in: rgba(167, 139, 250, 0.3);
+  --tone-planner: rgba(96, 165, 250, 0.2);  --tone-planner-in: rgba(96, 165, 250, 0.3);
+  --tone-photo: rgba(251, 113, 133, 0.19);  --tone-photo-in: rgba(251, 113, 133, 0.29);
+  --tone-foods: rgba(52, 211, 153, 0.17);   --tone-foods-in: rgba(52, 211, 153, 0.26);
+  --tone-teal: rgba(45, 212, 191, 0.17);    --tone-teal-in: rgba(45, 212, 191, 0.26);
+  --tone-pale: rgba(255, 255, 255, 0.07);
 }
 
 html[data-style="aurora"][data-theme="lite-dark"] {
@@ -124,6 +133,15 @@ html[data-style="aurora"][data-theme="lite-dark"] {
   --dock-bg: rgba(45, 42, 72, 0.88);
   --dock-border: 1px solid rgba(255, 255, 255, 0.18);
   --dock-shadow: 0 12px 32px rgba(10, 10, 25, 0.32);
+
+  --tone-diary: rgba(250, 204, 21, 0.21);   --tone-diary-in: rgba(250, 204, 21, 0.32);
+  --tone-meals: rgba(251, 146, 60, 0.22);   --tone-meals-in: rgba(251, 146, 60, 0.33);
+  --tone-recipes: rgba(167, 139, 250, 0.25); --tone-recipes-in: rgba(167, 139, 250, 0.36);
+  --tone-planner: rgba(96, 165, 250, 0.24); --tone-planner-in: rgba(96, 165, 250, 0.35);
+  --tone-photo: rgba(251, 113, 133, 0.23);  --tone-photo-in: rgba(251, 113, 133, 0.34);
+  --tone-foods: rgba(52, 211, 153, 0.21);   --tone-foods-in: rgba(52, 211, 153, 0.32);
+  --tone-teal: rgba(45, 212, 191, 0.21);    --tone-teal-in: rgba(45, 212, 191, 0.32);
+  --tone-pale: rgba(255, 255, 255, 0.1);
 }
 
 html[data-style="aurora"][data-theme="light"] {
@@ -165,4 +183,13 @@ html[data-style="aurora"][data-theme="light"] {
   --color-intake-accent: #047857;
   --color-activity-accent: #be123c;
   --color-weight-accent: #6d28d9;
+
+  --tone-diary: rgba(252, 234, 156, 0.72);   --tone-diary-in: rgba(254, 245, 202, 0.86);
+  --tone-meals: rgba(252, 216, 174, 0.72);   --tone-meals-in: rgba(254, 236, 214, 0.86);
+  --tone-recipes: rgba(220, 204, 254, 0.72); --tone-recipes-in: rgba(238, 230, 255, 0.86);
+  --tone-planner: rgba(190, 222, 254, 0.72); --tone-planner-in: rgba(222, 238, 255, 0.88);
+  --tone-photo: rgba(252, 200, 212, 0.72);   --tone-photo-in: rgba(254, 226, 232, 0.86);
+  --tone-foods: rgba(182, 240, 214, 0.72);   --tone-foods-in: rgba(218, 248, 234, 0.86);
+  --tone-teal: rgba(178, 236, 236, 0.72);    --tone-teal-in: rgba(216, 246, 246, 0.86);
+  --tone-pale: rgba(255, 255, 255, 0.76);
 }

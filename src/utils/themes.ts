@@ -214,6 +214,19 @@ export function getMonoVariables(baseHex: string, mode: Theme): Record<string, s
   const intakeOnSurface = mode === 'light' ? mixHex(safeHex, '#090e17', 0.36) : mixHex(safeHex, '#ffffff', 0.62);
   const activityOnSurface = mode === 'light' ? mixHex(safeHex, '#090e17', 0.48) : mixHex(safeHex, '#ffffff', 0.52);
   const weightOnSurface = mode === 'light' ? mixHex(safeHex, '#090e17', 0.28) : mixHex(safeHex, '#ffffff', 0.68);
+  const toneBase = (w: number) =>
+    mode === 'light'
+      ? mixHex('#ffffff', safeHex, w)
+      : mode === 'lite-dark'
+      ? mixHex('#262e40', safeHex, w + 0.14)
+      : mixHex('#151c2b', safeHex, w + 0.1);
+  const toneIn = (w: number) =>
+    mode === 'light'
+      ? mixHex('#ffffff', safeHex, Math.max(0.06, w - 0.08))
+      : mode === 'lite-dark'
+      ? mixHex('#313b52', safeHex, w + 0.18)
+      : mixHex('#1e273b', safeHex, w + 0.14);
+  const tonePale = mode === 'light' ? 'rgba(255, 255, 255, 0.78)' : 'rgba(255, 255, 255, 0.07)';
 
   return {
     '--mono-accent': accent,
@@ -301,6 +314,14 @@ export function getMonoVariables(baseHex: string, mode: Theme): Record<string, s
     '--color-weight-ink': cardText,
     '--color-weight-accent': weightOnSurface,
     '--color-weight-soft': pillBg,
+    '--tone-diary': toneBase(0.14),   '--tone-diary-in': toneIn(0.14),
+    '--tone-meals': toneBase(0.18),   '--tone-meals-in': toneIn(0.18),
+    '--tone-recipes': toneBase(0.22), '--tone-recipes-in': toneIn(0.22),
+    '--tone-planner': toneBase(0.16), '--tone-planner-in': toneIn(0.16),
+    '--tone-photo': toneBase(0.2),    '--tone-photo-in': toneIn(0.2),
+    '--tone-foods': toneBase(0.15),   '--tone-foods-in': toneIn(0.15),
+    '--tone-teal': toneBase(0.19),    '--tone-teal-in': toneIn(0.19),
+    '--tone-pale': tonePale,
   };
 }
 

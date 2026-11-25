@@ -2,7 +2,7 @@
 /* ---- Frosted-glass specifics (all three modes) ---- */
 
 /* Every panel is frosted: the blurred gradient shows through the translucent fill. */
-html[data-style="glass"]:not([data-style="classic"]) :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, .kc-nav-pill, .kc-icon-btn, .kc-dock, [data-period-card], [data-day-overview-card], .kc-modal-banner, main section.rounded-3xl, main div.rounded-3xl) {
+html[data-style="glass"]:not([data-style="classic"]) :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, .kc-nav-pill, .kc-icon-btn, .kc-dock, [data-period-card], [data-day-overview-card], .kc-modal-banner, [data-cal-nav], [data-cal-trigger], [data-layout-switch], main section.rounded-3xl, main div.rounded-3xl) {
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
 }
@@ -25,7 +25,7 @@ html[data-style="glass"]:not([data-style="classic"]) .kc-header-surface {
 }
 
 /* Dialogs / bottom sheets: a frosted pane over a tinted, blurred scrim. */
-html[data-style="glass"]:not([data-style="classic"]) [role="dialog"] {
+html[data-style="glass"]:not([data-style="classic"]) :is([role="dialog"], [data-cal-popover]) {
   background: var(--glass-dialog) !important;
   backdrop-filter: blur(26px) saturate(160%);
   -webkit-backdrop-filter: blur(26px) saturate(160%);

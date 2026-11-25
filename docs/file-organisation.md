@@ -20,7 +20,7 @@
 | `theme-glass.css`, `theme-material.css` | The Glass and Material themes: **tokens only**, three mode blocks each (see [glass-material-update.md](glass-material-update.md)). |
 | `themed-chrome.css` | Rules shared by all style themes: header, navigation pill, Intake / Burned cards, macro cards, nutrient pills. |
 | `themed-cards.css` | Meal slot / tracker / Custom cards, item fields, Period page, action dock, modals. |
-| `themed-tones.css` | Tinted Custom sections for Glass and Material (`--tone-*` per section, local `--surface` / `--inset` / `--hover`). Imported after `themed-overrides.css`. |
+| `themed-tones.css` | Tinted Today trackers (Movement, Water, Poop, Custom) and Custom sections across all non-Classic styles (full-field `--tone-*` for 7 styles, header text & icon `--tone-ink-*` for Minimal). Imported after `themed-overrides.css`. |
 | `themed-glass.css`, `themed-material.css` | Component rules of the two styles (blur, dialog, scrim, re-tinted pastel buttons / no outlines, chips, elevation, state layers). Imported after `themed-tones.css` so they win ties with the generic themed rules. |
 | `themed-overrides.css` | Angular chamfers, Pop elevation, the continuous page selector (`.kc-following-*`), page-moving rule. |
 | `performance.css` | `.kc-body-skeleton` (placeholder of `DeferredBody`), `content-visibility` for expanded off-screen cards, and the meal card's container queries (`container-type` on `[data-meal-slot]`, `.kc-meal-kcal` / `.kc-meal-extras` hiding). Last in the `@import` list. |

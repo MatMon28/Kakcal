@@ -242,7 +242,225 @@ html[data-style="aurora"] .kc-dock {
   html[data-style="aurora"][data-theme="light"] { --surface: #ffffff; --header-btn-bg: #ffffff; --nav-bg: #ffffff; --dock-bg: #ffffff; }
   html[data-style="aurora"][data-theme="lite-dark"] { --surface: #322f50; --header-btn-bg: #322f50; --nav-bg: #322f50; --dock-bg: #2d2a48; }
   html[data-style="aurora"][data-theme="dark"] { --surface: #1b1630; --header-btn-bg: #1b1630; --nav-bg: #1b1630; --dock-bg: #18142c; }
+  html[data-style="aurora"][data-theme="light"] {
+    --tone-diary: #fceea8; --tone-diary-in: #fef6d0;
+    --tone-meals: #fcddb8; --tone-meals-in: #feeed9;
+    --tone-recipes: #e0d2fe; --tone-recipes-in: #efe8ff;
+    --tone-planner: #c8e0fe; --tone-planner-in: #e2efff;
+    --tone-photo: #fcced8; --tone-photo-in: #fee6ec;
+    --tone-foods: #c0f0da; --tone-foods-in: #def8ec;
+    --tone-teal: #bcecec; --tone-teal-in: #dbf6f6;
+  }
+  html[data-style="aurora"][data-theme="lite-dark"] {
+    --tone-diary: #4d4534; --tone-diary-in: #5d543e;
+    --tone-meals: #503d3c; --tone-meals-in: #614a47;
+    --tone-recipes: #443967; --tone-recipes-in: #53467d;
+    --tone-planner: #34446b; --tone-planner-in: #405482;
+    --tone-photo: #52354f; --tone-photo-in: #644160;
+    --tone-foods: #2c4a52; --tone-foods-in: #375c66;
+    --tone-teal: #2b4a59; --tone-teal-in: #365c6e;
+  }
+  html[data-style="aurora"][data-theme="dark"] {
+    --tone-diary: #352d26; --tone-diary-in: #44392f;
+    --tone-meals: #372528; --tone-meals-in: #473033;
+    --tone-recipes: #2c214a; --tone-recipes-in: #3a2c60;
+    --tone-planner: #1e2a4a; --tone-planner-in: #283860;
+    --tone-photo: #381e34; --tone-photo-in: #482843;
+    --tone-foods: #183238; --tone-foods-in: #21424a;
+    --tone-teal: #17313d; --tone-teal-in: #204150;
+  }
 }
+
+/* Settings icon badges & switches: coherent shape, border and palette across all styles. */
+html[data-style]:not([data-style="classic"]) [data-settings-badge] {
+  border-radius: var(--dock-btn-radius, 9999px) !important;
+  border: var(--dock-btn-border, none) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style="minimal"] [data-settings-badge] {
+  background: var(--dock-1, var(--inset)) !important;
+  border: var(--dock-btn-border, 1px solid var(--border)) !important;
+}
+html[data-style="minimal"] [data-settings-badge][class~="bg-[#CFE7FE]"] { color: var(--tone-ink-planner) !important; }
+html[data-style="minimal"] [data-settings-badge][class~="bg-[#E2D6FF]"] { color: var(--tone-ink-recipes) !important; }
+html[data-style="minimal"] [data-settings-badge][class~="bg-[#F7E9AA]"] { color: var(--tone-ink-diary) !important; }
+html[data-style="minimal"] [data-settings-badge][class~="bg-[#C9EFD3]"] { color: var(--tone-ink-foods) !important; }
+html[data-style="minimal"] [data-settings-badge][class~="bg-[#FAE0B4]"] { color: var(--tone-ink-meals) !important; }
+html[data-style="minimal"] [data-settings-badge][class~="bg-[#BFE9E4]"] { color: var(--tone-ink-teal) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#F4C6D8]"], [class~="bg-[#F6D0D0]"]) { color: var(--tone-ink-photo) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#EDE6D6]"], [class~="bg-[#D9DEE8]"]) { color: var(--muted) !important; }
+html[data-style="mono"] [data-settings-badge] {
+  background: var(--dock-1, var(--carbs-bg)) !important;
+  color: var(--dock-icon-1, var(--carbs-text)) !important;
+}
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#CFE7FE]"] { background: var(--dock-3) !important; color: var(--dock-icon-3) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#E2D6FF]"] { background: var(--dock-5) !important; color: var(--dock-icon-5) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#F7E9AA]"] { background: var(--dock-6) !important; color: var(--dock-icon-6) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#C9EFD3]"] { background: var(--dock-1) !important; color: var(--dock-icon-1) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#FAE0B4]"] { background: var(--dock-4) !important; color: var(--dock-icon-4) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#F4C6D8]"], [class~="bg-[#F6D0D0]"]) { background: var(--dock-2) !important; color: var(--dock-icon-2) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#BFE9E4]"] { background: var(--tone-teal, var(--dock-3)) !important; color: var(--text) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#EDE6D6]"], [class~="bg-[#D9DEE8]"]) { background: var(--surface) !important; color: var(--text) !important; }
+
+html[data-style]:not([data-style="classic"]) [data-settings-switch] {
+  border-radius: var(--bar-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-settings-switch="on"] {
+  background: var(--intake-bg) !important;
+  border-color: var(--border) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-settings-switch="on"] [data-settings-switch-thumb] {
+  background: var(--intake-fill) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-settings-switch="off"] [data-settings-switch-thumb] {
+  background: var(--surface-solid, var(--surface)) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+
+/* Today Calendar controls & popover (DayNavigator) */
+html[data-style]:not([data-style="classic"]) [data-cal-nav] {
+  background: var(--header-btn-bg, var(--surface)) !important;
+  color: var(--header-icon-color, var(--text)) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) [data-cal-trigger] {
+  background: var(--nav-bg, var(--surface)) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--nav-radius, 999px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) [data-cal-trigger] svg {
+  color: var(--header-icon-color, var(--muted)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-cal-popover] {
+  background: var(--surface-solid, var(--surface)) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--dock-shadow, 0 16px 40px rgba(0, 0, 0, 0.35)) !important;
+  border-radius: var(--card-radius, 24px) !important;
+  clip-path: var(--clip-lg, none);
+}
+html[data-style]:not([data-style="classic"]) [data-cal-month-nav] {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-cal-day] {
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-cal-day="selected"] {
+  background: var(--nav-active-bg, var(--text)) !important;
+  color: var(--nav-active-color, var(--on-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-cal-day="selected"] [data-cal-dot] {
+  background: var(--nav-active-color, var(--on-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-cal-day="today"] {
+  background: var(--intake-bg) !important;
+  color: var(--intake-text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-cal-day="today"] [data-cal-dot] {
+  background: var(--intake-text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-cal-today-btn] {
+  background: var(--pill-c-bg, var(--carbs-bg)) !important;
+  color: var(--pill-c-text, var(--carbs-text)) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
+  border-radius: var(--nav-pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+
+/* Compact / Normal / Expanded layout switcher (TodayView) */
+html[data-style]:not([data-style="classic"]) [data-layout-switch] {
+  background: var(--nav-bg, var(--surface)) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--nav-radius, 999px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) [data-layout-btn] {
+  border-radius: var(--nav-pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+  color: var(--nav-inactive-color, var(--muted)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-layout-btn][data-active="true"] {
+  background: var(--nav-active-bg, var(--text)) !important;
+  color: var(--nav-active-color, var(--on-text)) !important;
+}
+
+/* Meal planner, Photo date controls & Shopping list fields / buttons */
+html[data-style]:not([data-style="classic"]) :is(.journal-date-field, .journal-meal-select, .journal-draft-card, .journal-plan-card, .journal-meal-card, .journal-quick-food-grid button, .journal-plan-suggestion, .journal-stepper > button, .journal-form label.journal-stepper-value, .journal-shopping-items) {
+  border-radius: min(var(--micro-radius, 16px), 18px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) .journal-date-field svg {
+  color: var(--header-icon-color, var(--text));
+}
+html[data-style]:not([data-style="classic"]) :is(.journal-weekdays button, .journal-day-grid button, .journal-food-chip, .journal-save-meal-row, .journal-draft-continue, .journal-plan-nav > button, .journal-tone-badge) {
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .journal-plan-nav > button {
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+}
+html[data-style]:not([data-style="classic"]) .journal-weekdays button.is-skipped {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
+  border: var(--pill-border, 1px solid transparent) !important;
+}
+html[data-style]:not([data-style="classic"]) .journal-day-grid button.is-on {
+  background: var(--pill-c-bg, var(--carbs-bg)) !important;
+  color: var(--pill-c-text, var(--carbs-text)) !important;
+  border: var(--pill-border, 1px solid transparent) !important;
+}
+html[data-style]:not([data-style="classic"]) .journal-meal-card.is-open {
+  border-color: var(--nav-active-bg, var(--text)) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--nav-active-bg, var(--text)) 28%, transparent) !important;
+}
+html[data-style]:not([data-style="classic"]) :is(.journal-pending-banner, .journal-shopping-notice) {
+  background: var(--pill-c-bg, var(--carbs-bg)) !important;
+  color: var(--pill-c-text, var(--carbs-text)) !important;
+  border: var(--pill-border, none) !important;
+  border-radius: min(var(--micro-radius, 16px), 18px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) :is(.journal-draft-continue, .journal-shopping-notice button) {
+  background: var(--nav-active-bg, var(--text)) !important;
+  color: var(--nav-active-color, var(--on-text)) !important;
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) :is(.journal-food-chip.is-meal, .journal-tone-circle.is-meal, .journal-tone-badge.is-meal) {
+  background: var(--pill-p-bg, var(--protein-bg)) !important;
+  border-color: transparent !important;
+  color: var(--pill-p-text, var(--protein-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .journal-food-chip.is-meal svg {
+  color: var(--pill-p-text, var(--protein-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .journal-food-chip.is-recipe {
+  background: var(--pill-f-bg, var(--fat-bg)) !important;
+  border-color: transparent !important;
+  color: var(--pill-f-text, var(--fat-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .journal-plan-suggestion.is-past {
+  background: var(--pill-c-bg, var(--carbs-bg)) !important;
+  border-color: transparent !important;
+  color: var(--pill-c-text, var(--carbs-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .journal-plan-suggestion.is-past :is(strong, small, svg) {
+  color: var(--pill-c-text, var(--carbs-text)) !important;
+}
+
 
 html[data-style]:not([data-style="classic"]) .kc-dock-btn {
   border: var(--dock-btn-border, none) !important;

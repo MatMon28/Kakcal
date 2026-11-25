@@ -1,20 +1,40 @@
-/* Tinted Custom sections for the Glass and Material styles.
-   Classic gives every Custom section its own pastel in the component (inline palette); the other six styles use one
-   neutral --surface. Glass and Material bring the colours back: each section takes a tone from the theme file
-   (--tone-<name>, --tone-<name>-in, --tone-pale) and redefines --surface / --inset / --hover locally, so everything inside
-   (saved meal cards, ingredient lists, food buttons, search fields, chips) follows the section without per-component CSS.
-   Add a new section by adding one tone rule below and its --tone-* values to theme-glass.css and theme-material.css. */
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-yellow"] { --tone: var(--tone-diary); --tone-in: var(--tone-diary-in); }
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="meals"] { --tone: var(--tone-meals); --tone-in: var(--tone-meals-in); }
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="recipes"] { --tone: var(--tone-recipes); --tone-in: var(--tone-recipes-in); }
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-blue"] { --tone: var(--tone-planner); --tone-in: var(--tone-planner-in); }
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-red"] { --tone: var(--tone-photo); --tone-in: var(--tone-photo-in); }
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="foods"] { --tone: var(--tone-foods); --tone-in: var(--tone-foods-in); }
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-teal"] { --tone: var(--tone-teal); --tone-in: var(--tone-teal-in); }
+/* Tinted Today trackers (Movement, Water, Poop, Custom) and Custom sections across all non-Classic styles.
+   Classic paints each tracker / section with its own inline pastel palette; meal cards ([data-meal-slot]) stay neutral --surface.
+   Angular, Aurora, Pop, Playful, Mono, Glass and Material tint the field via --tone / --tone-in / --tone-pale so nested cards
+   and controls follow automatically. Minimal keeps the neutral --surface field and tints ONLY the header text and icons via
+   --tone-ink-<name>, preserving its crisp hairline-slate aesthetic. */
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-yellow"], [data-tracker="custom"]) { --tone: var(--tone-diary); --tone-in: var(--tone-diary-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="meals"], [data-tracker="poop"]) { --tone: var(--tone-meals); --tone-in: var(--tone-meals-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-library-section="recipes"] { --tone: var(--tone-recipes); --tone-in: var(--tone-recipes-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-blue"], [data-tracker="water"]) { --tone: var(--tone-planner); --tone-in: var(--tone-planner-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section="journal-red"], [data-tracker="activity"]) { --tone: var(--tone-photo); --tone-in: var(--tone-photo-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-library-section="foods"] { --tone: var(--tone-foods); --tone-in: var(--tone-foods-in); }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-library-section="journal-teal"] { --tone: var(--tone-teal); --tone-in: var(--tone-teal-in); }
 
-html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section] {
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section], [data-tracker]) {
   background: var(--tone) !important;
   --inset: var(--tone-in);
   --surface: color-mix(in srgb, var(--tone-in, transparent) 38%, var(--tone-pale, transparent));
   --hover: color-mix(in srgb, var(--tone-in, transparent) 70%, var(--tone-pale, transparent));
+}
+
+/* Tracker header icons inherit the card's own high-contrast ink on tinted fields (matching Classic TrackerCard). */
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-tracker] .kc-tracker-icon {
+  color: var(--text) !important;
+}
+
+/* Minimal: keep the whole field neutral --surface and colour ONLY the header text and icons. */
+html[data-style="minimal"] :is([data-library-section="journal-yellow"], [data-tracker="custom"]) { --tone-ink: var(--tone-ink-diary); }
+html[data-style="minimal"] :is([data-library-section="meals"], [data-tracker="poop"]) { --tone-ink: var(--tone-ink-meals); }
+html[data-style="minimal"] [data-library-section="recipes"] { --tone-ink: var(--tone-ink-recipes); }
+html[data-style="minimal"] :is([data-library-section="journal-blue"], [data-tracker="water"]) { --tone-ink: var(--tone-ink-planner); }
+html[data-style="minimal"] :is([data-library-section="journal-red"], [data-tracker="activity"]) { --tone-ink: var(--tone-ink-photo); }
+html[data-style="minimal"] [data-library-section="foods"] { --tone-ink: var(--tone-ink-foods); }
+html[data-style="minimal"] [data-library-section="journal-teal"] { --tone-ink: var(--tone-ink-teal); }
+
+html[data-style="minimal"] [data-tracker] :is(.kc-tracker-icon, h4, [data-tracker-headline], > [role="button"] button) {
+  color: var(--tone-ink) !important;
+}
+html[data-style="minimal"] [data-library-section] [data-library-header] :is(h2, svg, button) {
+  color: var(--tone-ink) !important;
 }

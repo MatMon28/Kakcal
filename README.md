@@ -2,6 +2,10 @@
 
 ## Current Update
 
+**Tinted trackers, Custom fields & themed controls round:** Today's Movement, Water, Poop and Custom trackers (`[data-tracker]`) and all seven Custom sections (`[data-library-section]`) now carry Classic's colour identity across every non-Classic style in Light, Lite Dark and Dark (while meal cards stay neutral `--surface`): Angular, Aurora, Pop, Playful, Mono (single-hue stepped tones), Glass and Material tint the field coherently with their own style, whereas **Minimal** keeps the neutral hairline field and tints **only the header text and icons**. Settings icon badges and switches, Today calendar buttons / popover / date pickers, the Compact / Normal / Expanded switcher, and Meal planner / Shopping list buttons, chips, day grids and banners now follow the active theme's palette, radii, borders, chamfers and blur. Covered by `tests/themes.test.ts`. See [docs/style-audit.md](docs/style-audit.md) and [docs/changes-patch.md](docs/changes-patch.md).
+
+### Previous update (Style consistency audit round)
+
 **Style consistency audit round:** audited all nine theme styles against the Classic baseline and across Light, Lite Dark and Dark modes. Wired the continuous page pill (`.kc-following-indicator` / `.kc-following-tab`) to each style's `--nav-active-bg` / `--nav-active-color` / `--nav-pill-radius` tokens; fixed 1.00:1 invisible Mono `--*-on-surface` text and 1.11:1 Pop dark water bars (`--water-fill`); bound Today dock colours semantically via `[data-dock-action]`; aligned Playful Dark carbs/contrast/widgets, Aurora Light frosting + reduced-transparency, Minimal hairline + Food icon ink, Angular Lite Dark macro cards, Material 8 px chips / borderless search inputs, Glass dark accents / reduced-transparency, generic `rounded-3xl` sections and `index.html` pre-paint colours across all styles. Expanded `tests/themes.test.ts`. See [docs/style-audit.md](docs/style-audit.md) and [docs/changes-patch.md](docs/changes-patch.md).
 
 ### Previous update (Glass and Material styles round)

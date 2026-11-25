@@ -6,6 +6,10 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Style consistency audit round
+
+**Patch (Style consistency audit round, base `018a6cc9707d437f238984206ffc3aac90cdf33e`):** wired the continuous page pill (`.kc-following-indicator` / `.kc-following-tab`) to theme tokens, fixed Mono `--*-on-surface` AA contrast and Pop dark water bar visibility (`--water-fill`), bound Today dock buttons semantically via `[data-dock-action]`, fixed Playful / Aurora / Minimal / Angular / Glass / Material mode-parity issues, expanded `index.html` pre-paint colours and aligned Android Playful / Minimal widgets. Landed in `df782e6`.
+
 ## Glass and Material styles round
 
 **Patch (Glass and Material styles round, base `d806d2945b914d854e20eff7da9a52f713680db1`):** added the **Glass** and **Material** theme styles in Light, Lite Dark and Dark across every page, dialog, dock, Android widget and launch screen.

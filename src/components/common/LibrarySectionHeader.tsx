@@ -108,7 +108,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
   const iconBtn = libraryIconButton;
   return (
     <div className="space-y-2" style={headerStyle}>
-      <div ref={rowRef} className="flex items-center justify-between gap-2">
+      <div ref={rowRef} data-library-header className="flex items-center justify-between gap-2">
         {/* Title row toggles the whole section, like a meal card header on Today */}
         <button
           type="button"

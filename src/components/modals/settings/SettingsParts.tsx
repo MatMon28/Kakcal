@@ -24,6 +24,7 @@ export const TONE = {
 export const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
   <span
     aria-hidden="true"
+    data-settings-switch={on ? 'on' : 'off'}
     className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
       on
         ? 'bg-[#C9EFD3] border-[#9ADBB0]'
@@ -31,6 +32,7 @@ export const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
     }`}
   >
     <span
+      data-settings-switch-thumb
       className={`block w-5 h-5 rounded-full transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] shadow-sm ${
         on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
       }`}
@@ -69,7 +71,7 @@ export const ToggleRow: React.FC<{
     className="pressable w-full min-h-[52px] flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
   >
     <span className="flex items-center gap-2.5 min-w-0">
-      <span className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone}`} aria-hidden="true">
+      <span data-settings-badge className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone}`} aria-hidden="true">
         {icon}
       </span>
       <span className="min-w-0">
@@ -98,7 +100,7 @@ export const ActionRow: React.FC<{
     className="pressable w-full min-h-[52px] flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 text-left transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
   >
     <span className="flex items-center gap-2.5 min-w-0">
-      <span className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone}`} aria-hidden="true">
+      <span data-settings-badge className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone}`} aria-hidden="true">
         {icon}
       </span>
       <span className="min-w-0">

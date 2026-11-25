@@ -27,6 +27,13 @@
 * **Glass (`theme-glass.css`, `themed-glass.css`):** lightened Dark / Lite Dark `--brand-flame-color` to `#c4b5fd` and made `prefers-reduced-transparency` opaque across `--inset`, header, nav and dock tokens.
 * **Material (`themed-material.css`):** aligned chip radius to `var(--pill-radius, 8px)` (8 px) and raised `.journal-search` borderless selector specificity to beat `journal-diary.css`.
 
+## Tinted trackers, Custom fields & themed controls across all styles
+
+* **Unified tone system (`themed-tones.css`):** extended to **all eight non-Classic styles** and to Today's four tracker cards (`[data-tracker="activity"]` rose, `water` blue, `poop` peach, `custom` yellow) alongside all seven Custom sections. Meal cards (`[data-meal-slot]`) stay neutral `--surface`. Angular, Aurora, Pop, Playful, Mono, Glass and Material tint the field coherently with their own visual language (including Aurora reduced-transparency solid fallbacks and Mono stepped single-hue tones).
+* **Minimal text & icon-only tinting (`theme-minimal-mono.css`, `themed-tones.css`, `LibrarySectionHeader.tsx`):** Minimal keeps neutral `--surface` fields and colours **only the header text and icons** via `--tone-ink-*` (all `>= 4.5:1` AA on `--surface`).
+* **Settings badges & switches (`SettingsParts.tsx`, `Collapsible.tsx`, `themed-cards.css`):** `[data-settings-badge]` and `[data-settings-switch]` follow each style's `--dock-btn-radius`, `--dock-btn-border`, `--clip-sm`, dock/tone colours (neutral hairline plate + tinted icon in Minimal, single-hue in Mono) and `--intake-bg` / `--intake-fill` switch styling.
+* **Calendar, layout switcher & Meal planner controls (`DayNavigator.tsx`, `TodayView.tsx`, `themed-cards.css`, `themed-glass.css`, `themed-material.css`):** `[data-cal-nav]`, `[data-cal-trigger]`, `[data-cal-popover]`, `[data-cal-day]`, `[data-cal-today-btn]`, `[data-layout-switch]` (Compact / Normal / Expanded) and Meal planner / Shopping list controls (`.journal-date-field`, `.journal-weekdays`, `.journal-day-grid`, `.journal-meal-card`, `.journal-food-chip.is-meal/is-recipe`, `.journal-plan-suggestion.is-past`, `.journal-pending-banner`, `.journal-shopping-notice`) follow the active style's tokens, radii, chamfers, borders and blur.
+
 ## Regression coverage
 
-`tests/themes.test.ts` now checks the continuous tab indicator tokens, semantic dock bindings, Material chip / search rules and `>= 4.5:1` WCAG AA contrast for all 10 Mono hues × 3 modes.
+`tests/themes.test.ts` now checks the continuous tab indicator tokens, semantic dock bindings, Material chip / search rules, full-field `--tone-*` pairs, Minimal text/icon-only `--tone-ink-*` AA contrast, Mono stepped tones, and Settings / Calendar / Layout-switch / Meal-planner theme hooks.

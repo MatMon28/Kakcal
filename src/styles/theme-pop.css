@@ -82,6 +82,15 @@ html[data-style="pop"][data-theme="dark"] {
   --dock-border: 2px solid #fef9c3;
   --dock-shadow: 3px 3px 0px #fde047;
   --dock-btn-border: 1.5px solid #fef9c3;
+
+  --tone-diary: #3b3314;   --tone-diary-in: #4c421b;
+  --tone-meals: #3f2a15;   --tone-meals-in: #52381c;
+  --tone-recipes: #301f4f; --tone-recipes-in: #3f2a66;
+  --tone-planner: #192d4a; --tone-planner-in: #223c61;
+  --tone-photo: #401c2a;   --tone-photo-in: #542638;
+  --tone-foods: #15382d;   --tone-foods-in: #1d4a3c;
+  --tone-teal: #14363b;    --tone-teal-in: #1c474e;
+  --tone-pale: rgba(255, 255, 255, 0.06);
 }
 
 html[data-style="pop"][data-theme="lite-dark"] {
@@ -112,6 +121,15 @@ html[data-style="pop"][data-theme="lite-dark"] {
   --dock-border: 2px solid #e2e8f0;
   --dock-shadow: 3px 3px 0px #fde047;
   --dock-btn-border: 1.5px solid #e2e8f0;
+
+  --tone-diary: #4f4620;   --tone-diary-in: #615628;
+  --tone-meals: #543b24;   --tone-meals-in: #66482d;
+  --tone-recipes: #3f2d61; --tone-recipes-in: #4f3a78;
+  --tone-planner: #263d5e; --tone-planner-in: #324f78;
+  --tone-photo: #542838;   --tone-photo-in: #663346;
+  --tone-foods: #214a3d;   --tone-foods-in: #2b5c4d;
+  --tone-teal: #1f474d;    --tone-teal-in: #295961;
+  --tone-pale: rgba(255, 255, 255, 0.08);
 }
 
 html[data-style="pop"][data-theme="light"] {
@@ -150,4 +168,13 @@ html[data-style="pop"][data-theme="light"] {
   --color-intake-accent: #14532d;
   --color-activity-accent: #991b1b;
   --color-weight-accent: #581c87;
+
+  --tone-diary: #fef08a;   --tone-diary-in: #fef9c3;
+  --tone-meals: #ffd08a;   --tone-meals-in: #ffe6bd;
+  --tone-recipes: #dec4ff; --tone-recipes-in: #efe0ff;
+  --tone-planner: #a8d8fc; --tone-planner-in: #d6edfe;
+  --tone-photo: #ffb3b3;   --tone-photo-in: #ffd9d9;
+  --tone-foods: #a8f5be;   --tone-foods-in: #d6fae0;
+  --tone-teal: #9eeae6;    --tone-teal-in: #cff5f3;
+  --tone-pale: rgba(255, 255, 255, 0.78);
 }

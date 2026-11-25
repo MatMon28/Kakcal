@@ -99,4 +99,84 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
     expect(mat).toContain('var(--pill-radius, 8px)');
     expect(mat).toContain('html[data-style="material"]:not([data-style="classic"]) :is(.journal-search');
   });
+
+  it('tints Today trackers and Custom sections for full-field styles while Minimal tints only header text and icons', () => {
+    const tonesCss = read('themed-tones.css');
+    for (const tracker of ['activity', 'water', 'poop', 'custom']) {
+      expect(tonesCss, tracker).toContain(`[data-tracker="${tracker}"]`);
+    }
+    expect(tonesCss).toContain('html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section], [data-tracker])');
+    expect(tonesCss).toContain('html[data-style="minimal"] [data-tracker]');
+    expect(tonesCss).toContain('html[data-style="minimal"] [data-library-section] [data-library-header]');
+
+    // Full-field tinted styles define all --tone-* / --tone-*-in + --tone-pale pairs per mode
+    const fullFieldStyles: Record<string, string> = {
+      angular: 'theme-angular.css',
+      aurora: 'theme-aurora.css',
+      pop: 'theme-pop.css',
+      playful: 'theme-playful.css',
+      glass: 'theme-glass.css',
+      material: 'theme-material.css',
+    };
+    for (const [style, file] of Object.entries(fullFieldStyles)) {
+      const css = read(file);
+      for (const mode of MODES) {
+        const block = css.match(new RegExp(`^html\\[data-style="${style}"\\]\\[data-theme="${mode}"\\]\\s*\\{([^}]*)\\}`, 'm'));
+        expect(block, `${style} ${mode}`).not.toBeNull();
+        const body = block![1];
+        for (const tone of TONES) {
+          expect(body, `${style} ${mode} --tone-${tone}`).toContain(`--tone-${tone}:`);
+          expect(body, `${style} ${mode} --tone-${tone}-in`).toContain(`--tone-${tone}-in:`);
+        }
+        expect(body, `${style} ${mode} --tone-pale`).toContain('--tone-pale:');
+      }
+    }
+
+    // Minimal defines WCAG AA >= 4.5:1 --tone-ink-* colours on its neutral --surface (not field background)
+    const minCss = read('theme-minimal-mono.css');
+    for (const mode of MODES) {
+      const block = minCss.match(new RegExp(`^html\\[data-style="minimal"\\]\\[data-theme="${mode}"\\]\\s*\\{([^}]*)\\}`, 'm'));
+      expect(block, `minimal ${mode}`).not.toBeNull();
+      const body = block![1];
+      const surface = body.match(/--surface:\s*(#[0-9a-fA-F]{6})/)![1];
+      for (const tone of TONES) {
+        const inkMatch = body.match(new RegExp(`--tone-ink-${tone}:\\s*(#[0-9a-fA-F]{6})`));
+        expect(inkMatch, `minimal ${mode} --tone-ink-${tone}`).not.toBeNull();
+        expect(contrastRatio(inkMatch![1], surface), `minimal ${mode} ${tone} ink`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+
+    // Mono emits stepped single-hue --tone-* tokens with >= 4.5:1 text contrast
+    for (const hue of MONO_HUES) {
+      for (const mode of MODES) {
+        const vars = getMonoVariables(hue.hex, mode);
+        for (const tone of TONES) {
+          const bg = vars[`--tone-${tone}`];
+          expect(bg, `mono ${hue.id} ${mode} --tone-${tone}`).toMatch(/^#[0-9a-f]{6}$/);
+          expect(contrastRatio(vars['--text'], bg), `mono ${hue.id} ${mode} ${tone} text`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+    }
+  });
+
+  it('styles Settings badges, Calendar controls, Compact/Expanded switcher and Meal Planner controls coherently', () => {
+    const cards = read('themed-cards.css');
+    for (const hook of [
+      '[data-settings-badge]',
+      '[data-settings-switch="on"]',
+      '[data-cal-nav]',
+      '[data-cal-trigger]',
+      '[data-cal-popover]',
+      '[data-cal-today-btn]',
+      '[data-layout-switch]',
+      '[data-layout-btn][data-active="true"]',
+      '.journal-weekdays button.is-skipped',
+      '.journal-day-grid button.is-on',
+      '.journal-food-chip.is-meal',
+      '.journal-plan-suggestion.is-past',
+      '.journal-shopping-notice',
+    ]) {
+      expect(cards, hook).toContain(hook);
+    }
+  });
 });
