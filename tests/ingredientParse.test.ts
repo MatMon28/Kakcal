@@ -171,3 +171,69 @@ describe('quantities that break naive parsing', () => {
     expect(parsed).toHaveLength(2);
   });
 });
+
+describe('a quantity written after the name ("scalogno 1")', () => {
+  it('reads the count and puts it before the food', () => {
+    const parsed = parse('scalogno 1');
+    expect(parsed.quantity).toBe(1);
+    expect(parsed.query).toBe('scalogno');
+    expect(parsed.grams).toBe(25); // one scallion, estimated
+  });
+
+  it('works for any food and for larger counts', () => {
+    expect(parse('cipolla 1').quantity).toBe(1);
+    expect(parse('cipolla 1').grams).toBe(110);
+    expect(parse('uova 2').quantity).toBe(2);
+    expect(parse('uova 2').grams).toBe(100);
+  });
+
+  it('keeps the unit when the page writes "farina 500 g"', () => {
+    const parsed = parse('farina 500 g');
+    expect(parsed.quantity).toBe(500);
+    expect(parsed.unit).toBe('g');
+    expect(parsed.grams).toBe(500);
+    expect(parsed.query).toBe('farina');
+  });
+
+  it('accepts "n. 1", "nr. 1", "x1" and fractions', () => {
+    expect(parse('scalogno n. 1').quantity).toBe(1);
+    expect(parse('scalogno nr 1').quantity).toBe(1);
+    expect(parse('scalogno x1').quantity).toBe(1);
+    expect(parse('lievito 1/2').quantity).toBe(0.5);
+  });
+
+  it('leaves numbers that are part of the name alone', () => {
+    expect(parse('farina 00').query).toBe('farina 00');
+    expect(parse('farina 00').quantity).toBeNull();
+    expect(parse('cioccolato 70%').quantity).toBeNull();
+    expect(parse('cioccolato 70%').query).toContain('cioccolato');
+  });
+
+  it('does not turn serving notes into ingredients', () => {
+    expect(parse('ricetta 4 persone').quantity).toBeNull();
+    expect(parse('ricetta 4 persone').query).toBe('ricetta 4 persone');
+    expect(parse('pasta 500').quantity).toBeNull(); // no unit, too big for a piece count
+  });
+
+  it('requires a unit or a piece-like count', () => {
+    expect(parse('scalogno 1 grosso').quantity).toBeNull(); // "grosso" is not a unit
+  });
+});
+
+describe('seasonings and vague amounts after the fix', () => {
+  it('still treats salt and pepper as vague', () => {
+    expect(parse('sale quanto basta').amountKind).toBe('vague');
+    expect(parse('a pinch of salt').amountKind).toBe('vague');
+    expect(parse('sale 1').amountKind).toBe('vague'); // a lone number is not a weight
+    expect(parse('sale 1').grams).toBeNull();
+  });
+
+  it('counts oil, water, flour and sugar like any other food', () => {
+    for (const line of ['olio 2 cucchiai', 'acqua 100', 'farina 2', 'zucchero 3']) {
+      expect(parse(line).amountKind).not.toBe('vague');
+    }
+    expect(parse('olio 2 cucchiai').amountKind).toBe('approx');
+    expect(parse('olio 2 cucchiai').grams).toBeCloseTo(27.6, 1);
+    expect(parse('farina 2').quantity).toBe(2);
+  });
+});

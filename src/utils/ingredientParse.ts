@@ -225,10 +225,12 @@ const VAGUE_HINTS = new RegExp(
   'i',
 );
 
-/** Seasoning words: a line that is only one of these is a seasoning whatever its amount. */
+/**
+ * Words that are a seasoning in any quantity: "sale 1", "1 sale", "salt" are all "to taste".
+ * Only salt and pepper — oil, water or flour are real ingredients as soon as they have a number.
+ */
 const SEASONING_WORDS = new Set([
-  'salt', 'sale', 'salz', 'pepper', 'pepe', 'pfeffer', 'sugar', 'zucchero', 'zucker',
-  'oil', 'olio', 'öl', 'water', 'acqua', 'wasser', 'flour', 'farina', 'mehl',
+  'salt', 'sale', 'salz', 'pepper', 'pepe', 'pfeffer', 'peperoncino', 'chili', 'peperoncini',
 ]);
 
 const round = (value: number, digits = 1) => {
@@ -279,6 +281,38 @@ function leadingQuantity(text: string): { value: number; rest: string } | null {
     if (value !== undefined) return { value, rest: text.slice(word[0].length) };
   }
   return null;
+}
+
+/**
+ * Some recipes write the amount after the name: "scalogno 1", "uova 2", "farina 500 g",
+ * "olio 2 cucchiai", "scalogno n. 1". The number (and its unit, when there is one) is moved in
+ * front so the normal path handles it.
+ *
+ * Things that only look like a trailing amount are rejected:
+ *  - zero-padded codes, "farina 00" (a specific grind) and "tipo 0-0";
+ *  - percentages, "cioccolato 70%";
+ *  - a number followed by a word that is not a unit, "scalogno 1 grosso";
+ *  - a bare number that is too large to be a count, "ricetta 4 persone".
+ */
+function splitTrailingQuantity(text: string): { head: string; quantity: string; unit: string } | null {
+  if (/%|°/.test(text)) return null;
+  const match = /^(.+?)[\s,;]+(?:(?:n|nr|no)\.?\s*|x\s*|×\s*)?(\d{1,4}(?:[.,]\d{1,2})?|\d+\s*\/\s*\d+)\s*([a-zà-ÿ]+)?\.?$/i.exec(
+    text.trim(),
+  );
+  if (!match) return null;
+  const head = match[1].trim().replace(/[,;]+$/, '').trim();
+  const rawQuantity = match[2];
+  const rawUnit = (match[3] ?? '').toLowerCase();
+  if (!/[a-zà-ÿ]/i.test(head)) return null; // nothing left to name the food
+  if (/^0\d/.test(rawQuantity)) return null; // "00", "07": a code, not an amount
+  const unit = rawUnit && (UNITS[rawUnit] ? rawUnit : UNITS[`${rawUnit}s`] ? `${rawUnit}s` : null);
+  if (rawUnit && !unit) return null; // "scalogno 1 grosso": the word is part of the name
+  const fraction = /^(\d+)\s*\/\s*(\d+)$/.exec(rawQuantity);
+  const value = fraction ? Number(fraction[1]) / Math.max(1, Number(fraction[2])) : Number(rawQuantity.replace(',', '.'));
+  if (!Number.isFinite(value) || value <= 0) return null;
+  // With a unit, a few kilograms are fine; a bare number is a count of pieces.
+  if (unit ? value > 5000 : value > 50) return null;
+  return { head, quantity: rawQuantity, unit: unit ?? '' };
 }
 
 /** "(14 oz)" / "(400 g)" inside a line: the real weight of "1 can" or "1 package". */
@@ -342,7 +376,15 @@ export function parseIngredientLine(raw: string): ParsedIngredient {
   let grams: number | null = null;
   let gramsBasis: GramsBasis = null;
 
-  const q = leadingQuantity(text);
+  let q = leadingQuantity(text);
+  if (!q) {
+    // "scalogno 1" → "1 scalogno", then the usual path reads the unit and the piece weight.
+    const trailing = splitTrailingQuantity(text);
+    if (trailing) {
+      text = `${trailing.quantity}${trailing.unit ? ` ${trailing.unit}` : ''} ${trailing.head}`;
+      q = leadingQuantity(text);
+    }
+  }
   if (q) {
     quantity = q.value;
     text = q.rest.trim().replace(/^[.)]\s*/, ''); // "1. onion" / "1) onion"
@@ -420,7 +462,9 @@ export function parseIngredientLine(raw: string): ParsedIngredient {
   // A pinch or a dash is a seasoning amount: keep the reference weight (0.5 g), flag it as vague.
   const pinchUnit = unit !== null && /^(pinch|pinches|pizzico|pizzichi|prise|dash|dashes|goccio|spruzzo)$/.test(unit);
   const seasoningOnly =
-    quantity === null && query.length > 0 && query.split(' ').every((token) => SEASONING_WORDS.has(token));
+    (quantity === null || unit === null) &&
+    query.length > 0 &&
+    query.split(' ').every((token) => SEASONING_WORDS.has(token));
 
   const amountKind: AmountKind =
     vagueByWords || pinchUnit || seasoningOnly

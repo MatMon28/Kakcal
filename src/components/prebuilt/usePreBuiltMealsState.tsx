@@ -326,6 +326,8 @@ export function usePreBuiltMealsState() {
   const [importSummary, setImportSummary] = useState<ImportSummary | null>(null);
   // Provenance of an imported recipe, saved into FoodItem.source on save.
   const [recipeSource, setRecipeSource] = useState<FoodSource | undefined>(undefined);
+  // "Discard this recipe?" dialog, opened when the builder is closed with ingredients in it.
+  const [confirmCloseRecipe, setConfirmCloseRecipe] = useState(false);
 
   const openImportModal = () => {
     setImportUrl('');
@@ -472,7 +474,28 @@ export function usePreBuiltMealsState() {
     setIsRecipeOpen(true);
   };
 
+  /**
+   * Closing the builder with ingredients already added throws them away (an import can be a whole
+   * recipe from a link), so the close button, the backdrop and the Escape/back gesture all go
+   * through here first and ask for confirmation.
+   */
+  const requestCloseRecipeModal = () => {
+    if (recipeIngs.length > 0) {
+      setConfirmCloseRecipe(true);
+      return;
+    }
+    closeRecipeModal();
+  };
+
+  const confirmDiscardRecipe = () => {
+    setConfirmCloseRecipe(false);
+    closeRecipeModal();
+  };
+
+  const cancelDiscardRecipe = () => setConfirmCloseRecipe(false);
+
   const closeRecipeModal = () => {
+    setConfirmCloseRecipe(false);
     setIsRecipeOpen(false);
     setRecipePendingFood(null);
     setEditingRecipeId(null);
@@ -673,6 +696,10 @@ export function usePreBuiltMealsState() {
     recipeTotals,
     openRecipeModal,
     closeRecipeModal,
+    requestCloseRecipeModal,
+    confirmCloseRecipe,
+    confirmDiscardRecipe,
+    cancelDiscardRecipe,
     openEditRecipeModal,
     saveRecipe,
     isImportOpen,

@@ -8,6 +8,8 @@ import { Plus, Trash2, Check, ArrowLeft, Link2, X, Search, AlertTriangle, Info, 
 import { MacroPills } from '../common/MacroPills';
 import { NumericInput } from '../common/NumericInput';
 import { scrollFadeY } from '../../utils/scrollFade';
+import { ConfirmDialog } from '../common/ConfirmDialog';
+import { isSamePortion, portionFractions } from '../../utils/portionFractions';
 import type { LibraryState } from './usePreBuiltMealsState';
 
 export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
@@ -15,16 +17,21 @@ export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
     allFoods, rememberFood, settings, t, j, isRecipeOpen, editingRecipeId, recipeName,
     setRecipeName, recipeIngs, setRecipeIngs, recipePendingFood, setRecipePendingFood,
     recipePendingAmt, setRecipePendingAmt, recipeSearch, setRecipeSearch, recipePortion,
-    setRecipePortion, nameOf, recipeResults, favoriteOneChar, recipeTotals, closeRecipeModal,
+    setRecipePortion, nameOf, recipeResults, favoriteOneChar, recipeTotals,
     saveRecipe, searchInput, importSummary, clearImportSummary, searchUnmatched, addSeasoning,
+    requestCloseRecipeModal, confirmCloseRecipe, confirmDiscardRecipe, cancelDiscardRecipe,
   } = s;
+
+  // Quick portions are fractions of the WHOLE recipe (see utils/portionFractions.ts), so a recipe
+  // that arrived with its portion already computed still offers 1/2 of the full weight.
+  const fractions = portionFractions(recipeTotals.grams);
   return (
     <>
       {/* ============ Create / Edit recipe modal ============ */}
       <Modal
         dockId="recipe"
         isOpen={isRecipeOpen}
-        onClose={closeRecipeModal}
+        onClose={requestCloseRecipeModal}
         title={
           recipePendingFood
             ? nameOf(recipePendingFood)
@@ -300,22 +307,31 @@ export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
                       />
                     </div>
                   </div>
-                  {recipeTotals.grams > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                      {[2, 3, 4, 6, 8].map((parts) => {
-                        const grams = Math.round((recipeTotals.grams / parts) * 10) / 10;
-                        return (
-                          <button
-                            key={parts}
-                            type="button"
-                            aria-pressed={recipePortion === grams}
-                            onClick={() => setRecipePortion(recipePortion === grams ? 0 : grams)}
-                            className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold border tabular-nums ${recipePortion === grams ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F5]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)]'}`}
-                          >
-                            1/{parts} · {grams} g
-                          </button>
-                        );
-                      })}
+                  {fractions.length > 0 && (
+                    <div className="space-y-1">
+                      <span className="block text-[9px] font-bold text-[var(--muted)]">
+                        {j(
+                          `Fractions of the whole recipe (${recipeTotals.grams} g), not of the portion:`,
+                          `Frazioni della ricetta intera (${recipeTotals.grams} g), non della porzione:`,
+                        )}
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {fractions.map(({ parts, grams }) => {
+                          const active = isSamePortion(recipePortion, grams);
+                          return (
+                            <button
+                              key={parts}
+                              type="button"
+                              aria-pressed={active}
+                              title={j(`${parts === 2 ? 'Half' : `A ${parts}th of`} the whole recipe (${recipeTotals.grams} g)`, `${parts}ª parte della ricetta intera (${recipeTotals.grams} g)`)}
+                              onClick={() => setRecipePortion(active ? 0 : grams)}
+                              className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold border tabular-nums ${active ? 'bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F5]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)] hover:bg-[var(--hover)]'}`}
+                            >
+                              1/{parts} · {grams} g
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   )}
                 </div>
@@ -391,6 +407,19 @@ export const RecipeBuilderModal: React.FC<{ s: LibraryState }> = ({ s }) => {
           </div>
         )}
       </Modal>
+
+      {/* Closing with ingredients already added throws work away: ask first. */}
+      <ConfirmDialog
+        open={confirmCloseRecipe}
+        title={j('Discard this recipe?', 'Scartare la ricetta?')}
+        message={j(
+          `The ${recipeIngs.length} ingredient${recipeIngs.length === 1 ? '' : 's'} you added will be lost.`,
+          `I ${recipeIngs.length} ingredienti aggiunti andranno persi.`,
+        )}
+        confirmLabel={j('Discard', 'Scarta')}
+        onConfirm={confirmDiscardRecipe}
+        onCancel={cancelDiscardRecipe}
+      />
     </>
   );
 };
