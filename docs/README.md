@@ -23,6 +23,7 @@
 | Custom bottom bar (Plan / Photo diary), planner first / last day, planner drafts, earlier-plan and quick-food shortcuts, Foods pills, header icon order, removed taglines, deleted Next.js leftovers | [planner-dock-update.md](planner-dock-update.md) |
 | Plan name on planner page 1, planner colours, *See all plans* (current / past, edit, reuse), shopping list per plan, "5 recent foods + ..." chips | [plans-shopping-update.md](plans-shopping-update.md) |
 | Desktop layout (no sidebar, same as the phone), Custom Meals / Recipes card buttons in non-Classic styles (edit / delete / Log) | [desktop-and-fields-update.md](desktop-and-fields-update.md) |
+| Glass and Material theme styles (tokens, tinted Custom sections, frosted blur, Material tonal rules, widgets / splash for the two styles, adding another style) | [glass-material-update.md](glass-material-update.md) |
 | Change animations / springs / swipe feel / the page-change (tap / Back) transition / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
@@ -68,6 +69,7 @@ After **every** new feature or new/renamed/deleted file, update the matching doc
 | Food/activity data or counts | [data-activities.md](data-activities.md), [data-nutrition.md](data-nutrition.md), [data-off-catalogue.md](data-off-catalogue.md) |
 | Where the APK is published / the download button | [apk-download.md](apk-download.md), [pwa-setup.md](pwa-setup.md) §6 |
 | Android version, permissions, modules | `android/BUILD_APK.md`, [android-apk.md](android-apk.md), [file-map/android-native.md](file-map/android-native.md) |
+| Theme styles (`src/styles/theme-*.css`, `themed-*.css`, `themes.ts`, `ThemeStyle`, splash colours, widget style branches) | [glass-material-update.md](glass-material-update.md), [file-organisation.md](file-organisation.md), `file-map/app-shell.md` |
 | CSS parts (`src/styles/`, `journal/css/`), translations split, `AppContext` helpers, Custom page parts | [file-organisation.md](file-organisation.md), the matching `file-map/*.md` row |
 | A finished round (history) | move its paragraph from [changes-patch.md](changes-patch.md) to [changes-patch-history.md](changes-patch-history.md); add the round to `changelog/*.md` and, if you audited, to [audit-log.md](audit-log.md) |
 | Settings groups (Today, Custom page, Pages, Advanced, Notifications, Delete data), hidden pages / Custom sections / Custom buttons, the per-category delete rows, the removed test notification | [settings-update.md](settings-update.md), [journal-pages.md](journal-pages.md), [storage-and-privacy.md](storage-and-privacy.md) |

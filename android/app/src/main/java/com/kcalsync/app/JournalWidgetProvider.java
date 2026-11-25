@@ -178,8 +178,8 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
 
     /**
      * Small and Extra-small: the translucent tray (pill) behind the buttons follows the buttons' shape.
-     * Round buttons (classic, aurora, pop, playful) keep the 32 dp pill from the layout; the minimal and
-     * mono rounded squares get a concentric rounded rectangle, and angular's chamfered buttons a chamfered
+     * Round buttons (classic, aurora, pop, playful, glass) keep the 32 dp pill from the layout; the minimal and
+     * mono and material rounded squares get a concentric rounded rectangle, and angular's chamfered buttons a chamfered
      * tray (9-patch, see scripts/render-widget-tray.mjs). Setting a background replaces the view's padding
      * with the drawable's, so the 4 dp padding is restored right after.
      */
@@ -188,6 +188,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         if ("angular".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_angular_dark : R.drawable.widget_tray_angular;
         else if ("minimal".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_minimal_dark : R.drawable.widget_tray_minimal;
         else if ("mono".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_mono_dark : R.drawable.widget_tray_mono;
+        else if ("material".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_material_dark : R.drawable.widget_tray_material;
         else return;
         int pad = Math.round(4 * context.getResources().getDisplayMetrics().density);
         view.setInt(R.id.widget_tray, "setBackgroundResource", tray);
@@ -322,6 +323,28 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                     border = Color.parseColor("#cbd5e1");
                 }
                 borderWidth = 3f;
+            } else if ("glass".equals(themeStyle)) {
+                // Frosted plates with a white rim, like the glass dock (theme-glass.css --dock-1..6).
+                String[] fills = dark
+                    ? new String[]{ "#2f9d7c", "#c4507a", "#4a78d6", "#c98a4a", "#7e63d6", "#c9a92a" }
+                    : new String[]{ "#8fdcc2", "#f4a6bd", "#9bc0f6", "#f6c28b", "#c3a8f6", "#f3df86" };
+                String[] inks = dark
+                    ? new String[]{ "#eafff6", "#fff0f6", "#eef4ff", "#fff3e6", "#f3edff", "#fffbe0" }
+                    : new String[]{ "#0b3b2e", "#52122e", "#10264f", "#5a3208", "#2b1a6b", "#4a3c0d" };
+                fill = Color.parseColor(fills[index]);
+                ink = Color.parseColor(inks[index]);
+                border = Color.parseColor(dark ? "#47FFFFFF" : "#A6FFFFFF");
+                borderWidth = 3f;
+            } else if ("material".equals(themeStyle)) {
+                // Material You tonal containers (theme-material.css --dock-1..6), rounded squares.
+                String[] fills = dark
+                    ? new String[]{ "#2b4e37", "#5e2a34", "#2b4559", "#54402a", "#43385f", "#4c4720" }
+                    : new String[]{ "#cde8d2", "#f0d4d6", "#d3e4ee", "#efdfcb", "#e4ddf0", "#ebe5b9" };
+                String[] inks = dark
+                    ? new String[]{ "#cdebd4", "#ffd9dd", "#cfe5f7", "#f3dfc4", "#e8defb", "#f0e8b0" }
+                    : new String[]{ "#0f3a24", "#55151f", "#17364f", "#4f3213", "#3b2d5e", "#4a4310" };
+                fill = Color.parseColor(fills[index]);
+                ink = Color.parseColor(inks[index]);
             } else if ("mono".equals(themeStyle)) {
                 int base = Color.parseColor(monoHue != null && monoHue.matches("^#[0-9a-fA-F]{6}$") ? monoHue : "#64748b");
                 // Every button (Food and Movement included) uses the same plate, like the app dock in Mono.
@@ -347,6 +370,8 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 shape.addRoundRect(rect, 30f, 30f, Path.Direction.CW);
             } else if ("mono".equals(themeStyle)) {
                 shape.addRoundRect(rect, 33f, 33f, Path.Direction.CW);
+            } else if ("material".equals(themeStyle)) {
+                shape.addRoundRect(rect, 44f, 44f, Path.Direction.CW); // 16 dp at 48 dp, like --dock-btn-radius
             } else {
                 shape.addOval(rect, Path.Direction.CW);
             }

@@ -39,6 +39,8 @@ html[data-style='minimal'] .quick-widget {
   backdrop-filter: none;
 }
 html[data-style='mono'] .quick-widget { --widget-pill-radius: 20px; } /* 12px buttons + 8px */
+html[data-style='material'] .quick-widget { --widget-pill-radius: 24px; } /* 16px buttons + 8px, a tonal tray */
+html[data-style='glass'] .quick-widget { backdrop-filter: blur(14px) saturate(150%); border-color: rgb(255 255 255 / 55%); } /* frosted tray */
 html[data-style='angular'] .quick-widget {
   --widget-pill-radius: 0;
   /* 9px button chamfer + 8px * (2 - sqrt 2) = 14px. The border and shadow would be cut by the clip. */

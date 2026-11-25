@@ -1,0 +1,210 @@
+/* 8. MATERIAL THEME (Material You / Material 3 tonal surfaces: flat filled containers, no borders, soft elevation only on
+   floating things, 8 px chips, rounded-square dock buttons, scrim-dimmed dialogs). Tokens per mode only; the tinted Custom
+   sections use themed-tones.css and the Material-specific rules (scrim, dialog, chips, state layers) are in themed-material.css. Typography: Roboto when the device has it (Android always does), else the bundled
+   Plus Jakarta Sans, so no font file or dependency is added. */
+html[data-style="material"] {
+  --font-family: Roboto, 'Google Sans', 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --icon-btn-radius: 9999px;
+  --nav-radius: 999px;
+  --nav-pill-radius: 999px;
+  --card-radius: 24px;
+  --micro-radius: 16px;
+  --badge-radius: 999px;
+  --bar-radius: 999px;
+  --pill-radius: 8px;
+  --dock-radius: 28px;
+  --dock-btn-radius: 16px;
+  --card-border: none;
+  --card-shadow: none;
+  --pill-border: none;
+  --dock-border: none;
+  --dock-btn-border: none;
+  --clip-lg: none;
+  --clip-md: none;
+  --clip-sm: none;
+  --clip-xs: none;
+  --clip-dock: none;
+}
+
+/* ---- Light: tonal pastels on a warm lilac-white ---- */
+html[data-style="material"][data-theme="light"] {
+  --bg: #fff7ff;
+  --surface: #f7edf7;
+  --surface-solid: #fff7ff;
+  --inset: #efe5ef;
+  --hover: #e8dee8;
+  --border: #d4c9d4;
+  --text: #1d1b20;
+  --muted: #4a454f;
+  --header-btn-bg: #ece2ec;
+  --header-icon-color: #1d1b20;
+  --nav-bg: #f1e6f1;
+  --nav-inactive-color: #49454f;
+  --nav-active-bg: #f4d7da;
+  --nav-active-color: #3e1218;
+  --meal-icon-color: #49454f;
+  --brand-flame-color: #8e2b3c;
+  --dock-bg: #f7edf7;
+  --dock-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+  --mat-dialog-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.3);
+  --mat-scrim: rgba(0, 0, 0, 0.32);
+
+  --intake-bg: #cfe7d3;
+  --intake-text: #0f3a24; --intake-label: #1e4d33;
+  --intake-track: rgba(15, 58, 36, 0.14); --intake-fill: #1e5a3a;
+  --intake-badge-bg: #1e5a3a; --intake-badge-text: #d7f2dd;
+  --burned-bg: #f0d4d6;
+  --burned-text: #55151f; --burned-label: #6b2a33;
+  --burned-track: rgba(85, 21, 31, 0.16); --burned-fill: #8e2b3c;
+  --badge-bg: #8e2b3c; --badge-text: #ffffff;
+
+  --carbs-bg: #d3e4ee; --carbs-text: #17364f;
+  --protein-bg: #efdfcb; --protein-text: #4f3213;
+  --fat-bg: #e4ddf0; --fat-text: #3b2d5e;
+  --pill-c-bg: #d3e4ee; --pill-c-text: #17364f;
+  --pill-p-bg: #efdfcb; --pill-p-text: #4f3213;
+  --pill-f-bg: #e4ddf0; --pill-f-text: #3b2d5e;
+  --fiber-bg: #ebe5b9; --fiber-text: #4a4310;
+  --salt-bg: #ebe5b9; --salt-text: #4a4310;
+  --sugar-bg: #ebe5b9; --sugar-text: #4a4310;
+
+  --dock-1: #cde8d2; --dock-icon-1: #0f3a24;
+  --dock-2: #f0d4d6; --dock-icon-2: #55151f;
+  --dock-3: #d3e4ee; --dock-icon-3: #17364f;
+  --dock-4: #efdfcb; --dock-icon-4: #4f3213;
+  --dock-5: #e4ddf0; --dock-icon-5: #3b2d5e;
+  --dock-6: #ebe5b9; --dock-icon-6: #4a4310;
+
+  --tone-diary: #ebe5bd;   --tone-diary-in: #f4f0d2;
+  --tone-meals: #eee0cb;   --tone-meals-in: #f6ebda;
+  --tone-recipes: #e1d9ee; --tone-recipes-in: #ece6f5;
+  --tone-planner: #d5e3ec; --tone-planner-in: #e3edf4;
+  --tone-photo: #f0d6d8;   --tone-photo-in: #f7e4e5;
+  --tone-foods: #d2e8d6;   --tone-foods-in: #e1f1e4;
+  --tone-teal: #cde6e6;    --tone-teal-in: #ddf0f0;
+  --tone-pale: rgba(255, 255, 255, 0.7);
+
+  --color-nutrient: #ebe5b9; --color-nutrient-ink: #4a4310;
+  --color-intake: #cfe7d3; --color-intake-ink: #0f3a24; --color-intake-accent: #2d6a45; --color-intake-soft: #e3f2e6;
+  --color-activity: #f0d4d6; --color-activity-ink: #55151f; --color-activity-accent: #8e2b3c; --color-activity-soft: #f8e6e7;
+  --color-activity-border: #e3b5b9; --color-activity-hover: #ebc4c7;
+  --color-weight: #e4ddf0; --color-weight-ink: #3b2d5e; --color-weight-accent: #5f4b8b; --color-weight-soft: #f0ebf7;
+}
+
+/* ---- Lite dark: Material dark, a step lighter ---- */
+html[data-style="material"][data-theme="lite-dark"] {
+  --bg: #2b2930;
+  --surface: #36343b;
+  --surface-solid: #36343b;
+  --inset: #403d45;
+  --hover: #4a4751;
+  --border: #625e68;
+  --text: #f2edf5;
+  --muted: #d4cedb;
+  --header-btn-bg: #403d45;
+  --header-icon-color: #f2edf5;
+  --nav-bg: #36343b;
+  --nav-inactive-color: #d4cedb;
+  --nav-active-bg: #7a4650;
+  --nav-active-color: #ffe0e3;
+  --meal-icon-color: #e6e0e9;
+  --brand-flame-color: #ffb3bd;
+  --dock-bg: #403d45;
+  --dock-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 4px 8px 3px rgba(0, 0, 0, 0.25);
+  --mat-dialog-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.3), 0 4px 4px rgba(0, 0, 0, 0.45);
+  --mat-scrim: rgba(0, 0, 0, 0.5);
+
+  --intake-bg: #36604a;
+  --intake-text: #d6f2dc; --intake-label: #d6f2dc;
+  --intake-track: rgba(214, 242, 220, 0.2); --intake-fill: #d6f2dc;
+  --intake-badge-bg: #d6f2dc; --intake-badge-text: #17402a;
+  --burned-bg: #70363f;
+  --burned-text: #ffe0e3; --burned-label: #ffe0e3;
+  --burned-track: rgba(255, 224, 227, 0.2); --burned-fill: #ffe0e3;
+  --badge-bg: rgba(0, 0, 0, 0.35); --badge-text: #ffe0e3;
+
+  --carbs-bg: #36546a; --carbs-text: #d9ebfa;
+  --protein-bg: #655037; --protein-text: #f8e6cc;
+  --fat-bg: #52456f; --fat-text: #ede4ff;
+  --pill-c-bg: #36546a; --pill-c-text: #d9ebfa;
+  --pill-p-bg: #655037; --pill-p-text: #f8e6cc;
+  --pill-f-bg: #52456f; --pill-f-text: #ede4ff;
+  --fiber-bg: #5e582c; --fiber-text: #f6eeb8;
+  --salt-bg: #5e582c; --salt-text: #f6eeb8;
+  --sugar-bg: #5e582c; --sugar-text: #f6eeb8;
+
+  --dock-1: #36604a; --dock-icon-1: #d6f2dc;
+  --dock-2: #70363f; --dock-icon-2: #ffe0e3;
+  --dock-3: #36546a; --dock-icon-3: #d9ebfa;
+  --dock-4: #655037; --dock-icon-4: #f8e6cc;
+  --dock-5: #52456f; --dock-icon-5: #ede4ff;
+  --dock-6: #5e582c; --dock-icon-6: #f6eeb8;
+
+  --tone-diary: #4a4630;   --tone-diary-in: #58543a;
+  --tone-meals: #50412f;   --tone-meals-in: #5e4e3a;
+  --tone-recipes: #413a56; --tone-recipes-in: #4e4666;
+  --tone-planner: #2f4556; --tone-planner-in: #3b5367;
+  --tone-photo: #573a40;   --tone-photo-in: #664850;
+  --tone-foods: #34503f;   --tone-foods-in: #405f4c;
+  --tone-teal: #2e4e4e;    --tone-teal-in: #3a5d5d;
+  --tone-pale: rgba(255, 255, 255, 0.08);
+}
+
+/* ---- Dark: Material baseline dark ---- */
+html[data-style="material"][data-theme="dark"] {
+  --bg: #141218;
+  --surface: #211f26;
+  --surface-solid: #211f26;
+  --inset: #2b2930;
+  --hover: #36343b;
+  --border: #49454f;
+  --text: #e6e0e9;
+  --muted: #cac4d0;
+  --header-btn-bg: #2b2930;
+  --header-icon-color: #e6e0e9;
+  --nav-bg: #211f26;
+  --nav-inactive-color: #cac4d0;
+  --nav-active-bg: #633b48;
+  --nav-active-color: #ffd8e4;
+  --meal-icon-color: #cac4d0;
+  --brand-flame-color: #ffb3bd;
+  --dock-bg: #2b2930;
+  --dock-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 8px 3px rgba(0, 0, 0, 0.3);
+  --mat-dialog-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.35), 0 4px 4px rgba(0, 0, 0, 0.5);
+  --mat-scrim: rgba(0, 0, 0, 0.6);
+
+  --intake-bg: #2b4e37;
+  --intake-text: #cdebd4; --intake-label: #cdebd4;
+  --intake-track: rgba(205, 235, 212, 0.18); --intake-fill: #cdebd4;
+  --intake-badge-bg: #cdebd4; --intake-badge-text: #143a24;
+  --burned-bg: #5e2a34;
+  --burned-text: #ffd9dd; --burned-label: #ffd9dd;
+  --burned-track: rgba(255, 217, 221, 0.18); --burned-fill: #ffd9dd;
+  --badge-bg: rgba(0, 0, 0, 0.4); --badge-text: #ffd9dd;
+
+  --carbs-bg: #2b4559; --carbs-text: #cfe5f7;
+  --protein-bg: #54402a; --protein-text: #f3dfc4;
+  --fat-bg: #43385f; --fat-text: #e8defb;
+  --pill-c-bg: #2b4559; --pill-c-text: #cfe5f7;
+  --pill-p-bg: #54402a; --pill-p-text: #f3dfc4;
+  --pill-f-bg: #43385f; --pill-f-text: #e8defb;
+  --fiber-bg: #4c4720; --fiber-text: #f0e8b0;
+  --salt-bg: #4c4720; --salt-text: #f0e8b0;
+  --sugar-bg: #4c4720; --sugar-text: #f0e8b0;
+
+  --dock-1: #2b4e37; --dock-icon-1: #cdebd4;
+  --dock-2: #5e2a34; --dock-icon-2: #ffd9dd;
+  --dock-3: #2b4559; --dock-icon-3: #cfe5f7;
+  --dock-4: #54402a; --dock-icon-4: #f3dfc4;
+  --dock-5: #43385f; --dock-icon-5: #e8defb;
+  --dock-6: #4c4720; --dock-icon-6: #f0e8b0;
+
+  --tone-diary: #3a3720;   --tone-diary-in: #47432a;
+  --tone-meals: #44372a;   --tone-meals-in: #50422f;
+  --tone-recipes: #373048; --tone-recipes-in: #443c57;
+  --tone-planner: #263a4a; --tone-planner-in: #31475a;
+  --tone-photo: #4a2d33;   --tone-photo-in: #583840;
+  --tone-foods: #2b4535;   --tone-foods-in: #365541;
+  --tone-teal: #254444;    --tone-teal-in: #2f5252;
+  --tone-pale: rgba(255, 255, 255, 0.06);
+}

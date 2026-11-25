@@ -1,0 +1,229 @@
+/* 7. GLASS THEME (frosted translucent panels on a lavender-blue gradient, tinted gradient tiles).
+   Tokens per mode only. The shared component rules live in themed-chrome / themed-cards, the tinted Custom sections in
+   themed-tones.css and the frosted-glass specifics (blur, scrim, dialog, re-tinted pastel buttons) in themed-glass.css. */
+html[data-style="glass"] {
+  --font-family: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --icon-btn-radius: 9999px;
+  --nav-radius: 999px;
+  --nav-pill-radius: 999px;
+  --card-radius: 26px;
+  --micro-radius: 20px;
+  --badge-radius: 999px;
+  --bar-radius: 999px;
+  --pill-radius: 999px;
+  --dock-radius: 999px;
+  --dock-btn-radius: 9999px;
+  --pill-border: none;
+  --clip-lg: none;
+  --clip-md: none;
+  --clip-sm: none;
+  --clip-xs: none;
+  --clip-dock: none;
+  --brand-flame-color: #6d5ae0;
+}
+
+/* ---- Light: lavender glass ---- */
+html[data-style="glass"][data-theme="light"] {
+  --bg: #c4bdf5;
+  --app-bg-image:
+    radial-gradient(70% 45% at 10% 0%, #d7c6f7 0%, transparent 70%),
+    radial-gradient(60% 40% at 100% 32%, #b3c6f9 0%, transparent 70%),
+    linear-gradient(165deg, #cbbdf3 0%, #bcc0f6 55%, #b9c8f8 100%);
+  --surface: rgba(255, 255, 255, 0.5);
+  --surface-solid: #dcd6fa;
+  --inset: rgba(255, 255, 255, 0.38);
+  --hover: rgba(255, 255, 255, 0.64);
+  --border: rgba(255, 255, 255, 0.6);
+  --text: #1b1745;
+  --muted: #443f74;
+  --header-btn-bg: rgba(255, 255, 255, 0.55);
+  --header-icon-color: #1b1745;
+  --nav-bg: rgba(255, 255, 255, 0.45);
+  --nav-inactive-color: #2b2660;
+  --nav-active-bg: linear-gradient(135deg, #f9c0cf 0%, #f3a9c0 100%);
+  --nav-active-color: #6b1738;
+  --meal-icon-color: #1b1745;
+  --card-border: 1px solid rgba(255, 255, 255, 0.62);
+  --card-shadow: 0 10px 30px rgba(84, 70, 160, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --dock-bg: rgba(255, 255, 255, 0.5);
+  --dock-border: 1px solid rgba(255, 255, 255, 0.65);
+  --dock-shadow: 0 14px 36px rgba(84, 70, 160, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  --dock-btn-border: 1px solid rgba(255, 255, 255, 0.6);
+  --glass-dialog: rgba(226, 220, 252, 0.9);
+  --glass-scrim: rgba(58, 46, 120, 0.42);
+
+  --intake-bg: linear-gradient(135deg, rgba(104, 206, 184, 0.9) 0%, rgba(156, 224, 206, 0.9) 100%);
+  --intake-text: #08352d; --intake-label: #08352d;
+  --intake-track: rgba(255, 255, 255, 0.45); --intake-fill: #08352d;
+  --intake-badge-bg: #08352d; --intake-badge-text: #c8f5e8;
+  --burned-bg: linear-gradient(135deg, rgba(222, 150, 190, 0.92) 0%, rgba(236, 172, 204, 0.92) 100%);
+  --burned-text: #4a0f2c; --burned-label: #4a0f2c;
+  --burned-track: rgba(255, 255, 255, 0.4); --burned-fill: #8c2a57;
+  --badge-bg: #5b1a3a; --badge-text: #ffd9ea;
+
+  --carbs-bg: linear-gradient(135deg, rgba(122, 160, 245, 0.88) 0%, rgba(150, 180, 248, 0.88) 100%); --carbs-text: #0f2562;
+  --protein-bg: linear-gradient(135deg, rgba(228, 176, 150, 0.9) 0%, rgba(238, 196, 172, 0.9) 100%); --protein-text: #5a2a12;
+  --fat-bg: linear-gradient(135deg, rgba(168, 152, 248, 0.9) 0%, rgba(194, 180, 250, 0.9) 100%); --fat-text: #2a1a6e;
+  --pill-c-bg: rgba(110, 150, 245, 0.3); --pill-c-text: #14307a;
+  --pill-p-bg: rgba(235, 160, 110, 0.34); --pill-p-text: #6a330f;
+  --pill-f-bg: rgba(150, 130, 245, 0.32); --pill-f-text: #35208a;
+  --fiber-bg: linear-gradient(135deg, rgba(228, 214, 150, 0.92) 0%, rgba(236, 226, 176, 0.92) 100%); --fiber-text: #4a3c0d;
+  --salt-bg: var(--fiber-bg); --salt-text: var(--fiber-text);
+  --sugar-bg: var(--fiber-bg); --sugar-text: var(--fiber-text);
+
+  --dock-1: #8fdcc2; --dock-icon-1: #0b3b2e;
+  --dock-2: #f4a6bd; --dock-icon-2: #52122e;
+  --dock-3: #9bc0f6; --dock-icon-3: #10264f;
+  --dock-4: #f6c28b; --dock-icon-4: #5a3208;
+  --dock-5: #c3a8f6; --dock-icon-5: #2b1a6b;
+  --dock-6: #f3df86; --dock-icon-6: #4a3c0d;
+
+  /* Custom sections (see themed-tones.css): section colour, brighter inner card, frosted white */
+  --tone-diary: rgba(238, 214, 120, 0.8);   --tone-diary-in: rgba(250, 222, 92, 0.92);
+  --tone-meals: rgba(226, 186, 160, 0.82);  --tone-meals-in: rgba(236, 200, 176, 0.9);
+  --tone-recipes: rgba(172, 152, 246, 0.8); --tone-recipes-in: rgba(196, 178, 250, 0.9);
+  --tone-planner: rgba(140, 170, 246, 0.8); --tone-planner-in: rgba(168, 194, 250, 0.92);
+  --tone-photo: rgba(238, 150, 170, 0.78);  --tone-photo-in: rgba(246, 176, 192, 0.9);
+  --tone-foods: rgba(136, 212, 188, 0.8);   --tone-foods-in: rgba(166, 226, 206, 0.9);
+  --tone-teal: rgba(130, 208, 214, 0.8);    --tone-teal-in: rgba(164, 224, 228, 0.9);
+  --tone-pale: rgba(255, 255, 255, 0.6);
+
+  /* The shared pastel tokens (statistics, widgets, bg-intake / bg-activity ...) */
+  --color-nutrient: #e6d589; --color-nutrient-ink: #4a3c0d;
+  --color-intake: #9adbc9; --color-intake-ink: #08352d; --color-intake-accent: #14705f; --color-intake-soft: #c4ece1;
+  --color-activity: #e6a8c4; --color-activity-ink: #4a0f2c; --color-activity-accent: #9d2f63; --color-activity-soft: #f2cde0;
+  --color-activity-border: #d98fb3; --color-activity-hover: #dd98b9;
+  --color-weight: #bdb0f6; --color-weight-ink: #2c1a6b; --color-weight-accent: #5b3fc4; --color-weight-soft: #dcd4fa;
+}
+
+/* ---- Lite dark: dusk violet glass ---- */
+html[data-style="glass"][data-theme="lite-dark"] {
+  --bg: #2a2652;
+  --app-bg-image:
+    radial-gradient(65% 42% at 12% 0%, #4a3a8c 0%, transparent 70%),
+    radial-gradient(60% 40% at 100% 34%, #2d4a8f 0%, transparent 70%),
+    linear-gradient(165deg, #2a2652 0%, #302a5e 55%, #2b3463 100%);
+  --surface: rgba(255, 255, 255, 0.12);
+  --surface-solid: #3a346a;
+  --inset: rgba(255, 255, 255, 0.09);
+  --hover: rgba(255, 255, 255, 0.19);
+  --border: rgba(255, 255, 255, 0.2);
+  --text: #f6f3ff;
+  --muted: #cdc8ee;
+  --header-btn-bg: rgba(255, 255, 255, 0.14);
+  --header-icon-color: #f6f3ff;
+  --nav-bg: rgba(255, 255, 255, 0.12);
+  --nav-inactive-color: #ece8ff;
+  --nav-active-bg: linear-gradient(135deg, #f9a8c4 0%, #e879a8 100%);
+  --nav-active-color: #3d0a22;
+  --meal-icon-color: #ffffff;
+  --card-border: 1px solid rgba(255, 255, 255, 0.2);
+  --card-shadow: 0 10px 30px rgba(12, 8, 40, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --dock-bg: rgba(52, 46, 100, 0.6);
+  --dock-border: 1px solid rgba(255, 255, 255, 0.22);
+  --dock-shadow: 0 14px 36px rgba(12, 8, 40, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --dock-btn-border: 1px solid rgba(255, 255, 255, 0.22);
+  --glass-dialog: rgba(52, 46, 100, 0.9);
+  --glass-scrim: rgba(14, 10, 40, 0.5);
+
+  --intake-bg: linear-gradient(135deg, rgba(52, 200, 168, 0.6) 0%, rgba(86, 214, 184, 0.45) 100%);
+  --intake-text: #d9fbf0; --intake-label: #d9fbf0;
+  --intake-track: rgba(255, 255, 255, 0.2); --intake-fill: #d9fbf0;
+  --intake-badge-bg: #d9fbf0; --intake-badge-text: #0a3b32;
+  --burned-bg: linear-gradient(135deg, rgba(240, 100, 156, 0.58) 0%, rgba(240, 130, 178, 0.45) 100%);
+  --burned-text: #ffe6f1; --burned-label: #ffe6f1;
+  --burned-track: rgba(255, 255, 255, 0.2); --burned-fill: #ffe6f1;
+  --badge-bg: rgba(20, 8, 40, 0.55); --badge-text: #ffe6f1;
+
+  --carbs-bg: rgba(104, 148, 250, 0.42); --carbs-text: #e1ebff;
+  --protein-bg: rgba(244, 156, 108, 0.38); --protein-text: #ffe9d8;
+  --fat-bg: rgba(168, 138, 252, 0.44); --fat-text: #f0e9ff;
+  --pill-c-bg: rgba(104, 148, 250, 0.36); --pill-c-text: #d6e4ff;
+  --pill-p-bg: rgba(244, 156, 108, 0.34); --pill-p-text: #ffe0c9;
+  --pill-f-bg: rgba(168, 138, 252, 0.38); --pill-f-text: #eadfff;
+  --fiber-bg: rgba(244, 206, 70, 0.34); --fiber-text: #fff3b8;
+  --salt-bg: var(--fiber-bg); --salt-text: var(--fiber-text);
+  --sugar-bg: var(--fiber-bg); --sugar-text: var(--fiber-text);
+
+  --dock-1: rgba(52, 211, 153, 0.6); --dock-icon-1: #e0fff2;
+  --dock-2: rgba(251, 113, 133, 0.6); --dock-icon-2: #ffe8ee;
+  --dock-3: rgba(96, 165, 250, 0.6); --dock-icon-3: #e6f0ff;
+  --dock-4: rgba(251, 146, 60, 0.6); --dock-icon-4: #fff0e0;
+  --dock-5: rgba(167, 139, 250, 0.6); --dock-icon-5: #f1eaff;
+  --dock-6: rgba(250, 204, 21, 0.55); --dock-icon-6: #fff8cc;
+
+  --tone-diary: rgba(250, 204, 21, 0.22);   --tone-diary-in: rgba(250, 204, 21, 0.34);
+  --tone-meals: rgba(251, 146, 90, 0.22);   --tone-meals-in: rgba(251, 146, 90, 0.34);
+  --tone-recipes: rgba(167, 139, 250, 0.26); --tone-recipes-in: rgba(167, 139, 250, 0.38);
+  --tone-planner: rgba(96, 150, 250, 0.26); --tone-planner-in: rgba(96, 150, 250, 0.38);
+  --tone-photo: rgba(251, 113, 133, 0.24);  --tone-photo-in: rgba(251, 113, 133, 0.36);
+  --tone-foods: rgba(52, 211, 153, 0.22);   --tone-foods-in: rgba(52, 211, 153, 0.34);
+  --tone-teal: rgba(45, 212, 191, 0.22);    --tone-teal-in: rgba(45, 212, 191, 0.34);
+  --tone-pale: rgba(255, 255, 255, 0.1);
+}
+
+/* ---- Dark: deep violet glass ---- */
+html[data-style="glass"][data-theme="dark"] {
+  --bg: #14102b;
+  --app-bg-image:
+    radial-gradient(60% 40% at 14% 0%, #3a2a78 0%, transparent 70%),
+    radial-gradient(55% 40% at 100% 36%, #1f3a7a 0%, transparent 70%),
+    linear-gradient(165deg, #15112e 0%, #1a1538 55%, #17203f 100%);
+  --surface: rgba(255, 255, 255, 0.08);
+  --surface-solid: #241d4a;
+  --inset: rgba(255, 255, 255, 0.06);
+  --hover: rgba(255, 255, 255, 0.14);
+  --border: rgba(255, 255, 255, 0.15);
+  --text: #f4f1ff;
+  --muted: #b9b3dd;
+  --header-btn-bg: rgba(255, 255, 255, 0.1);
+  --header-icon-color: #f4f1ff;
+  --nav-bg: rgba(255, 255, 255, 0.08);
+  --nav-inactive-color: #e6e1ff;
+  --nav-active-bg: linear-gradient(135deg, #f9a8c4 0%, #e879a8 100%);
+  --nav-active-color: #3d0a22;
+  --meal-icon-color: #ffffff;
+  --card-border: 1px solid rgba(255, 255, 255, 0.14);
+  --card-shadow: 0 10px 30px rgba(4, 2, 20, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --dock-bg: rgba(30, 24, 64, 0.58);
+  --dock-border: 1px solid rgba(255, 255, 255, 0.18);
+  --dock-shadow: 0 14px 36px rgba(2, 0, 16, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --dock-btn-border: 1px solid rgba(255, 255, 255, 0.18);
+  --glass-dialog: rgba(34, 28, 72, 0.9);
+  --glass-scrim: rgba(8, 5, 26, 0.58);
+
+  --intake-bg: linear-gradient(135deg, rgba(45, 190, 160, 0.55) 0%, rgba(70, 200, 170, 0.38) 100%);
+  --intake-text: #d5fbef; --intake-label: #d5fbef;
+  --intake-track: rgba(255, 255, 255, 0.18); --intake-fill: #d5fbef;
+  --intake-badge-bg: #d5fbef; --intake-badge-text: #0a3b32;
+  --burned-bg: linear-gradient(135deg, rgba(236, 90, 150, 0.52) 0%, rgba(236, 120, 170, 0.38) 100%);
+  --burned-text: #ffe3f0; --burned-label: #ffe3f0;
+  --burned-track: rgba(255, 255, 255, 0.18); --burned-fill: #ffe3f0;
+  --badge-bg: rgba(10, 4, 28, 0.55); --badge-text: #ffe3f0;
+
+  --carbs-bg: rgba(96, 140, 250, 0.38); --carbs-text: #dbe7ff;
+  --protein-bg: rgba(240, 150, 100, 0.34); --protein-text: #ffe5d2;
+  --fat-bg: rgba(160, 130, 250, 0.4); --fat-text: #ece4ff;
+  --pill-c-bg: rgba(96, 140, 250, 0.32); --pill-c-text: #cfdfff;
+  --pill-p-bg: rgba(240, 150, 100, 0.3); --pill-p-text: #ffdcc4;
+  --pill-f-bg: rgba(160, 130, 250, 0.34); --pill-f-text: #e6dcff;
+  --fiber-bg: rgba(240, 200, 60, 0.3); --fiber-text: #fff0b0;
+  --salt-bg: var(--fiber-bg); --salt-text: var(--fiber-text);
+  --sugar-bg: var(--fiber-bg); --sugar-text: var(--fiber-text);
+
+  --dock-1: rgba(52, 211, 153, 0.5); --dock-icon-1: #d8fff0;
+  --dock-2: rgba(251, 113, 133, 0.5); --dock-icon-2: #ffe3ea;
+  --dock-3: rgba(96, 165, 250, 0.5); --dock-icon-3: #dfeaff;
+  --dock-4: rgba(251, 146, 60, 0.5); --dock-icon-4: #ffebd6;
+  --dock-5: rgba(167, 139, 250, 0.5); --dock-icon-5: #ede4ff;
+  --dock-6: rgba(250, 204, 21, 0.45); --dock-icon-6: #fff6c2;
+
+  --tone-diary: rgba(250, 204, 21, 0.18);   --tone-diary-in: rgba(250, 204, 21, 0.3);
+  --tone-meals: rgba(251, 146, 90, 0.18);   --tone-meals-in: rgba(251, 146, 90, 0.3);
+  --tone-recipes: rgba(167, 139, 250, 0.22); --tone-recipes-in: rgba(167, 139, 250, 0.34);
+  --tone-planner: rgba(96, 150, 250, 0.22); --tone-planner-in: rgba(96, 150, 250, 0.34);
+  --tone-photo: rgba(251, 113, 133, 0.2);   --tone-photo-in: rgba(251, 113, 133, 0.32);
+  --tone-foods: rgba(52, 211, 153, 0.18);   --tone-foods-in: rgba(52, 211, 153, 0.3);
+  --tone-teal: rgba(45, 212, 191, 0.18);    --tone-teal-in: rgba(45, 212, 191, 0.3);
+  --tone-pale: rgba(255, 255, 255, 0.08);
+}

@@ -21,6 +21,8 @@ export const THEME_STYLE_LIST: ThemeStyle[] = [
   'playful',
   'minimal',
   'mono',
+  'glass',
+  'material',
 ];
 
 export const SIX_NEW_THEMES: ThemePresetMeta[] = [
@@ -59,6 +61,18 @@ export const SIX_NEW_THEMES: ThemePresetMeta[] = [
     name: { en: 'Mono', it: 'Mono' },
     tag: { en: 'Single-Hue Tonal', it: 'Monocromatico Tonale' },
     swatches: ['#1e293b', '#64748b', '#cbd5e1'],
+  },
+  {
+    id: 'glass',
+    name: { en: 'Glass', it: 'Vetro' },
+    tag: { en: 'Frosted · Lavender Blur', it: 'Smerigliato · Lavanda' },
+    swatches: ['#c4bdf5', '#8fdcc2', '#f4a6bd'],
+  },
+  {
+    id: 'material',
+    name: { en: 'Material', it: 'Material' },
+    tag: { en: 'Tonal · Material You', it: 'Tonale · Material You' },
+    swatches: ['#fff7ff', '#cde8d2', '#f0d4d6'],
   },
 ];
 

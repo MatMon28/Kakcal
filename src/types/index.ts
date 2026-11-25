@@ -208,7 +208,7 @@ export type ActiveTab = 'today' | 'prebuilt' | 'period' | 'database' | 'body' | 
 
 export type Theme = 'light' | 'lite-dark' | 'dark';
 
-export type ThemeStyle = 'classic' | 'angular' | 'aurora' | 'pop' | 'playful' | 'minimal' | 'mono';
+export type ThemeStyle = 'classic' | 'angular' | 'aurora' | 'pop' | 'playful' | 'minimal' | 'mono' | 'glass' | 'material';
 
 /** A reminder sent once a day at a chosen local time ("HH:MM"). */
 export interface DailyReminderSetting {

@@ -13,7 +13,7 @@ import type { ThemeStyle } from '../../types';
  *  - the outline and glyph are the ink of the card the badge sits on (`currentColor`), tinted a little towards
  *    green (objective) or red (limit) with `color-mix`, so contrast is always the card's own contrast on every
  *    theme, on pastel, gradient, glass, dark and single-hue (Mono) cards alike;
- *  - the container shape follows the style: circle (classic, aurora, playful, mono), chamfered octagon (angular),
+ *  - the container shape follows the style: circle (classic, aurora, playful, mono, glass, material), chamfered octagon (angular),
  *    hard square with a heavier line (pop) and hairline rounded square (minimal); line joins are mitred in the
  *    angular and pop styles.
  * The two shapes differ as well as the tints, so they can be told apart without colours. Renders nothing when goals
@@ -27,6 +27,8 @@ const STYLE_LOOK: Record<ThemeStyle, { shape: Shape; width: number; join: 'round
   aurora: { shape: 'circle', width: 2.2, join: 'round' },
   playful: { shape: 'circle', width: 2.4, join: 'round' },
   mono: { shape: 'circle', width: 2.2, join: 'round' },
+  glass: { shape: 'circle', width: 2.2, join: 'round' },
+  material: { shape: 'circle', width: 2.2, join: 'round' },
   angular: { shape: 'octagon', width: 2.2, join: 'miter' },
   pop: { shape: 'square', width: 2.8, join: 'miter' },
   minimal: { shape: 'rounded', width: 1.7, join: 'round' },

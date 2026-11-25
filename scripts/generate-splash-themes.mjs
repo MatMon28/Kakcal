@@ -1,7 +1,7 @@
 // Generates android/app/src/main/res/values/splash_themes.xml: one launch-screen style per app background colour.
 //
 // The Android 12+ system launch screen takes its colour from a *style*, which cannot be built at run time. The app
-// therefore ships one tiny style per possible --bg (6 style presets x 3 modes + 10 mono hues x 3 modes) and, on
+// therefore ships one tiny style per possible --bg (8 style presets x 3 modes + 10 mono hues x 3 modes) and, on
 // Android 13+, picks the right one with Context.setSplashScreenTheme (see LaunchBackground.java). The names are
 // `Splash_<bg hex without #, lowercase>`, so the web layer only has to send the hex of the current --bg.
 //
@@ -44,7 +44,7 @@ const bgOf = (selectorRegex, label) => {
 bgOf(':root', 'classic light');
 bgOf('\\[data-theme="lite-dark"\\]', 'classic lite-dark');
 bgOf('\\[data-theme="dark"\\]', 'classic dark');
-for (const style of ['angular', 'aurora', 'pop', 'playful', 'minimal']) {
+for (const style of ['angular', 'aurora', 'pop', 'playful', 'minimal', 'glass', 'material']) {
   for (const mode of MODES) bgOf(`html\\[data-style="${style}"\\]\\[data-theme="${mode}"\\]`, `${style} ${mode}`);
 }
 

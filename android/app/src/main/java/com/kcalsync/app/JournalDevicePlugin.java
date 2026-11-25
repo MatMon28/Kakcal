@@ -59,7 +59,8 @@ public class JournalDevicePlugin extends Plugin {
         String style = "dark".equals(call.getString("widgetStyle")) ? "dark" : "light";
         String rawThemeStyle = call.getString("themeStyle", "classic");
         String themeStyle = ("angular".equals(rawThemeStyle) || "aurora".equals(rawThemeStyle) || "pop".equals(rawThemeStyle)
-                || "playful".equals(rawThemeStyle) || "minimal".equals(rawThemeStyle) || "mono".equals(rawThemeStyle))
+                || "playful".equals(rawThemeStyle) || "minimal".equals(rawThemeStyle) || "mono".equals(rawThemeStyle)
+                || "glass".equals(rawThemeStyle) || "material".equals(rawThemeStyle))
                 ? rawThemeStyle : "classic";
         String rawMonoHue = call.getString("monoHue", "#64748b");
         String monoHue = rawMonoHue != null && rawMonoHue.matches("^#[0-9a-fA-F]{6}$") ? rawMonoHue.toLowerCase() : "#64748b";

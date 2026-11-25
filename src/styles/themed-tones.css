@@ -1,0 +1,20 @@
+/* Tinted Custom sections for the Glass and Material styles.
+   Classic gives every Custom section its own pastel in the component (inline palette); the other six styles use one
+   neutral --surface. Glass and Material bring the colours back: each section takes a tone from the theme file
+   (--tone-<name>, --tone-<name>-in, --tone-pale) and redefines --surface / --inset / --hover locally, so everything inside
+   (saved meal cards, ingredient lists, food buttons, search fields, chips) follows the section without per-component CSS.
+   Add a new section by adding one tone rule below and its --tone-* values to theme-glass.css and theme-material.css. */
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-yellow"] { --tone: var(--tone-diary); --tone-in: var(--tone-diary-in); }
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="meals"] { --tone: var(--tone-meals); --tone-in: var(--tone-meals-in); }
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="recipes"] { --tone: var(--tone-recipes); --tone-in: var(--tone-recipes-in); }
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-blue"] { --tone: var(--tone-planner); --tone-in: var(--tone-planner-in); }
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-red"] { --tone: var(--tone-photo); --tone-in: var(--tone-photo-in); }
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="foods"] { --tone: var(--tone-foods); --tone-in: var(--tone-foods-in); }
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section="journal-teal"] { --tone: var(--tone-teal); --tone-in: var(--tone-teal-in); }
+
+html:is([data-style="glass"], [data-style="material"]):not([data-style="classic"]) [data-library-section] {
+  background: var(--tone) !important;
+  --inset: var(--tone-in);
+  --surface: color-mix(in srgb, var(--tone-in, transparent) 38%, var(--tone-pale, transparent));
+  --hover: color-mix(in srgb, var(--tone-in, transparent) 70%, var(--tone-pale, transparent));
+}

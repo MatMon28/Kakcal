@@ -10,7 +10,12 @@
 @import "./styles/theme-pop.css";
 @import "./styles/theme-playful.css";
 @import "./styles/theme-minimal-mono.css";
+@import "./styles/theme-glass.css";
+@import "./styles/theme-material.css";
 @import "./styles/themed-chrome.css";
 @import "./styles/themed-cards.css";
 @import "./styles/themed-overrides.css";
+@import "./styles/themed-tones.css";
+@import "./styles/themed-glass.css";
+@import "./styles/themed-material.css";
 @import "./styles/performance.css";

@@ -6,6 +6,16 @@
 >
 > **Related:** [changelog/README.md](changelog/README.md), [audit-log.md](audit-log.md)
 
+## Desktop layout and Custom field round
+
+**Patch (Desktop layout and Custom field round, base `0b071a5a34f385b0cc93f097eb9cc4709e523224`):** no `package.json` / lock-file change, no native code, no IndexedDB, storage or backup change, no new translation key. The visible changes: the desktop sidebar / top bar is gone (desktop shows the phone layout) and the Meals / Recipes card buttons look like Classic in the other styles.
+
+- **Deleted (code):** `src/components/journal/JournalChrome.tsx`.
+- **Edited (code):** `src/App.tsx` (no `JournalChrome`), `src/components/journal/css/journal-responsive.css` (all `min-width: 1100px` / `1450px` blocks removed), `journal-shared-ui.css` (the 1100 px blocks and `.journal-demo-label` removed), `journal-base.css` (sidebar / top bar `display: none` removed), `journal-diary.css` (`.journal-help-content` removed), `src/styles/themed-overrides.css` (`.journal-mobile-demo` is shown at every width), `src/styles/themed-cards.css` (quiet edit / delete buttons and tinted Log pill in non-Classic styles), `src/components/prebuilt/MealsSection.tsx` and `RecipesSection.tsx` (`data-library-actions` on the button group).
+- **New (docs):** `docs/desktop-and-fields-update.md`.
+- **Edited (docs):** `README.md`, `docs/README.md`, `docs/meal-journal.md`, `docs/journal-pages.md`, `docs/settings-update.md`, `docs/interaction-update.md`, `docs/file-organisation.md`, `docs/file-map/components-common.md`, `docs/file-map/components-pages.md`, `docs/file-map/app-shell.md`, `docs/changes-patch.md`, `docs/changes-patch-history.md`.
+- **Verified here:** on a fresh clone of `0b071a5` with this patch applied: `npm ci`, `npm run typecheck` clean, `npm run lint` 0 errors (the 10 base warnings), `npm test` 92/92, `npm run build` OK, and screenshots in headless Chromium at 390 and 1400 px in all seven styles (light and dark). **Not verified here:** a real phone, Android WebView, Safari.
+
 ## Today performance round and APK naming round
 
 **Patch (Today performance round, "collapsed means not mounted", base `a3459c1b03f8a56a13327dd122f283fac7edae93`):** no `package.json` / lock-file change, no IndexedDB schema or backup change, no native code, no visual change except the intended one (a meal or tracker left open shows the existing deferred skeleton for a frame or two on entry).

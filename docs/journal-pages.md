@@ -40,3 +40,5 @@
 **Tidy-up round.** On Today, a meal's fibre / salt / sugar pills appear only while the meal is open (they slide with the meal's accordion); the Compact / Normal / Expanded switch is right-aligned and smaller; the Intake icon (Ultra minimal) is a tilted arrow (`ArrowDownLeft`), no longer a download-style arrow. On Statistics the "n/n days logged" line is hidden when every day of the period is logged (7/7, 30/30...). Every page change by tap gives the fields a barely visible rise-and-fade ([motion.md](motion.md)).
 
 **Today-style meals round:** Custom opens straight on the Meal diary (no title, tagline or Create new button); diary / planner previews and details match Today's meal field; empty Today meals have no *+ Log Food*; Compact note / photo icons live in the header bar. Details: [meal-journal.md](meal-journal.md).
+
+**Glass and Material styles:** every page, dialog and dock follows them (Custom sections take a tone each, see [glass-material-update.md](glass-material-update.md)); Classic keeps its own inline section pastels.

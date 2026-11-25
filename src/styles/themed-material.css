@@ -1,0 +1,49 @@
+/* MATERIAL: component rules (imported AFTER themed-chrome / themed-cards / themed-overrides so they win ties; the tokens are in theme-material.css). */
+/* ---- Material specifics (all three modes) ---- */
+
+/* Floating things get the elevation; cards, tiles and chips stay flat and tonal. */
+html[data-style="material"]:not([data-style="classic"]) .kc-header-surface {
+  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 96%), transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+html[data-style="material"]:not([data-style="classic"]) [role="dialog"] {
+  border: none !important;
+  border-radius: 28px !important;
+  box-shadow: var(--mat-dialog-shadow) !important;
+}
+html[data-style="material"] [data-sheet-scrim] {
+  background: var(--mat-scrim) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Material chips are 8 px rounded rectangles, not pills (meal choice chips, journal filter chips). */
+html[data-style="material"] :is([data-slot-chip], .journal-chip, .journal-slot-options button) {
+  border-radius: 10px !important;
+}
+
+/* Filled-tonal controls: inputs read as tonal containers with a bottom-heavy, borderless look. */
+html[data-style="material"] :is(.journal-search, .journal-secondary-button, .journal-danger-button) {
+  border-color: transparent;
+}
+
+/* State layers: hover / press tint the container instead of lifting or scaling it a lot. */
+html[data-style="material"] .pressable:not(:disabled):hover { filter: brightness(0.97); }
+html[data-style="material"] .pressable:not(:disabled):active { filter: brightness(0.93); }
+html[data-style="material"][data-theme="lite-dark"] .pressable:not(:disabled):hover,
+html[data-style="material"][data-theme="dark"] .pressable:not(:disabled):hover { filter: brightness(1.12); }
+html[data-style="material"][data-theme="lite-dark"] .pressable:not(:disabled):active,
+html[data-style="material"][data-theme="dark"] .pressable:not(:disabled):active { filter: brightness(1.2); }
+
+/* Keyboard focus: the Material 3 two-tone ring. */
+html[data-style="material"] :is(button, [role="button"], input, textarea, select):focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--text) 70%, transparent);
+  outline-offset: 2px;
+}
+
+/* Filled containers have no outline in Material: the generic themed rules draw a 1 px --border on nested cards,
+   ingredient lists, food buttons, custom pills and Period / Day overview cards; here only the tone separates them. */
+html[data-style="material"]:not([data-style="classic"]) :is([data-library-card], [data-library-ingredients], [data-library-food-btn], .kc-custom-pill, [data-custom-nutrient] .kc-custom-num-input, [data-period-card], [data-day-overview-card], [data-day-overview-row], .kc-modal-banner, .kc-custom-stat-dot-empty) {
+  border-color: transparent !important;
+}
