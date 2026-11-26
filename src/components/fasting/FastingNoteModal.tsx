@@ -75,8 +75,9 @@ export const FastingNoteModal: React.FC<FastingNoteModalProps> = ({
                   key={m}
                   type="button"
                   aria-pressed={active}
+                  data-fast-mood={active ? m : undefined}
                   onClick={() => setMood(m)}
-                  className={`pressable rounded-xl px-2.5 py-2 text-xs font-extrabold border transition-colors ${
+                  className={`kc-fast-mood-btn pressable rounded-xl px-2.5 py-2 text-xs font-extrabold border transition-colors ${
                     active
                       ? `${MOOD_TONE[m]} border-current`
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
@@ -104,10 +105,11 @@ export const FastingNoteModal: React.FC<FastingNoteModalProps> = ({
                   key={level}
                   type="button"
                   aria-pressed={active}
+                  data-active={active ? 'true' : undefined}
                   onClick={() => setHunger(level)}
-                  className={`pressable py-2 rounded-xl text-sm font-extrabold border tabular-nums ${
+                  className={`kc-fast-chip pressable py-2 rounded-xl text-sm font-extrabold border tabular-nums ${
                     active
-                      ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
+                      ? 'bg-[#F7E9AA] text-[#5D4911] border-[#E7D889]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -126,14 +128,14 @@ export const FastingNoteModal: React.FC<FastingNoteModalProps> = ({
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={ft.notes.placeholder}
-              className="mt-1.5 w-full rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] resize-none normal-case tracking-normal"
+              className="kc-fast-input mt-1.5 w-full rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] resize-none normal-case tracking-normal"
             />
           </label>
         </div>
 
         <button
           type="submit"
-          className="pressable w-full py-3 rounded-2xl bg-[var(--text)] text-[var(--on-text)] text-sm font-extrabold"
+          className="kc-fast-cta pressable w-full py-3 rounded-2xl bg-[#F7E9AA] hover:bg-[#F2E29A] text-[#5D4911] border border-[#E7D889] text-sm font-extrabold"
         >
           {ft.notes.save}
         </button>

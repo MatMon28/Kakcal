@@ -28,7 +28,7 @@ export function Tabs() {
   const metrics = useRef({ padLeft: 4, gap: 4, labelWidths: [] as number[] });
   const mainItems: Record<MainTabId, { id: MainTabId; label: string; icon: typeof Flame; color: string; shown: boolean }> = {
     today: { id: 'today', label: t.nav.today, icon: Flame, color: '#F6D0D0', shown: true },
-    fasting: { id: 'fasting', label: t.nav.fasting, icon: Timer, color: '#C9EFD3', shown: fastingShown },
+    fasting: { id: 'fasting', label: t.nav.fasting, icon: Timer, color: '#F7E9AA', shown: fastingShown },
     prebuilt: { id: 'prebuilt', label: t.nav.prebuilt, icon: UtensilsCrossed, color: '#FAE0B4', shown: !settings.hideCustomPage },
     period: { id: 'period', label: t.nav.period, icon: Droplet, color: '#F4C6D8', shown: isPeriodShown(settings.hidePeriod) },
     body: { id: 'body', label: t.nav.body, icon: PersonStanding, color: '#E2D6FF', shown: bodyShown },

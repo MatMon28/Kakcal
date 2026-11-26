@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import {
   CalendarDays,
   ChevronDown,
@@ -95,6 +96,7 @@ export const FastingView: React.FC = () => {
   const [timerExpanded, setTimerExpanded] = useState(false);
   const [notesOpen, setNotesOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [diaryHintOpen, setDiaryHintOpen] = useState(false);
 
   // Modals
   const [noteModalOpen, setNoteModalOpen] = useState(false);
@@ -125,6 +127,16 @@ export const FastingView: React.FC = () => {
   );
 
   const active = fasting.activeSession;
+  useEffect(() => {
+    if (active) {
+      setDiaryHintOpen(false);
+      return;
+    }
+    if (!diaryHintOpen) return;
+    const id = window.setTimeout(() => setDiaryHintOpen(false), 3000);
+    return () => window.clearTimeout(id);
+  }, [active, diaryHintOpen]);
+
   const activeTiming = active ? computeFastTiming(active, nowMs) : null;
   const activeNotes = useMemo(
     () => (active ? fasting.notes.filter((n) => n.sessionId === active.id) : []),
@@ -139,10 +151,12 @@ export const FastingView: React.FC = () => {
       id: 'fast-note',
       icon: <NotebookPen size={20} />,
       label: ft.dock.note,
-      tone: 'bg-[#F7E9AA] text-[#5D4911]',
-      disabled: !active,
+      tone: `bg-[#F7E9AA] text-[#5D4911]${active ? '' : ' opacity-65'}`,
       onClick: () => {
-        if (!active) return;
+        if (!active) {
+          setDiaryHintOpen(true);
+          return;
+        }
         setEditingNote(null);
         setNoteModalOpen(true);
       },
@@ -260,7 +274,7 @@ export const FastingView: React.FC = () => {
                 }}
                 aria-label={ft.notes.logNote}
                 title={ft.notes.logNote}
-                className="kc-fast-icon-btn pressable size-9 rounded-full bg-[#FFFDF7]/75 hover:bg-[#FFFDF7] text-[#5D4911] flex items-center justify-center"
+                className="kc-fast-icon-btn pressable size-9 rounded-full bg-[#FCF4D6]/85 hover:bg-[#FCF4D6] border border-[#8A6D1B]/25 text-[#5D4911] flex items-center justify-center"
               >
                 <NotebookPen size={16} aria-hidden="true" />
               </button>
@@ -270,7 +284,7 @@ export const FastingView: React.FC = () => {
               onClick={() => setTimerExpanded((v) => !v)}
               aria-expanded={timerExpanded}
               aria-label={timerExpanded ? t.common.collapse : t.common.expand}
-              className="kc-fast-icon-btn pressable size-9 rounded-full bg-[#FFFDF7]/75 hover:bg-[#FFFDF7] text-[#5D4911] flex items-center justify-center"
+              className="kc-fast-icon-btn pressable size-9 rounded-full bg-[#FCF4D6]/85 hover:bg-[#FCF4D6] border border-[#8A6D1B]/25 text-[#5D4911] flex items-center justify-center"
             >
               {timerExpanded ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
             </button>
@@ -278,7 +292,7 @@ export const FastingView: React.FC = () => {
         </div>
 
         {/* Linear progress bar with note markers */}
-        <div className="kc-fast-track relative mt-3.5 h-3 w-full rounded-full bg-[#FFFDF7]/70 overflow-visible">
+        <div className="kc-fast-track relative mt-3.5 h-3 w-full rounded-full bg-[#FCF4D6]/85 overflow-visible">
           <div
             className="kc-fast-fill h-full rounded-full bg-[#8A6D1B] transition-[width] duration-300"
             style={{ width: `${Math.min(100, timerPct)}%` }}
@@ -290,6 +304,7 @@ export const FastingView: React.FC = () => {
                 <button
                   key={n.id}
                   type="button"
+                  data-fast-marker={n.mood}
                   onClick={() => {
                     setEditingNote(n);
                     setNoteModalOpen(true);
@@ -322,8 +337,8 @@ export const FastingView: React.FC = () => {
                       onClick={() => handleSelectProtocol(p)}
                       className={`kc-fast-chip pressable px-3 py-1.5 rounded-full text-xs font-extrabold border ${
                         selected
-                          ? 'bg-[#24201C] text-[#FBF8F2] border-[#24201C]'
-                          : 'bg-[#FFFDF7]/70 hover:bg-[#FFFDF7] text-[#5D4911] border-[#8A6D1B]/25'
+                          ? 'bg-[#8A6D1B] text-[#FFFDF7] border-[#8A6D1B]'
+                          : 'bg-[#FCF4D6]/85 hover:bg-[#FCF4D6] text-[#5D4911] border-[#8A6D1B]/25'
                       }`}
                     >
                       {ft.protocols[p]}
@@ -346,7 +361,7 @@ export const FastingView: React.FC = () => {
                       const v = Math.max(1, Math.min(168, Number(e.target.value) || 1));
                       setFastingProtocol('custom', v, fasting.config.customEatingHours);
                     }}
-                    className="kc-fast-input w-full rounded-xl bg-[#FFFDF7]/85 border border-[#8A6D1B]/25 px-3 py-1.5 text-sm font-extrabold text-[#24201C] tabular-nums"
+                    className="kc-fast-input w-full rounded-xl bg-[#FCF4D6]/90 border border-[#8A6D1B]/25 px-3 py-1.5 text-sm font-extrabold text-[#5D4911] tabular-nums"
                   />
                 </label>
                 <label className="text-[11px] font-extrabold space-y-1">
@@ -360,7 +375,7 @@ export const FastingView: React.FC = () => {
                       const v = Math.max(1, Math.min(48, Number(e.target.value) || 1));
                       setFastingProtocol('custom', fasting.config.customFastingHours, v);
                     }}
-                    className="kc-fast-input w-full rounded-xl bg-[#FFFDF7]/85 border border-[#8A6D1B]/25 px-3 py-1.5 text-sm font-extrabold text-[#24201C] tabular-nums"
+                    className="kc-fast-input w-full rounded-xl bg-[#FCF4D6]/90 border border-[#8A6D1B]/25 px-3 py-1.5 text-sm font-extrabold text-[#5D4911] tabular-nums"
                   />
                 </label>
               </div>
@@ -379,10 +394,10 @@ export const FastingView: React.FC = () => {
                         updateActiveFast({ startedAt: new Date(ms).toISOString() });
                       }
                     }}
-                    className="kc-fast-input w-full rounded-xl bg-[#FFFDF7]/85 border border-[#8A6D1B]/25 px-3 py-1.5 text-xs font-extrabold text-[#24201C]"
+                    className="kc-fast-input w-full rounded-xl bg-[#FCF4D6]/90 border border-[#8A6D1B]/25 px-3 py-1.5 text-xs font-extrabold text-[#5D4911]"
                   />
                 </label>
-                <div className="kc-fast-subbox rounded-xl bg-[#FFFDF7]/60 border border-[#8A6D1B]/20 px-3 py-1.5 flex flex-col justify-center">
+                <div className="kc-fast-subbox rounded-xl bg-[#FCF4D6]/75 border border-[#8A6D1B]/20 px-3 py-1.5 flex flex-col justify-center">
                   <span className="text-[10px] font-extrabold uppercase tracking-wider opacity-75">
                     {ft.timer.projectedEnd}
                   </span>
@@ -397,8 +412,13 @@ export const FastingView: React.FC = () => {
 
         <button
           type="button"
+          data-active-fast={active ? 'true' : undefined}
           onClick={() => (active ? endFast() : startFast())}
-          className="kc-fast-cta pressable mt-3.5 w-full py-3 rounded-2xl bg-[#13151A] text-[#FBF8F2] text-sm font-extrabold flex items-center justify-center gap-2"
+          className={`kc-fast-cta pressable mt-3.5 w-full py-3 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 ${
+            active
+              ? 'bg-[#FCF4D6] hover:bg-[#F2E29A] text-[#5D4911] border border-[#8A6D1B]/30'
+              : 'bg-[#8A6D1B] hover:bg-[#765C15] text-[#FFFDF7]'
+          }`}
         >
           {active ? (
             <>
@@ -584,7 +604,7 @@ export const FastingView: React.FC = () => {
           <span className="flex items-center gap-2 min-w-0">
             <NotebookPen size={16} className="text-[var(--muted)] shrink-0" aria-hidden="true" />
             <span className="text-sm font-extrabold text-[var(--text)]">{ft.notes.title}</span>
-            <span className="px-2 py-0.5 rounded-full bg-[var(--inset)] border border-[var(--border)] text-[11px] font-extrabold text-[var(--muted)] tabular-nums">
+            <span data-fast-pill="neutral" className="px-2 py-0.5 rounded-full bg-[var(--inset)] border border-[var(--border)] text-[11px] font-extrabold text-[var(--muted)] tabular-nums">
               {periodNotes.length}
             </span>
           </span>
@@ -599,17 +619,17 @@ export const FastingView: React.FC = () => {
               periodNotes.map((n) => (
                 <div
                   key={n.id}
-                  className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5 flex items-start justify-between gap-2.5"
+                  className="kc-fast-row rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5 flex items-start justify-between gap-2.5"
                 >
                   <div className="min-w-0 space-y-1">
                     <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold">
-                      <span className="px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] tabular-nums">
+                      <span data-fast-pill="time" className="px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] tabular-nums">
                         {formatDurationCompact(n.elapsedMs)}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
+                      <span data-fast-pill="hunger" className="px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
                         {ft.notes.hungerBadge.replace('{value}', String(n.hunger))}
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full ${MOOD_TONE[n.mood]}`}>
+                      <span data-fast-mood={n.mood} className={`px-2 py-0.5 rounded-full ${MOOD_TONE[n.mood]}`}>
                         {ft.moods[n.mood]}
                       </span>
                       <span className="text-[var(--muted)] font-bold tabular-nums">
@@ -628,7 +648,7 @@ export const FastingView: React.FC = () => {
                       }}
                       aria-label={ft.notes.editNote}
                       title={ft.notes.editNote}
-                      className="pressable size-8 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+                      className="kc-fast-row-btn pressable size-8 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
                     >
                       <Pencil size={13} aria-hidden="true" />
                     </button>
@@ -637,7 +657,7 @@ export const FastingView: React.FC = () => {
                       onClick={() => removeFastingNote(n.id)}
                       aria-label={t.common.delete}
                       title={t.common.delete}
-                      className="pressable size-8 rounded-full bg-[var(--surface)] hover:bg-[#F6D0D0] border border-[var(--border)] text-[var(--muted)] hover:text-[#7A2727] flex items-center justify-center"
+                      className="kc-fast-row-btn kc-fast-row-danger pressable size-8 rounded-full bg-[var(--surface)] hover:bg-[#F6D0D0] border border-[var(--border)] text-[var(--muted)] hover:text-[#7A2727] flex items-center justify-center"
                     >
                       <Trash2 size={13} aria-hidden="true" />
                     </button>
@@ -660,7 +680,7 @@ export const FastingView: React.FC = () => {
           <span className="flex items-center gap-2 min-w-0">
             <History size={16} className="text-[var(--muted)] shrink-0" aria-hidden="true" />
             <span className="text-sm font-extrabold text-[var(--text)]">{ft.history.title}</span>
-            <span className="px-2 py-0.5 rounded-full bg-[var(--inset)] border border-[var(--border)] text-[11px] font-extrabold text-[var(--muted)] tabular-nums">
+            <span data-fast-pill="neutral" className="px-2 py-0.5 rounded-full bg-[var(--inset)] border border-[var(--border)] text-[11px] font-extrabold text-[var(--muted)] tabular-nums">
               {periodSessions.length}
             </span>
           </span>
@@ -680,7 +700,7 @@ export const FastingView: React.FC = () => {
                     key={s.id}
                     type="button"
                     onClick={() => setSelectedSession(s)}
-                    className="pressable w-full rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] px-3.5 py-2.5 text-left flex items-center justify-between gap-3"
+                    className="kc-fast-row pressable w-full rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] px-3.5 py-2.5 text-left flex items-center justify-between gap-3"
                   >
                     <div className="min-w-0">
                       <div className="flex items-center gap-2">
@@ -688,6 +708,7 @@ export const FastingView: React.FC = () => {
                           {ft.protocols[s.protocol]}
                         </span>
                         <span
+                          data-fast-pill={timing.reached ? 'reached' : 'partial'}
                           className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
                             timing.reached ? 'bg-[#C9EFD3] text-[#17432A]' : 'bg-[#FAE0B4] text-[#7D4E14]'
                           }`}
@@ -725,6 +746,19 @@ export const FastingView: React.FC = () => {
         notes={fasting.notes}
         onClose={() => setSelectedSession(null)}
       />
+
+      {diaryHintOpen &&
+        createPortal(
+          <div
+            role="status"
+            className="fixed bottom-[calc(max(0.875rem,calc(env(safe-area-inset-bottom)+0.375rem))+4.5rem)] sm:bottom-[calc(max(1.5rem,calc(env(safe-area-inset-bottom)+0.375rem))+4.5rem)] left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none"
+          >
+            <div className="kc-fast-toast rounded-2xl border border-[var(--border)] bg-[var(--surface-solid,var(--surface))] text-[var(--text)] px-4 py-2.5 shadow-lg text-xs font-extrabold whitespace-nowrap">
+              {ft.notes.noActiveFast}
+            </div>
+          </div>,
+          document.body,
+        )}
 
       <ActionDock activeOn="fasting" label={ft.dock.label} actions={dockActions} />
     </div>

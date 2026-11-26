@@ -11,7 +11,7 @@ Route first via `docs/README.md` and `docs/file-map/README.md` (open only the ma
 
 1. **Persistence & backup:** If adding a stored key, register it in `src/context/appStorage.ts` and wire it into `exportDataJson` / `importDataJson` (unless it is a `kcak_*` UI preference; see `docs/backup-update.md`).
 2. **Performance:** Subscribe with narrow hooks (`useSettings`, `useJournalData`, `useNav`, `useNavActions`), keep collapsible bodies lazy (`LazyBody` / `DeferredBody`), and avoid forced layout reads inside `useLayoutEffect`.
-3. **Themes (cross-style coherence):**
+3. **Themes (cross-style coherence — follow `docs/styles-guide.md#when-adding-a-new-feature-page-card-field-modal-or-control` across all 9 styles and 3 modes):**
    - Neutral cards/surfaces: use `.kc-themed-card` and tokens (`--bg`, `--surface`, `--inset`, `--border`, `--text`, `--muted`, `--on-text`).
    - Tinted cards/sections: reuse existing `data-*` hooks (`[data-tracker]`, `[data-library-section]`, `[data-stats-tone]`, `[data-period-card]`) or use `.kc-themed-card` + `data-kc-tone="diary|meals|recipes|planner|photo|foods|teal"` (with `data-kc-tone-ink` on header text/icons for Minimal).
    - Controls & badges: reuse `[data-dock-action]`, `[data-settings-badge]`, `[data-settings-switch]`, `[data-range-switch]`, `[data-stat-pill]`, `Modal`, and `.pressable`. Never use raw Tailwind palette colour classes (`bg-slate-*`, `bg-amber-*`, etc.), hardcode `font-family`, or reorder `@import` lines in `src/index.css` or `journal.css`.

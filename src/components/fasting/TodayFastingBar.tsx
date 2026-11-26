@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowRight, Play, Timer } from 'lucide-react';
+import { ArrowRight, Timer } from 'lucide-react';
 import { useNavActions, useSettings } from '../../context/AppContext';
 import { useFastingText } from '../../i18n/fasting';
 import {
@@ -7,7 +7,6 @@ import {
   computeFastTiming,
   formatDurationCompact,
   getProtocolHours,
-  startFast,
   useFasting,
 } from '../../utils/fastingStore';
 
@@ -80,7 +79,7 @@ export const TodayFastingBar: React.FC = () => {
           <span className="text-xs font-extrabold">{pct}%</span>
         </div>
 
-        <div className="kc-fast-track mt-2 h-2 w-full rounded-full bg-[#FFFDF7]/60 overflow-hidden">
+        <div className="kc-fast-track mt-2 h-2 w-full rounded-full bg-[#FCF4D6]/85 overflow-hidden">
           <div
             className="kc-fast-fill h-full rounded-full bg-[#8A6D1B] transition-[width] duration-300"
             style={{ width: `${Math.min(100, pct)}%` }}
@@ -99,8 +98,8 @@ export const TodayFastingBar: React.FC = () => {
   return (
     <section
       aria-label={ft.status.eatingWindow}
-      data-kc-tone="foods"
-      className={`rounded-3xl border border-[var(--border)] bg-[#C9EFD3] text-[#17432A] ${
+      data-kc-tone="diary"
+      className={`rounded-3xl border border-[var(--border)] bg-[#F7E9AA] text-[#5D4911] ${
         ultra ? 'px-3.5 py-2.5' : 'px-4 py-3.5'
       }`}
     >
@@ -117,11 +116,11 @@ export const TodayFastingBar: React.FC = () => {
         </div>
         <button
           type="button"
-          onClick={() => startFast()}
-          className="kc-fast-pill-cta pressable inline-flex items-center gap-1 rounded-full bg-[#17432A] text-[#FBF8F2] px-3 py-1 text-[11px] font-extrabold shrink-0"
+          onClick={() => setActiveTab('fasting')}
+          className="kc-fast-pill-cta pressable inline-flex items-center gap-1 rounded-full bg-[#8A6D1B] text-[#FFFDF7] px-3 py-1 text-[11px] font-extrabold shrink-0"
         >
-          <Play size={11} fill="currentColor" aria-hidden="true" />
-          <span>{ft.status.startFast}</span>
+          <span>{ultra ? ft.pageTitle : ft.status.openFasting}</span>
+          <ArrowRight size={12} aria-hidden="true" />
         </button>
       </div>
 
@@ -136,9 +135,9 @@ export const TodayFastingBar: React.FC = () => {
             </div>
             <span className="text-xs font-extrabold">{pct}%</span>
           </div>
-          <div className="kc-fast-track mt-2 h-2 w-full rounded-full bg-[#FBF8F2]/65 overflow-hidden">
+          <div className="kc-fast-track mt-2 h-2 w-full rounded-full bg-[#FCF4D6]/85 overflow-hidden">
             <div
-              className="kc-fast-fill h-full rounded-full bg-[#286540] transition-[width] duration-300"
+              className="kc-fast-fill h-full rounded-full bg-[#8A6D1B] transition-[width] duration-300"
               style={{ width: `${Math.min(100, pct)}%` }}
             />
           </div>

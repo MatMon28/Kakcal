@@ -47,7 +47,7 @@ export const FastingDaysBarChart: React.FC<{
         </div>
       </div>
 
-      <div className="kc-fast-subbox mt-2.5 flex items-center justify-between gap-2 rounded-full bg-[#FBF8F2]/55 px-3 py-1 text-[11px] font-extrabold tabular-nums">
+      <div className="kc-fast-subbox mt-2.5 flex items-center justify-between gap-2 rounded-full bg-[#E8F3FF]/75 px-3 py-1 text-[11px] font-extrabold tabular-nums">
         <span>
           {selectedBar
             ? `${formatDateDisplay(selectedBar.date, language)} · ${selectedBar.hours}h (${selectedBar.fastCount})`
@@ -80,7 +80,7 @@ export const FastingDaysBarChart: React.FC<{
                 <span
                   className={`w-full max-w-[26px] rounded-t-lg transition-all ${
                     bar.hours === 0
-                      ? 'bg-current opacity-15 rounded-full'
+                      ? 'kc-fast-bar-empty bg-current opacity-15 rounded-full'
                       : bar.onTarget
                       ? 'kc-fast-bar bg-[#2B6CB0] opacity-95'
                       : 'kc-fast-bar bg-[#2B6CB0] opacity-55'
@@ -137,7 +137,7 @@ export const FastingHungerChart: React.FC<{
           <h3 data-kc-tone-ink className="text-sm font-extrabold">{ft.stats.hungerTitle}</h3>
           {!ultra && <p className="text-[11px] font-bold opacity-80">{ft.stats.hungerSubtitle}</p>}
         </div>
-        <span className="kc-fast-subbox rounded-full bg-[#FBF8F2]/80 text-[#49346F] px-2.5 py-1 text-[11px] font-extrabold tabular-nums shrink-0">
+        <span data-fast-pill="neutral" className="rounded-full bg-[#F0E9FF]/85 text-[#49346F] px-2.5 py-1 text-[11px] font-extrabold tabular-nums shrink-0">
           {selected
             ? `${ft.stats.hrLabel.replace('{hour}', String(selected.hour))} · ${selected.avgHunger}/5 (${ft.stats.samples.replace('{count}', String(selected.count))})`
             : ft.stats.tapPoint}

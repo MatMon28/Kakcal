@@ -133,10 +133,11 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
                   key={p}
                   type="button"
                   aria-pressed={protocol === p}
+                  data-active={protocol === p ? 'true' : undefined}
                   onClick={() => setProtocol(p)}
-                  className={`pressable px-3 py-1.5 rounded-full text-xs font-extrabold border ${
+                  className={`kc-fast-chip pressable px-3 py-1.5 rounded-full text-xs font-extrabold border ${
                     protocol === p
-                      ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
+                      ? 'bg-[#F7E9AA] text-[#5D4911] border-[#E7D889]'
                       : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >
@@ -156,7 +157,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
                   max={168}
                   value={customFastH}
                   onChange={(e) => setCustomFastH(Math.max(1, Math.min(168, Number(e.target.value) || 1)))}
-                  className="w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-extrabold text-[var(--text)] tabular-nums"
+                  className="kc-fast-input w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-extrabold text-[var(--text)] tabular-nums"
                 />
               </label>
               <label className="text-xs font-bold text-[var(--muted)] space-y-1">
@@ -167,7 +168,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
                   max={48}
                   value={customEatH}
                   onChange={(e) => setCustomEatH(Math.max(1, Math.min(48, Number(e.target.value) || 1)))}
-                  className="w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-extrabold text-[var(--text)] tabular-nums"
+                  className="kc-fast-input w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-extrabold text-[var(--text)] tabular-nums"
                 />
               </label>
             </div>
@@ -180,7 +181,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
                 type="datetime-local"
                 value={startInput}
                 onChange={(e) => setStartInput(e.target.value)}
-                className="w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-bold text-[var(--text)]"
+                className="kc-fast-input w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-bold text-[var(--text)]"
               />
             </label>
             <label className="block text-xs font-bold text-[var(--muted)] space-y-1">
@@ -189,14 +190,14 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
                 type="datetime-local"
                 value={endInput}
                 onChange={(e) => setEndInput(e.target.value)}
-                className="w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-bold text-[var(--text)]"
+                className="kc-fast-input w-full rounded-xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 text-sm font-bold text-[var(--text)]"
               />
             </label>
           </div>
 
           <button
             type="submit"
-            className="pressable w-full py-3 rounded-2xl bg-[var(--text)] text-[var(--on-text)] text-sm font-extrabold"
+            className="kc-fast-cta pressable w-full py-3 rounded-2xl bg-[#F7E9AA] hover:bg-[#F2E29A] text-[#5D4911] border border-[#E7D889] text-sm font-extrabold"
           >
             {ft.history.saveSession}
           </button>
@@ -207,7 +208,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
             <button
               type="button"
               onClick={beginEdit}
-              className="pressable inline-flex items-center gap-1.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] px-3 py-1.5 text-xs font-extrabold text-[var(--text)]"
+              className="kc-fast-chip pressable inline-flex items-center gap-1.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] px-3 py-1.5 text-xs font-extrabold text-[var(--text)]"
             >
               <Pencil size={13} aria-hidden="true" />
               <span>{ft.history.editSession}</span>
@@ -215,6 +216,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
             <button
               type="button"
               onClick={handleDelete}
+              data-fast-pill="danger"
               className="pressable inline-flex items-center gap-1.5 rounded-full bg-[#F6D0D0] text-[#7A2727] px-3 py-1.5 text-xs font-extrabold"
             >
               <Trash2 size={13} aria-hidden="true" />
@@ -223,7 +225,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5">
+            <div className="kc-fast-subbox rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5">
               <div className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
                 {ft.history.start}
               </div>
@@ -231,7 +233,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
                 {formatSessionTimestamp(session.startedAt, language)}
               </div>
             </div>
-            <div className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5">
+            <div className="kc-fast-subbox rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5">
               <div className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
                 {ft.history.end}
               </div>
@@ -242,7 +244,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
           </div>
 
           <div data-kc-tone="diary" className="rounded-2xl bg-[#F7E9AA] text-[#5D4911] p-3.5 space-y-2">
-            <div className="flex items-baseline justify-between gap-2 text-xs font-extrabold tabular-nums">
+            <div data-kc-tone-ink className="flex items-baseline justify-between gap-2 text-xs font-extrabold tabular-nums">
               <span>
                 {ft.history.targetProgress
                   .replace('{elapsed}', formatDurationCompact(timing.elapsedMs))
@@ -250,7 +252,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
               </span>
               <span>{pct}%</span>
             </div>
-            <div className="kc-fast-track h-2 w-full rounded-full bg-[#FFFDF7]/60 overflow-hidden">
+            <div className="kc-fast-track h-2 w-full rounded-full bg-[#FCF4D6]/85 overflow-hidden">
               <div className="kc-fast-fill h-full rounded-full bg-[#8A6D1B]" style={{ width: `${pct}%` }} />
             </div>
             <div className="text-[11px] font-bold opacity-80">
@@ -260,7 +262,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
 
           <div className="grid grid-cols-2 gap-2.5">
             <div data-kc-tone="meals" className="rounded-2xl bg-[#FAE0B4] text-[#7D4E14] px-3 py-2.5 text-center">
-              <div className="text-[10px] font-extrabold uppercase tracking-wider opacity-80">
+              <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80">
                 {ft.history.avgHunger}
               </div>
               <div className="text-lg font-extrabold tabular-nums mt-0.5">
@@ -268,7 +270,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
               </div>
             </div>
             <div data-kc-tone="diary" className="rounded-2xl bg-[#F7E9AA] text-[#5D4911] px-3 py-2.5 text-center">
-              <div className="text-[10px] font-extrabold uppercase tracking-wider opacity-80">
+              <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80">
                 {ft.history.peakHunger}
               </div>
               <div className="text-lg font-extrabold tabular-nums mt-0.5">
@@ -309,15 +311,15 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
               </div>
               <div className="space-y-1.5">
                 {sessionNotes.map((n) => (
-                  <div key={n.id} className="rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 space-y-1">
+                  <div key={n.id} className="kc-fast-row rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2 space-y-1">
                     <div className="flex flex-wrap items-center gap-1.5 text-[10px] font-extrabold">
-                      <span className="px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] tabular-nums">
+                      <span data-fast-pill="time" className="px-2 py-0.5 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--text)] tabular-nums">
                         {formatDurationCompact(n.elapsedMs)}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
+                      <span data-fast-pill="hunger" className="px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
                         {ft.notes.hungerBadge.replace('{value}', String(n.hunger))}
                       </span>
-                      <span className={`px-2 py-0.5 rounded-full ${MOOD_TONE[n.mood]}`}>
+                      <span data-fast-mood={n.mood} className={`px-2 py-0.5 rounded-full ${MOOD_TONE[n.mood]}`}>
                         {ft.moods[n.mood]}
                       </span>
                     </div>

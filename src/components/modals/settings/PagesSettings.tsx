@@ -78,7 +78,7 @@ export const PagesSettings: React.FC = () => {
     },
     fasting: {
       icon: <Timer size={14} />,
-      tone: TONE.mint,
+      tone: TONE.butter,
       title: ft.pageTitle,
       description: ft.pageDesc,
       on: fastingOn,

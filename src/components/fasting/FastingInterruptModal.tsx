@@ -49,7 +49,7 @@ export const FastingInterruptModal: React.FC = () => {
   return (
     <Modal isOpen={Boolean(current)} onClose={clearFastInterrupt} title={ft.interrupt.title} maxWidth="max-w-sm">
       <div className="space-y-3.5">
-        <div data-kc-tone="diary" className="rounded-2xl bg-[#F7E9AA] text-[#5D4911] px-4 py-3 text-xs font-bold leading-relaxed">
+        <div data-kc-tone="diary" data-kc-tone-ink className="rounded-2xl bg-[#F7E9AA] text-[#5D4911] border border-[#E7D889] px-4 py-3 text-xs font-bold leading-relaxed">
           {ft.interrupt.body.replace('{elapsed}', elapsed)}
         </div>
 
@@ -57,14 +57,14 @@ export const FastingInterruptModal: React.FC = () => {
           <button
             type="button"
             onClick={handleConfirm}
-            className="pressable w-full py-3 rounded-2xl bg-[var(--text)] text-[var(--on-text)] text-sm font-extrabold"
+            className="kc-primary-btn pressable w-full py-3 rounded-2xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-sm font-extrabold"
           >
             {confirmLabel}
           </button>
           <button
             type="button"
             onClick={clearFastInterrupt}
-            className="pressable w-full py-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] text-sm font-extrabold"
+            className="kc-fast-secondary-btn pressable w-full py-2.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] text-sm font-extrabold"
           >
             {ft.interrupt.keep}
           </button>

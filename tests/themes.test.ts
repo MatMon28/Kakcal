@@ -191,6 +191,37 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
     }
   });
 
+  it('keeps Fasting cards, CTAs, pills, mood chips, and rows coherent across all styles and dark modes', () => {
+    const tones = read('themed-tones.css');
+    for (const hook of [
+      '[data-kc-tone].rounded-2xl',
+      '.kc-fast-cta',
+      '.kc-fast-pill-cta',
+      '.kc-fast-chip[data-active="true"]',
+      '.kc-fast-secondary-btn',
+      '.kc-fast-row',
+      '.kc-fast-row-btn',
+      '.kc-fast-toast',
+      '[data-fast-pill="hunger"]',
+      '[data-fast-pill="reached"]',
+      '[data-fast-pill="danger"]',
+      '[data-fast-mood="calm"]',
+      '[data-fast-marker="calm"]',
+    ]) {
+      expect(tones, hook).toContain(hook);
+    }
+    expect(tones).not.toMatch(/\.kc-fast-chip\[data-active="true"\]\s*\{[^}]*background:\s*var\(--text\)/);
+    expect(tones).not.toMatch(/\.kc-fast-pill-cta\s*\{[^}]*background:\s*var\(--text\)/);
+
+    const glass = read('themed-glass.css');
+    expect(glass).toContain(':not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood])');
+
+    const mat = read('themed-material.css');
+    for (const hook of ['.kc-fast-chip', '[data-fast-pill]', '[data-fast-mood]', '.kc-fast-row']) {
+      expect(mat, hook).toContain(hook);
+    }
+  });
+
   it('keeps the Large and Medium widgets coherent with the active style in browser gallery and Android', () => {
     const widgetCss = readFileSync(resolve(process.cwd(), 'src/components/widgets/widget-preview.css'), 'utf8');
     expect(widgetCss).toContain("html[data-style]:not([data-style='classic']) .widget-large");

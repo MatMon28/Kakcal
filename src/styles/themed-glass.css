@@ -85,18 +85,21 @@ html[data-style="glass"] :is(input, textarea)::placeholder {
   opacity: 0.8;
 }
 
-/* Fixed pastel buttons / rows in dialogs become tinted glass (no per-button backdrop-filter; excludes section cards). */
-html[data-style="glass"] :is([class~="bg-[#C9EFD3]"], [class~="bg-[#CFE7FE]"], [class~="bg-[#FAE0B4]"], [class~="bg-[#E2D6FF]"], [class~="bg-[#F6D0D0]"], [class~="bg-[#F7E9AA]"]):not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-period-card]):not(.kc-themed-card) {
+/* Fixed pastel buttons / rows in dialogs become tinted glass (no per-button backdrop-filter; excludes section cards & themed tokens). */
+html[data-style="glass"] :is([class~="bg-[#C9EFD3]"], [class~="bg-[#CFE7FE]"], [class~="bg-[#FAE0B4]"], [class~="bg-[#E2D6FF]"], [class~="bg-[#F6D0D0]"], [class~="bg-[#F7E9AA]"]):not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-period-card]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card) {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
-html[data-style="glass"] [class~="bg-[#C9EFD3]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not(.kc-themed-card) { background-color: rgba(128, 220, 192, 0.86); }
-html[data-style="glass"] [class~="bg-[#CFE7FE]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not(.kc-themed-card) { background-color: rgba(142, 182, 248, 0.84); }
-html[data-style="glass"] [class~="bg-[#FAE0B4]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not(.kc-themed-card) { background-color: rgba(246, 200, 156, 0.86); }
-html[data-style="glass"] [class~="bg-[#E2D6FF]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not(.kc-themed-card) { background-color: rgba(188, 172, 250, 0.84); }
-html[data-style="glass"] [class~="bg-[#F6D0D0]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not(.kc-themed-card) { background-color: rgba(244, 168, 186, 0.84); }
-html[data-style="glass"] [class~="bg-[#F7E9AA]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not(.kc-themed-card) { background-color: rgba(246, 226, 132, 0.88); }
-html[data-style="glass"] :is([class~="bg-[#C9EFD3]"], [class~="bg-[#CFE7FE]"], [class~="bg-[#FAE0B4]"], [class~="bg-[#E2D6FF]"], [class~="bg-[#F6D0D0]"], [class~="bg-[#F7E9AA]"]):not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-period-card]):not(.kc-themed-card):hover {
+html[data-style="glass"] [class~="bg-[#C9EFD3]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card) { background-color: rgba(128, 220, 192, 0.86); }
+html[data-style="glass"] [class~="bg-[#CFE7FE]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card) { background-color: rgba(142, 182, 248, 0.84); }
+html[data-style="glass"] [class~="bg-[#FAE0B4]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card) { background-color: rgba(246, 200, 156, 0.86); }
+html[data-style="glass"] [class~="bg-[#E2D6FF]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card) { background-color: rgba(188, 172, 250, 0.84); }
+html[data-style="glass"] [class~="bg-[#F6D0D0]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card) { background-color: rgba(244, 168, 186, 0.84); }
+html[data-style="glass"] [class~="bg-[#F7E9AA]"]:not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card) { background-color: rgba(246, 226, 132, 0.88); }
+html[data-style="glass"] :is([class~="bg-[#C9EFD3]"], [class~="bg-[#CFE7FE]"], [class~="bg-[#FAE0B4]"], [class~="bg-[#E2D6FF]"], [class~="bg-[#F6D0D0]"], [class~="bg-[#F7E9AA]"]):not([data-library-section]):not([data-tracker]):not([data-stats-tone]):not([data-water-stats]):not([data-period-card]):not([data-kc-tone]):not([data-fast-pill]):not([data-fast-mood]):not(.kc-themed-card):hover {
   filter: brightness(1.04);
+}
+html[data-style="glass"] :is(.kc-fast-cta, .kc-fast-pill-cta) {
+  background-image: var(--glass-sheen);
 }
 
 @media (prefers-reduced-transparency: reduce) {

@@ -26,8 +26,13 @@ html[data-style]:not([data-style="classic"]) [data-kc-tone].rounded-3xl {
   border-radius: var(--card-radius, 20px) !important;
   clip-path: var(--clip-md, none);
 }
+html[data-style]:not([data-style="classic"]) [data-kc-tone].rounded-2xl {
+  border: var(--card-border, 1px solid var(--border)) !important;
+  border-radius: min(var(--micro-radius, 16px), 18px) !important;
+  clip-path: var(--clip-sm, none);
+}
 
-html[data-style="aurora"] [data-kc-tone].rounded-3xl {
+html[data-style="aurora"] [data-kc-tone]:is(.rounded-3xl, .rounded-2xl) {
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
@@ -46,15 +51,21 @@ html[data-style="minimal"] [data-kc-tone].rounded-2xl {
 html[data-style]:not([data-style="classic"]) .kc-fast-divider {
   border-color: var(--border) !important;
 }
-html[data-style]:not([data-style="classic"]) .kc-fast-icon-btn {
+html[data-style]:not([data-style="classic"]) .kc-fast-icon-btn,
+html[data-style]:not([data-style="classic"]) .kc-fast-row-btn {
   background: var(--inset) !important;
   color: var(--text) !important;
-  border: 1px solid var(--border) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
   border-radius: var(--icon-btn-radius, 9999px) !important;
   clip-path: var(--clip-xs, none);
 }
-html[data-style]:not([data-style="classic"]) .kc-fast-icon-btn:hover {
+html[data-style]:not([data-style="classic"]) .kc-fast-icon-btn:hover,
+html[data-style]:not([data-style="classic"]) .kc-fast-row-btn:hover {
   background: var(--hover) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-row-danger:hover {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
 }
 html[data-style]:not([data-style="classic"]) .kc-fast-track {
   background: var(--inset) !important;
@@ -73,34 +84,82 @@ html[data-style="minimal"] .kc-fast-fill {
 html[data-style]:not([data-style="classic"]) .kc-fast-chip {
   background: var(--inset) !important;
   color: var(--text) !important;
-  border: 1px solid var(--border) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
   border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-mood-btn {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
+  border-radius: min(var(--micro-radius, 12px), 14px) !important;
   clip-path: var(--clip-xs, none);
 }
 html[data-style]:not([data-style="classic"]) .kc-fast-chip[data-active="true"] {
-  background: var(--text) !important;
-  color: var(--on-text) !important;
-  border-color: var(--text) !important;
+  background: var(--nav-active-bg, var(--dock-6)) !important;
+  color: var(--nav-active-color, var(--dock-icon-6)) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
 }
-html[data-style]:not([data-style="classic"]) .kc-fast-input,
+html[data-style]:not([data-style="classic"]) .kc-fast-input {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
+  border-radius: min(var(--micro-radius, 12px), 14px) !important;
+  clip-path: var(--clip-xs, none);
+}
 html[data-style]:not([data-style="classic"]) .kc-fast-subbox {
   background: var(--inset) !important;
   color: var(--text) !important;
-  border: 1px solid var(--border) !important;
-  border-radius: var(--pill-radius, 12px) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
+  border-radius: min(var(--micro-radius, 14px), 16px) !important;
   clip-path: var(--clip-xs, none);
 }
 html[data-style]:not([data-style="classic"]) .kc-fast-cta {
-  background: var(--text) !important;
-  color: var(--on-text) !important;
-  border-radius: var(--pill-radius, 16px) !important;
+  background: var(--dock-6, var(--inset)) !important;
+  color: var(--dock-icon-6, var(--text)) !important;
+  border: var(--card-border, var(--dock-btn-border, none)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: min(var(--micro-radius, 16px), 20px) !important;
   clip-path: var(--clip-sm, none);
 }
+html[data-style="mono"] .kc-fast-cta {
+  background: var(--nav-active-bg) !important;
+  color: var(--nav-active-color) !important;
+}
+html[data-style="minimal"] .kc-fast-cta {
+  border: 1px solid var(--border) !important;
+  color: var(--tone-ink-diary, var(--dock-icon-6)) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-cta[data-active-fast="true"] {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: none !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-secondary-btn {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
+  border-radius: min(var(--micro-radius, 16px), 18px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-secondary-btn:hover {
+  background: var(--hover) !important;
+}
 html[data-style]:not([data-style="classic"]) .kc-fast-pill-cta {
-  background: var(--text) !important;
-  color: var(--on-text) !important;
-  border-radius: var(--pill-radius, 999px) !important;
+  background: var(--dock-6, var(--inset)) !important;
+  color: var(--dock-icon-6, var(--text)) !important;
+  border: var(--pill-border, var(--dock-btn-border, none)) !important;
+  border-radius: var(--nav-pill-radius, var(--pill-radius, 999px)) !important;
   clip-path: var(--clip-xs, none);
+}
+html[data-style="minimal"] .kc-fast-pill-cta {
+  border: 1px solid var(--border) !important;
+  color: var(--tone-ink-diary, var(--dock-icon-6)) !important;
+}
+html[data-style="mono"] .kc-fast-pill-cta {
+  background: var(--nav-active-bg) !important;
+  color: var(--nav-active-color) !important;
 }
 html[data-style]:not([data-style="classic"]) .kc-fast-badge {
   background: var(--badge-bg, var(--text)) !important;
@@ -109,9 +168,107 @@ html[data-style]:not([data-style="classic"]) .kc-fast-badge {
 }
 html[data-style]:not([data-style="classic"]) .kc-fast-bar {
   background: var(--water-fill, var(--carbs-text, var(--text))) !important;
+  border-radius: var(--bar-radius, 6px) var(--bar-radius, 6px) 0 0 !important;
 }
 html[data-style="minimal"] .kc-fast-bar {
   background: var(--tone-ink-planner, var(--text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-bar-empty {
+  background: var(--inset) !important;
+  opacity: 1 !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+
+/* Fasting pills, mood tags, note/session rows, bar markers & toasts across all non-Classic styles */
+html[data-style]:not([data-style="classic"]) [data-fast-pill] {
+  border: var(--pill-border, none) !important;
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) [data-fast-pill="time"] {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-pill="hunger"],
+html[data-style]:not([data-style="classic"]) [data-fast-pill="partial"] {
+  background: var(--pill-p-bg, var(--protein-bg)) !important;
+  color: var(--pill-p-text, var(--protein-text)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-pill="reached"] {
+  background: var(--intake-bg) !important;
+  color: var(--intake-text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-pill="danger"] {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-pill="neutral"] {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: var(--pill-border, 1px solid var(--border)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-mood] {
+  border: var(--pill-border, none) !important;
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-mood-btn[data-fast-mood] {
+  border-radius: min(var(--micro-radius, 12px), 14px) !important;
+}
+html[data-style="minimal"] [data-fast-mood] {
+  border: 1px solid var(--border) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-mood="calm"] {
+  background: var(--dock-1) !important;
+  color: var(--dock-icon-1) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-mood="focused"] {
+  background: var(--dock-3) !important;
+  color: var(--dock-icon-3) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-mood="hungry"] {
+  background: var(--fiber-bg, var(--dock-6)) !important;
+  color: var(--fiber-text, var(--dock-icon-6)) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-mood="irritable"] {
+  background: var(--dock-4) !important;
+  color: var(--dock-icon-4) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-mood="angry"] {
+  background: var(--dock-2) !important;
+  color: var(--dock-icon-2) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-mood="tired"] {
+  background: var(--dock-5) !important;
+  color: var(--dock-icon-5) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-fast-marker="calm"] { background: var(--dock-1) !important; }
+html[data-style]:not([data-style="classic"]) [data-fast-marker="focused"] { background: var(--dock-3) !important; }
+html[data-style]:not([data-style="classic"]) [data-fast-marker="hungry"] { background: var(--fiber-bg, var(--dock-6)) !important; }
+html[data-style]:not([data-style="classic"]) [data-fast-marker="irritable"] { background: var(--dock-4) !important; }
+html[data-style]:not([data-style="classic"]) [data-fast-marker="angry"] { background: var(--dock-2) !important; }
+html[data-style]:not([data-style="classic"]) [data-fast-marker="tired"] { background: var(--dock-5) !important; }
+html[data-style="minimal"] [data-fast-marker="calm"] { background: var(--tone-ink-foods) !important; }
+html[data-style="minimal"] [data-fast-marker="focused"] { background: var(--tone-ink-planner) !important; }
+html[data-style="minimal"] [data-fast-marker="hungry"] { background: var(--tone-ink-diary) !important; }
+html[data-style="minimal"] [data-fast-marker="irritable"] { background: var(--tone-ink-meals) !important; }
+html[data-style="minimal"] [data-fast-marker="angry"] { background: var(--tone-ink-photo) !important; }
+html[data-style="minimal"] [data-fast-marker="tired"] { background: var(--tone-ink-recipes) !important; }
+html[data-style]:not([data-style="classic"]) .kc-fast-row {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: min(var(--micro-radius, 16px), 18px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-toast {
+  background: var(--surface-solid, var(--surface)) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--dock-shadow, var(--card-shadow, none)) !important;
+  border-radius: min(var(--micro-radius, 16px), 18px) !important;
+  clip-path: var(--clip-sm, none);
 }
 
 /* Tracker header icons inherit the card's own high-contrast ink on tinted fields (matching Classic TrackerCard). */
