@@ -54,6 +54,18 @@ vi.mock('../src/utils/advancedStore', () => ({
   useAdvanced: () => ({ body: { enabled: true } }),
 }));
 
+vi.mock('../src/utils/fastingStore', () => ({
+  setFastingEnabled: vi.fn(),
+  useFasting: () => ({ config: { enabled: false } }),
+}));
+
+vi.mock('../src/i18n/fasting', () => ({
+  useFastingText: () => ({
+    pageTitle: 'Fasting',
+    pageDesc: 'Fast timer, eating window, notes and history.',
+  }),
+}));
+
 vi.mock('../src/i18n/journal', () => ({
   useJournalText: () => (en: string) => en,
 }));
@@ -77,7 +89,7 @@ describe('Page order settings & navigation', () => {
   it('normalizePageOrder keeps valid unique order and appends missing tabs', () => {
     expect(normalizePageOrder(undefined)).toEqual(DEFAULT_PAGE_ORDER);
     expect(normalizePageOrder(['history', 'today', 'history', 'invalid'])).toEqual([
-      'history', 'today', 'prebuilt', 'period', 'body',
+      'history', 'today', 'fasting', 'prebuilt', 'period', 'body',
     ]);
   });
 
@@ -88,16 +100,16 @@ describe('Page order settings & navigation', () => {
     // Move Today down from index 0 -> index 1
     fireEvent.click(screen.getByRole('button', { name: /Move Today down/i }));
     expect(updateSettings).toHaveBeenCalledWith({
-      pageOrder: ['prebuilt', 'today', 'period', 'body', 'history'],
+      pageOrder: ['fasting', 'today', 'prebuilt', 'period', 'body', 'history'],
     });
 
-    // Move Statistics up from index 4 -> index 3
+    // Move Statistics up from index 5 -> index 4
     fireEvent.click(screen.getByRole('button', { name: /Move Statistics up/i }));
     expect(updateSettings).toHaveBeenCalledWith({
-      pageOrder: ['today', 'prebuilt', 'period', 'history', 'body'],
+      pageOrder: ['today', 'fasting', 'prebuilt', 'period', 'history', 'body'],
     });
 
-    mockPageOrder = ['history', 'today', 'prebuilt', 'period', 'body'];
+    mockPageOrder = ['history', 'today', 'fasting', 'prebuilt', 'period', 'body'];
     view.rerender(<PagesSettings />);
     fireEvent.click(screen.getByRole('button', { name: /Reset page order/i }));
     expect(updateSettings).toHaveBeenCalledWith({ pageOrder: DEFAULT_PAGE_ORDER });

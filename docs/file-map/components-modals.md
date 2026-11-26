@@ -14,6 +14,7 @@
 | --- | --- |
 | `src/components/modals/NotificationSettings.tsx` | Settings > Notifications: water interval and hours, one switch + time per meal, custom buttons, weight and log reminders, permission banner and test button. Can be opened remotely by the tour (`requestOpenNotificationSettings`). |
 | `src/components/modals/PdfExportModal.tsx` | Settings > Data Backup: week / month / custom range PDF report picker with toggles for the Daily log table and Detailed meal diary. |
+| `src/components/modals/SaveOrShareModal.tsx` | "Save or share?" asked by `DataBackup.tsx` after an export file (JSON, PDF, Excel, pictures ZIP) is built, when sharing is possible: *Share…* (share sheet: WhatsApp, email, Drive) or *Save to device*. See [../backup-update.md](../backup-update.md#save-or-share-whatsapp-email-drive). |
 | `src/components/modals/AddFoodModal.tsx`, `CustomFoodModal.tsx`, `BarcodeLookupModal.tsx` | Food logging (catalogue search rows with weight and macros, default weight), custom food creation, and barcode lookup (own foods, then the offline catalogue, then Open Food Facts online; keeps sugar and the classic portion). |
 | `src/components/journal/MealDiary.tsx` | Meal-detail / note editor, complete meal-history filter dialog, and the optional note field shared with Add food. |
 | (Plans round) `AddFoodModal.tsx` | Recent foods of the slot: 5 chips + a "..." chip for 10 more (`common/RecentChips.tsx`). |
@@ -22,7 +23,7 @@
 | `src/components/modals/ActivitySearch.tsx` | Activity → Other search page: saved custom activities first, fuzzy search, category chips (incl. My activities), favourites pinned first. |
 | `src/components/modals/WaterModal.tsx`, `WeightModal.tsx`, `PoopModal.tsx` | Hydration, weight, and bowel logging. |
 | `src/components/modals/CustomButtonModal.tsx`, `CustomPickerModal.tsx` | Individual quantity/toggle tracker dialog, entry history, and tracker selection. |
-| `src/components/modals/PeriodSheet.tsx`, `UserProfileModal.tsx`, `SettingsModal.tsx` | Period Quick Log, Profile/BMR fields, and app Settings including the Ultra Minimal toggle. |
+| `src/components/modals/PeriodSheet.tsx`, `UserProfileModal.tsx`, `SettingsModal.tsx` | Period Quick Log, Profile/BMR fields (with toggle between calculated BMR and personalised daily calorie burned), and app Settings including the Ultra Minimal toggle. |
 | `src/components/modals/AdvancedSettings.tsx` | Settings > Advanced group: goals/limits switches (per item, objective/limit, value) and the Body measurements switch, plus the **Advanced layout** switch with the *Restore original layout* button (confirmation dialog). |
 | `src/components/modals/BodyMeasuresProfile.tsx` | Profile section (only when Body measurements is on): choose tracked measures, add/remove custom ones. |
 | (Save before closing) `src/components/modals/AddFoodModal.tsx` | `requestClose` asks through `SaveBeforeCloseDialog` when the batch has foods or a food is picked but not added; `handleLogNow` is the Save action. |

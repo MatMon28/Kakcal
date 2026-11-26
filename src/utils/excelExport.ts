@@ -12,10 +12,12 @@ import type {
   UserProfile,
 } from '../types';
 import type { AdvancedSettings, BodyEntries, BodySide } from '../types/advanced';
+import type { FastingData } from '../types/fasting';
 import type { MealMemory, MealPlan } from '../types/journal';
 import type { translations } from '../i18n/translations';
 import { activityLogLabel } from './activityLabel';
 import { DEFAULT_MEASURES, isPairedMeasure, seriesKeysOf } from './advancedStore';
+import { computeFastTiming, toLocalDateString } from './fastingStore';
 import {
   calculateBMR,
   calculateMacros,
@@ -46,7 +48,8 @@ export type ExcelSheetId =
   | 'plans'
   | 'savedLibrary'
   | 'body'
-  | 'period';
+  | 'period'
+  | 'fasting';
 
 export const ALL_EXCEL_SHEETS: readonly ExcelSheetId[] = [
   'summary',
@@ -61,6 +64,7 @@ export const ALL_EXCEL_SHEETS: readonly ExcelSheetId[] = [
   'savedLibrary',
   'body',
   'period',
+  'fasting',
 ];
 
 type NumFmt = 'int' | 'dec1' | 'dec2' | 'signed' | 'pct';
@@ -430,6 +434,7 @@ export interface ExcelExportInput {
   bodyEntries?: BodyEntries;
   bodyConfig?: AdvancedSettings['body'];
   periodData?: PeriodData;
+  fastingData?: FastingData;
   t?: typeof translations.en;
 }
 
@@ -485,6 +490,7 @@ export function buildExcelExport({
   bodyEntries = {},
   bodyConfig,
   periodData,
+  fastingData,
   t,
 }: ExcelExportInput): Blob {
   const bmr = calculateBMR(profile);
@@ -1111,6 +1117,38 @@ export function buildExcelExport({
       widths: [12, 13, 12, 11, 13, 24, 24, 32],
     });
   }
+  if (want('fasting')) {
+    const fastingRows: Row[] = (fastingData?.sessions ?? [])
+      .filter((s) => isDateInRange(toLocalDateString(s.endedAt ?? s.startedAt), normalizedRange))
+      .map((s) => {
+        const timing = computeFastTiming(s);
+        const sessionNotes = (fastingData?.notes ?? [])
+          .filter((n) => n.sessionId === s.id)
+          .map((n) => `${n.mood} (${n.hunger}/5)${n.text ? `: ${n.text}` : ''}`)
+          .join(' | ');
+        return [
+          { date: toLocalDateString(s.startedAt) },
+          s.startedAt.slice(11, 16),
+          s.endedAt ? s.endedAt.slice(0, 10) : null,
+          s.endedAt ? s.endedAt.slice(11, 16) : null,
+          s.protocol.toUpperCase(),
+          { value: Math.round((timing.elapsedMs / 3_600_000) * 10) / 10, numFmt: 'dec1' },
+          { value: s.targetFastingHours, numFmt: 'dec1' },
+          timing.reached ? text('Yes', 'Si') : text('No', 'No'),
+          sessionNotes || null,
+        ];
+      });
+    selectedSheets.push({
+      name: text('Fasting', 'Digiuno'),
+      header: [
+        text('Start date', 'Data inizio'), text('Start time', 'Ora inizio'), text('End date', 'Data fine'),
+        text('End time', 'Ora fine'), text('Protocol', 'Protocollo'), text('Duration (h)', 'Durata (h)'),
+        text('Target (h)', 'Obiettivo (h)'), text('Completed', 'Completato'), text('Notes', 'Note'),
+      ],
+      rows: fastingRows,
+      widths: [12, 10, 12, 10, 12, 13, 12, 12, 44],
+    });
+  }
 
   if (selectedSheets.length === 0) {
     selectedSheets.push({
@@ -1127,7 +1165,7 @@ export function buildExcelExport({
 
 /** Counts how many records each sheet would export for a given period, for the export picker modal. */
 export function countExcelRecords(
-  input: Pick<ExcelExportInput, 'dayLogs' | 'plans' | 'customButtons' | 'memories' | 'preBuiltMeals' | 'allFoods' | 'bodyEntries' | 'periodData'>,
+  input: Pick<ExcelExportInput, 'dayLogs' | 'plans' | 'customButtons' | 'memories' | 'preBuiltMeals' | 'allFoods' | 'bodyEntries' | 'periodData' | 'fastingData'>,
   range?: ExcelDateRange,
 ): Record<ExcelSheetId, number> {
   const counts: Record<ExcelSheetId, number> = {
@@ -1143,6 +1181,7 @@ export function countExcelRecords(
     savedLibrary: (input.preBuiltMeals?.length ?? 0) + (input.allFoods?.filter((f) => f.isRecipe).length ?? 0),
     body: 0,
     period: 0,
+    fasting: 0,
   };
   const buttons = input.customButtons ?? [];
   for (const [date, log] of Object.entries(input.dayLogs)) {
@@ -1180,6 +1219,9 @@ export function countExcelRecords(
   }
   for (const d of Object.keys(input.periodData?.logs ?? {})) {
     if (isDateInRange(d, range)) counts.period += 1;
+  }
+  for (const s of input.fastingData?.sessions ?? []) {
+    if (isDateInRange(toLocalDateString(s.endedAt ?? s.startedAt), range)) counts.fasting += 1;
   }
   return counts;
 }

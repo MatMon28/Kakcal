@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { NumericInput } from '../common/NumericInput';
-import { calculateBMR } from '../../utils/calculations';
+import { calculateMifflinBMR } from '../../utils/calculations';
 import { formatKcal } from '../../utils/formatters';
 import { Check } from 'lucide-react';
 import { BodyMeasuresProfile } from './BodyMeasuresProfile';
@@ -21,6 +21,12 @@ export const UserProfileModal: React.FC = () => {
   const [heightCm, setHeightCm] = useState<number>(userProfile.heightCm);
   const [age, setAge] = useState<number>(userProfile.age);
   const [sex, setSex] = useState<'male' | 'female'>(userProfile.sex);
+  const [useCustomBmr, setUseCustomBmr] = useState<boolean>(Boolean(userProfile.useCustomBmr));
+  const [customBmrKcal, setCustomBmrKcal] = useState<number>(
+    userProfile.customBmrKcal && userProfile.customBmrKcal > 0
+      ? userProfile.customBmrKcal
+      : calculateMifflinBMR(userProfile)
+  );
 
   useEffect(() => {
     if (isProfileOpen) {
@@ -28,6 +34,12 @@ export const UserProfileModal: React.FC = () => {
       setHeightCm(userProfile.heightCm);
       setAge(userProfile.age);
       setSex(userProfile.sex);
+      setUseCustomBmr(Boolean(userProfile.useCustomBmr));
+      setCustomBmrKcal(
+        userProfile.customBmrKcal && userProfile.customBmrKcal > 0
+          ? userProfile.customBmrKcal
+          : calculateMifflinBMR(userProfile)
+      );
     }
   }, [isProfileOpen, userProfile]);
 
@@ -41,10 +53,23 @@ export const UserProfileModal: React.FC = () => {
     [weightKg, heightCm, age, sex]
   );
 
-  const previewBmr = useMemo(() => calculateBMR(safeProfile), [safeProfile]);
+  const previewBmr = useMemo(() => calculateMifflinBMR(safeProfile), [safeProfile]);
+
+  const handleSelectMode = (custom: boolean) => {
+    setUseCustomBmr(custom);
+    if (custom && (!customBmrKcal || customBmrKcal <= 0)) {
+      setCustomBmrKcal(previewBmr);
+    }
+  };
 
   const handleSave = () => {
-    updateUserProfile({ ...userProfile, ...safeProfile });
+    const resolvedCustom = customBmrKcal > 0 ? Math.round(customBmrKcal) : previewBmr;
+    updateUserProfile({
+      ...userProfile,
+      ...safeProfile,
+      useCustomBmr,
+      customBmrKcal: useCustomBmr ? resolvedCustom : userProfile.customBmrKcal,
+    });
     setIsProfileOpen(false);
   };
 
@@ -129,11 +154,64 @@ export const UserProfileModal: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-activity rounded-2xl px-4 py-3.5 flex items-center justify-between gap-2">
-          <span className="text-xs font-bold text-activity-accent">{t.profile.calculatedBmr}</span>
-          <span className="text-xl font-extrabold tabular-nums text-activity-ink">
-            {formatKcal(previewBmr)} kcal
-          </span>
+        <div className="bg-activity rounded-2xl p-3.5 space-y-3">
+          <div className="bg-[var(--inset)] p-1 rounded-xl grid grid-cols-2 gap-1" role="tablist" aria-label={t.profile.calculatedBmr}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={!useCustomBmr}
+              onClick={() => handleSelectMode(false)}
+              className={`pressable py-1.5 px-2.5 rounded-lg text-xs font-extrabold transition-colors ${
+                !useCustomBmr
+                  ? 'bg-[var(--text)] text-[var(--on-text)] shadow-sm'
+                  : 'text-[var(--muted)] hover:text-[var(--text)]'
+              }`}
+            >
+              {t.profile.bmrModeCalculated}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={useCustomBmr}
+              onClick={() => handleSelectMode(true)}
+              className={`pressable py-1.5 px-2.5 rounded-lg text-xs font-extrabold transition-colors ${
+                useCustomBmr
+                  ? 'bg-[var(--text)] text-[var(--on-text)] shadow-sm'
+                  : 'text-[var(--muted)] hover:text-[var(--text)]'
+              }`}
+            >
+              {t.profile.bmrModeCustom}
+            </button>
+          </div>
+
+          {!useCustomBmr ? (
+            <div className="flex items-center justify-between gap-2 px-0.5">
+              <span className="text-xs font-bold text-activity-accent">{t.profile.calculatedBmr}</span>
+              <span className="text-xl font-extrabold tabular-nums text-activity-ink">
+                {formatKcal(previewBmr)} kcal
+              </span>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between gap-2 px-0.5">
+                <label className="text-xs font-bold text-activity-accent">
+                  {t.profile.customBurnLabel}
+                </label>
+                <span className="text-[11px] font-semibold text-activity-accent opacity-80 tabular-nums">
+                  {t.energy.bmrShort} {formatKcal(previewBmr)} kcal
+                </span>
+              </div>
+              <NumericInput
+                value={customBmrKcal}
+                onChange={setCustomBmrKcal}
+                ariaLabel={t.profile.customBurnLabel}
+                unit="kcal"
+                min={500}
+                max={10000}
+                placeholder={String(previewBmr)}
+              />
+            </div>
+          )}
         </div>
 
         {/* Advanced > Body measurements: choose what to track (renders nothing when the option is off) */}

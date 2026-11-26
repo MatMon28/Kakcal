@@ -99,6 +99,9 @@ export const en = {
     height: 'Height (cm)',
     age: 'Age (years)',
     calculatedBmr: 'Basal Metabolism (BMR)',
+    bmrModeCalculated: 'Calculated BMR',
+    bmrModeCustom: 'Personalised',
+    customBurnLabel: 'Daily calories burned',
     saveBtn: 'Save Profile',
   },
   categories: {
@@ -219,6 +222,9 @@ export const it: typeof en = {
     height: 'Altezza (cm)',
     age: 'Età (anni)',
     calculatedBmr: 'Metabolismo Basale (BMR)',
+    bmrModeCalculated: 'BMR calcolato',
+    bmrModeCustom: 'Personalizzato',
+    customBurnLabel: 'Calorie bruciate al giorno',
     saveBtn: 'Salva Profilo',
   },
   categories: {

@@ -154,6 +154,8 @@ export interface UserProfile {
   age: number;
   sex: 'male' | 'female';
   targetIntakeKcal?: number;
+  useCustomBmr?: boolean;
+  customBmrKcal?: number;
 }
 
 export interface WaterEntry {
@@ -218,7 +220,9 @@ export interface EnergyExpenditureSummary {
   totalExpenditure: number;
 }
 
-export type MainTabId = 'today' | 'prebuilt' | 'period' | 'body' | 'history';
+import type { FastingNotificationSettings } from './fasting';
+
+export type MainTabId = 'today' | 'fasting' | 'prebuilt' | 'period' | 'body' | 'history';
 
 export type ActiveTab = MainTabId | 'database';
 
@@ -252,6 +256,8 @@ export interface NotificationSettings {
   logData: DailyReminderSetting;
   /** One reminder per meal, each with its own switch and time. */
   meals: Record<MealReminderSlotId, DailyReminderSetting>;
+  /** Timer-based intermittent fasting reminders. */
+  fasting?: FastingNotificationSettings;
 }
 
 /** Sections of the Custom page that Settings > Custom page can hide. */

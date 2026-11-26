@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { whenIdle } from './idle';
 import { useApp } from '../context/AppContext';
 import { isAndroidApp } from './android';
+import { useFasting } from './fastingStore';
 import {
   buildNotificationPlan,
   hasAnyReminderEnabled,
@@ -18,6 +19,7 @@ import { isTourScreen, type TourScreen } from '../components/widgets/widgetContr
  */
 export function useNotificationScheduler(onOpen: (screen: TourScreen) => void) {
   const { settings, t } = useApp();
+  const fasting = useFasting();
   const onOpenRef = useRef(onOpen);
   onOpenRef.current = onOpen;
   const standalone = window.parent === window;
@@ -30,10 +32,11 @@ export function useNotificationScheduler(onOpen: (screen: TourScreen) => void) {
       t.notifications,
       Object.fromEntries(MEAL_REMINDER_SLOTS.map((slot) => [slot, t.mealSlots[slot]])) as Record<(typeof MEAL_REMINDER_SLOTS)[number], string>,
       customNames,
+      fasting,
     ),
     // customKey stands in for the names array, which is a new object on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [settings.notifications, t, customKey],
+    [settings.notifications, t, customKey, fasting],
   );
   const planKey = JSON.stringify(plan);
   const planRef = useRef(plan);

@@ -42,6 +42,11 @@ interface JournalDevicePlugin {
   exportBackup(data: { json: string; filename?: string }): Promise<ExportResult>;
   /** Local document-picker export, using the same native staging / picker / verified write as `exportBackup`. */
   exportFile(data: { base64: string; filename: string; kind: 'json' | 'zip' | 'txt' | 'xlsx' | 'pdf' }): Promise<ExportResult>;
+  /**
+   * Opens the Android share sheet (WhatsApp, email, Drive...) for a file: `text` (the JSON backup) or `base64`.
+   * Resolves `{ bytes }` once the chooser is open. Missing (rejects) in APKs built before the share round.
+   */
+  shareFile(data: { base64?: string; text?: string; filename: string; kind: 'json' | 'zip' | 'txt' | 'xlsx' | 'pdf' }): Promise<ExportResult>;
   /** Exports that finished without a live call (read once, then cleared). Missing in APKs built before round 2. */
   takeLastExport(): Promise<{ exports?: NativeExportRecord[] }>;
   /** Tells the native launch surfaces (system launch screen, window, WebView) the current app background `#rrggbb`. */

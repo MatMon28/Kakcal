@@ -1,10 +1,12 @@
 import React from 'react';
-import { CalendarDays, ChevronDown, ChevronUp, Droplet, LayoutGrid, RotateCcw, Ruler, TrendingUp, User } from 'lucide-react';
+import { CalendarDays, ChevronDown, ChevronUp, Droplet, LayoutGrid, RotateCcw, Ruler, Timer, TrendingUp, User } from 'lucide-react';
 import { useApp, useNav, useNavActions } from '../../../context/AppContext';
 import { useAdvancedText } from '../../../i18n/advanced';
+import { useFastingText } from '../../../i18n/fasting';
 import { useJournalText } from '../../../i18n/journal';
 import type { MainTabId } from '../../../types';
 import { setBodyEnabled, useAdvanced } from '../../../utils/advancedStore';
+import { setFastingEnabled, useFasting } from '../../../utils/fastingStore';
 import { DEFAULT_PAGE_ORDER, normalizePageOrder } from '../../../utils/pageVisibility';
 import { SubSection, SwitchVisual, TONE } from './SettingsParts';
 
@@ -15,10 +17,12 @@ import { SubSection, SwitchVisual, TONE } from './SettingsParts';
 export const PagesSettings: React.FC = () => {
   const j = useJournalText();
   const text = useAdvancedText();
+  const ft = useFastingText();
   const { activeTab } = useNav();
   const { setActiveTab } = useNavActions();
   const { t, settings, updateSettings, setIsSettingsOpen, setIsProfileOpen } = useApp();
   const bodyOn = useAdvanced().body.enabled;
+  const fastingOn = useFasting().config.enabled;
 
   const pageOrder = normalizePageOrder(settings.pageOrder);
   const isCustomOrder = pageOrder.some((id, idx) => id !== DEFAULT_PAGE_ORDER[idx]);
@@ -39,6 +43,10 @@ export const PagesSettings: React.FC = () => {
   const toggleBody = () => {
     setBodyEnabled(!bodyOn);
     if (bodyOn && activeTab === 'body') setActiveTab('today');
+  };
+  const toggleFasting = () => {
+    setFastingEnabled(!fastingOn);
+    if (fastingOn && activeTab === 'fasting') setActiveTab('today');
   };
 
   const movePage = (index: number, delta: -1 | 1) => {
@@ -67,6 +75,14 @@ export const PagesSettings: React.FC = () => {
       on: true,
       disabled: true,
       onToggle: () => undefined,
+    },
+    fasting: {
+      icon: <Timer size={14} />,
+      tone: TONE.mint,
+      title: ft.pageTitle,
+      description: ft.pageDesc,
+      on: fastingOn,
+      onToggle: toggleFasting,
     },
     prebuilt: {
       icon: <LayoutGrid size={14} />,

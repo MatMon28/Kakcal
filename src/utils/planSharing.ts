@@ -207,12 +207,63 @@ export async function saveLocalFile(content: Blob | string, name: string): Promi
   if (blob.size === 0) throw new Error('Nothing to export: the file would be empty.');
   if (!isAndroidApp()) { downloadFile(blob, name); return { bytes: blob.size }; }
   if (typeof content === 'string') return checkedResult(await JournalDevice.exportBackup({ json: content, filename: name }));
-  const base64 = await new Promise<string>((resolve, reject) => {
+  return checkedResult(await JournalDevice.exportFile({ base64: await blobToBase64(blob), filename: name, kind: exportKind(name) }));
+}
+
+export type ExportKind = 'json' | 'zip' | 'txt' | 'xlsx' | 'pdf';
+const MIME_TYPES: Record<ExportKind, string> = {
+  json: 'application/json',
+  zip: 'application/zip',
+  txt: 'text/plain',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  pdf: 'application/pdf',
+};
+const exportKind = (name: string): ExportKind => (name.endsWith('.json') ? 'json' : name.endsWith('.zip') ? 'zip' : name.endsWith('.xlsx') ? 'xlsx' : name.endsWith('.pdf') ? 'pdf' : 'txt');
+
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(String(reader.result).split(',')[1] ?? '');
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
-  const kind = name.endsWith('.json') ? 'json' : name.endsWith('.zip') ? 'zip' : name.endsWith('.xlsx') ? 'xlsx' : name.endsWith('.pdf') ? 'pdf' : 'txt';
-  return checkedResult(await JournalDevice.exportFile({ base64, filename: name, kind }));
+}
+
+/** A `File` with the MIME type of its extension (the Web Share API decides by type / extension). */
+function toShareFile(content: Blob | string, name: string): File {
+  return new File([content], name, { type: MIME_TYPES[exportKind(name)] });
+}
+
+/**
+ * Whether "Share" can be offered for this file: always in the APK (native share sheet), and in a browser only when
+ * the Web Share API accepts this file type (Safari accepts any; Chrome / Edge refuse some, e.g. .xlsx / .zip / .json).
+ */
+export function canShareFile(content: Blob | string, name: string): boolean {
+  if (isAndroidApp()) return true;
+  if (typeof navigator === 'undefined' || typeof navigator.share !== 'function' || typeof navigator.canShare !== 'function') return false;
+  try { return navigator.canShare({ files: [toShareFile(content, name)] }); } catch { return false; }
+}
+
+/**
+ * The share twin of `saveLocalFile`: hands the file to the system share sheet (WhatsApp, email, Drive...).
+ * - APK: the native `shareFile` (a cache copy exposed through the FileProvider + the Android chooser); resolves `{ bytes }`
+ *   once the chooser is open.
+ * - browser: `navigator.share({ files })`; closing the sheet resolves `{ cancelled: true }`.
+ * Must be called straight from a click: the browser branch reaches `navigator.share` with no `await` before it.
+ */
+export async function shareLocalFile(content: Blob | string, name: string, title: string): Promise<ExportResult> {
+  const size = typeof content === 'string' ? new Blob([content]).size : content.size;
+  if (size === 0) throw new Error('Nothing to share: the file would be empty.');
+  if (!isAndroidApp()) {
+    try {
+      await navigator.share({ files: [toShareFile(content, name)], title });
+      return { bytes: size };
+    } catch (error) {
+      if ((error as { name?: string } | null)?.name === 'AbortError') return { cancelled: true };
+      throw error;
+    }
+  }
+  const kind = exportKind(name);
+  if (typeof content === 'string') return checkedResult(await JournalDevice.shareFile({ text: content, filename: name, kind }));
+  return checkedResult(await JournalDevice.shareFile({ base64: await blobToBase64(content), filename: name, kind }));
 }

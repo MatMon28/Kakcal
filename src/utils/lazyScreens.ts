@@ -11,6 +11,9 @@ export const LazyHistoryView = preloadableLazy(() =>
 export const LazyBodyView = preloadableLazy(() =>
   import('../components/body/BodyView').then((m) => ({ default: m.BodyView })),
 );
+export const LazyFastingView = preloadableLazy(() =>
+  import('../components/fasting/FastingView').then((m) => ({ default: m.FastingView })),
+);
 
 export const LazyLogActivityModal = preloadableLazy(() =>
   import('../components/modals/LogActivityModal').then((m) => ({ default: m.LogActivityModal })),
@@ -43,6 +46,9 @@ export function preloadTabScreen(tab: ActiveTab): void {
     case 'body':
       void LazyBodyView.preload();
       break;
+    case 'fasting':
+      void LazyFastingView.preload();
+      break;
   }
 }
 
@@ -54,8 +60,10 @@ export function scheduleLazyScreenPreload(opts: {
   periodShown: boolean;
   bodyShown: boolean;
   historyShown: boolean;
+  fastingShown?: boolean;
 }): () => void {
   const queue: Array<() => Promise<void>> = [];
+  if (opts.fastingShown && !LazyFastingView.isLoaded()) queue.push(LazyFastingView.preload);
   if (opts.historyShown && !LazyHistoryView.isLoaded()) queue.push(LazyHistoryView.preload);
   if (opts.periodShown && !LazyPeriodView.isLoaded()) queue.push(LazyPeriodView.preload);
   if (opts.bodyShown && !LazyBodyView.isLoaded()) queue.push(LazyBodyView.preload);

@@ -22,7 +22,7 @@ html[data-style="glass"] body::before {
 /* Scrolling cards / tiles get the Liquid Glass optical finish (translucent fill + specular diagonal sheen + multi-rim
    --card-shadow) WITHOUT per-card `backdrop-filter` — scrolling cards only sit over the static background, so avoiding
    15-30 live Gaussian blur passes per frame keeps scrolling locked at 60/120 FPS. */
-html[data-style="glass"]:not([data-style="classic"]) :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, [data-period-card], [data-day-overview-card], .kc-modal-banner, [data-cal-nav], [data-cal-trigger], [data-layout-switch], [data-range-switch], main section.rounded-3xl, main div.rounded-3xl) {
+html[data-style="glass"]:not([data-style="classic"]) :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, [data-kc-tone], [data-period-card], [data-day-overview-card], .kc-modal-banner, [data-cal-nav], [data-cal-trigger], [data-layout-switch], [data-range-switch], main section.rounded-3xl, main div.rounded-3xl) {
   background-image: var(--glass-sheen);
   contain: layout style;
 }

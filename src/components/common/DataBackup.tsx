@@ -8,7 +8,7 @@ import { onNativeExportFinished, takeNativeExports } from '../../utils/nativeExp
 import { Collapsible } from './Collapsible';
 import { useMealJournal } from '../../utils/journalStore';
 import { exportMealPictures } from '../../utils/photoExport';
-import { saveLocalFile, withSize } from '../../utils/planSharing';
+import { canShareFile, saveLocalFile, shareLocalFile, withSize } from '../../utils/planSharing';
 import { useJournalText } from '../../i18n/journal';
 import { buildExcelExport } from '../../utils/excelExport';
 import { buildPdfReport } from '../../utils/pdfExport';
@@ -16,8 +16,13 @@ import { useMealSlots } from '../../utils/mealSlots';
 import { StorageInfo } from './StorageInfo';
 import { getLastImportReport } from '../../utils/backupFormat';
 import { useAdvanced, useBodyEntries } from '../../utils/advancedStore';
+import { getFasting } from '../../utils/fastingStore';
 import { ExcelExportModal, type ExcelExportSelection } from '../modals/ExcelExportModal';
 import { PdfExportModal, type PdfExportSelection } from '../modals/PdfExportModal';
+import { SaveOrShareModal } from '../modals/SaveOrShareModal';
+
+/** A built export file waiting for the "Save or share?" answer. */
+interface PendingFile { content: Blob | string; name: string; savedText: (bytes: number) => string; failedText: string }
 
 /** The native side puts the real failure (mode, exception class, message) in the error: keep it for the device report. */
 const withDetail = (text: string, error: unknown): string => {
@@ -48,6 +53,7 @@ export const DataBackup: React.FC = () => {
   const [exportingPhotos, setExportingPhotos] = useState(false);
   const [excelModalOpen, setExcelModalOpen] = useState(false);
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<PendingFile | null>(null);
   // Shown before exporting when pictures exist on this device: the backup does not contain them.
   const [confirmExport, setConfirmExport] = useState(false);
   // An export that finished while the app was away (activity re-created / process killed while the picker was open).
@@ -75,11 +81,40 @@ export const DataBackup: React.FC = () => {
     } catch (error) { setMessage({ text: withDetail(failedText, error), error: true }); }
   };
 
+  /**
+   * Builds the export file first, then asks "Save or share?" (SaveOrShareModal) when this device can share it
+   * (always in the APK; in a browser only when the Web Share API accepts the file type). Otherwise it is saved directly.
+   */
+  const offerFile = async (build: () => Blob | string | Promise<Blob | string>, name: string, savedText: (bytes: number) => string, failedText: string): Promise<void> => {
+    setMessage(null); setRecovered(null);
+    let content: Blob | string;
+    try { content = await build(); } catch (error) { setMessage({ text: withDetail(failedText, error), error: true }); return; }
+    if (canShareFile(content, name)) setPendingFile({ content, name, savedText, failedText });
+    else await runExport(() => saveLocalFile(content, name), savedText, failedText);
+  };
+  const pendingBytes = pendingFile ? (typeof pendingFile.content === 'string' ? new Blob([pendingFile.content]).size : pendingFile.content.size) : 0;
+  const savePending = () => {
+    if (!pendingFile) return;
+    const { content, name, savedText, failedText } = pendingFile;
+    setPendingFile(null);
+    void runExport(() => saveLocalFile(content, name), savedText, failedText);
+  };
+  // Called straight from the Share tap: shareLocalFile reaches navigator.share without an earlier await.
+  const sharePending = () => {
+    if (!pendingFile) return;
+    const { content, name } = pendingFile;
+    setPendingFile(null);
+    void runExport(
+      () => shareLocalFile(content, name, 'Kakcal'),
+      (bytes) => withSize(j(`Sent to the share menu: ${name}.`, `Inviato al menu di condivisione: ${name}.`), bytes),
+      j('Could not share the file. Update the app, or save it and share it from your files.', 'Impossibile condividere il file. Aggiorna l\'app, oppure salvalo e condividilo dai tuoi file.'),
+    );
+  };
+
   const handleExcelExport = (selection: ExcelExportSelection) => {
     setExcelModalOpen(false);
-    void runExport(
-      () => saveLocalFile(
-        buildExcelExport({
+    void offerFile(
+      () => buildExcelExport({
           dayLogs: allDayLogs,
           profile: userProfile,
           plans,
@@ -95,19 +130,18 @@ export const DataBackup: React.FC = () => {
           bodyEntries,
           bodyConfig: advanced.body,
           periodData,
+          fastingData: getFasting(),
           t,
         }),
-        `kakcal_data_${selection.filenameSuffix}.xlsx`,
-      ),
+      `kakcal_data_${selection.filenameSuffix}.xlsx`,
       (bytes) => withSize(j('Excel file exported.', 'File Excel esportato.'), bytes),
       j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'),
     );
   };
   const handlePdfExport = (selection: PdfExportSelection) => {
     setPdfModalOpen(false);
-    void runExport(
-      () => saveLocalFile(
-        buildPdfReport({
+    void offerFile(
+      () => buildPdfReport({
           dayLogs: allDayLogs,
           profile: userProfile,
           slotLabel,
@@ -120,8 +154,7 @@ export const DataBackup: React.FC = () => {
           bodyConfig: advanced.body,
           settings,
         }),
-        `kakcal_report_${selection.filenameSuffix}.pdf`,
-      ),
+      `kakcal_report_${selection.filenameSuffix}.pdf`,
       (bytes) => withSize(j('PDF report exported.', 'Report PDF esportato.'), bytes),
       j('Could not export the PDF report. Check device storage and try again.', 'Impossibile esportare il report PDF. Controlla lo spazio e riprova.'),
     );
@@ -129,8 +162,9 @@ export const DataBackup: React.FC = () => {
   const handlePhotoExport = async () => {
     setExportingPhotos(true);
     try {
-      await runExport(
-        async () => saveLocalFile(await exportMealPictures(photos), `kakcal_meal_pictures_${getTodayDateString()}.zip`),
+      await offerFile(
+        () => exportMealPictures(photos),
+        `kakcal_meal_pictures_${getTodayDateString()}.zip`,
         (bytes) => withSize(j(`${photos.length} pictures exported with their notes.`, `${photos.length} foto esportate con le note.`), bytes),
         j('Could not export pictures. Check device storage and try again.', 'Impossibile esportare le foto. Controlla lo spazio e riprova.'),
       );
@@ -144,8 +178,9 @@ export const DataBackup: React.FC = () => {
 
   const handleExport = async () => {
     setConfirmExport(false);
-    await runExport(
-      async () => saveLocalFile(await exportDataJson(), `kakcal_backup_${getTodayDateString()}.json`),
+    await offerFile(
+      () => exportDataJson(),
+      `kakcal_backup_${getTodayDateString()}.json`,
       (bytes) => `${withSize(j('Backup saved.', 'Backup salvato.'), bytes)} ${picturesNote}`,
       t.history.exportError,
     );
@@ -284,6 +319,7 @@ export const DataBackup: React.FC = () => {
             bodyEntries,
             bodyConfig: advanced.body,
             periodData,
+            fastingData: getFasting(),
             t,
           }}
           onExport={handleExcelExport}
@@ -295,6 +331,9 @@ export const DataBackup: React.FC = () => {
         <Download size={16} />
       </button>
       <StorageInfo />
+      {pendingFile && (
+        <SaveOrShareModal filename={pendingFile.name} bytes={pendingBytes} onSave={savePending} onShare={sharePending} onClose={() => setPendingFile(null)} />
+      )}
     </Collapsible>
   );
 };

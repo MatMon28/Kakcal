@@ -7,6 +7,8 @@ import type {
   NotificationSettings,
   WaterReminderSetting,
 } from '../types';
+import type { FastingData, FastingNotificationSettings } from '../types/fasting';
+import { computeEatingWindow, computeFastTiming } from './fastingStore';
 import type { TourScreen } from '../components/widgets/widgetContract';
 
 /**
@@ -24,6 +26,15 @@ export const MEAL_REMINDER_SLOTS: MealReminderSlotId[] = ['breakfast', 'mid_morn
 /** Water reminder choices, in minutes. */
 export const WATER_INTERVALS = [30, 45, 60, 90, 120, 180, 240];
 
+export const DEFAULT_FASTING_NOTIFICATIONS: FastingNotificationSettings = {
+  startFast: false,
+  endFast: false,
+  diary: false,
+  diaryIntervalHours: 4,
+};
+
+export const FASTING_DIARY_INTERVAL_HOURS = [1, 2, 3, 4, 6, 8];
+
 export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   water: { enabled: false, intervalMinutes: 120, from: '08:00', to: '22:00' },
   customButtons: { enabled: false, time: '19:00' },
@@ -36,6 +47,7 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
     midday_snack: { enabled: false, time: '16:30' },
     dinner: { enabled: false, time: '20:00' },
   },
+  fasting: DEFAULT_FASTING_NOTIFICATIONS,
 };
 
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -59,6 +71,17 @@ const normalizeWater = (raw: unknown, fallback: WaterReminderSetting): WaterRemi
   };
 };
 
+function normalizeFastingNotifications(raw: unknown): FastingNotificationSettings {
+  const src = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
+  const interval = Number(src.diaryIntervalHours);
+  return {
+    startFast: asBool(src.startFast, DEFAULT_FASTING_NOTIFICATIONS.startFast),
+    endFast: asBool(src.endFast, DEFAULT_FASTING_NOTIFICATIONS.endFast),
+    diary: asBool(src.diary, DEFAULT_FASTING_NOTIFICATIONS.diary),
+    diaryIntervalHours: Number.isFinite(interval) ? Math.min(24, Math.max(1, Math.round(interval))) : DEFAULT_FASTING_NOTIFICATIONS.diaryIntervalHours,
+  };
+}
+
 /** Accepts anything (old storage, imported backups) and returns a complete, valid settings object. */
 export function normalizeNotificationSettings(raw: unknown): NotificationSettings {
   const src = (raw && typeof raw === 'object' ? raw : {}) as Record<string, unknown>;
@@ -73,6 +96,7 @@ export function normalizeNotificationSettings(raw: unknown): NotificationSetting
       (acc, slot) => ({ ...acc, [slot]: normalizeDaily(meals[slot], d.meals[slot]) }),
       {} as NotificationSettings['meals'],
     ),
+    fasting: normalizeFastingNotifications(src.fasting),
   };
 }
 
@@ -81,6 +105,7 @@ export const hasAnyReminderEnabled = (n: NotificationSettings) =>
   n.customButtons.enabled ||
   n.weight.enabled ||
   n.logData.enabled ||
+  Boolean(n.fasting?.startFast || n.fasting?.endFast || n.fasting?.diary) ||
   MEAL_REMINDER_SLOTS.some((slot) => n.meals[slot].enabled);
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -97,6 +122,8 @@ export interface PlannedNotification {
   body: string;
   hour: number;
   minute: number;
+  /** Optional one-shot UTC timestamp (ms) for timer-based reminders (e.g. fasting). */
+  atTimestamp?: number;
   /** Screen opened when the notification is tapped. */
   screen: TourScreen;
 }
@@ -106,6 +133,9 @@ const MEAL_ID_BASE = 2000;
 const CUSTOM_ID = 3001;
 const WEIGHT_ID = 3002;
 const LOG_ID = 3003;
+const FASTING_START_ID = 4001;
+const FASTING_END_ID = 4002;
+const FASTING_DIARY_ID_BASE = 4100;
 const MAX_WATER_PER_DAY = 48;
 
 export const timeToMinutes = (time: string) => {
@@ -139,6 +169,8 @@ export function buildNotificationPlan(
   copy: NotificationCopy,
   mealNames: Record<MealReminderSlotId, string>,
   customButtonNames: string[],
+  fasting?: FastingData,
+  nowMs = Date.now(),
 ): PlannedNotification[] {
   const plan: PlannedNotification[] = [];
   const at = (time: string) => {
@@ -204,6 +236,63 @@ export function buildNotificationPlan(
       ...at(settings.logData.time),
       screen: 'today',
     });
+  }
+
+  const fConf = settings.fasting;
+  if (fasting?.config.enabled && fConf) {
+    if (fConf.startFast && !fasting.activeSession) {
+      const ew = computeEatingWindow(fasting, nowMs);
+      if (ew && ew.endsAtMs > nowMs) {
+        const d = new Date(ew.endsAtMs);
+        plan.push({
+          id: FASTING_START_ID,
+          channelId: 'kc-reminders',
+          title: copy.messages.fastStartTitle,
+          body: copy.messages.fastStartBody,
+          hour: d.getHours(),
+          minute: d.getMinutes(),
+          atTimestamp: ew.endsAtMs,
+          screen: 'fasting',
+        });
+      }
+    }
+
+    if (fasting.activeSession) {
+      const timing = computeFastTiming(fasting.activeSession, nowMs);
+      if (fConf.endFast && timing.projectedEndMs > nowMs) {
+        const d = new Date(timing.projectedEndMs);
+        plan.push({
+          id: FASTING_END_ID,
+          channelId: 'kc-reminders',
+          title: copy.messages.fastEndTitle,
+          body: copy.messages.fastEndBody,
+          hour: d.getHours(),
+          minute: d.getMinutes(),
+          atTimestamp: timing.projectedEndMs,
+          screen: 'fasting',
+        });
+      }
+      if (fConf.diary && fConf.diaryIntervalHours >= 1) {
+        const stepMs = fConf.diaryIntervalHours * 3_600_000;
+        const startMs = Date.parse(fasting.activeSession.startedAt);
+        let k = Math.max(1, Math.floor((nowMs - startMs) / stepMs) + 1);
+        for (let i = 0; i < 12; i++, k++) {
+          const fireAt = startMs + k * stepMs;
+          if (fireAt <= nowMs) continue;
+          const d = new Date(fireAt);
+          plan.push({
+            id: FASTING_DIARY_ID_BASE + i,
+            channelId: 'kc-reminders',
+            title: copy.messages.fastDiaryTitle,
+            body: copy.messages.fastDiaryBody,
+            hour: d.getHours(),
+            minute: d.getMinutes(),
+            atTimestamp: fireAt,
+            screen: 'fasting',
+          });
+        }
+      }
+    }
   }
 
   return plan;
@@ -295,8 +384,10 @@ export function syncNativeNotifications(plan: PlannedNotification[], copy: Notif
         smallIcon: 'ic_stat_kak',
         iconColor: '#0B0F1E',
         extra: { screen: n.screen },
-        // Daily at hour:minute. `second: 0` matters: without it Android keeps the seconds of "now".
-        schedule: { on: { hour: n.hour, minute: n.minute, second: 0 }, allowWhileIdle: true },
+        // One-shot timestamp for timer-based reminders, or daily at hour:minute.
+        schedule: n.atTimestamp !== undefined
+          ? { at: new Date(n.atTimestamp), allowWhileIdle: true }
+          : { on: { hour: n.hour, minute: n.minute, second: 0 }, allowWhileIdle: true },
       })),
     });
   };
@@ -338,6 +429,18 @@ export function startWebReminders(plan: PlannedNotification[], onOpen: (screen: 
   const timers = new Map<number, number>();
   let stopped = false;
   const arm = (n: PlannedNotification) => {
+    if (n.atTimestamp !== undefined) {
+      const delay = n.atTimestamp - Date.now();
+      if (delay <= 0 || delay > 2_147_483_000) return;
+      timers.set(
+        n.id,
+        window.setTimeout(() => {
+          if (stopped) return;
+          showWebNotification(n.title, n.body, `kc-${n.id}`, () => onOpen(n.screen));
+        }, delay),
+      );
+      return;
+    }
     // A day is shorter than the 32-bit setTimeout limit. The next run is recomputed from the clock each time.
     timers.set(
       n.id,

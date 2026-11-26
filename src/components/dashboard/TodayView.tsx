@@ -23,6 +23,7 @@ import { useMealSlots } from '../../utils/mealSlots';
 import { consumePendingMealSlot } from '../../utils/journalNavigation';
 import { MealSlotId } from '../../types';
 import { Columns2, LayoutList, ListTree } from 'lucide-react';
+import { TodayFastingBar } from '../fasting/TodayFastingBar';
 
 type MealLayout = 'compact' | 'normal' | 'expanded';
 type TrackerId = 'activity' | 'water' | 'poop' | 'custom';
@@ -242,6 +243,7 @@ export const TodayView: React.FC = () => {
         <DayNavigator onInspectDay={setInspectedDay} trailing={layoutState.enabled ? <LayoutPencil page="today" /> : undefined} />
         <LayoutToolbar page="today" items={items} extra="meal" pencil={false} />
         <div ref={dayPanel} className={ultraMinimal ? 'space-y-2.5' : 'space-y-3.5'}>
+        <TodayFastingBar />
         {layoutState.enabled ? (
           <>
             {/* Anchor for the guided tour's Meals page. */}

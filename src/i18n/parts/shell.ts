@@ -12,6 +12,7 @@ export const en = {
   },
   nav: {
     today: 'Today',
+    fasting: 'Fasting',
     prebuilt: 'Custom',
     period: 'Period',
     database: 'Foods',
@@ -66,6 +67,7 @@ export const it: typeof en = {
   },
   nav: {
     today: 'Oggi',
+    fasting: 'Digiuno',
     prebuilt: 'Personalizzati',
     period: 'Ciclo',
     database: 'Alimenti',

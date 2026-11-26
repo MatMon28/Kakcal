@@ -14,6 +14,13 @@
 ## Large files (grep symbol first; read only needed line range)
 `PlannerWizard.tsx`, `AppContext.tsx`, `EditableGrid.tsx`, `HistoryView.tsx`, `AddFoodModal.tsx`, `MealDiary.tsx`, `PhotoDiary.tsx`, `InstallGuide.tsx`.
 
+## Token efficiency
+- **Grep before reading:** Use `rg -n` to locate symbols first, then read only the needed line range (never whole files unless small).
+- **Batch tool calls:** Issue independent `read_file` and `edit_file` calls in parallel; finish all related edits before running verification commands.
+- **Offload broad discovery:** Use a `research` subagent for multi-file exploration so raw file reads stay out of the main session context.
+- **Skip planning overhead:** Execute directly without Plan Mode for small or clearly scoped tasks.
+- **Keep replies concise:** Do not re-summarize diffs or repeat file contents.
+
 ## Hard invariants
 - **CSS order:** Never reorder `@import`s in `src/index.css` or `src/components/journal/journal.css` (`docs/file-organisation.md`).
 - **i18n parity:** Edit the matching domain file in `src/i18n/parts/*.ts` (both `en` and `it` live in the same file; `it: typeof en` enforces parity), or add a small feature file like `src/i18n/advanced.ts` for new features.

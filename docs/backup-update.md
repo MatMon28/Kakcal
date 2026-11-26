@@ -120,6 +120,16 @@ Importing an old `1.x` file restores its embedded pictures, as before.
 
 **Device acceptance:** export JSON, Excel and pictures to **Downloads**, **Google Drive** and a **custom folder**: each file non-zero, the size shown, no leftover 0 B file or duplicate. `adb logcat -s KakcalExport` shows `saved <n> bytes` (and `trying mode w` when a provider refused `wt`). **Rebuild the APK**; no web, permission or package change.
 
+## Save or share? (WhatsApp, email, Drive...)
+
+Every export of Settings > Data Backup (*Export JSON*, *Export PDF report*, *Export to Excel*, *Export meal pictures*) first **builds the file**, then asks **Save or share?** (`SaveOrShareModal`, file name + size): *Share…* hands it to the system share sheet, *Save to device* is the unchanged save path above. Closing the question does nothing. The question is only asked when sharing is possible; otherwise the file is saved directly as before.
+
+- **APK:** always offered. `JournalDevice.shareFile({ text | base64, filename, kind })` writes `cacheDir/shared/<filename>` (verified length; copies older than an hour are removed on the next share), exposes it through the existing `${applicationId}.fileprovider` (`cache-path` in `res/xml/file_paths.xml`), and starts `Intent.createChooser(ACTION_SEND)` with `EXTRA_STREAM`, `ClipData` and a read grant. It resolves `{ bytes }` once the chooser is open (Android does not report which app was picked). The JSON backup goes as `text` (no base64). An APK built before this change rejects (`not implemented`): the red error says to update the app. No new permission.
+- **Browser / PWA:** offered when `navigator.canShare({ files: [file] })` accepts the typed `File`. Safari (iPhone, Mac) accepts every type; Chrome / Edge accept `.pdf` but refuse `.xlsx`, `.zip` and `.json`, which are then saved directly. `navigator.share` is reached from the *Share…* tap without an earlier `await` (the file already exists), so the user gesture is kept. Closing the sheet (`AbortError`) shows nothing.
+- **Messages:** success `Sent to the share menu: <name>. (12.4 KB)`; failure is the red error with the detail. Same `runExport` grammar as saving.
+- **Code:** `planSharing.ts` `canShareFile`, `shareLocalFile` (next to `saveLocalFile`); `DataBackup.tsx` `offerFile` / `savePending` / `sharePending`; `modals/SaveOrShareModal.tsx`; `JournalDevicePlugin.java` `shareFile`. **Tests:** `tests/share-export.test.ts` (browser path), `tests/backup-android.test.tsx` (APK share + "Save to device" in every export test).
+- **By hand (APK):** each of the four exports > *Share…* > WhatsApp: the file arrives with its name and opens. Repeat with Gmail and Drive. *Save to device* still writes a non-zero file.
+
 ## Code
 
 - `src/utils/backupFormat.ts`: version constants, `isSupportedBackup`, picture notes (`journalWithoutPictures`, `readPhotoNotes`, `mergePictureNotes`), preferences, `ImportReport` (`getLastImportReport`).

@@ -9,12 +9,12 @@ import { addMealPhoto, importMealJournal } from '../src/utils/journalStore';
 import { saveLocalFile } from '../src/utils/planSharing';
 
 // The APK path: the file is written by the native plugin, never by a browser download.
-const { exportBackup, exportFile, takeLastExport } = vi.hoisted(() => ({ exportBackup: vi.fn(), exportFile: vi.fn(), takeLastExport: vi.fn() }));
+const { exportBackup, exportFile, shareFile, takeLastExport } = vi.hoisted(() => ({ exportBackup: vi.fn(), exportFile: vi.fn(), shareFile: vi.fn(), takeLastExport: vi.fn() }));
 vi.mock('../src/utils/android', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../src/utils/android')>()),
   isAndroidApp: () => true,
   JournalDevice: {
-    exportBackup, exportFile, takeLastExport,
+    exportBackup, exportFile, shareFile, takeLastExport,
     addListener: vi.fn().mockResolvedValue({ remove: vi.fn() }),
     setLaunchBackground: vi.fn().mockResolvedValue(undefined),
   },
@@ -33,7 +33,7 @@ vi.mock('../src/utils/photoExport', () => ({ exportMealPictures: async () => new
 beforeEach(async () => {
   await deleteDatabase(); resetDbForTests(); resetBootForTests(); localStorage.clear();
   importMealJournal({});
-  exportBackup.mockReset(); exportFile.mockReset(); takeLastExport.mockReset();
+  exportBackup.mockReset(); exportFile.mockReset(); shareFile.mockReset(); takeLastExport.mockReset();
   takeLastExport.mockResolvedValue({ exports: [] });
   URL.createObjectURL = vi.fn(() => 'blob:test');
   URL.revokeObjectURL = vi.fn();
@@ -51,12 +51,15 @@ beforeEach(() => { vi.stubGlobal('FileReader', TestFileReader); });
 afterEach(() => { vi.unstubAllGlobals(); });
 
 const renderBackup = () => render(<AppProvider><DataBackup /></AppProvider>);
+// In the APK every export first asks "Save or share?".
+const chooseSave = async () => { await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Save to device/ })); }); };
 
 describe('Android APK: Export JSON goes through the native plugin', () => {
   it('sends a non-empty version 2 backup with a file name and shows the saved size', async () => {
     exportBackup.mockResolvedValue({ bytes: 2048 });
     renderBackup();
     await act(async () => { fireEvent.click(screen.getByText('Export JSON')); });
+    await chooseSave();
     expect(exportBackup).toHaveBeenCalledTimes(1);
     const { json, filename } = exportBackup.mock.calls[0][0] as { json: string; filename: string };
     expect(json.length).toBeGreaterThan(100); // never an empty payload (that produced a 0 B file)
@@ -70,6 +73,7 @@ describe('Android APK: Export JSON goes through the native plugin', () => {
     exportBackup.mockResolvedValue({ cancelled: true });
     renderBackup();
     await act(async () => { fireEvent.click(screen.getByText('Export JSON')); });
+    await chooseSave();
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
   });
@@ -78,6 +82,7 @@ describe('Android APK: Export JSON goes through the native plugin', () => {
     exportBackup.mockRejectedValue(new Error('Could not write the selected file'));
     renderBackup();
     await act(async () => { fireEvent.click(screen.getByText('Export JSON')); });
+    await chooseSave();
     expect(screen.getByRole('alert').textContent).toMatch(/Could not save the backup/);
   });
 });
@@ -97,6 +102,7 @@ describe.each([
     } else if (kind === 'pdf') {
       await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.pdf/i })); });
     }
+    await chooseSave();
   };
 
   it('hands a non-empty file with the right name and kind to the native plugin and shows the size', async () => {
@@ -137,6 +143,7 @@ describe('Android APK: Export JSON never reports success without a byte count', 
     exportBackup.mockResolvedValue({});
     renderBackup();
     await act(async () => { fireEvent.click(screen.getByText('Export JSON')); });
+    await chooseSave();
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.getByRole('alert')).toBeTruthy();
   });
@@ -172,5 +179,53 @@ describe('saveLocalFile (APK)', () => {
   it('refuses to export nothing', async () => {
     await expect(saveLocalFile(new Blob([]), 'x.zip')).rejects.toThrow(/empty/);
     expect(exportFile).not.toHaveBeenCalled();
+  });
+});
+
+describe('Android APK: Save or share? -> Share', () => {
+  const chooseShare = async () => { await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Share…/ })); }); };
+
+  it('hands the PDF report to the native share sheet and shows the size', async () => {
+    shareFile.mockResolvedValue({ bytes: 12700 });
+    renderBackup();
+    await act(async () => { fireEvent.click(screen.getByText('Export PDF report')); });
+    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.pdf/i })); });
+    await chooseShare();
+    expect(exportFile).not.toHaveBeenCalled();
+    expect(shareFile).toHaveBeenCalledTimes(1);
+    const call = shareFile.mock.calls[0][0] as { base64: string; filename: string; kind: string };
+    expect(call.base64.length).toBeGreaterThan(0);
+    expect(call.filename).toMatch(/^kakcal_report_.*\.pdf$/);
+    expect(call.kind).toBe('pdf');
+    expect(screen.getByRole('status').textContent).toMatch(/Sent to the share menu: kakcal_report_.*\(12\.4 KB\)/);
+  });
+
+  it('shares the JSON backup as text (no base64)', async () => {
+    shareFile.mockResolvedValue({ bytes: 2048 });
+    renderBackup();
+    await act(async () => { fireEvent.click(screen.getByText('Export JSON')); });
+    await chooseShare();
+    const call = shareFile.mock.calls[0][0] as { text: string; base64?: string; filename: string; kind: string };
+    expect(JSON.parse(call.text).version).toBe('2.0');
+    expect(call.base64).toBeUndefined();
+    expect(call.kind).toBe('json');
+    expect(exportBackup).not.toHaveBeenCalled();
+  });
+
+  it('shows the red error when the APK has no shareFile yet', async () => {
+    shareFile.mockRejectedValue(new Error('not implemented'));
+    renderBackup();
+    await act(async () => { fireEvent.click(screen.getByText('Export JSON')); });
+    await chooseShare();
+    expect(screen.getByRole('alert').textContent).toMatch(/Could not share the file/);
+  });
+
+  it('closing the question saves and shares nothing', async () => {
+    renderBackup();
+    await act(async () => { fireEvent.click(screen.getByText('Export JSON')); });
+    expect(screen.getByText('Save or share?')).toBeTruthy();
+    await act(async () => { fireEvent.keyDown(document, { key: 'Escape' }); });
+    expect(exportBackup).not.toHaveBeenCalled();
+    expect(shareFile).not.toHaveBeenCalled();
   });
 });

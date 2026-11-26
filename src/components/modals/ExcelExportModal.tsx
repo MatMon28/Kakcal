@@ -76,6 +76,7 @@ export const ExcelExportModal: React.FC<ExcelExportModalProps> = ({
       savedLibrary: initialCounts.savedLibrary > 0,
       body: initialCounts.body > 0,
       period: initialCounts.period > 0,
+      fasting: initialCounts.fasting > 0,
     };
   });
 
@@ -95,6 +96,7 @@ export const ExcelExportModal: React.FC<ExcelExportModalProps> = ({
     savedLibrary: { label: j('Saved meals & recipes', 'Pasti e ricette salvate'), desc: j('Library nutrition & ingredients', 'Valori e ingredienti salvati') },
     body: { label: j('Body measurements', 'Misure del corpo'), desc: j('Measurements over time', 'Misure registrate nel tempo') },
     period: { label: j('Period & cycle', 'Ciclo mestruale'), desc: j('Flow, pill, moods & symptoms', 'Flusso, pillola, umore e sintomi') },
+    fasting: { label: j('Intermittent fasting', 'Digiuno intermittente'), desc: j('Sessions, durations & fast notes', 'Sessioni, durate e note') },
   };
 
   const presets: [PeriodPreset, string][] = [

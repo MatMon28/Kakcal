@@ -1,6 +1,6 @@
 import type { ActiveTab, MainTabId, Settings } from '../types';
 
-export const DEFAULT_PAGE_ORDER: MainTabId[] = ['today', 'prebuilt', 'period', 'body', 'history'];
+export const DEFAULT_PAGE_ORDER: MainTabId[] = ['today', 'fasting', 'prebuilt', 'period', 'body', 'history'];
 
 const VALID_MAIN_TABS = new Set<MainTabId>(DEFAULT_PAGE_ORDER);
 

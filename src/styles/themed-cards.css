@@ -235,7 +235,7 @@ html[data-style="aurora"] .kc-dock {
   -webkit-backdrop-filter: blur(18px);
 }
 @media (prefers-reduced-transparency: reduce) {
-  html[data-style="aurora"] :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, .kc-nav-pill, .kc-icon-btn, .kc-dock) {
+  html[data-style="aurora"] :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, [data-kc-tone], .kc-nav-pill, .kc-icon-btn, .kc-dock) {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
@@ -513,6 +513,10 @@ html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="weig
   color: var(--dock-icon-5) !important;
 }
 html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="custom"] {
+  background: var(--dock-6) !important;
+  color: var(--dock-icon-6) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="fast-note"] {
   background: var(--dock-6) !important;
   color: var(--dock-icon-6) !important;
 }

@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { BellRing, ClipboardCheck, Droplets, Scale, Sparkles, UtensilsCrossed } from 'lucide-react';
+import { BellRing, ClipboardCheck, Droplets, NotebookPen, Scale, Sparkles, Timer, UtensilsCrossed } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
+import { useFastingText } from '../../i18n/fasting';
 import { Collapsible } from '../common/Collapsible';
 import { TONE } from './settings/SettingsParts';
 import { isAndroidApp } from '../../utils/android';
 import {
   consumeOpenNotificationRequest,
+  DEFAULT_FASTING_NOTIFICATIONS,
+  FASTING_DIARY_INTERVAL_HOURS,
   getNotificationPermission,
   hasAnyReminderEnabled,
   MEAL_REMINDER_SLOTS,
@@ -16,6 +19,7 @@ import {
   type NotificationPermission,
 } from '../../utils/notifications';
 import type { DailyReminderSetting, NotificationSettings as NotificationSettingsData } from '../../types';
+import type { FastingNotificationSettings } from '../../types/fasting';
 
 const Switch: React.FC<{ on: boolean }> = ({ on }) => (
   <span
@@ -87,7 +91,9 @@ const Row: React.FC<RowProps> = ({ icon, tone, title, desc, on, onToggle, disabl
 
 export const NotificationSettings: React.FC = () => {
   const { settings, updateSettings, t } = useApp();
+  const ft = useFastingText();
   const n = settings.notifications;
+  const f = n.fasting ?? DEFAULT_FASTING_NOTIFICATIONS;
   const copy = t.notifications;
   const [permission, setPermission] = useState<NotificationPermission>('prompt');
   // The guided tour can ask for this group to be open (requestOpenNotificationSettings).
@@ -133,6 +139,8 @@ export const NotificationSettings: React.FC = () => {
     save({ ...n, [key]: { ...n[key], ...patch } });
   const meal = (slot: (typeof MEAL_REMINDER_SLOTS)[number], patch: Partial<DailyReminderSetting>) =>
     save({ ...n, meals: { ...n.meals, [slot]: { ...n.meals[slot], ...patch } } });
+  const fastingPatch = (patch: Partial<FastingNotificationSettings>) =>
+    save({ ...n, fasting: { ...f, ...patch } });
 
   return (
     <div ref={anchorRef} id="settings-notifications" className="scroll-mt-2">
@@ -268,6 +276,56 @@ export const NotificationSettings: React.FC = () => {
         onToggle={() => toggle(n.logData.enabled, (enabled) => daily('logData', { enabled }))}
       >
         <TimeField label={copy.at} value={n.logData.time} onChange={(time) => daily('logData', { time })} />
+      </Row>
+
+      {/* Intermittent Fasting: timer-based reminders */}
+      <Row
+        icon={<Timer size={15} />}
+        tone="bg-[#C9EFD3] text-[#17432A]"
+        title={ft.notifications.startFastTitle}
+        desc={ft.notifications.startFastDesc}
+        on={f.startFast}
+        onToggle={() => toggle(f.startFast, (startFast) => fastingPatch({ startFast }))}
+      />
+
+      <Row
+        icon={<Timer size={15} />}
+        tone="bg-[#F7E9AA] text-[#5D4911]"
+        title={ft.notifications.endFastTitle}
+        desc={ft.notifications.endFastDesc}
+        on={f.endFast}
+        onToggle={() => toggle(f.endFast, (endFast) => fastingPatch({ endFast }))}
+      />
+
+      <Row
+        icon={<NotebookPen size={15} />}
+        tone="bg-[#FAE0B4] text-[#7D4E14]"
+        title={ft.notifications.diaryTitle}
+        desc={ft.notifications.diaryDesc}
+        on={f.diary}
+        onToggle={() => toggle(f.diary, (diary) => fastingPatch({ diary }))}
+      >
+        <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">{copy.every}</span>
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label={copy.every}>
+          {FASTING_DIARY_INTERVAL_HOURS.map((hours) => {
+            const active = f.diaryIntervalHours === hours;
+            return (
+              <button
+                key={hours}
+                type="button"
+                aria-pressed={active}
+                onClick={() => fastingPatch({ diaryIntervalHours: hours })}
+                className={`pressable px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border tabular-nums ${
+                  active
+                    ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
+                    : 'bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
+                }`}
+              >
+                {ft.notifications.everyHours.replace('{hours}', String(hours))}
+              </button>
+            );
+          })}
+        </div>
       </Row>
 
       {!isAndroidApp() && <p className="text-[11px] font-medium text-[var(--muted)] px-1">{copy.webNote}</p>}

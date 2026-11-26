@@ -41,6 +41,8 @@ import { useNotificationScheduler } from './utils/useNotificationScheduler';
 import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
 import { useAdvanced } from './utils/advancedStore';
+import { useFasting } from './utils/fastingStore';
+import { FastingInterruptModal } from './components/fasting/FastingInterruptModal';
 import { whenIdle } from './utils/idle';
 import { useAutoMealSlot } from './utils/mealSlots';
 import { useAppReady } from './components/intro/useAppReady';
@@ -52,6 +54,7 @@ import {
   LazyAppTour,
   LazyBarcodeLookupModal,
   LazyBodyView,
+  LazyFastingView,
   LazyHistoryView,
   LazyLogActivityModal,
   LazyPeriodSheet,
@@ -65,6 +68,7 @@ import {
 const PeriodView = LazyPeriodView.Component;
 const HistoryView = LazyHistoryView.Component;
 const BodyView = LazyBodyView.Component;
+const FastingView = LazyFastingView.Component;
 const LogActivityModal = LazyLogActivityModal.Component;
 const BarcodeLookupModal = LazyBarcodeLookupModal.Component;
 const UserProfileModal = LazyUserProfileModal.Component;
@@ -126,6 +130,9 @@ function WidgetAppBridge() {
     switch (screen) {
       case 'today':
         app.setActiveTab('today');
+        break;
+      case 'fasting':
+        app.setActiveTab('fasting');
         break;
       case 'meals':
         app.setActiveTab('today');
@@ -283,13 +290,17 @@ function MainContent() {
   const anyModal = isAddFoodOpen || isLogActivityOpen || isBarcodeOpen || isProfileOpen ||
     isSettingsOpen || isWaterOpen || isPoopOpen || isWeightOpen || isCustomFoodOpen ||
     isCustomPickerOpen || isPeriodSheetOpen || customButtonOpenId !== null;
-  const hasDock = activeTab === 'today' || activeTab === 'prebuilt' || activeTab === 'period' || activeTab === 'body';
+  const hasDock = activeTab === 'today' || activeTab === 'fasting' || activeTab === 'prebuilt' || activeTab === 'period' || activeTab === 'body';
   const periodShown = isPeriodShown(settings.hidePeriod);
   // Settings > Advanced > Body measurements: the Body page exists only while the option is on.
   const bodyShown = useAdvanced().body.enabled;
+  const fastingShown = useFasting().config.enabled;
   useEffect(() => {
     if (!bodyShown && activeTab === 'body') setActiveTab('today');
   }, [bodyShown, activeTab, setActiveTab]);
+  useEffect(() => {
+    if (!fastingShown && activeTab === 'fasting') setActiveTab('today');
+  }, [fastingShown, activeTab, setActiveTab]);
   // A page that Settings hides while it is open goes back to Today.
   useEffect(() => {
     if (isPageHiddenBySettings(activeTab, settings)) setActiveTab('today');
@@ -304,13 +315,13 @@ function MainContent() {
   // Download visible optional screens first, staggered one per idle slice so startup & other pages stay fast.
   const historyShown = !settings.hideStatisticsPage;
   useEffect(
-    () => scheduleLazyScreenPreload({ periodShown, bodyShown, historyShown }),
-    [periodShown, bodyShown, historyShown],
+    () => scheduleLazyScreenPreload({ periodShown, bodyShown, historyShown, fastingShown }),
+    [periodShown, bodyShown, historyShown, fastingShown],
   );
 
   // Settings > Pages sets both page visibility and order.
   const visibleTabs = normalizePageOrder(settings.pageOrder).filter(
-    (tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown) && !isPageHiddenBySettings(tab, settings),
+    (tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown) && (tab !== 'fasting' || fastingShown) && !isPageHiddenBySettings(tab, settings),
   );
   // The page elements are memoised: `useShell()` changes whenever ANY dialog opens, which re-renders MainContent and
   // PageSwiper; with a fresh element per render React would re-render both whole pages for it. With these stable
@@ -321,6 +332,7 @@ function MainContent() {
     const page = (tab: ActiveTab) => {
       switch (tab) {
         case 'today': return <TodayView />;
+        case 'fasting': return fastingShown ? <FastingView /> : null;
         case 'prebuilt': return <PreBuiltMealsView />;
         case 'period': return periodShown ? <PeriodView /> : null;
         case 'database': return <FoodDatabaseView />;
@@ -330,11 +342,11 @@ function MainContent() {
       }
     };
     const elements = new Map<ActiveTab, ReactElement>();
-    for (const tab of ['today', 'prebuilt', 'period', 'database', 'body', 'history'] as ActiveTab[]) {
+    for (const tab of ['today', 'fasting', 'prebuilt', 'period', 'database', 'body', 'history'] as ActiveTab[]) {
       elements.set(tab, <Suspense fallback={null}>{page(tab)}</Suspense>);
     }
     return elements;
-  }, [periodShown, bodyShown]);
+  }, [periodShown, bodyShown, fastingShown]);
   const renderMainTab = useCallback((tab: ActiveTab) => pageElements.get(tab) ?? null, [pageElements]);
 
   // A single history guard lets browser/Android Back dismiss the actual top dialog,
@@ -422,6 +434,7 @@ function MainContent() {
       {isCustomFoodOpen && <CustomFoodModal />}
       {customButtonOpenId && <CustomButtonModal key={customButtonOpenId} />}
       {isCustomPickerOpen && <CustomPickerModal />}
+      <FastingInterruptModal />
       <PageUndoRemoval />
     </div>
   );

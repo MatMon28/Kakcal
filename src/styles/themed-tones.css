@@ -14,9 +14,104 @@ html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([da
 html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) :is([data-library-section], [data-tracker], [data-stats-tone], [data-water-stats], [data-period-card]),
 html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-kc-tone] {
   background: var(--tone) !important;
+  color: var(--text) !important;
   --inset: var(--tone-in);
   --surface: color-mix(in srgb, var(--tone-in, transparent) 38%, var(--tone-pale, transparent));
   --hover: color-mix(in srgb, var(--tone-in, transparent) 70%, var(--tone-pale, transparent));
+}
+
+html[data-style]:not([data-style="classic"]) [data-kc-tone].rounded-3xl {
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--card-radius, 20px) !important;
+  clip-path: var(--clip-md, none);
+}
+
+html[data-style="aurora"] [data-kc-tone].rounded-3xl {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+html[data-style="minimal"] [data-kc-tone] {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: none !important;
+}
+html[data-style="minimal"] [data-kc-tone].rounded-2xl {
+  background: var(--inset) !important;
+}
+
+/* Fasting controls & inner elements across all non-Classic styles and 3 modes */
+html[data-style]:not([data-style="classic"]) .kc-fast-divider {
+  border-color: var(--border) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-icon-btn {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-icon-btn:hover {
+  background: var(--hover) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-track {
+  background: var(--inset) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+html[data-style="minimal"] .kc-fast-track {
+  border: 1px solid var(--border);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-fill {
+  background: var(--text) !important;
+  border-radius: var(--bar-radius, 999px) !important;
+}
+html[data-style="minimal"] .kc-fast-fill {
+  background: var(--tone-ink, var(--text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-chip {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-chip[data-active="true"] {
+  background: var(--text) !important;
+  color: var(--on-text) !important;
+  border-color: var(--text) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-input,
+html[data-style]:not([data-style="classic"]) .kc-fast-subbox {
+  background: var(--inset) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--pill-radius, 12px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-cta {
+  background: var(--text) !important;
+  color: var(--on-text) !important;
+  border-radius: var(--pill-radius, 16px) !important;
+  clip-path: var(--clip-sm, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-pill-cta {
+  background: var(--text) !important;
+  color: var(--on-text) !important;
+  border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-badge {
+  background: var(--badge-bg, var(--text)) !important;
+  color: var(--badge-text, var(--on-text)) !important;
+  border-radius: var(--badge-radius, 999px) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-fast-bar {
+  background: var(--water-fill, var(--carbs-text, var(--text))) !important;
+}
+html[data-style="minimal"] .kc-fast-bar {
+  background: var(--tone-ink-planner, var(--text)) !important;
 }
 
 /* Tracker header icons inherit the card's own high-contrast ink on tinted fields (matching Classic TrackerCard). */

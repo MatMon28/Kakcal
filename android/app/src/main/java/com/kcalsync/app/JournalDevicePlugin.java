@@ -1,13 +1,17 @@
 package com.kcalsync.app;
 
+import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
+import androidx.core.content.FileProvider;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -15,6 +19,8 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginHandle;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
@@ -190,6 +196,73 @@ public class JournalDevicePlugin extends Plugin {
             call.resolve(result);
         } catch (RuntimeException error) {
             call.reject("Could not read the last export");
+        }
+    }
+
+    // ---- Share a file through the Android share sheet (WhatsApp, email, Drive...) ------------------------------
+    // The bytes are written to cache/shared/<filename> (covered by the `cache-path` of res/xml/file_paths.xml), exposed
+    // through the app FileProvider with a read grant, and handed to the system chooser. Copies older than an hour are
+    // removed on the next share (the receiving app reads the file while the chooser / target is open).
+    private static final long SHARED_MAX_AGE_MS = 60L * 60L * 1000L;
+
+    @PluginMethod
+    public void shareFile(PluginCall call) {
+        String kind = call.getString("kind", "zip");
+        if (!ExportStore.isKind(kind)) { call.reject("Invalid share: unsupported kind"); return; }
+        String text = call.getString("text");
+        String encoded = call.getString("base64");
+        byte[] bytes;
+        if (text != null) {
+            bytes = text.getBytes(StandardCharsets.UTF_8);
+        } else {
+            if (encoded == null || encoded.length() > ExportStore.MAX_BYTES / 3 * 4 + 16) { call.reject("Invalid share"); return; }
+            try { bytes = Base64.decode(encoded, Base64.DEFAULT); }
+            catch (IllegalArgumentException error) { call.reject("Invalid share: the data is not valid base64"); return; }
+        }
+        call.getData().remove("base64");
+        call.getData().remove("text");
+        if (bytes.length == 0) { call.reject("Nothing to share"); return; }
+        if (bytes.length > ExportStore.MAX_BYTES) { call.reject("File too large to share"); return; }
+        String filename = safeFilename(call.getString("filename"), "kakcal-export." + kind);
+        Activity activity = getActivity();
+        if (activity == null) { call.reject("No share sheet available"); return; }
+        try {
+            File dir = new File(getContext().getCacheDir(), "shared");
+            File[] old = dir.listFiles();
+            if (old != null) {
+                long now = System.currentTimeMillis();
+                for (File f : old) if (now - f.lastModified() > SHARED_MAX_AGE_MS) f.delete();
+            }
+            if (!dir.isDirectory() && !dir.mkdirs()) throw new IOException("could not create " + dir);
+            File file = new File(dir, filename);
+            try (FileOutputStream out = new FileOutputStream(file)) {
+                out.write(bytes);
+                out.getFD().sync();
+            }
+            if (file.length() != bytes.length) throw new IOException("wrote " + file.length() + " of " + bytes.length + " bytes");
+            Uri uri = FileProvider.getUriForFile(getContext(), getContext().getPackageName() + ".fileprovider", file);
+            Intent send = new Intent(Intent.ACTION_SEND)
+                .setType(mimeType(kind))
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .putExtra(Intent.EXTRA_SUBJECT, filename)
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            send.setClipData(ClipData.newRawUri(filename, uri));
+            Intent chooser = Intent.createChooser(send, null).addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            final int size = bytes.length;
+            activity.runOnUiThread(() -> {
+                try {
+                    activity.startActivity(chooser);
+                    JSObject done = new JSObject();
+                    done.put("bytes", size);
+                    call.resolve(done);
+                } catch (RuntimeException error) {
+                    Log.e(ExportStore.TAG, "could not open the share sheet", error);
+                    call.reject("No share sheet available: " + error.getClass().getSimpleName() + ": " + error.getMessage());
+                }
+            });
+        } catch (IOException | RuntimeException error) {
+            Log.e(ExportStore.TAG, "could not prepare the shared file", error);
+            call.reject("Could not prepare the file to share: " + error.getClass().getSimpleName() + ": " + error.getMessage());
         }
     }
 

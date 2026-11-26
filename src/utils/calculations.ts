@@ -5,12 +5,24 @@ import { ActivityLog, LoggedFoodItem, MacroSummary, UserProfile } from '../types
  * Men: 10 * weight (kg) + 6.25 * height (cm) - 5 * age (y) + 5
  * Women: 10 * weight (kg) + 6.25 * height (cm) - 5 * age (y) - 161
  */
-export function calculateBMR(profile: UserProfile): number {
+export function calculateMifflinBMR(profile: UserProfile): number {
   const { weightKg, heightCm, age, sex } = profile;
   if (!weightKg || !heightCm || !age) return 1600;
 
   const base = 10 * weightKg + 6.25 * heightCm - 5 * age;
   return sex === 'male' ? Math.round(base + 5) : Math.round(base - 161);
+}
+
+/**
+ * Daily baseline expenditure used for burned-calorie totals.
+ * Returns the user's personalised daily calorie burned amount when enabled,
+ * otherwise falls back to Mifflin-St Jeor BMR.
+ */
+export function calculateBMR(profile: UserProfile): number {
+  if (profile.useCustomBmr && profile.customBmrKcal && profile.customBmrKcal > 0) {
+    return Math.round(profile.customBmrKcal);
+  }
+  return calculateMifflinBMR(profile);
 }
 
 /**
@@ -58,7 +70,7 @@ export function calculateActivityCalories(
  * so it reflects the profile's weight, height, age and sex.
  */
 export function restingKcalPerHour(profile: UserProfile): number {
-  return calculateBMR(profile) / 24;
+  return calculateMifflinBMR(profile) / 24;
 }
 
 /**

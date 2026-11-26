@@ -39,7 +39,7 @@ export function readWidgetAppearance(): WidgetAppearance {
 
 /** Pages and dialogs the guided tour can show inside the embedded journal. */
 export const TOUR_SCREENS = [
-  'today', 'meals', 'food', 'activity', 'water', 'poop', 'weight', 'overview',
+  'today', 'fasting', 'meals', 'food', 'activity', 'water', 'poop', 'weight', 'overview',
   'custom', 'period', 'statistics', 'profile', 'settings', 'tracker', 'notifications',
 ] as const;
 export type TourScreen = (typeof TOUR_SCREENS)[number];

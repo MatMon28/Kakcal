@@ -11,6 +11,8 @@ import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
 import { DEFAULT_PAGE_ORDER, isPageHiddenBySettings, normalizePageOrder } from '../utils/pageVisibility';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
+import { exportFasting, getFasting, importFasting } from '../utils/fastingStore';
+import { requestFastInterrupt } from '../components/fasting/FastingInterruptModal';
 import { exportLayout, importLayout } from '../utils/layoutStore';
 import { exportMealJournalForBackup, importMealJournal, prepareMealJournalImport } from '../utils/journalStore';
 import { applyPreferences, backupMajorVersion, BACKUP_FORMAT, BACKUP_VERSION, collectPreferences, isSupportedBackup, setLastImportReport } from '../utils/backupFormat';
@@ -425,7 +427,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   // Navigation tab (lifted so Settings can jump to the Foods database)
-  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => DEMO_MODE || startedWithPlanLink || new URLSearchParams(window.location.search).get('tab') === 'custom' ? 'prebuilt' : 'today');
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => {
+    if (DEMO_MODE || startedWithPlanLink || new URLSearchParams(window.location.search).get('tab') === 'custom') {
+      return 'prebuilt';
+    }
+    const fasting = getFasting();
+    if (fasting.config.enabled && fasting.activeSession) return 'fasting';
+    return 'today';
+  });
   const lastMainTabRef = React.useRef<ActiveTab>('today');
   const setActiveTab = (tab: ActiveTab) => {
     setActiveTabState((prev) => {
@@ -681,13 +690,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       loggedAt: new Date().toISOString(),
     };
 
-    mutateDay(date, (day) => ({
+    const commit = () => mutateDay(date, (day) => ({
       ...day,
       meals: {
         ...day.meals,
         [mealSlot]: [...(day.meals[mealSlot] ?? []), newLoggedItem],
       },
     }));
+
+    const fasting = getFasting();
+    if (fasting.config.enabled && fasting.activeSession) {
+      const kcal = Math.round((food.calories * amount) / 100);
+      requestFastInterrupt(kcal, commit);
+      return;
+    }
+    commit();
   };
 
   // Remove logged food item
@@ -892,10 +909,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'item-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
       loggedAt: new Date().toISOString(),
     }));
-    mutateDay(date, (day) => ({
+    const commit = () => mutateDay(date, (day) => ({
       ...day,
       meals: { ...day.meals, [mealSlot]: [...(day.meals[mealSlot] ?? []), ...cloned] },
     }));
+
+    const fasting = getFasting();
+    if (fasting.config.enabled && fasting.activeSession && cloned.length > 0) {
+      const kcal = Math.round(cloned.reduce((sum, it) => sum + (it.calories * it.amount) / 100, 0));
+      requestFastInterrupt(kcal, commit);
+      return;
+    }
+    commit();
   };
 
   // Export JSON (backup version 2, see utils/backupFormat.ts): everything the user saved EXCEPT the pictures.
@@ -917,6 +942,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       periodData,
       customActivities,
       advanced: exportAdvanced(), // goals/limits + body measures (Settings > Advanced)
+      fasting: exportFasting(), // intermittent fasting config, active session, history and notes
       layout: exportLayout(), // advanced layout: field order/sizes/removed fields + added meal types
       mealJournal: exportMealJournalForBackup(), // plans, plan names, shopping lists, meal notes/favourites, picture notes
       lastAmounts: exportLastAmounts(), // remembered portions
@@ -996,6 +1022,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCustomActivities(normalizeCustomActivities(data.customActivities));
       }
       importAdvanced(data.advanced);
+      importFasting(data.fasting);
       importLayout(data.layout);
       if (journal) importMealJournal(journal);
       // Version 2 sections (absent in older files, which then leave the current values untouched).
