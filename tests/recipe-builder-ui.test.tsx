@@ -87,6 +87,32 @@ describe('quick portions in the builder', () => {
     expect(setRecipePortion).toHaveBeenLastCalledWith(0); // 0 = "logged as 100 g"
   });
 
+  it('lets the user choose any serving count (including decimals) or switch to weight mode', () => {
+    const setRecipePortion = vi.fn();
+    render(<RecipeBuilderModal s={state({ recipePortion: 358, setRecipePortion })} />);
+    fireEvent.click(chip('Continue to portions'));
+    fireEvent.click(screen.getByRole('button', { name: /Standard portion/ }));
+
+    expect(document.querySelector('[data-recipe-servings-panel]')).toBeTruthy();
+    expect(document.querySelector('[data-portion-weight-pill]')?.textContent).toBe('358 g');
+
+    // Step servings up from 2 -> 3 servings (238.7 g)
+    fireEvent.click(screen.getByLabelText('More portions'));
+    expect(setRecipePortion).toHaveBeenLastCalledWith(238.7);
+
+    // Type arbitrary decimal serving count (e.g. 2,5 -> 286.4 g)
+    const servingsInput = screen.getByLabelText('Number of portions in the recipe') as HTMLInputElement;
+    fireEvent.focus(servingsInput);
+    fireEvent.change(servingsInput, { target: { value: '2,5' } });
+    expect(setRecipePortion).toHaveBeenLastCalledWith(286.4);
+
+    // Switch to By weight (g) and pick 200 g
+    fireEvent.click(screen.getByRole('button', { name: 'By weight (g)' }));
+    expect(document.querySelector('[data-recipe-weight-panel]')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: '200 g' }));
+    expect(setRecipePortion).toHaveBeenLastCalledWith(200);
+  });
+
   it('separates the recipe recap summary card from the ingredient cards', () => {
     render(<RecipeBuilderModal s={state({ recipePortion: 358 })} />);
     fireEvent.click(chip('Continue to portions'));

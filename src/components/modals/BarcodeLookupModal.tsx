@@ -455,6 +455,7 @@ export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn
               value={logAmount}
               onChange={setLogAmount}
               unit={fetchedProduct.unit}
+              food={fetchedProduct}
             />
             <FoodMacroGrid food={fetchedProduct} amount={logAmount} />
 

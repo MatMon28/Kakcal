@@ -98,7 +98,7 @@ export const LogRecipeToSlotModal: React.FC<{ s: LibraryState }> = ({ s }) => {
           </div>
           {activeRecipeToLog && (
             <>
-              <AmountSelector value={recipeLogAmount} onChange={setRecipeLogAmount} unit={activeRecipeToLog.unit} />
+              <AmountSelector value={recipeLogAmount} onChange={setRecipeLogAmount} unit={activeRecipeToLog.unit} food={activeRecipeToLog} />
               <FoodMacroGrid food={activeRecipeToLog} amount={recipeLogAmount} />
             </>
           )}

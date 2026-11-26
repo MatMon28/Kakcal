@@ -10,6 +10,7 @@ import { addMealPhoto, exportMealJournal, importMealJournal, saveMealPlans, save
 import { getPhotoBlob } from '../src/storage/photoStore';
 import { savePlannerDraft, loadPlannerDraft } from '../src/utils/plannerDraft';
 import { exportLastAmounts, setLastAmount } from '../src/utils/amountMemory';
+import { addCustomPortion, getCustomPortions, resetCustomPortionsForTests } from '../src/utils/customPortions';
 import {
   BACKUP_VERSION,
   backupMajorVersion,
@@ -27,6 +28,7 @@ const photoMeta = { id: 'pic1', date: '2026-02-03', slot: 'lunch' as const, note
 
 const wipe = async () => {
   await deleteDatabase(); resetDbForTests(); resetBootForTests(); localStorage.clear();
+  resetCustomPortionsForTests();
   importMealJournal({});
 };
 beforeEach(wipe);
@@ -84,6 +86,7 @@ describe('full JSON backup without pictures', () => {
     saveShoppingList({ planId: 'g1', updatedAt: '', dismissed: [], items: [{ id: 'i1', name: 'Rice', amount: 500, unit: 'g', checked: true }] });
     await addMealPhoto(photoMeta, jpeg());
     setLastAmount('food-x', 175);
+    addCustomPortion('food-x', 180, 'My bowl');
     localStorage.setItem('kcak_today_meals_open', JSON.stringify(['lunch']));
     localStorage.setItem('kcalsync_intro_seen', '1');
     savePlannerDraft({ step: 'plan', name: 'Draft', startDate: '2026-03-01', endDate: '2026-03-02', skippedWeekdays: [], overrides: {}, selectedSlots: ['lunch'], entries: {}, preferredKind: 'food', activeKey: null });
@@ -104,6 +107,7 @@ describe('full JSON backup without pictures', () => {
     expect(data.mealJournal.planGroups[0].name).toBe('Week 1');
     expect(data.mealJournal.shoppingLists[0].items[0].checked).toBe(true);
     expect(data.lastAmounts['food-x']).toBe(175);
+    expect(data.customPortions['food-x'][0]).toMatchObject({ grams: 180, label: 'My bowl' });
     expect(data.plannerDraft.name).toBe('Draft');
     expect(data.preferences.kcak_today_meals_open).toEqual(['lunch']);
     expect(data.preferences).not.toHaveProperty('kcalsync_intro_seen');
@@ -124,6 +128,7 @@ describe('full JSON backup without pictures', () => {
     saveShoppingList({ planId: 'g1', updatedAt: '', dismissed: [], items: [{ id: 'i1', name: 'Rice', amount: 500, unit: 'g', checked: false }] });
     await addMealPhoto(photoMeta, jpeg());
     setLastAmount('food-x', 175);
+    addCustomPortion('food-x', 180, 'My bowl');
     localStorage.setItem('kcak_today_meals_open', JSON.stringify(['lunch']));
     savePlannerDraft({ step: 'plan', name: 'Draft', startDate: '2026-03-01', endDate: '2026-03-02', skippedWeekdays: [], overrides: {}, selectedSlots: ['lunch'], entries: {}, preferredKind: 'food', activeKey: null });
     let json = '';
@@ -144,6 +149,7 @@ describe('full JSON backup without pictures', () => {
     expect(exportMealJournal().planGroups[0].name).toBe('Week 1');
     expect(exportMealJournal().shoppingLists[0].items[0].name).toBe('Rice');
     expect(exportLastAmounts()['food-x']).toBe(175);
+    expect(getCustomPortions('food-x')[0]).toMatchObject({ grams: 180, label: 'My bowl' });
     expect(loadPlannerDraft()?.name).toBe('Draft');
     expect(collectPreferences().kcak_today_meals_open).toEqual(['lunch']);
     // the note of the missing picture cannot be shown: it is reported, not invented

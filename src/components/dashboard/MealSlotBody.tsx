@@ -25,7 +25,7 @@ interface MealSlotBodyProps {
  * "Collapsed means not mounted"): a closed meal has no item rows, no food grids and no photo / note components at all.
  */
 export const MealSlotBody: React.FC<MealSlotBodyProps> = ({ slotId, date, items, compact, ultraMinimal }) => {
-  const { removeLoggedFoodItem, updateLoggedFoodItemAmount, t } = useApp();
+  const { allFoods, removeLoggedFoodItem, updateLoggedFoodItemAmount, t } = useApp();
   const [editingItemId, setEditingItemId] = useState<string | null>(null);
   const [editAmount, setEditAmount] = useState<number>(0);
 
@@ -132,6 +132,7 @@ export const MealSlotBody: React.FC<MealSlotBodyProps> = ({ slotId, date, items,
                       onChange={setEditAmount}
                       unit={item.unit}
                       compact
+                      food={(allFoods ?? []).find((f) => f.id === item.foodId) ?? { id: item.foodId, unit: item.unit }}
                     />
                     <div className="flex justify-end gap-1.5">
                       <button

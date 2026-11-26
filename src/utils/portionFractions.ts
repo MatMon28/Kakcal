@@ -37,3 +37,15 @@ export const PORTION_MATCH_TOLERANCE = 0.51;
 
 export const isSamePortion = (portion: number, grams: number): boolean =>
   Number.isFinite(portion) && Math.abs(portion - grams) < PORTION_MATCH_TOLERANCE;
+
+/** Gram weight of one serving when dividing `wholeGrams` into `parts` servings (to one decimal). */
+export function portionGramsForParts(wholeGrams: number, parts: number): number {
+  if (!Number.isFinite(wholeGrams) || wholeGrams <= 0 || !Number.isFinite(parts) || parts <= 0) return 0;
+  return Math.round((wholeGrams / parts) * 10) / 10;
+}
+
+/** Number of servings a `portionGrams` serving makes out of `wholeGrams` (to two decimals). */
+export function partsForPortionGrams(wholeGrams: number, portionGrams: number): number {
+  if (!Number.isFinite(wholeGrams) || wholeGrams <= 0 || !Number.isFinite(portionGrams) || portionGrams <= 0) return 1;
+  return Math.round((wholeGrams / portionGrams) * 100) / 100;
+}

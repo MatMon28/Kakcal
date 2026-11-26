@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { PORTION_PARTS, isSamePortion, portionFractions } from '../src/utils/portionFractions';
+import {
+  PORTION_PARTS,
+  isSamePortion,
+  partsForPortionGrams,
+  portionFractions,
+  portionGramsForParts,
+} from '../src/utils/portionFractions';
 
 describe('portionFractions', () => {
   it('offers halves to eighths of the whole dish', () => {
@@ -28,5 +34,13 @@ describe('portionFractions', () => {
     expect(isSamePortion(357.4, 358)).toBe(false);
     expect(isSamePortion(356, 358)).toBe(false);
     expect(isSamePortion(0, 358)).toBe(false);
+  });
+
+  it('converts arbitrarily between serving count and gram weight', () => {
+    expect(portionGramsForParts(716, 5)).toBe(143.2);
+    expect(portionGramsForParts(716, 2.5)).toBe(286.4);
+    expect(portionGramsForParts(0, 4)).toBe(0);
+    expect(partsForPortionGrams(716, 143.2)).toBe(5);
+    expect(partsForPortionGrams(716, 358)).toBe(2);
   });
 });

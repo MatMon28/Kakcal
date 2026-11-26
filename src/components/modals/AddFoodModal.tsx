@@ -405,7 +405,7 @@ export const AddFoodModal: React.FC = () => {
             </div>
           </div>
 
-          <AmountSelector value={currentAmount} onChange={setCurrentAmount} unit={activeFood.unit} />
+          <AmountSelector value={currentAmount} onChange={setCurrentAmount} unit={activeFood.unit} food={activeFood} />
 
           <FoodMacroGrid food={activeFood} amount={currentAmount} />
 

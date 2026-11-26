@@ -121,7 +121,7 @@ export const CustomFoodsQuick: React.FC = () => {
                 </button>
               ))}
             </div>
-            <AmountSelector value={amount} onChange={setAmount} unit={food.unit} />
+            <AmountSelector value={amount} onChange={setAmount} unit={food.unit} food={food} />
             <FoodMacroGrid food={food} amount={amount} />
             <button
               type="button"

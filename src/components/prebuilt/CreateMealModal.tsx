@@ -60,7 +60,7 @@ export function CreateMealModal({ s }: { s: LibraryState }) {
             <IngredientPicker key={pickerSession} onPick={handleSelectFood} slot={newMealSlot} />
           </div>}
           {pendingFood && <div className="space-y-3.5" data-ingredient-amount-step={editing ? 'edit' : 'add'}>
-            <AmountSelector value={pendingAmount} onChange={setPendingAmount} unit={pendingFood.unit} />
+            <AmountSelector value={pendingAmount} onChange={setPendingAmount} unit={pendingFood.unit} food={pendingFood} />
             <FoodMacroGrid food={pendingFood} amount={pendingAmount} />
           </div>}
         </>

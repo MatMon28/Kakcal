@@ -13,6 +13,6 @@ description: >-
 4. Build the mockup with:
    - The allowlisted Tailwind script: `https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js`.
    - A `390px` phone-width frame so mobile spacing matches Kakcal's single-column layout.
-   - A compact top preview bar featuring the **5-style canary matrix** (`Classic · Light`, `Glass · Light`, `Pop · Dark`, `Angular · Lite Dark`, `Minimal · Dark`), plus a Light/Dark toggle and a side-by-side compare toggle so layout, borders, and contrast drift are caught before coding.
+   - A compact top preview bar with a **Light / Dark** toggle using **Classic** style only by default; only add other styles (Glass, Pop, Angular, Minimal, Material, etc.) if the user asks for them.
    - Interactive state toggles (e.g., collapsed/expanded, empty/filled, sheet open/closed) so the user can test layout and contrast directly.
 5. Wait for explicit user approval before modifying real React/TSX source files.

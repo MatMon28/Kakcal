@@ -8,7 +8,7 @@
 
 | File or directory | Role |
 | --- | --- |
-| `src/data/verifiedFoods.ts`, `extraFoods.ts` | Curated products and the additional multilingual food catalog. |
+| `src/data/verifiedFoods.ts`, `extraFoods.ts`, `standardPortions.ts` | Curated products, the additional multilingual food catalog, and standard USDA/EU reference portions (small/medium/large sizes and common household servings) keyed by food ID. |
 | `src/data/referenceFoods.ts`, `usdaFoodRows.ts`, `foodCategories.ts` | Source-linked additions (recipes also keep `recipeIngredients`), generated USDA nutrient rows, and shared food categories. |
 | `src/data/offCatalog.ts`, `src/utils/useOffCatalog.ts` | Zero-copy reader (`parseOffCatalog`, shared with the search worker), word-prefix search, barcode lookup, browse, `catalogueScore` ranking and lazy loading; the React hook that loads the main-thread copy (food database page, barcode lookup). Food searches use the worker path instead: `src/workers/offCatalogSearch.worker.ts`, `src/utils/catalogueSearch.ts`, `useCatalogueSearch.ts` (see [utils.md](utils.md)). |
 | `src/data/activities.ts` | **Activities database** (181 entries from the 2024 Compendium of Physical Activities): MET, Compendium code, EN/IT names, categories and lookup helpers. |

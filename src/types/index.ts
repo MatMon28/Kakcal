@@ -23,6 +23,18 @@ export interface FoodSource {
   url: `https://${string}`;
 }
 
+export interface FoodPortion {
+  id: string;
+  /** Serving weight or volume in the food's unit (g or ml). */
+  grams: number;
+  /** English label (also fallback for user custom portions). */
+  label: string;
+  /** Optional Italian label for built-in standard portions. */
+  label_it?: string;
+  /** True for user-created custom portions (removable). */
+  isCustom?: boolean;
+}
+
 export interface FoodItem {
   id: string;
   name_de: string;
@@ -42,6 +54,8 @@ export interface FoodItem {
   sugar?: number | null;
   /** The product's classic serving in g/ml, when known (Open Food Facts `serving_quantity`). For a recipe: the standard portion set by the user. */
   portion?: number;
+  /** Optional list of standard or product-specific portions. */
+  portions?: FoodPortion[];
   source?: FoodSource;
   barcode?: string;
   isCustom?: boolean;

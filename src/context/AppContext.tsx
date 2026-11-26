@@ -15,6 +15,7 @@ import { exportLayout, importLayout } from '../utils/layoutStore';
 import { exportMealJournalForBackup, importMealJournal, prepareMealJournalImport } from '../utils/journalStore';
 import { applyPreferences, backupMajorVersion, BACKUP_FORMAT, BACKUP_VERSION, collectPreferences, isSupportedBackup, setLastImportReport } from '../utils/backupFormat';
 import { exportLastAmounts, importLastAmounts } from '../utils/amountMemory';
+import { exportCustomPortions, importCustomPortions } from '../utils/customPortions';
 import { loadPlannerDraft, parsePlannerDraft, savePlannerDraft } from '../utils/plannerDraft';
 import { bootedDays } from '../storage/boot';
 import { persistDayChanges, replaceAllDays } from '../storage/dayStore';
@@ -893,6 +894,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       layout: exportLayout(), // advanced layout: field order/sizes/removed fields + added meal types
       mealJournal: exportMealJournalForBackup(), // plans, plan names, shopping lists, meal notes/favourites, picture notes
       lastAmounts: exportLastAmounts(), // remembered portions
+      customPortions: exportCustomPortions(), // user-saved custom portions per food
       plannerDraft: loadPlannerDraft(), // unfinished meal plan
       preferences: collectPreferences(), // which cards / sections are open, selected ranges and tabs
     };
@@ -962,6 +964,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Version 2 sections (absent in older files, which then leave the current values untouched).
       if (data.language === 'en' || data.language === 'it') setLanguage(data.language);
       if (data.lastAmounts !== undefined) importLastAmounts(data.lastAmounts);
+      if (data.customPortions !== undefined) importCustomPortions(data.customPortions);
       const draft = parsePlannerDraft(data.plannerDraft);
       if (draft) savePlannerDraft(draft);
       applyPreferences(data.preferences);

@@ -31,7 +31,7 @@ Meal-journal additions: `App.tsx` mounts only `Header` and the page surface (the
 | `src/assets/themes_insp.txt` | Stand-alone HTML design exploration (6 themes x 3 modes). Reference only; not imported. |
 | `docs/`, `README.md`, `android/BUILD_APK.md` | The documentation set; index at [docs/README.md](../README.md). |
 | `src/types/layout.ts`, `src/i18n/layout.ts` | Advanced layout contracts (page layouts, custom meal types) and English/Italian strings (`useLayoutText()`). `MealSlotId` in `types/index.ts` also accepts `custom_*` ids. |
-| `src/types/advanced.ts`, `src/i18n/advanced.ts` | Advanced personalisation contracts (goals, body measures) and their English/Italian strings (`useAdvancedText()`). |
+| `src/types/advanced.ts`, `src/i18n/advanced.ts`, `src/i18n/portions.ts` | Advanced personalisation contracts (goals, body measures) and their English/Italian strings (`useAdvancedText()`); EN/IT strings for the portion/weight selector (`usePortionsText()`). |
 | `src/types/journal.ts`, `src/i18n/journal.ts` | Meal-plan, photo and meal-memory contracts and English/Italian journal copy selector. See [meal journal](../meal-journal.md). |
 
 ## Added in the performance, storage and tooling round

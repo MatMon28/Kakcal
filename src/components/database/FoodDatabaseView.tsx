@@ -501,6 +501,7 @@ export const FoodDatabaseView: React.FC = () => {
             value={logAmount}
             onChange={setLogAmount}
             unit={foodToLog?.unit || 'g'}
+            food={foodToLog ?? undefined}
           />
           {foodToLog && <FoodMacroGrid food={foodToLog} amount={logAmount} />}
 

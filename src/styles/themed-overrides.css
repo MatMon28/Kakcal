@@ -95,3 +95,19 @@ html[data-style]:not([data-style='classic']) .kc-following-tab {
 
 .kc-following-pill { overflow-x: auto; scrollbar-width: none; }
 .kc-following-pill::-webkit-scrollbar { display: none; }
+
+/* Portion / weight selector cross-style alignment */
+html[data-style="angular"] [data-portion-mode-switch],
+html[data-style="angular"] [data-portion-weight-pill],
+html[data-style="angular"] [data-custom-portion-form] {
+  border-radius: 0px !important;
+  clip-path: var(--clip-sm);
+  border: none !important;
+}
+html[data-style="pop"] [data-portion-mode-switch],
+html[data-style="pop"] [data-custom-portion-form] {
+  border: var(--card-border) !important;
+}
+html[data-style="minimal"] [data-portion-mode-switch] button[aria-pressed="true"] {
+  border: 1px solid var(--border);
+}

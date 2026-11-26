@@ -854,7 +854,7 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
                   {pending.calories} kcal / 100{pending.unit} · {Math.round((pending.calories * amount) / 100)} kcal
                 </span>
               </div>
-              <AmountSelector value={amount} onChange={setAmount} unit={pending.unit} />
+              <AmountSelector value={amount} onChange={setAmount} unit={pending.unit} food={pending} />
               <FoodMacroGrid food={pending} amount={amount} />
               <button
                 type="button"

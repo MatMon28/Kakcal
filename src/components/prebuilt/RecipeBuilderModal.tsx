@@ -1,8 +1,9 @@
 import { useId, useState } from 'react';
 import { CircleAlert, Link2 } from 'lucide-react';
+import { useSettings } from '../../context/AppContext';
 import type { FoodItem } from '../../types';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
-import { isSamePortion, portionFractions } from '../../utils/portionFractions';
+import { formatWeightAmount } from '../../utils/foodPortions';
 import type { RecipeReviewLine } from '../../utils/recipeImport';
 import { removeWithUndo } from '../../utils/undoRemoval';
 import { AmountSelector } from '../common/AmountSelector';
@@ -13,9 +14,9 @@ import { IngredientRow, ingredientTextButton as smallButton } from '../common/In
 import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 import { MacroPills } from '../common/MacroPills';
 import { Modal } from '../common/Modal';
-import { NumericInput } from '../common/NumericInput';
 import { useRemovalScope } from '../common/UndoRemovalNotice';
 import { WorkflowFooter } from '../common/WorkflowFooter';
+import { RecipePortionPicker } from './RecipePortionPicker';
 import type { LibraryState } from './usePreBuiltMealsState';
 
 /**
@@ -29,6 +30,7 @@ interface AmountDraft {
 }
 
 export function RecipeBuilderModal({ s }: { s: LibraryState }) {
+  const { language = 'en' } = useSettings();
   const {
     foodById, rememberFood, settings, t, j, isRecipeOpen, editingRecipeId, recipeName, setRecipeName,
     recipeRows, setRecipeRows, recipeIngs, recipePortion, setRecipePortion, nameOf, recipeTotals,
@@ -128,7 +130,7 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
               <IngredientPicker key={pickerSession} onPick={pickFood} initialQuery={picker.query} suggestions={suggestions} excludeId={editingRecipeId} />
             </div>}
             {draft && <div className="space-y-3.5" data-ingredient-amount-step={draft.mode}>
-              <AmountSelector value={amount} onChange={setAmount} unit={draft.food.unit} />
+              <AmountSelector value={amount} onChange={setAmount} unit={draft.food.unit} food={draft.food} />
               <FoodMacroGrid food={draft.food} amount={amount} />
             </div>}
           </>
@@ -190,18 +192,17 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                   <button type="button" onClick={() => setPortionOpen((value) => !value)} aria-expanded={portionOpen} aria-controls={portionId}
                     className="pressable w-full flex items-center gap-3 min-h-8 text-left font-extrabold text-sm">
                     <span className="flex-1">{j('Standard portion', 'Porzione standard')}</span>
-                    <span className="text-xs tabular-nums">{effectivePortion || 100} g</span><CollapseArrow open={portionOpen} />
+                    <span className="text-xs tabular-nums">{formatWeightAmount(effectivePortion || 100)} g</span><CollapseArrow open={portionOpen} />
                   </button>
                   <CollapseBody open={portionOpen} id={portionId}>
-                    <div className="pt-2 flex flex-wrap items-center gap-2">
-                      <p className="text-xs text-[var(--muted)] flex-1 min-w-36">{j(`Default amount when logging. Whole recipe: ${recipeTotals.grams} g.`, `Quantità predefinita per la registrazione. Ricetta intera: ${recipeTotals.grams} g.`)}</p>
-                      <div className="w-28"><NumericInput ariaLabel={j('Standard portion in grams', 'Porzione standard in grammi')}
-                        value={effectivePortion} onChange={setPortion} unit="g" min={0} max={Math.max(recipeTotals.grams, 100) * 2} placeholder="100" /></div>
-                    </div>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {portionFractions(recipeTotals.grams).map(({ parts, grams }) => <button key={parts} type="button" aria-pressed={isSamePortion(effectivePortion, grams)}
-                        className={`${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`} onClick={() => setPortion(isSamePortion(effectivePortion, grams) ? 0 : grams)}>1/{parts} · {grams} g</button>)}
-                    </div>
+                    <RecipePortionPicker
+                      wholeGrams={recipeTotals.grams}
+                      kcal100={recipeTotals.kcal100}
+                      value={effectivePortion}
+                      onChange={setPortion}
+                      j={j}
+                      language={language}
+                    />
                   </CollapseBody>
                 </div>
                 <div data-recipe-summary className="space-y-2.5 rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">

@@ -518,7 +518,7 @@ function DiaryBrowser({
 
 function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }) {
   const { language } = useSettings();
-  const { allDayLogs, logItemsToSlot, removeLoggedFoodItem, updateLoggedFoodItemAmount } = useJournalData();
+  const { allFoods, allDayLogs, logItemsToSlot, removeLoggedFoodItem, updateLoggedFoodItemAmount } = useJournalData();
   const { setSelectedDate, setTargetMealSlot, setIsAddFoodOpen } = useUiState();
   const { setActiveTab } = useNavActions();
   const items = allDayLogs[meal.date]?.meals[meal.slot] ?? [];
@@ -574,7 +574,12 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
                 }}><Trash2 size={15} /></button>
             </div>
             {amountEdit?.id === item.id && <>
-              <AmountSelector value={amountEdit.value} onChange={(value) => setAmountEdit({ id: item.id, value })} unit={item.unit} />
+              <AmountSelector
+                value={amountEdit.value}
+                onChange={(value) => setAmountEdit({ id: item.id, value })}
+                unit={item.unit}
+                food={(allFoods ?? []).find((f) => f.id === item.foodId) ?? { id: item.foodId, unit: item.unit }}
+              />
               <div className="journal-form-actions">
                 <button type="button" className="journal-secondary-button" onClick={() => setAmountEdit(null)}>{j('Cancel', 'Annulla')}</button>
                 <button type="button" className="journal-primary-button" disabled={!Number.isFinite(amountEdit.value) || amountEdit.value <= 0} onClick={() => {
