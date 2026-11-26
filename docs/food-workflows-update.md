@@ -10,7 +10,7 @@
 
 `WorkflowFooter.tsx` puts Add more on the left and the green Log/Save action on the right, outside the scroll body. `Modal.tsx` provides a labelled header Back control for nested screens. The active dialog renders `UndoRemovalNotice.tsx` above its footer (inside the focus trap); without an open dialog the notice sits above the page dock.
 
-Undo is in memory for **6.5 seconds** (`undoRemoval.ts`). It reinserts the removed item without replacing unrelated later edits. If several items were removed, the latest notice is shown first. Unsaved ingredient/food drafts are only undoable while the draft is open. The two Settings bulk erases retain confirmation and give an Undo window *before* the irreversible erase and reload; Undo cancels the scheduled erase. Reloading the app during that window also cancels the pending operation.
+Undo is in memory for **3.5 seconds** (`undoRemoval.ts`). It reinserts the removed item without replacing unrelated later edits. If several items were removed, the latest notice is shown first. Unsaved ingredient/food drafts are only undoable while the draft is open. The two Settings bulk erases retain confirmation and give an Undo window *before* the irreversible erase and reload; Undo cancels the scheduled erase. Reloading the app during that window also cancels the pending operation.
 
 ## Log food → scanner or custom food
 

@@ -49,7 +49,7 @@ export const PreBuiltMealsView: React.FC = () => {
 
       {!hideField('planner') && <MealPlanner />}
       {!hideField('shopping') && <ShoppingLists />}
-      {!hideField('photos') && <PhotoDiary />}
+      {(!hideField('photos') || settings.showPhotoButton) && <PhotoDiary sectionHidden={hideField('photos')} />}
 
       {/* ============ FOODS ============ */}
       {!hideField('foods') && <section data-library-section="foods" className={`bg-[#C9EFD3] border border-[#9ADBB0] rounded-3xl ${ultraMinimal ? 'p-2 sm:p-3 space-y-2' : 'p-4 sm:p-5 space-y-3'}`} data-section-open={sectionsOpen.foods}>

@@ -206,6 +206,9 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
     expect(glassCss).toContain(':not([data-library-section])');
     expect(glassCss).toContain('var(--glass-sheen)');
     expect(glassCss).toContain('html[data-style="glass"] body::before');
+    expect(glassCss).toContain('content: "";');
+    expect(glassCss).toContain('html[data-style="glass"]:not([data-style="classic"]) body');
+    expect(glassCss).toContain('.kc-header-surface[data-pill-floating="true"]');
     expect(glassCss).not.toContain('backdrop-filter: blur(calc(');
     const overridesCss = read('themed-overrides.css');
     expect(overridesCss).toContain('html:is([data-style="aurora"], [data-style="glass"]):not([data-style="classic"]) [data-library-ingredients]');

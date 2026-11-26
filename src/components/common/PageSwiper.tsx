@@ -6,6 +6,7 @@ import { canAnimatePages, playPageChange } from '../../utils/pageTransition';
 import { afterPaint } from '../../utils/idle';
 import { getOpenModalCount } from './Modal';
 import { setPagePosition } from '../../utils/pagePosition';
+import { preloadTabScreen } from '../../utils/lazyScreens';
 
 interface PageSwiperProps {
   tabs: ActiveTab[];
@@ -229,6 +230,7 @@ export function PageSwiper(props: PageSwiperProps) {
         g.target = index < 0 ? undefined : latest.current.tabs[index + side];
         const tab = g.target;
         g.placeholder = Boolean(tab);
+        if (tab) preloadTabScreen(tab);
         if (!prefersReducedMotion()) flushSync(() => setPeer(tab ? { tab, side, top: g.scrollY, placeholder: true } : null));
       }
       // Far enough that the neighbour is about to be needed: mount the real page now, once.

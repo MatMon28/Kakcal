@@ -204,7 +204,11 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                     </div>
                   </CollapseBody>
                 </div>
-                <div className="space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--inset)] p-3">
+                <div data-recipe-summary className="space-y-2.5 rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+                  <p className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)] text-xs font-extrabold uppercase tracking-wider">
+                    <span>{j('Recipe recap', 'Riepilogo ricetta')}</span>
+                    <span className="text-[var(--muted)] tabular-nums normal-case tracking-normal">{recipeTotals.grams} g</span>
+                  </p>
                   <div data-nutrition-row className="flex min-w-0 items-center gap-2">
                     <strong data-calories className="shrink-0 text-xs tabular-nums">{recipeTotals.kcal100} kcal/100 g</strong>
                     <MacroPills carbs={recipeTotals.c100} protein={recipeTotals.p100} fat={recipeTotals.f100} stretch />
@@ -214,15 +218,23 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                     <span data-nutrient="salt" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.salt} {recipeTotals.salt100}g</span>
                     {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {recipeTotals.sugar100}g</span>}
                   </div>
-                  {recipeRows.map((row, index) => {
-                    const food = row.foodId ? foodById.get(row.foodId) : undefined;
-                    if (!food) return null;
-                    return <div key={row.id} className="rounded-xl bg-[var(--surface)] px-3 py-2">
-                      <IngredientRow food={food} name={nameOf(food)} amount={row.amount}
-                        onEdit={() => editAmount(row, food)} editLabel={quantityLabel(nameOf(food))}
-                        onDelete={() => remove(index)} deleteLabel={`${t.common.delete}: ${nameOf(food)}`} />
-                    </div>;
-                  })}
+                </div>
+                <div className="border-t-2 border-[var(--border)] pt-4" data-recipe-ingredients>
+                  <p className="px-1 mb-2.5 flex items-center justify-between gap-2 text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
+                    <span>{j('Ingredients', 'Ingredienti')}</span>
+                    <span className="normal-case tracking-normal">{t.prebuilt.ingredientsCount.replace('{count}', String(recipeIngs.length))}</span>
+                  </p>
+                  <div className="space-y-2.5">
+                    {recipeRows.map((row, index) => {
+                      const food = row.foodId ? foodById.get(row.foodId) : undefined;
+                      if (!food) return null;
+                      return <div key={row.id} className="rounded-2xl border border-[var(--border)] bg-[var(--inset)] p-3">
+                        <IngredientRow food={food} name={nameOf(food)} amount={row.amount}
+                          onEdit={() => editAmount(row, food)} editLabel={quantityLabel(nameOf(food))}
+                          onDelete={() => remove(index)} deleteLabel={`${t.common.delete}: ${nameOf(food)}`} />
+                      </div>;
+                    })}
+                  </div>
                 </div>
               </div>
             )}

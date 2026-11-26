@@ -46,18 +46,13 @@ html[data-style="glass"][data-theme="light"] {
   --meal-icon-color: #181d38;
   --card-border: 1px solid rgba(255, 255, 255, 0.92);
   --card-shadow:
-    0 10px 26px rgba(24, 42, 92, 0.08),
-    0 2px 5px rgba(24, 42, 92, 0.04),
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
-    inset 1px 0 0 rgba(255, 255, 255, 0.72),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.48);
+    0 6px 16px rgba(24, 42, 92, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --dock-bg: rgba(255, 255, 255, 0.78);
   --dock-border: 1px solid rgba(255, 255, 255, 0.94);
   --dock-shadow:
-    0 14px 34px rgba(24, 42, 92, 0.13),
-    0 3px 8px rgba(24, 42, 92, 0.05),
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.98),
-    inset 0 -1px 1px rgba(255, 255, 255, 0.5);
+    0 10px 24px rgba(24, 42, 92, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.95);
   --dock-btn-border: 1px solid rgba(255, 255, 255, 0.88);
   --glass-dialog: rgba(246, 250, 255, 0.92);
   --glass-scrim: rgba(24, 34, 68, 0.34);
@@ -130,11 +125,11 @@ html[data-style="glass"][data-theme="lite-dark"] {
   --meal-icon-color: #ffffff;
   --brand-flame-color: #c4b5fd;
   --card-border: 1px solid rgba(255, 255, 255, 0.26);
-  --card-shadow: 0 12px 32px rgba(10, 8, 36, 0.34), inset 0 1.5px 0 rgba(255, 255, 255, 0.32), inset 1px 0 0 rgba(255, 255, 255, 0.14), inset 0 -1px 1px rgba(255, 255, 255, 0.10);
+  --card-shadow: 0 8px 20px rgba(10, 8, 36, 0.30), inset 0 1px 0 rgba(255, 255, 255, 0.28);
   --glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.04) 40%, rgba(255, 255, 255, 0.01) 68%, rgba(255, 255, 255, 0.10) 100%);
   --dock-bg: rgba(52, 46, 100, 0.80);
   --dock-border: 1px solid rgba(255, 255, 255, 0.22);
-  --dock-shadow: 0 14px 36px rgba(12, 8, 40, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  --dock-shadow: 0 10px 24px rgba(12, 8, 40, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.18);
   --dock-btn-border: 1px solid rgba(255, 255, 255, 0.22);
   --glass-dialog: rgba(52, 46, 100, 0.9);
   --glass-scrim: rgba(14, 10, 40, 0.5);
@@ -198,11 +193,11 @@ html[data-style="glass"][data-theme="dark"] {
   --meal-icon-color: #ffffff;
   --brand-flame-color: #c4b5fd;
   --card-border: 1px solid rgba(255, 255, 255, 0.22);
-  --card-shadow: 0 14px 36px rgba(4, 2, 20, 0.48), inset 0 1.5px 0 rgba(255, 255, 255, 0.26), inset 1px 0 0 rgba(255, 255, 255, 0.12), inset 0 -1px 1px rgba(255, 255, 255, 0.08);
+  --card-shadow: 0 8px 22px rgba(4, 2, 20, 0.44), inset 0 1px 0 rgba(255, 255, 255, 0.24);
   --glass-sheen: linear-gradient(148deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 40%, rgba(255, 255, 255, 0.01) 68%, rgba(255, 255, 255, 0.08) 100%);
   --dock-bg: rgba(30, 24, 64, 0.80);
   --dock-border: 1px solid rgba(255, 255, 255, 0.18);
-  --dock-shadow: 0 14px 36px rgba(2, 0, 16, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.14);
+  --dock-shadow: 0 10px 26px rgba(2, 0, 16, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.14);
   --dock-btn-border: 1px solid rgba(255, 255, 255, 0.18);
   --glass-dialog: rgba(34, 28, 72, 0.9);
   --glass-scrim: rgba(8, 5, 26, 0.58);

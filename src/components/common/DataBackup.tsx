@@ -14,6 +14,8 @@ import { buildExcelExport } from '../../utils/excelExport';
 import { useMealSlots } from '../../utils/mealSlots';
 import { StorageInfo } from './StorageInfo';
 import { getLastImportReport } from '../../utils/backupFormat';
+import { useAdvanced, useBodyEntries } from '../../utils/advancedStore';
+import { ExcelExportModal, type ExcelExportSelection } from '../modals/ExcelExportModal';
 
 /** The native side puts the real failure (mode, exception class, message) in the error: keep it for the device report. */
 const withDetail = (text: string, error: unknown): string => {
@@ -33,16 +35,18 @@ const recoveredNotice = (record: NativeExportRecord | null, j: (en: string, it: 
 
 /** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
 export const DataBackup: React.FC = () => {
-  const { exportDataJson, importDataJson, allDayLogs, userProfile, t } = useApp();
+  const { exportDataJson, importDataJson, allDayLogs, userProfile, preBuiltMeals, allFoods, settings, periodData, language, t } = useApp();
   const { label: slotLabel } = useMealSlots();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
-  const { photos } = useMealJournal();
+  const { photos, plans, memories } = useMealJournal();
+  const advanced = useAdvanced();
+  const bodyEntries = useBodyEntries();
   const j = useJournalText();
   const [exportingPhotos, setExportingPhotos] = useState(false);
+  const [excelModalOpen, setExcelModalOpen] = useState(false);
   // Shown before exporting when pictures exist on this device: the backup does not contain them.
   const [confirmExport, setConfirmExport] = useState(false);
-  const { plans } = useMealJournal();
   // An export that finished while the app was away (activity re-created / process killed while the picker was open).
   const [recovered, setRecovered] = useState<NativeExportRecord | null>(null);
   useEffect(() => {
@@ -68,11 +72,34 @@ export const DataBackup: React.FC = () => {
     } catch (error) { setMessage({ text: withDetail(failedText, error), error: true }); }
   };
 
-  const handleExcelExport = () => runExport(
-    () => saveLocalFile(buildExcelExport({ dayLogs: allDayLogs, profile: userProfile, plans, slotLabel, text: j }), `kakcal_data_${getTodayDateString()}.xlsx`),
-    (bytes) => withSize(j('Excel file exported: days, foods, activities, water and meal plans.', 'File Excel esportato: giorni, alimenti, attivita, acqua e pasti pianificati.'), bytes),
-    j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'),
-  );
+  const handleExcelExport = (selection: ExcelExportSelection) => {
+    setExcelModalOpen(false);
+    void runExport(
+      () => saveLocalFile(
+        buildExcelExport({
+          dayLogs: allDayLogs,
+          profile: userProfile,
+          plans,
+          slotLabel,
+          text: j,
+          dateRange: selection.dateRange,
+          sheets: selection.sheets,
+          language,
+          customButtons: settings.customButtons,
+          memories,
+          preBuiltMeals,
+          allFoods,
+          bodyEntries,
+          bodyConfig: advanced.body,
+          periodData,
+          t,
+        }),
+        `kakcal_data_${selection.filenameSuffix}.xlsx`,
+      ),
+      (bytes) => withSize(j('Excel file exported.', 'File Excel esportato.'), bytes),
+      j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'),
+    );
+  };
   const handlePhotoExport = async () => {
     setExportingPhotos(true);
     try {
@@ -197,11 +224,32 @@ export const DataBackup: React.FC = () => {
           aria-label={t.history.importBtn}
         />
       </div>
-      <button type="button" className="backup-photo-button" onClick={() => void handleExcelExport()}>
+      <button type="button" className="backup-photo-button" onClick={() => setExcelModalOpen(true)}>
         <FileSpreadsheet size={18} />
-        <span><strong>{j('Export to Excel', 'Esporta in Excel')}</strong><small>{j('Days, foods, activities, water and plans (.xlsx)', 'Giorni, alimenti, attivita, acqua e piani (.xlsx)')}</small></span>
+        <span><strong>{j('Export to Excel', 'Esporta in Excel')}</strong><small>{j('Choose period & info to export (.xlsx)', 'Scegli periodo e dati da esportare (.xlsx)')}</small></span>
         <Download size={16} />
       </button>
+      {excelModalOpen && (
+        <ExcelExportModal
+          isOpen={excelModalOpen}
+          onClose={() => setExcelModalOpen(false)}
+          exportInput={{
+            dayLogs: allDayLogs,
+            profile: userProfile,
+            plans,
+            language,
+            customButtons: settings.customButtons,
+            memories,
+            preBuiltMeals,
+            allFoods,
+            bodyEntries,
+            bodyConfig: advanced.body,
+            periodData,
+            t,
+          }}
+          onExport={handleExcelExport}
+        />
+      )}
       <button type="button" className="backup-photo-button" disabled={!photos.length || exportingPhotos} onClick={() => void handlePhotoExport()}>
         {exportingPhotos ? <LoaderCircle size={18} className="animate-spin" /> : <Images size={18} />}
         <span><strong>{j('Export meal pictures', 'Esporta le foto dei pasti')}</strong><small>{j('Standard photos + notes in a ZIP', 'Foto standard e note in uno ZIP')} ({photos.length})</small></span>

@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
+import { LazyBody } from '../common/LazyBody';
 import { PeriodStatus, pillMarkerFor, PillMarker } from '../../utils/period';
 import { addDaysToDateString, formatFullDate, getTodayDateString, dateFormatter } from '../../utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, Heart } from 'lucide-react';
@@ -66,7 +67,8 @@ interface Props {
 }
 
 export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectDay, status }) => {
-  const { t, language, periodData } = useApp();
+  const { t, language } = useSettings();
+  const { periodData } = useJournalData();
   const todayStr = getTodayDateString();
   const settings = periodData.settings;
   const pillMode = settings.trackPill;
@@ -118,11 +120,17 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
   const rawFirst = new Date(viewYear, viewMonth, 1).getDay();
   const firstOffset = mondayFirst ? (rawFirst + 6) % 7 : rawFirst;
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
-  const monthLabel = dateFormatter(locale, { month: 'long', year: 'numeric' }).format(new Date(viewYear, viewMonth, 1));
-  const cells: (number | null)[] = [
-    ...Array.from({ length: firstOffset }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
-  ];
+  const monthLabel = useMemo(
+    () => dateFormatter(locale, { month: 'long', year: 'numeric' }).format(new Date(viewYear, viewMonth, 1)),
+    [locale, viewYear, viewMonth],
+  );
+  const cells = useMemo<(number | null)[]>(
+    () => [
+      ...Array.from({ length: firstOffset }, () => null),
+      ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    ],
+    [firstOffset, daysInMonth],
+  );
   const dateFor = (day: number) =>
     `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
@@ -304,6 +312,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
         </button>
         <div className="accordion-grid" data-open={legendOpen} inert={!legendOpen}>
           <div className="accordion-inner">
+            <LazyBody open={legendOpen}>
             <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-2 text-[11px] font-bold text-[var(--muted)]">
               <span className="flex items-center gap-1.5">
                 <span data-period-cell="logged" className="w-4 h-4 rounded-md bg-[#F4C6D8]" /> {t.period.legendPeriod}
@@ -347,6 +356,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
                 </>
               )}
             </div>
+            </LazyBody>
           </div>
         </div>
       </div>

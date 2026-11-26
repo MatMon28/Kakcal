@@ -86,6 +86,19 @@ describe('quick portions in the builder', () => {
     fireEvent.click(chip('1/2 · 358 g'));
     expect(setRecipePortion).toHaveBeenLastCalledWith(0); // 0 = "logged as 100 g"
   });
+
+  it('separates the recipe recap summary card from the ingredient cards', () => {
+    render(<RecipeBuilderModal s={state({ recipePortion: 358 })} />);
+    fireEvent.click(chip('Continue to portions'));
+    const summary = document.querySelector('[data-recipe-summary]')!;
+    const ingredients = document.querySelector('[data-recipe-ingredients]')!;
+    expect(summary).toBeTruthy();
+    expect(ingredients).toBeTruthy();
+    expect(summary.contains(ingredients)).toBe(false);
+    expect(summary.querySelector('[data-ingredient-edit]')).toBeNull();
+    expect(ingredients.querySelector('[data-ingredient-edit]')).toBeTruthy();
+    expect(ingredients.className).toContain('border-t-2');
+  });
 });
 
 describe('closing the builder from the UI', () => {

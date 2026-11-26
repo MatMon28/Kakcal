@@ -28,8 +28,8 @@ import { ConfirmDialog } from '../common/ConfirmDialog';
 import { JournalEmpty, JournalSearch, JournalSection, journalDate } from './JournalUI';
 import { JournalDateField, JournalMealSelect } from './JournalPickers';
 
-export function PhotoDiary() {
-  const { settings, language } = useSettings();
+export function PhotoDiary({ sectionHidden = false }: { sectionHidden?: boolean }) {
+  const { language } = useSettings();
   const { selectedDate } = useUiState();
   const { photos } = useMealJournal();
   const j = useJournalText();
@@ -37,68 +37,68 @@ export function PhotoDiary() {
   const [browse, setBrowse] = useState(false);
   const [query, setQuery] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
-  // The Custom page shortcut button opens the full gallery.
+  // The Custom page shortcut button opens the full gallery even when the section is hidden.
   useEffect(() => {
-    if (!settings.photoDiary) return undefined;
     const open = () => setBrowse(true);
     window.addEventListener(OPEN_PHOTO_DIARY_EVENT, open);
     return () => window.removeEventListener(OPEN_PHOTO_DIARY_EVENT, open);
-  }, [settings.photoDiary]);
+  }, []);
   // Sorted once per change of the photos, not on every render (the list can hold many photos).
   const ordered = useMemo(
     () => [...photos].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
     [photos],
   );
-  if (!settings.photoDiary) return null;
   const q = query.trim().toLowerCase();
   const shown = q ? ordered.filter((p) => p.note.toLowerCase().includes(q)) : ordered;
   return (
     <>
-      <JournalSection
-        tone="red"
-        className="journal-photo-diary"
-        title={j('Photo diary', 'Diario fotografico')}
-        icon={<Camera size={16} strokeWidth={2.2} />}
-        count={photos.length}
-        searchLabel={j('Search photo diary', 'Cerca nel diario fotografico')}
-        query={query}
-        setQuery={setQuery}
-        createLabel={j('Add a meal photo', 'Aggiungi una foto')}
-        onCreate={() => setAdd(true)}
-      >
-        <div className="journal-photo-grid">
-          {shown.slice(0, query.trim() ? 6 : 3).map((photo) => (
-            <button
-              className="journal-photo-preview"
-              key={photo.id}
-              type="button"
-              onClick={() => setSelected(photo.id)}
-            >
-              <span>
-                <StoredImage src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
-              </span>
-              <strong>{photo.note}</strong>
-              <small>{journalDate(photo.date, language)}</small>
+      {!sectionHidden && (
+        <JournalSection
+          tone="red"
+          className="journal-photo-diary"
+          title={j('Photo diary', 'Diario fotografico')}
+          icon={<Camera size={16} strokeWidth={2.2} />}
+          count={photos.length}
+          searchLabel={j('Search photo diary', 'Cerca nel diario fotografico')}
+          query={query}
+          setQuery={setQuery}
+          createLabel={j('Add a meal photo', 'Aggiungi una foto')}
+          onCreate={() => setAdd(true)}
+        >
+          <div className="journal-photo-grid">
+            {shown.slice(0, query.trim() ? 6 : 3).map((photo) => (
+              <button
+                className="journal-photo-preview"
+                key={photo.id}
+                type="button"
+                onClick={() => setSelected(photo.id)}
+              >
+                <span>
+                  <StoredImage src={photo.src} alt={photo.note} loading="lazy" decoding="async" />
+                </span>
+                <strong>{photo.note}</strong>
+                <small>{journalDate(photo.date, language)}</small>
+              </button>
+            ))}
+            {ordered.length > 0 && !shown.length && (
+              <JournalEmpty>{j('No photos match this search.', 'Nessuna foto corrisponde alla ricerca.')}</JournalEmpty>
+            )}
+            {!ordered.length && (
+              <button className="journal-photo-empty" type="button" onClick={() => setAdd(true)}>
+                <ImagePlus size={30} />
+                <strong>{j('Start with a snapshot', 'Inizia con una foto')}</strong>
+                <span>{j('A good meal is more than a number.', 'Un buon pasto e piu di un numero.')}</span>
+              </button>
+            )}
+          </div>
+          {shown.length > (q ? 6 : 3) && (
+            <button type="button" className="journal-secondary-button journal-see-all" onClick={() => setBrowse(true)}>
+              {j('See all photos', 'Vedi tutte le foto')}
+              <ArrowUpRight size={14} />
             </button>
-          ))}
-          {ordered.length > 0 && !shown.length && (
-            <JournalEmpty>{j('No photos match this search.', 'Nessuna foto corrisponde alla ricerca.')}</JournalEmpty>
           )}
-          {!ordered.length && (
-            <button className="journal-photo-empty" type="button" onClick={() => setAdd(true)}>
-              <ImagePlus size={30} />
-              <strong>{j('Start with a snapshot', 'Inizia con una foto')}</strong>
-              <span>{j('A good meal is more than a number.', 'Un buon pasto e piu di un numero.')}</span>
-            </button>
-          )}
-        </div>
-        {shown.length > (q ? 6 : 3) && (
-          <button type="button" className="journal-secondary-button journal-see-all" onClick={() => setBrowse(true)}>
-            {j('See all photos', 'Vedi tutte le foto')}
-            <ArrowUpRight size={14} />
-          </button>
-        )}
-      </JournalSection>
+        </JournalSection>
+      )}
       {add && <PhotoComposer initialDate={selectedDate} onClose={() => setAdd(false)} />}
       {browse && <PhotoBrowser onClose={() => setBrowse(false)} />}
       {selected && <PhotoViewer photos={ordered} selectedId={selected} onClose={() => setSelected(null)} />}
@@ -110,7 +110,7 @@ export function MealPhotoAction({ date, slot }: { date: string; slot: MealSlotId
   const { settings } = useSettings();
   const j = useJournalText();
   const [open, setOpen] = useState(false);
-  if (!settings.photoDiary) return null;
+  if (!settings.photoDiaryInToday) return null;
   return (
     <>
       <button
@@ -134,7 +134,7 @@ export function MealPhotos({ date, slot }: { date: string; slot: MealSlotId }) {
   const { settings } = useSettings();
   const matching = usePhotosForSlot(date, slot);
   const [selected, setSelected] = useState<string | null>(null);
-  if (!settings.photoDiary || !matching.length) return null;
+  if (!settings.photoDiaryInToday || !matching.length) return null;
   return (
     <>
       <div className="journal-meal-photos">
@@ -166,7 +166,7 @@ export function LibraryPhoto({
   const j = useJournalText();
   const [add, setAdd] = useState(false);
   const [view, setView] = useState(false);
-  if (!settings.photoDiary) return null;
+  if (settings.hideCustomFields.photos) return null;
   return (
     <div className="journal-library-photo">
       {matching.length ? (

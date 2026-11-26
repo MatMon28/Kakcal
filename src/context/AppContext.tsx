@@ -9,7 +9,7 @@ import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../ut
 import { getDefaultPeriodTags, periodTagListKey, periodTagSelectionKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
 import { syncLaunchBackground } from '../utils/android';
 import { whenIdle } from '../utils/idle';
-import { isPageHiddenBySettings } from '../utils/pageVisibility';
+import { DEFAULT_PAGE_ORDER, isPageHiddenBySettings, normalizePageOrder } from '../utils/pageVisibility';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
 import { exportLayout, importLayout } from '../utils/layoutStore';
 import { exportMealJournalForBackup, importMealJournal, prepareMealJournalImport } from '../utils/journalStore';
@@ -451,12 +451,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           trackSugar: Boolean(p.trackSugar),
           photoDiary: Boolean(p.photoDiary),
           inlineMealNotes: Boolean(p.inlineMealNotes),
+          photoDiaryInToday: typeof p.photoDiaryInToday === 'boolean' ? p.photoDiaryInToday : Boolean(p.photoDiary),
           showPlannerButton: p.showPlannerButton !== false,
           showPhotoButton: p.showPhotoButton !== false,
           hidePeriod: resolvedHidePeriod,
           hidePeriodCustomized: customized,
           hideCustomPage: Boolean(p.hideCustomPage),
           hideStatisticsPage: Boolean(p.hideStatisticsPage),
+          pageOrder: normalizePageOrder(p.pageOrder),
           hideCustomButtons:
             p.hideCustomButtons && typeof p.hideCustomButtons === 'object'
               ? { meal: Boolean(p.hideCustomButtons.meal), recipe: Boolean(p.hideCustomButtons.recipe), food: Boolean(p.hideCustomButtons.food) }
@@ -497,12 +499,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       trackSugar: false,
       photoDiary: DEMO_MODE,
       inlineMealNotes: DEMO_MODE,
+      photoDiaryInToday: DEMO_MODE,
       showPlannerButton: true,
       showPhotoButton: true,
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
       hideCustomPage: false,
       hideStatisticsPage: false,
+      pageOrder: DEFAULT_PAGE_ORDER,
       hideCustomButtons: {},
       hideCustomFields: {},
       quickFoods: DEFAULT_QUICK_FOODS,
@@ -587,6 +591,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         theme: normalizeTheme(partial.theme ?? prev.theme),
         themeStyle: normalizeThemeStyle(partial.themeStyle ?? prev.themeStyle),
         monoHue: normalizeMonoHue(partial.monoHue ?? prev.monoHue),
+        pageOrder: normalizePageOrder(partial.pageOrder ?? prev.pageOrder),
         notifications: normalizeNotificationSettings(partial.notifications ?? prev.notifications),
       };
       // No trackers means no button to show: keep the widget setting consistent with the data.
@@ -938,7 +943,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               ? s.hidePeriod
               : true
             : importedSex === 'male';
-        updateSettings({ ...s, hidePeriod, hidePeriodCustomized: customized });
+        updateSettings({
+          ...s,
+          hidePeriod,
+          hidePeriodCustomized: customized,
+          pageOrder: s.pageOrder !== undefined ? normalizePageOrder(s.pageOrder) : DEFAULT_PAGE_ORDER,
+        });
         if (hidePeriod) {
           setActiveTabState((tab) => (tab === 'period' ? 'today' : tab));
         }

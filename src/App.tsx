@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
 import { AppProvider, useApp, useNav, useNavActions, useShell } from './context/AppContext';
 import { Header } from './components/common/Header';
@@ -36,7 +36,7 @@ import { useToday } from './utils/useToday';
 import { widgetDates } from './utils/widgetDates';
 import { isAndroidApp, JournalDevice } from './utils/android';
 import { isPeriodShown } from './utils/tourPreview';
-import { isPageHiddenBySettings } from './utils/pageVisibility';
+import { isPageHiddenBySettings, normalizePageOrder } from './utils/pageVisibility';
 import { useNotificationScheduler } from './utils/useNotificationScheduler';
 import { requestOpenNotificationSettings } from './utils/notifications';
 import { calculateBMR } from './utils/calculations';
@@ -48,30 +48,30 @@ import type { ActiveTab } from './types';
 import { DEMO_MODE } from './config/demo';
 import { startedWithPlanLink } from './utils/incomingPlan';
 
-// Optional screens load on demand (item 2) and are preloaded once the app is idle, so opening one is still instant.
-const PeriodView = lazy(() => import('./components/period/PeriodView').then((m) => ({ default: m.PeriodView })));
-const HistoryView = lazy(() => import('./components/history/HistoryView').then((m) => ({ default: m.HistoryView })));
-const BodyView = lazy(() => import('./components/body/BodyView').then((m) => ({ default: m.BodyView })));
-const LogActivityModal = lazy(() => import('./components/modals/LogActivityModal').then((m) => ({ default: m.LogActivityModal })));
-const BarcodeLookupModal = lazy(() => import('./components/modals/BarcodeLookupModal').then((m) => ({ default: m.BarcodeLookupModal })));
-const UserProfileModal = lazy(() => import('./components/modals/UserProfileModal').then((m) => ({ default: m.UserProfileModal })));
-const SettingsModal = lazy(() => import('./components/modals/SettingsModal').then((m) => ({ default: m.SettingsModal })));
-const PeriodSheet = lazy(() => import('./components/modals/PeriodSheet').then((m) => ({ default: m.PeriodSheet })));
-const AppTour = lazy(() => import('./components/tour/AppTour').then((m) => ({ default: m.AppTour })));
+import {
+  LazyAppTour,
+  LazyBarcodeLookupModal,
+  LazyBodyView,
+  LazyHistoryView,
+  LazyLogActivityModal,
+  LazyPeriodSheet,
+  LazyPeriodView,
+  LazySettingsModal,
+  LazyUserProfileModal,
+  scheduleLazyScreenPreload,
+} from './utils/lazyScreens';
 
-function preloadOptionalScreens() {
-  void import('./components/period/PeriodView');
-  void import('./components/history/HistoryView');
-  void import('./components/body/BodyView');
-  void import('./components/modals/LogActivityModal');
-  void import('./components/modals/SettingsModal');
-  void import('./components/modals/UserProfileModal');
-  void import('./components/modals/PeriodSheet');
-}
+// Optional screens load on demand (preloadableLazy) and warm up one-by-one in idle slices (visible tabs first).
+const PeriodView = LazyPeriodView.Component;
+const HistoryView = LazyHistoryView.Component;
+const BodyView = LazyBodyView.Component;
+const LogActivityModal = LazyLogActivityModal.Component;
+const BarcodeLookupModal = LazyBarcodeLookupModal.Component;
+const UserProfileModal = LazyUserProfileModal.Component;
+const SettingsModal = LazySettingsModal.Component;
+const PeriodSheet = LazyPeriodSheet.Component;
+const AppTour = LazyAppTour.Component;
 
-const MAIN_TABS: ActiveTab[] = ['today', 'prebuilt', 'period', 'body', 'history'];
-
-/** Each widget button opens the same dialog the tour and Today's dock open. */
 const ACTION_SCREEN: Record<WidgetAction, TourScreen> = {
   custom: 'tracker',
   food: 'food',
@@ -301,11 +301,15 @@ function MainContent() {
     window.scrollTo({ top: 0, behavior: 'instant' });
   }, []);
 
-  // Download the optional screens in the background once the first screen is done (item 2).
-  useEffect(() => whenIdle(preloadOptionalScreens), []);
+  // Download visible optional screens first, staggered one per idle slice so startup & other pages stay fast.
+  const historyShown = !settings.hideStatisticsPage;
+  useEffect(
+    () => scheduleLazyScreenPreload({ periodShown, bodyShown, historyShown }),
+    [periodShown, bodyShown, historyShown],
+  );
 
-  // Settings > Pages hides Custom and Statistics (Period and Body have their own switches above).
-  const visibleTabs = MAIN_TABS.filter(
+  // Settings > Pages sets both page visibility and order.
+  const visibleTabs = normalizePageOrder(settings.pageOrder).filter(
     (tab) => (tab !== 'period' || periodShown) && (tab !== 'body' || bodyShown) && !isPageHiddenBySettings(tab, settings),
   );
   // The page elements are memoised: `useShell()` changes whenever ANY dialog opens, which re-renders MainContent and

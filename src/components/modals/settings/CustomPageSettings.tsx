@@ -6,8 +6,8 @@ import type { CustomFieldId } from '../../../types';
 import { SubSection, TONE, ToggleRow } from './SettingsParts';
 
 /**
- * Settings > Custom page. Three sub-sections: the Photo diary feature, the bottom-bar buttons of Custom (every
- * button can be hidden) and the sections of the page (every field can be hidden). "On" always means "shown".
+ * Settings > Custom page. Two sub-sections: the bottom-bar buttons of Custom (every button can be hidden)
+ * and the sections of the page (every field can be hidden). "On" always means "shown".
  */
 export const CustomPageSettings: React.FC = () => {
   const j = useJournalText();
@@ -17,31 +17,19 @@ export const CustomPageSettings: React.FC = () => {
     updateSettings({ hideCustomFields: { ...settings.hideCustomFields, [key]: !shown } });
   const setButton = (key: 'meal' | 'recipe' | 'food', shown: boolean) =>
     updateSettings({ hideCustomButtons: { ...settings.hideCustomButtons, [key]: !shown } });
-  const photoOff = !settings.photoDiary;
 
-  const fields: { key: CustomFieldId; icon: React.ReactNode; tone: string; title: string; disabled?: boolean }[] = [
+  const fields: { key: CustomFieldId; icon: React.ReactNode; tone: string; title: string }[] = [
     { key: 'diary', icon: <NotebookText size={14} />, tone: TONE.lilac, title: j('Meal diary', 'Diario dei pasti') },
     { key: 'meals', icon: <UtensilsCrossed size={14} />, tone: TONE.peach, title: j('Meals', 'Pasti') },
     { key: 'recipes', icon: <ChefHat size={14} />, tone: TONE.lilac, title: j('Recipes', 'Ricette') },
     { key: 'planner', icon: <CalendarDays size={14} />, tone: TONE.sky, title: j('Meal planner', 'Pianificatore pasti') },
     { key: 'shopping', icon: <ShoppingCart size={14} />, tone: TONE.mint, title: j('Shopping lists', 'Liste della spesa') },
-    { key: 'photos', icon: <Camera size={14} />, tone: TONE.rose, title: j('Photo diary', 'Diario fotografico'), disabled: photoOff },
+    { key: 'photos', icon: <Camera size={14} />, tone: TONE.rose, title: j('Photo diary', 'Diario fotografico') },
     { key: 'foods', icon: <BookOpen size={14} />, tone: TONE.mint, title: j('Foods', 'Alimenti') },
   ];
 
   return (
     <div className="space-y-5">
-      <SubSection title={j('Features', 'Funzioni')}>
-        <ToggleRow
-          icon={<Camera size={14} />}
-          tone={TONE.rose}
-          title={j('Photo diary', 'Diario fotografico')}
-          description={j('Keep a visual memory of your meals. Photos stay on this device.', 'Ricorda i tuoi pasti con una foto. Le foto restano sul dispositivo.')}
-          on={settings.photoDiary}
-          onToggle={() => updateSettings({ photoDiary: !settings.photoDiary })}
-        />
-      </SubSection>
-
       <SubSection
         title={j('Quick buttons', 'Pulsanti rapidi')}
         hint={j('The bottom bar of Custom. Hide the ones you do not use.', 'La barra in basso di Custom. Nascondi quelli che non usi.')}
@@ -78,9 +66,7 @@ export const CustomPageSettings: React.FC = () => {
           icon={<Camera size={14} />}
           tone={TONE.rose}
           title={j('Photo diary button', 'Pulsante diario fotografico')}
-          description={photoOff ? j('Needs the Photo diary feature above.', 'Richiede la funzione Diario fotografico qui sopra.') : undefined}
-          on={settings.showPhotoButton && !photoOff}
-          disabled={photoOff}
+          on={settings.showPhotoButton}
           onToggle={() => updateSettings({ showPhotoButton: !settings.showPhotoButton })}
         />
       </SubSection>
@@ -95,8 +81,7 @@ export const CustomPageSettings: React.FC = () => {
             icon={f.icon}
             tone={f.tone}
             title={f.title}
-            disabled={f.disabled}
-            on={!settings.hideCustomFields[f.key] && !f.disabled}
+            on={!settings.hideCustomFields[f.key]}
             onToggle={() => setField(f.key, Boolean(settings.hideCustomFields[f.key]))}
           />
         ))}

@@ -1,0 +1,16 @@
+{
+  "kakcal-edit-guards": {
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|write_file",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node hooks/guard-edits.mjs",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}

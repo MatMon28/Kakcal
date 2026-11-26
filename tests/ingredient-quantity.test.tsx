@@ -236,7 +236,12 @@ describe('meal builder laid out like the recipe builder', () => {
     expect(line.querySelector('[data-ingredient-amount]')!.textContent).toBe(' · 150 g');
     expect(line.querySelector('[data-calories]')!.textContent).toBe('195 kcal');
     expect(document.querySelector('[data-ingredient-swap]')).toBeNull();
-    expect(document.querySelector('[data-meal-recap] [data-calories]')!.textContent).toBe('195 kcal');
+    const review = document.querySelector('[data-ingredient-review]')!;
+    const recap = document.querySelector('[data-meal-recap]')!;
+    expect(recap.querySelector('[data-calories]')!.textContent).toBe('195 kcal');
+    expect(review.contains(recap)).toBe(false);
+    expect(recap.parentElement?.className).toContain('border-t-2');
+    expect(recap.className).toContain('bg-[var(--surface)]');
     const pencil = button('Change amount for Rice');
     expect(pencil.textContent).toBe('');
     fireEvent.click(pencil);

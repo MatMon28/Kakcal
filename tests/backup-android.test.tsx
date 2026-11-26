@@ -20,7 +20,10 @@ vi.mock('../src/utils/android', async (importOriginal) => ({
   },
 }));
 // Excel and the pictures ZIP are built in the browser; only their hand-over to the native plugin is under test here.
-vi.mock('../src/utils/excelExport', () => ({ buildExcelExport: () => new Blob(['xlsx-bytes'], { type: 'application/octet-stream' }) }));
+vi.mock('../src/utils/excelExport', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../src/utils/excelExport')>()),
+  buildExcelExport: () => new Blob(['xlsx-bytes'], { type: 'application/octet-stream' }),
+}));
 vi.mock('../src/utils/photoExport', () => ({ exportMealPictures: async () => new Blob(['zip-bytes'], { type: 'application/zip' }) }));
 
 beforeEach(async () => {
@@ -84,6 +87,9 @@ describe.each([
     await addMealPhoto({ id: 'p1', date: '2026-02-03', slot: 'lunch', note: '', createdAt: '' }, new Blob(['img'], { type: 'image/jpeg' }));
     renderBackup();
     await act(async () => { fireEvent.click(screen.getByText(click)); });
+    if (kind === 'xlsx') {
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.xlsx/i })); });
+    }
   };
 
   it('hands a non-empty file with the right name and kind to the native plugin and shows the size', async () => {

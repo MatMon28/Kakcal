@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { CycleInfo, cycleDays, isInactivePackDay, phaseOfDate, PeriodStatus, tagDefs } from '../../utils/period';
-import { calculateBMR, calculateMacros, calculateTEF, calculateTotalActivityCalories, calculateTotalCalories } from '../../utils/calculations';
+import { calculateBMR } from '../../utils/calculations';
+import { getDayBaseMetrics } from '../../utils/dayMetricsCache';
 import { diffDays, formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import { CyclePhase, DayLog } from '../../types';
-import { allMealItems } from '../../utils/mealItems';
 
 type Bucket = { intake: number; burned: number; net: number; c: number; p: number; f: number; n: number };
 const emptyBucket = (): Bucket => ({ intake: 0, burned: 0, net: 0, c: 0, p: 0, f: 0, n: 0 });
@@ -17,7 +17,8 @@ const PHASE_COLORS: Record<CyclePhase, string> = {
 };
 
 export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) => {
-  const { t, language, periodData, allDayLogs, userProfile } = useApp();
+  const { t, language, userProfile } = useSettings();
+  const { periodData, allDayLogs } = useJournalData();
   const todayStr = getTodayDateString();
   const settings = periodData.settings;
   const pillMode = settings.trackPill;
@@ -27,12 +28,10 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
   const bmr = calculateBMR(userProfile);
   const dayMetrics = (log: DayLog | undefined) => {
     if (!log) return null;
-    const items = allMealItems(log.meals);
-    if (items.length === 0) return null;
-    const intake = calculateTotalCalories(items);
-    const m = calculateMacros(items);
-    const burned = bmr + calculateTotalActivityCalories(log.activities) + calculateTEF(m.carbsGrams, m.proteinGrams, m.fatGrams).totalTEF;
-    return { intake, burned, net: intake - burned, c: m.carbsGrams, p: m.proteinGrams, f: m.fatGrams };
+    const base = getDayBaseMetrics(log);
+    if (!base.hasFood) return null;
+    const burned = bmr + base.actExp + base.tef;
+    return { intake: base.intake, burned, net: base.intake - burned, c: base.macros.carbsGrams, p: base.macros.proteinGrams, f: base.macros.fatGrams };
   };
 
   const cycles = status.cycles;
@@ -166,11 +165,11 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
     const tagged = { sum: 0, n: 0 };
     const other = { sum: 0, n: 0 };
     for (const d of Object.keys(allDayLogs)) {
-      const m = dayMetrics(allDayLogs[d]);
-      if (!m) continue;
+      const base = getDayBaseMetrics(allDayLogs[d]);
+      if (!base.hasFood) continue;
       const l = periodData.logs[d];
       const has = Boolean(l && (l.moods.includes(selectedTag) || l.symptoms.includes(selectedTag)));
-      if (has) { tagged.sum += m.intake; tagged.n++; } else { other.sum += m.intake; other.n++; }
+      if (has) { tagged.sum += base.intake; tagged.n++; } else { other.sum += base.intake; other.n++; }
     }
     return {
       tagged: tagged.n ? Math.round(tagged.sum / tagged.n) : null,
@@ -178,7 +177,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
       other: other.n ? Math.round(other.sum / other.n) : null,
       otherN: other.n,
     };
-  }, [allDayLogs, periodData.logs, selectedTag]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [allDayLogs, periodData.logs, selectedTag]);
 
   return (
     <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-4">

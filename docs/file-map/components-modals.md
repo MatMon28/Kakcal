@@ -43,8 +43,9 @@ SettingsModal delegates custom button icons to common/IconPicker.tsx. LayoutTool
 | `src/components/modals/settings/SettingsParts.tsx` | Shared Settings look: `TONE` badge colours, `SubSection`, `ToggleRow`, `ActionRow`, `SwitchVisual`. |
 | `src/components/modals/settings/TodaySettings.tsx` | Today group: quick-add buttons, Log water / Log poop / Track sugar, Meal notes, quick food shortcuts (picker), Custom buttons. |
 | `src/components/modals/settings/CustomButtonsSettings.tsx` | Custom buttons list, add / edit form and widget switch (inside Today). Moved unchanged from the old group. |
-| `src/components/modals/settings/CustomPageSettings.tsx` | Custom page group: Photo diary feature, bottom-bar buttons, sections. |
-| `src/components/modals/settings/PagesSettings.tsx` | Pages group: hide Custom, Statistics, Track period, Body measurements; body profile shortcut. Reads the tab through `useNav()` and the setter through `useNavActions()` (not `useApp()`). |
+| `src/components/modals/settings/CustomPageSettings.tsx` | Custom page group: bottom-bar buttons and sections (including independent Photo diary button and section toggles). |
+| `src/components/modals/settings/PagesSettings.tsx` | Pages group: show/hide and reorder pages (`pageOrder`), body profile shortcut. Reads the tab through `useNav()` and the setter through `useNavActions()` (not `useApp()`). |
+| `src/components/modals/ExcelExportModal.tsx` | Excel export period (All time / 7d / 30d / 3m / 1y / Custom) and sheet selection dialog opened from `DataBackup.tsx`. |
 | `src/components/modals/settings/DeleteDataSettings.tsx` | Delete data group: one confirmed row per kind of record, then *Delete all data*. |
 | `src/components/modals/NotificationSettings.tsx` | Test notification button removed; group now has a bell icon and colour. |
 | `src/components/modals/AdvancedSettings.tsx` | Body measurements switch moved to Pages; group has an icon. |

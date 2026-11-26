@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, X } from 'lucide-react';
 import { SecondaryNutrientCard, SecondaryNutrientRow } from '../common/FoodMacroGrid';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
+import { LazyBody } from '../common/LazyBody';
+import { getDayBaseMetrics } from '../../utils/dayMetricsCache';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
 import { LayoutToolbar, PencilRow } from '../layout/LayoutToolbar';
@@ -12,10 +14,6 @@ import { TrackerIcon } from '../common/TrackerIcon';
 import { usePersistentState } from '../../utils/usePersistentState';
 import {
   calculateBMR,
-  calculateMacros,
-  calculateTEF,
-  calculateTotalActivityCalories,
-  calculateTotalCalories,
 } from '../../utils/calculations';
 import {
   addDaysToDateString,
@@ -23,7 +21,6 @@ import {
   formatKcal,
   getTodayDateString,
 } from '../../utils/formatters';
-import { allMealItems } from '../../utils/mealItems';
 import { getTrackerValue } from '../../utils/customTrackers';
 import { getPeriodStatus, phaseOfDate } from '../../utils/period';
 import { dailyWaterTargetMl } from '../../utils/waterTarget';
@@ -64,41 +61,33 @@ function summarizeDay(date: string, log: DayLog | undefined, bmr: number): DaySu
       waterEntries: [], poops: [], hasLog: false,
     };
   }
-  const items = allMealItems(log.meals);
-  const macros = calculateMacros(items);
-  const intake = calculateTotalCalories(items);
-  const actExp = calculateTotalActivityCalories(log.activities);
-  const tef = calculateTEF(macros.carbsGrams, macros.proteinGrams, macros.fatGrams).totalTEF;
-  const expenditure = bmr + actExp + tef;
+  const m = getDayBaseMetrics(log);
+  const expenditure = bmr + m.actExp + m.tef;
   return {
     date,
-    intake,
+    intake: m.intake,
     bmr,
-    actExp,
-    tef,
+    actExp: m.actExp,
+    tef: m.tef,
     expenditure,
-    net: intake - expenditure,
-    carbs: macros.carbsGrams,
-    protein: macros.proteinGrams,
-    fat: macros.fatGrams,
-    fiber: macros.fiberGrams,
-    salt: macros.saltGrams,
-    sugar: macros.sugarGrams,
+    net: m.intake - expenditure,
+    carbs: m.macros.carbsGrams,
+    protein: m.macros.proteinGrams,
+    fat: m.macros.fatGrams,
+    fiber: m.macros.fiberGrams,
+    salt: m.macros.saltGrams,
+    sugar: m.macros.sugarGrams,
     activities: log.activities,
     weightKg: log.weightKg,
     waterEntries: log.waterEntries ?? [],
     poops: log.poops ?? [],
-    hasLog:
-      items.length > 0 ||
-      log.activities.length > 0 ||
-      typeof log.weightKg === 'number' ||
-      (log.waterEntries ?? []).length > 0 ||
-      (log.poops ?? []).length > 0,
+    hasLog: m.hasLog,
   };
 }
 
 export const HistoryView: React.FC = () => {
-  const { allDayLogs, userProfile, settings, periodData, language, t } = useApp();
+  const { allDayLogs, periodData } = useJournalData();
+  const { userProfile, settings, language, t } = useSettings();
   const layoutText = useLayoutText();
   const layoutEnabled = useLayout().enabled;
   const j = useJournalText();
@@ -164,6 +153,10 @@ export const HistoryView: React.FC = () => {
     };
   }, [rangeDates, allDayLogs, bmr, settings.customButtons]);
 
+  const periodStatusForBands = useMemo(
+    () => (periodData.settings.showPhaseBandsInStats && !periodData.settings.trackPill ? getPeriodStatus(periodData) : null),
+    [periodData],
+  );
   const avgScale = Math.max(period.avgIntake, period.avgExpenditure, 1);
   const avgIntakePct = Math.round((period.avgIntake / avgScale) * 100);
   const avgExpPct = Math.round((period.avgExpenditure / avgScale) * 100);
@@ -464,6 +457,7 @@ export const HistoryView: React.FC = () => {
 
           <div className="accordion-grid" data-open={weightOpen} inert={!weightOpen}>
             <div className="accordion-inner">
+              <LazyBody open={weightOpen} defer>
               <div className="pt-3 space-y-2">
                 <div className="flex items-center justify-between gap-2 text-xs font-bold tabular-nums px-1" aria-live="polite">
                   <span className={`text-[var(--muted)] ${ultraMinimal ? 'sr-only' : ''}`}>
@@ -472,14 +466,13 @@ export const HistoryView: React.FC = () => {
                   <span className="text-[var(--weight-on-surface)] font-extrabold">{activeWeightPt.kg.toFixed(1)} kg</span>
                 </div>
                 <svg viewBox={`0 0 ${W_SVG} ${H_SVG}`} className="w-full h-32 overflow-visible">
-                  {periodData.settings.showPhaseBandsInStats && !periodData.settings.trackPill && (() => {
-                    const status = getPeriodStatus(periodData);
+                  {periodStatusForBands && (() => {
                     const colors: Record<string, string> = {
                       menstrual: '#F4C6D8', follicular: '#CFE7FE', ovulation: '#C9EFD3', luteal: '#E2D6FF',
                     };
                     return wp.map((point, index) => {
                       if (!point.date) return null;
-                      const phase = phaseOfDate(periodData, point.date, status);
+                      const phase = phaseOfDate(periodData, point.date, periodStatusForBands);
                       if (!phase) return null;
                       const x0 = index === 0 ? 4 : (wX(index - 1) + wX(index)) / 2;
                       const x1 = index === wp.length - 1 ? W_SVG - 4 : (wX(index) + wX(index + 1)) / 2;
@@ -522,6 +515,7 @@ export const HistoryView: React.FC = () => {
                   })}
                 </svg>
               </div>
+              </LazyBody>
             </div>
           </div>
         </div>
@@ -543,6 +537,7 @@ export const HistoryView: React.FC = () => {
             </button>
             <div className="accordion-grid" data-open={dailyOpen} inert={!dailyOpen}>
               <div className="accordion-inner">
+                <LazyBody open={dailyOpen} defer>
                 <div className="pt-3 space-y-2.5">
                   {period.days.map((day) => {
                     const maxDayVal = Math.max(day.intake, day.expenditure, 2400);
@@ -610,6 +605,7 @@ export const HistoryView: React.FC = () => {
                     );
                   })}
                 </div>
+                </LazyBody>
               </div>
             </div>
           </div>
@@ -629,7 +625,7 @@ export const HistoryView: React.FC = () => {
   const balanceNode = <BalanceTargetCard net={period.avgNet} average />;
 
   const names = layoutText.names;
-  const items: LayoutItem[] = [
+  const items: LayoutItem[] = layoutEnabled ? [
     { id: 'range', label: names.range, node: rangeNode, span: 'col-span-6' },
     { id: 'intake', label: names.avgIntake, node: intakeNode, span: 'col-span-3' },
     { id: 'burned', label: names.avgBurned, node: burnedNode, span: 'col-span-3' },
@@ -657,7 +653,7 @@ export const HistoryView: React.FC = () => {
     })),
     { id: 'weight', label: names.weight, node: weightNode, span: 'col-span-6' },
     { id: 'daily', label: names.daily, node: dailyNode, span: 'col-span-6', show: range === '7' },
-  ];
+  ] : [];
 
   return (
     <>
@@ -684,7 +680,7 @@ export const HistoryView: React.FC = () => {
       </div>
 
 
-      <PeriodDayInfoModal date={inspectedDate} onClose={() => setInspectedDate(null)} />
+      {inspectedDate && <PeriodDayInfoModal date={inspectedDate} onClose={() => setInspectedDate(null)} />}
     </>
   );
 };

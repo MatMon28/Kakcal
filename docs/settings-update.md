@@ -14,9 +14,9 @@ Settings has one collapsible group per area. Every group has its own colour badg
 | --- | --- | --- |
 | Language | sky | English / Italiano |
 | Appearance | lilac | Theme, widget style, style presets (+ Mono hue), Ultra minimal |
-| **Today** | butter | **Quick-add buttons** (Food, Movement, Weight, Custom) -> **Tracking** (Log water, Log poop, Track sugar) -> **Meal notes** (Meal notes in Today) -> **Quick food shortcuts** -> **Custom buttons** (list, add / edit, widget switch; moved here from the old group) |
-| **Custom page** | mint | **Features** (Photo diary) -> **Quick buttons** (New meal, New recipe, New food, Plan meals, Photo diary button) -> **Sections** (Meal diary, Meals, Recipes, Meal planner, Shopping lists, Photo diary, Foods) |
-| **Pages** | peach | **Pages**: Today (always shown), Custom, Statistics, Track period, Body measurements. Body on = a *body profile* shortcut appears under the list |
+| **Today** | butter | **Quick-add buttons** (Food, Movement, Weight, Custom) -> **Tracking** (Log water, Log poop, Track sugar) -> **Meal notes & photos** (Meal notes in Today, Photo diary in Today) -> **Quick food shortcuts** -> **Custom buttons** (list, add / edit, widget switch; moved here from the old group) |
+| **Custom page** | mint | **Quick buttons** (New meal, New recipe, New food, Plan meals, Photo diary button) -> **Sections** (Meal diary, Meals, Recipes, Meal planner, Shopping lists, Photo diary, Foods) |
+| **Pages** | peach | **Pages**: Today (always shown, reorderable), Custom, Statistics, Track period, Body measurements — each row has up/down reorder buttons (plus *Reset page order* when customized). Body on = a *body profile* shortcut appears under the list |
 | Advanced | sand | Goals & limits, Advanced layout (body measurements moved to Pages) |
 | Notifications | rose | Reminders as before; **the *Send a test notification* button is removed** |
 | Data backup | slate | unchanged |
@@ -37,10 +37,12 @@ Rules that matter:
 | --- | --- | --- | --- |
 | `hideCustomPage` | boolean | `false` | Custom page hidden (Settings > Pages) |
 | `hideStatisticsPage` | boolean | `false` | Statistics page hidden (Settings > Pages) |
+| `pageOrder` | `MainTabId[]` | `['today','prebuilt','period','body','history']` | Display and swipe order of the main pages (Settings > Pages) |
 | `hideCustomButtons` | `{ meal?, recipe?, food? }` | `{}` | Hidden creation buttons of the Custom bottom bar |
 | `hideCustomFields` | `Partial<Record<CustomFieldId, boolean>>` | `{}` | Hidden Custom sections: `diary`, `meals`, `recipes`, `planner`, `shopping`, `photos`, `foods` |
+| `photoDiaryInToday` | boolean | `false` (`DEMO_MODE`) | Show meal camera actions and photo strips in Today meal cards (Settings > Today; older saved settings inherit `photoDiary`) |
 
-Existing keys are unchanged (`quickAdd`, `hidePoop`, `trackSugar`, `inlineMealNotes`, `photoDiary`, `showPlannerButton`, `showPhotoButton`, `hidePeriod`, `customButtons`, `widgetCustomButton`). The advanced body switch is still `kcalsync_advanced` > `body.enabled`; only its switch moved to Pages. The four new keys are part of the settings object, so the JSON backup already carries them (settings are exported whole); a backup without them loads with the defaults above.
+Existing keys are unchanged (`quickAdd`, `hidePoop`, `trackSugar`, `inlineMealNotes`, `photoDiary`, `showPlannerButton`, `showPhotoButton`, `hidePeriod`, `customButtons`, `widgetCustomButton`). The advanced body switch is still `kcalsync_advanced` > `body.enabled`; only its switch moved to Pages. The five new keys (including `photoDiaryInToday`, default `false` / `DEMO_MODE`; older saved settings without it inherit `photoDiary`) are part of the settings object, so the JSON backup already carries them (settings are exported whole); a backup without them loads with the defaults above.
 
 ## Delete rows (`src/utils/deleteData.ts`)
 
@@ -95,4 +97,4 @@ Delete all data is unchanged: `src/components/common/DeleteAllData.tsx` and `src
 
 ### Delete data grace period
 
-After confirmation, a bulk category or **Delete all data** waits 6.5 seconds before erasing and reloading. **Undo** cancels while the scheduled deletion is visible; there is no second stored copy or recovery after commit. Deleting a custom button separately can be undone without removing or recreating its history. See [food workflows](food-workflows-update.md).
+After confirmation, a bulk category or **Delete all data** waits 2 seconds (`UNDO_REMOVAL_MS`) before erasing and reloading. **Undo** cancels while the scheduled deletion is visible, and swiping the toast dismisses/commits immediately; there is no second stored copy or recovery after commit. Deleting a custom button separately can be undone without removing or recreating its history. See [food workflows](food-workflows-update.md).

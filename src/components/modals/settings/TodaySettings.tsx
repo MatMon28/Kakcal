@@ -1,5 +1,5 @@
 import React, { useDeferredValue, useMemo, useState } from 'react';
-import { ArrowLeft, Candy, ChevronRight, Droplets, Footprints, NotebookPen, Scale, Search, Sparkles, Utensils, X } from 'lucide-react';
+import { ArrowLeft, Camera, Candy, ChevronRight, Droplets, Footprints, NotebookPen, Scale, Search, Sparkles, Utensils, X } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { useJournalText } from '../../../i18n/journal';
 import { searchFoods } from '../../../utils/foodSearchIndex';
@@ -13,7 +13,8 @@ import { CustomButtonsSettings } from './CustomButtonsSettings';
 
 /**
  * Settings > Today. Sub-sections, in order: Quick-add buttons (the Today dock), Tracking (log water, log poop,
- * track sugar), Meal notes, Quick food shortcuts, and Custom buttons (moved here from the old Custom buttons group).
+ * track sugar), Meal notes & photos (Meal notes in Today, Photo diary in Today), Quick food shortcuts, and
+ * Custom buttons (moved here from the old Custom buttons group).
  */
 export const TodaySettings: React.FC = () => {
   const j = useJournalText();
@@ -170,7 +171,7 @@ export const TodaySettings: React.FC = () => {
         />
       </SubSection>
 
-      <SubSection title={j('Meal notes', 'Note dei pasti')}>
+      <SubSection title={j('Meal notes & photos', 'Note e foto dei pasti')}>
         <ToggleRow
           icon={<NotebookPen size={14} />}
           tone={TONE.lilac}
@@ -178,6 +179,14 @@ export const TodaySettings: React.FC = () => {
           description={j('Add a diary note in a meal field or while logging food.', 'Aggiungi note dai pasti in Oggi o mentre registri alimenti.')}
           on={settings.inlineMealNotes}
           onToggle={() => updateSettings({ inlineMealNotes: !settings.inlineMealNotes })}
+        />
+        <ToggleRow
+          icon={<Camera size={14} />}
+          tone={TONE.rose}
+          title={j('Photo diary in Today', 'Diario fotografico in Oggi')}
+          description={j('Take and view meal photos directly in Today meal cards.', 'Scatta e vedi le foto dei pasti direttamente nelle schede di Oggi.')}
+          on={settings.photoDiaryInToday}
+          onToggle={() => updateSettings({ photoDiaryInToday: !settings.photoDiaryInToday })}
         />
       </SubSection>
 

@@ -1,5 +1,5 @@
 /** Session-only inverse operations. Capture only the removed record, never a whole live draft. */
-export const UNDO_REMOVAL_MS = 6500;
+export const UNDO_REMOVAL_MS = 2000;
 
 type Options = { scope?: symbol; onExpire?: () => void; scheduled?: boolean };
 type Removal = { id: number; undo: () => void; timer: ReturnType<typeof setTimeout> } & Options;
@@ -32,6 +32,11 @@ export function offerRemovalUndo(undo: () => void, options: Options = {}) {
 
 export function undoRemoval(id: number) {
   take(id)?.undo();
+}
+
+/** Dismisses the undo window immediately without undoing; runs `onExpire` (commits scheduled erases). */
+export function dismissRemoval(id: number) {
+  take(id)?.onExpire?.();
 }
 
 export function clearRemovalScope(scope: symbol) {

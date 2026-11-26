@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { CalendarDays, Ruler, User } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings, useUiState } from '../../context/AppContext';
+import { DeferredBody } from '../common/DeferredBody';
 import { useAdvancedText } from '../../i18n/advanced';
 import { BODY_GROUPS, entriesInRange, groupOfMeasure, isDefaultMeasure, isPairedMeasure, seriesKeysOf, useBodyEntries } from '../../utils/advancedStore';
 import type { BodyEntry, BodyGroup, BodySide } from '../../types/advanced';
@@ -51,7 +52,7 @@ const SideMark: React.FC<{ alt?: boolean }> = ({ alt }) => (
  * chart with two lines.
  */
 const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: string; to: string }> = ({ id, name, unit, from, to }) => {
-  const { language, settings } = useApp();
+  const { language, settings } = useSettings();
   const text = useAdvancedText();
   const allEntries = useBodyEntries();
   const paired = isPairedMeasure(id);
@@ -177,7 +178,8 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
  * Custom buttons at the bottom that open a pop-up to update a single body part.
  */
 export const BodyView: React.FC = () => {
-  const { settings, setIsProfileOpen } = useApp();
+  const { settings } = useSettings();
+  const { setIsProfileOpen } = useUiState();
   const text = useAdvancedText();
   const layoutText = useLayoutText();
   const layoutEnabled = useLayout().enabled;
@@ -265,7 +267,7 @@ export const BodyView: React.FC = () => {
   );
 
   // ---- Advanced layout: the range chips and every measure card as fields of the editable grid ----
-  const items: LayoutItem[] = [
+  const items: LayoutItem[] = layoutEnabled ? [
     { id: 'range', label: layoutText.names.range, node: rangeNode, span: 'col-span-6' },
     ...measures.map((m): LayoutItem => ({
       id: `measure:${m.id}`,
@@ -273,7 +275,7 @@ export const BodyView: React.FC = () => {
       node: <MeasureCard id={m.id} name={m.name} unit={m.unit} from={from} to={to} />,
       span: 'col-span-6',
     })),
-  ];
+  ] : [];
 
   return (
     <div className={settings.ultraMinimal ? 'space-y-3' : 'space-y-4'}>
@@ -300,10 +302,18 @@ export const BodyView: React.FC = () => {
           </button>
         </div>
       ) : (
-        !layoutEnabled && measures.map((m) => <MeasureCard key={m.id} id={m.id} name={m.name} unit={m.unit} from={from} to={to} />)
+        !layoutEnabled && measures.map((m, index) => (
+          index < 3
+            ? <MeasureCard key={m.id} id={m.id} name={m.name} unit={m.unit} from={from} to={to} />
+            : (
+              <DeferredBody key={m.id}>
+                <MeasureCard id={m.id} name={m.name} unit={m.unit} from={from} to={to} />
+              </DeferredBody>
+            )
+        ))
       )}
 
-      <BodyMeasureModal group={group} onClose={() => setGroup(null)} />
+      {group && <BodyMeasureModal group={group} onClose={() => setGroup(null)} />}
       <ActionDock activeOn="body" label={text.body.dock} actions={actions} />
     </div>
   );

@@ -9,8 +9,8 @@ export const OPEN_PHOTO_DIARY_EVENT = 'kc:open-photo-diary';
 
 /**
  * Custom page: the *Plan meals* and *Photo diary* buttons of the bottom dock, next to the other quick-add buttons
- * (meal, recipe, food). Each one can be hidden in Settings > Custom page (the photo button also disappears while the
- * Photo diary itself is off). `PreBuiltMealsView` appends the returned actions to its `ActionDock`.
+ * (meal, recipe, food). Each one can be hidden in Settings > Custom page. `PreBuiltMealsView` appends the returned
+ * actions to its `ActionDock`.
  */
 export function useCustomDockActions(): DockAction[] {
   const { settings } = useApp();
@@ -25,7 +25,7 @@ export function useCustomDockActions(): DockAction[] {
       onClick: () => window.dispatchEvent(new CustomEvent(OPEN_PLANNER_EVENT)),
     });
   }
-  if (settings.showPhotoButton && settings.photoDiary) {
+  if (settings.showPhotoButton) {
     actions.push({
       id: 'photo',
       icon: <Camera size={20} />,

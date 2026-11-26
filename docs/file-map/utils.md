@@ -73,13 +73,15 @@ android.ts declares the local exportBackup / exportFile / takeLastExport bridge 
 | File | Role |
 | --- | --- |
 | `src/utils/deleteData.ts` | `deleteCategory(category, allDayLogs)`: removes one kind of record (plans, saved meals, recipes, photos, meal notes, logged food, activities, water, weight, poop, custom tracker entries, body measurements, period records). See [settings-update.md](../settings-update.md). |
-| `src/utils/pageVisibility.ts` | `isPageHiddenBySettings(tab, settings)`: Custom, Statistics and Period hidden by Settings; used by `App.tsx`, `AppContext.tsx`. |
+| `src/utils/pageVisibility.ts` | `isPageHiddenBySettings(tab, settings)`, `DEFAULT_PAGE_ORDER`, `normalizePageOrder(raw)`: page visibility & custom page order; used by `App.tsx`, `AppContext.tsx`, `Tabs.tsx`, `PagesSettings.tsx`. |
+| `src/utils/preloadableLazy.tsx`, `src/utils/lazyScreens.ts` | Synchronous-on-ready lazy loader (`preloadableLazy`), staggered visible-tab idle preloading (`scheduleLazyScreenPreload`), and pointerdown/swipe preloading (`preloadTabScreen`). |
+| `src/utils/dayMetricsCache.ts` | `getDayBaseMetrics(log)`: `WeakMap<DayLog, DayBaseMetrics>` caching meal/macro/activity/TEF sums across Statistics and CycleNutrition. |
 | `src/utils/notifications.ts` | `sendTestNotification` removed (Send a test notification button is gone). |
 
 ## Food workflows
 
 | File | Role |
 | --- | --- |
-| `undoRemoval.ts` | Session-only timed inverse operations, per-draft scopes and cancellable bulk deletion. |
+| `undoRemoval.ts` | Session-only 2-second (`UNDO_REMOVAL_MS`) timed inverse operations, immediate `dismissRemoval`, per-draft scopes and cancellable bulk deletion. |
 | `recipeImport.ts` | Preserves source order, candidates and unmatched/optional lines for ingredient review. |
 | `journalStore.ts`, `advancedStore.ts`, `layoutStore.ts` | Targeted restore of removed records, measures and layout fields. |

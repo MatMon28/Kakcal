@@ -78,6 +78,11 @@ export function CreateMealModal({ s }: { s: LibraryState }) {
             <input value={newMealDesc} onChange={(e) => setNewMealDesc(e.target.value)} placeholder={t.prebuilt.descPlaceholder} className={input} />
           </label>
           <div className="space-y-2.5" data-ingredient-review>
+            {newIngredients.length > 0 && (
+              <p className="px-1 text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
+                {j('Ingredients', 'Ingredienti')}
+              </p>
+            )}
             {newIngredients.length === 0 && <p className="text-sm text-[var(--muted)]">{j('Add ingredients first. You choose the quantity of each food as you add it.', 'Aggiungi prima gli ingredienti. Scegli la quantità di ogni alimento mentre lo aggiungi.')}</p>}
             {newIngredients.map((ingredient, index) => {
               const food = foodById.get(ingredient.foodId);
@@ -90,21 +95,25 @@ export function CreateMealModal({ s }: { s: LibraryState }) {
               </article>;
             })}
           </div>
-          {newIngredients.length > 0 && <div data-meal-recap className="space-y-2 rounded-2xl border border-[var(--border)] bg-[var(--inset)] p-3">
-            <p className="flex items-center justify-between gap-2 text-xs font-extrabold">
-              <span>{j('Meal recap', 'Riepilogo pasto')}</span>
-              <span className="text-[var(--muted)]">{t.prebuilt.ingredientsCount.replace('{count}', String(newIngredients.length))}</span>
-            </p>
-            <div data-nutrition-row className="flex min-w-0 items-center gap-2">
-              <strong data-calories className="shrink-0 text-xs tabular-nums">{newMealNutrition.totalKcal} kcal</strong>
-              <MacroPills carbs={newMealNutrition.carbs} protein={newMealNutrition.protein} fat={newMealNutrition.fat} stretch />
+          {newIngredients.length > 0 && (
+            <div className="border-t-2 border-[var(--border)] pt-4 mt-4">
+              <div data-meal-recap className="space-y-2.5 rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+                <p className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)] text-xs font-extrabold uppercase tracking-wider">
+                  <span>{j('Meal recap', 'Riepilogo pasto')}</span>
+                  <span className="text-[var(--muted)] normal-case tracking-normal">{t.prebuilt.ingredientsCount.replace('{count}', String(newIngredients.length))}</span>
+                </p>
+                <div data-nutrition-row className="flex min-w-0 items-center gap-2">
+                  <strong data-calories className="shrink-0 text-xs tabular-nums">{newMealNutrition.totalKcal} kcal</strong>
+                  <MacroPills carbs={newMealNutrition.carbs} protein={newMealNutrition.protein} fat={newMealNutrition.fat} stretch />
+                </div>
+                <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-1 text-center text-[10px] font-bold tabular-nums`}>
+                  <span data-nutrient="fiber" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.fiber} {newMealNutrition.fiber}g</span>
+                  <span data-nutrient="salt" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.salt} {newMealNutrition.salt}g</span>
+                  {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {newMealNutrition.sugar}g</span>}
+                </div>
+              </div>
             </div>
-            <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-1 text-center text-[10px] font-bold tabular-nums`}>
-              <span data-nutrient="fiber" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.fiber} {newMealNutrition.fiber}g</span>
-              <span data-nutrient="salt" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.salt} {newMealNutrition.salt}g</span>
-              {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {newMealNutrition.sugar}g</span>}
-            </div>
-          </div>}
+          )}
         </div>
       )}
     </Modal>

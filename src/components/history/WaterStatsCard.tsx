@@ -1,6 +1,6 @@
 import React from 'react';
 import { Droplets } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { formatDateDisplay } from '../../utils/formatters';
 
@@ -17,7 +17,7 @@ export interface WaterStatsDay {
  * one bar per day (tap a bar to open that day). Same card pattern as the numeric custom trackers.
  */
 export const WaterStatsCard: React.FC<{ days: WaterStatsDay[]; onInspect: (date: string) => void }> = ({ days, onInspect }) => {
-  const { settings, language } = useApp();
+  const { settings, language } = useSettings();
   const j = useJournalText();
   const ultraMinimal = settings.ultraMinimal;
   const withWater = days.filter((day) => day.ml > 0);

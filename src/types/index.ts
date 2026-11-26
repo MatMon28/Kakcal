@@ -204,7 +204,9 @@ export interface EnergyExpenditureSummary {
   totalExpenditure: number;
 }
 
-export type ActiveTab = 'today' | 'prebuilt' | 'period' | 'database' | 'body' | 'history';
+export type MainTabId = 'today' | 'prebuilt' | 'period' | 'body' | 'history';
+
+export type ActiveTab = MainTabId | 'database';
 
 export type Theme = 'light' | 'lite-dark' | 'dark';
 
@@ -261,6 +263,8 @@ export interface Settings {
   photoDiary: boolean;
   /** Show the diary action in Today and a note field while logging food. */
   inlineMealNotes: boolean;
+  /** Show meal camera actions and photo strips in Today meal cards. */
+  photoDiaryInToday: boolean;
   /** Custom page shortcut buttons (Settings > Custom page). Both default to on. */
   showPlannerButton: boolean;
   showPhotoButton: boolean;
@@ -269,6 +273,8 @@ export interface Settings {
   /** Pages hidden from the tab bar and sidebar (Settings > Pages). Today is never hidden; Period and Body use their own switches. */
   hideCustomPage: boolean;
   hideStatisticsPage: boolean;
+  /** Display & swipe order of the main pages (Settings > Pages). */
+  pageOrder: MainTabId[];
   /** Creation buttons of the Custom bottom bar that are hidden (Settings > Custom page). Plan / Photo use showPlannerButton / showPhotoButton. */
   hideCustomButtons: { meal?: boolean; recipe?: boolean; food?: boolean };
   /** Custom page sections that are hidden (Settings > Custom page > Sections). */

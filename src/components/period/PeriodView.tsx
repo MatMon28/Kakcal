@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings, useUiState } from '../../context/AppContext';
+import { DeferredBody } from '../common/DeferredBody';
 import { PeriodCalendar } from './PeriodCalendar';
 import { CycleHistory } from './CycleHistory';
 import { CycleNutrition } from './CycleNutrition';
@@ -22,16 +23,13 @@ import { Droplet, ChevronRight, Plus, Check, Pill, CalendarHeart, Trash2, Sticky
 const FLOWS: PeriodFlow[] = ['none', 'light', 'medium', 'heavy'];
 
 export const PeriodView: React.FC = () => {
+  const { t, language } = useSettings();
+  const { periodData, updatePeriodDay, clearPeriodDay } = useJournalData();
   const {
-    t,
-    language,
-    periodData,
-    updatePeriodDay,
-    clearPeriodDay,
     setIsPeriodSheetOpen,
     periodSelectedDate: selected,
     setPeriodSelectedDate: setSelected,
-  } = useApp();
+  } = useUiState();
 
   const todayStr = getTodayDateString();
   const settings = periodData.settings;
@@ -365,15 +363,15 @@ export const PeriodView: React.FC = () => {
         )}
       </div>
 
-      {/* 4. Cycle history & stats */}
-      <CycleHistory status={status} />
-
-      {/* 5. Nutrition & weight (opt-in) */}
-      {settings.showNutrition && <CycleNutrition status={status} />}
+      {/* 4. Cycle history & stats + 5. Nutrition & weight (deferred below the fold so Period opens immediately) */}
+      <DeferredBody>
+        <CycleHistory status={status} />
+        {settings.showNutrition && <CycleNutrition status={status} />}
+      </DeferredBody>
 
       {/* 6. Settings accordion */}
       <PeriodSettingsAccordion />
-      <PeriodDayInfoModal date={inspectedDay} onClose={() => setInspectedDay(null)} />
+      {inspectedDay && <PeriodDayInfoModal date={inspectedDay} onClose={() => setInspectedDay(null)} />}
       <ActionDock activeOn="period" label={t.period.dockLabel} actions={cycleActions} />
     </div>
   );

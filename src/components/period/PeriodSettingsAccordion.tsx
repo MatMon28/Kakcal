@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
+import { LazyBody } from '../common/LazyBody';
 import { getTodayDateString } from '../../utils/formatters';
 import { ChevronDown, Pill, Lock } from 'lucide-react';
 
@@ -59,11 +60,8 @@ const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
 );
 
 export const PeriodSettingsAccordion: React.FC = () => {
-  const {
-    t,
-    periodData,
-    updatePeriodSettings,
-  } = useApp();
+  const { t } = useSettings();
+  const { periodData, updatePeriodSettings } = useJournalData();
   const s = periodData.settings;
   const [open, setOpen] = useState(false);
 
@@ -86,6 +84,7 @@ export const PeriodSettingsAccordion: React.FC = () => {
 
       <div className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
+          <LazyBody open={open}>
           <div className="pt-4 space-y-4">
             <div className="grid grid-cols-2 gap-2.5">
               <IntField
@@ -188,6 +187,7 @@ export const PeriodSettingsAccordion: React.FC = () => {
               <Lock size={12} className="mt-0.5 shrink-0" /> {t.period.privacyNote}
             </p>
           </div>
+          </LazyBody>
         </div>
       </div>
     </div>

@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
 import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, PersonStanding } from 'lucide-react';
 import { useNav, useNavActions, useShell } from '../../context/AppContext';
-import type { ActiveTab } from '../../types';
+import type { ActiveTab, MainTabId } from '../../types';
 import { isPeriodShown } from '../../utils/tourPreview';
+import { normalizePageOrder } from '../../utils/pageVisibility';
 import { useAdvanced } from '../../utils/advancedStore';
 import { getPagePosition, subscribePagePosition } from '../../utils/pagePosition';
+import { preloadTabScreen } from '../../utils/lazyScreens';
 
 export function Tabs() {
   // Navigation + settings only: no journal data, so a logged meal does not re-render the tab bar.
@@ -18,12 +20,15 @@ export function Tabs() {
   const layers = useRef<(HTMLSpanElement | null)[]>([]);
   const shown = useRef<number | null>(null);
   const frame = useRef(0);
+  const mainItems: Record<MainTabId, { id: MainTabId; label: string; icon: typeof Flame; color: string; shown: boolean }> = {
+    today: { id: 'today', label: t.nav.today, icon: Flame, color: '#F6D0D0', shown: true },
+    prebuilt: { id: 'prebuilt', label: t.nav.prebuilt, icon: UtensilsCrossed, color: '#FAE0B4', shown: !settings.hideCustomPage },
+    period: { id: 'period', label: t.nav.period, icon: Droplet, color: '#F4C6D8', shown: isPeriodShown(settings.hidePeriod) },
+    body: { id: 'body', label: t.nav.body, icon: PersonStanding, color: '#E2D6FF', shown: bodyShown },
+    history: { id: 'history', label: t.nav.history, icon: TrendingUp, color: '#CFE7FE', shown: !settings.hideStatisticsPage },
+  };
   const items = [
-    { id: 'today', label: t.nav.today, icon: Flame, color: '#F6D0D0' },
-    ...(settings.hideCustomPage ? [] : [{ id: 'prebuilt', label: t.nav.prebuilt, icon: UtensilsCrossed, color: '#FAE0B4' }]),
-    ...(isPeriodShown(settings.hidePeriod) ? [{ id: 'period', label: t.nav.period, icon: Droplet, color: '#F4C6D8' }] : []),
-    ...(bodyShown ? [{ id: 'body', label: t.nav.body, icon: PersonStanding, color: '#E2D6FF' }] : []),
-    ...(settings.hideStatisticsPage ? [] : [{ id: 'history', label: t.nav.history, icon: TrendingUp, color: '#CFE7FE' }]),
+    ...normalizePageOrder(settings.pageOrder).flatMap((id) => (mainItems[id].shown ? [mainItems[id]] : [])),
     ...(activeTab === 'database' ? [{ id: 'database', label: t.nav.database, icon: BookOpen, color: '#C9EFD3' }] : []),
   ];
   const latest = useRef({ index: 0, count: 0 });
@@ -62,7 +67,7 @@ export function Tabs() {
   // ResizeObserver below). This used to run after *every* render of Tabs, and `scrollWidth` forces a synchronous layout
   // of the whole document: on a tab change that meant laying out the freshly mounted page inside a layout effect,
   // before the first frame. See docs/performance.md.
-  const labelKey = `${settings.ultraMinimal ? 'u' : 'n'}|${items.map((item) => item.label).join('|')}`;
+  const labelKey = `${settings.ultraMinimal ? 'u' : 'n'}|${items.map((item) => `${item.id}:${item.label}`).join('|')}`;
   useLayoutEffect(() => {
     buttons.current.forEach((button) => {
       const label = button?.querySelector('span');
@@ -104,6 +109,8 @@ export function Tabs() {
           <button key={id} ref={(node) => { buttons.current[i] = node; }} type="button"
             className={`kc-following-tab pressable ${settings.ultraMinimal ? 'is-ultra' : ''}`}
             aria-label={label} title={label} aria-current={activeTab === id ? 'page' : undefined}
+            onPointerDown={() => preloadTabScreen(id as ActiveTab)}
+            onFocus={() => preloadTabScreen(id as ActiveTab)}
             onClick={() => activeTab === id ? window.scrollTo({ top: 0, behavior: 'smooth' }) : setActiveTab(id as ActiveTab)}>
             <Icon size={16} /><span>{label}</span>
           </button>

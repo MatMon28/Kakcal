@@ -56,3 +56,9 @@
 @supports not (container-type: inline-size) {
   .kc-meal-extras { display: none; }
 }
+
+/* Off-screen body measurement chart cards skip layout/paint on initial mount and scroll. */
+[data-measure] {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 240px;
+}
