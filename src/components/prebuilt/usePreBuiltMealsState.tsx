@@ -33,6 +33,83 @@ export interface ImportSummary {
   warnings: ImportWarning[];
 }
 
+export interface MealNutritionSummary {
+  totalKcal: number;
+  carbs: number;
+  protein: number;
+  fat: number;
+  fiber: number;
+  salt: number;
+  sugar: number;
+}
+
+const foodByIdCache = new WeakMap<FoodItem[], Map<string, FoodItem>>();
+const savedRecipesCache = new WeakMap<FoodItem[], FoodItem[]>();
+const mealNutritionCache = new WeakMap<PreBuiltMeal[], WeakMap<Map<string, FoodItem>, Map<string, MealNutritionSummary>>>();
+
+/** Returns a cached `id -> FoodItem` lookup map keyed by the `allFoods` array identity. */
+export function getFoodByIdMap(allFoods: FoodItem[]): Map<string, FoodItem> {
+  let cached = foodByIdCache.get(allFoods);
+  if (!cached) {
+    cached = new Map(allFoods.map((f) => [f.id, f]));
+    foodByIdCache.set(allFoods, cached);
+  }
+  return cached;
+}
+
+/** Returns the cached `isRecipe` subset keyed by the `allFoods` array identity. */
+export function getSavedRecipes(allFoods: FoodItem[]): FoodItem[] {
+  let cached = savedRecipesCache.get(allFoods);
+  if (!cached) {
+    cached = allFoods.filter((f) => f.isRecipe);
+    savedRecipesCache.set(allFoods, cached);
+  }
+  return cached;
+}
+
+function computeMealNutrition(ingredients: PreBuiltMealIngredient[], foodById: Map<string, FoodItem>): MealNutritionSummary {
+  let totalKcal = 0, carbs = 0, protein = 0, fat = 0, fiber = 0, salt = 0, sugar = 0;
+  for (const ing of ingredients) {
+    const food = foodById.get(ing.foodId);
+    if (!food) continue;
+    const factor = ing.amount / 100;
+    totalKcal += food.calories * factor;
+    if (food.carbs !== null) carbs += food.carbs * factor;
+    if (food.protein !== null) protein += food.protein * factor;
+    if (food.fat !== null) fat += food.fat * factor;
+    if (food.fiber !== null) fiber += food.fiber * factor;
+    if (food.salt !== null) salt += food.salt * factor;
+    if (food.sugar != null) sugar += food.sugar * factor;
+  }
+  return {
+    totalKcal: Math.round(totalKcal),
+    carbs: Math.round(carbs * 10) / 10,
+    protein: Math.round(protein * 10) / 10,
+    fat: Math.round(fat * 10) / 10,
+    fiber: Math.round(fiber * 10) / 10,
+    salt: Math.round(salt * 100) / 100,
+    sugar: Math.round(sugar * 10) / 10,
+  };
+}
+
+/** Returns a cached `mealId -> MealNutritionSummary` map keyed by `(preBuiltMeals, foodById)`. */
+export function getMealNutritionMap(
+  preBuiltMeals: PreBuiltMeal[],
+  foodById: Map<string, FoodItem>,
+): Map<string, MealNutritionSummary> {
+  let byFoodMap = mealNutritionCache.get(preBuiltMeals);
+  if (!byFoodMap) {
+    byFoodMap = new WeakMap();
+    mealNutritionCache.set(preBuiltMeals, byFoodMap);
+  }
+  let cached = byFoodMap.get(foodById);
+  if (!cached) {
+    cached = new Map(preBuiltMeals.map((m) => [m.id, computeMealNutrition(m.ingredients, foodById)]));
+    byFoodMap.set(foodById, cached);
+  }
+  return cached;
+}
+
 /** All state, derived lists and handlers of the Custom page (Meals / Recipes / Foods). Rendered by `PreBuiltMealsView.tsx`. */
 export function usePreBuiltMealsState() {
   const { setActiveTab } = useNavActions();
@@ -67,10 +144,9 @@ export function usePreBuiltMealsState() {
   const openCustomFood = () => { setTargetMealSlot(autoMealSlot()); setIsCustomFoodOpen(true); };
   const ultraMinimal = settings.ultraMinimal;
 
-  const savedRecipes = useMemo(() => allFoods.filter((f) => f.isRecipe), [allFoods]);
-  // id -> food, built once per change of the food list. The Custom page used to run `allFoods.find(...)` (a scan of
-  // every bundled food) for each ingredient of each card on every render.
-  const foodById = useMemo(() => new Map(allFoods.map((f) => [f.id, f])), [allFoods]);
+  const savedRecipes = useMemo(() => getSavedRecipes(allFoods), [allFoods]);
+  // id -> food, cached per `allFoods` identity so remounting Custom never rebuilds the map.
+  const foodById = useMemo(() => getFoodByIdMap(allFoods), [allFoods]);
 
   // section searches (type-to-search, fuzzy — identical to Add Food)
   const [mealQuery, setMealQuery] = useState('');
@@ -135,37 +211,13 @@ export function usePreBuiltMealsState() {
 
   const nameOf = (f: FoodItem) => (language === 'it' ? f.name_it : f.name_en || f.name_de);
 
-  const calculateMealNutrition = (ingredients: PreBuiltMealIngredient[]) => {
-    let totalKcal = 0, carbs = 0, protein = 0, fat = 0, fiber = 0, salt = 0, sugar = 0;
-    for (const ing of ingredients) {
-      const food = foodById.get(ing.foodId);
-      if (!food) continue;
-      const factor = ing.amount / 100;
-      totalKcal += food.calories * factor;
-      if (food.carbs !== null) carbs += food.carbs * factor;
-      if (food.protein !== null) protein += food.protein * factor;
-      if (food.fat !== null) fat += food.fat * factor;
-      if (food.fiber !== null) fiber += food.fiber * factor;
-      if (food.salt !== null) salt += food.salt * factor;
-      if (food.sugar != null) sugar += food.sugar * factor;
-    }
-    return {
-      totalKcal: Math.round(totalKcal),
-      carbs: Math.round(carbs * 10) / 10,
-      protein: Math.round(protein * 10) / 10,
-      fat: Math.round(fat * 10) / 10,
-      fiber: Math.round(fiber * 10) / 10,
-      salt: Math.round(salt * 100) / 100,
-      sugar: Math.round(sugar * 10) / 10,
-    };
-  };
+  const calculateMealNutrition = (ingredients: PreBuiltMealIngredient[]) =>
+    computeMealNutrition(ingredients, foodById);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const newMealNutrition = useMemo(() => calculateMealNutrition(newIngredients), [newIngredients, foodById]);
-  // Nutrition of every saved meal, computed once per change of the meals / foods (not on each render of the page).
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const newMealNutrition = useMemo(() => computeMealNutrition(newIngredients, foodById), [newIngredients, foodById]);
+  // Nutrition of every saved meal, cached across remounts by `(preBuiltMeals, foodById)`.
   const mealNutrition = useMemo(
-    () => new Map(preBuiltMeals.map((m) => [m.id, calculateMealNutrition(m.ingredients)])),
+    () => getMealNutritionMap(preBuiltMeals, foodById),
     [preBuiltMeals, foodById],
   );
 
@@ -236,7 +288,7 @@ export function usePreBuiltMealsState() {
     const fallbackName = validIngs
       .slice(0, 2)
       .map((i) => {
-        const f = allFoods.find((x) => x.id === i.foodId);
+        const f = foodById.get(i.foodId);
         return f ? nameOf(f).split(' ')[0] : 'Meal';
       })
       .join(' + ');

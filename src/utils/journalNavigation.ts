@@ -23,8 +23,18 @@ function scrollToSelector(selector: string) {
   }, delay));
 }
 
+let pendingMealSlot: string | null = null;
+
+/** Returns and clears any meal slot queued by `revealMealSlot` while Today was hidden. */
+export function consumePendingMealSlot(): string | null {
+  const slot = pendingMealSlot;
+  pendingMealSlot = null;
+  return slot;
+}
+
 /** Expands a meal field of Today (the caller selects the date and switches to Today). */
 export function revealMealSlot(slot: string) {
+  pendingMealSlot = slot;
   addToList('kcak_today_meals_open', slot);
   window.dispatchEvent(new CustomEvent('kc:open-meal', { detail: slot }));
   scrollToSelector(`[data-meal-slot="${slot.replace(/["\\]/g, '')}"]`);

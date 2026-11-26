@@ -364,7 +364,7 @@ export const PeriodView: React.FC = () => {
       </div>
 
       {/* 4. Cycle history & stats + 5. Nutrition & weight (deferred below the fold so Period opens immediately) */}
-      <DeferredBody>
+      <DeferredBody className="space-y-3.5">
         <CycleHistory status={status} />
         {settings.showNutrition && <CycleNutrition status={status} />}
       </DeferredBody>

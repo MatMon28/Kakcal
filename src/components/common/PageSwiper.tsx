@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { Activity, useCallback, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import { flushSync } from 'react-dom';
 import type { ActiveTab } from '../../types';
 import { prefersReducedMotion } from '../../utils/motion';
-import { canAnimatePages, playPageChange } from '../../utils/pageTransition';
+import { canAnimatePages, playPageChange, setPageTransitioning } from '../../utils/pageTransition';
 import { afterPaint } from '../../utils/idle';
 import { getOpenModalCount } from './Modal';
 import { setPagePosition } from '../../utils/pagePosition';
@@ -63,6 +63,7 @@ export function PageSwiper(props: PageSwiperProps) {
   const rail = useRef<HTMLDivElement>(null);
   const drag = useRef<Drag | null>(null);
   const motion = useRef<Animation | null>(null);
+  const leavingMotion = useRef<Animation | null>(null);
   const frame = useRef(0);
   const previous = useRef(activeTab);
   const swipeDestination = useRef<ActiveTab | null>(null);
@@ -70,6 +71,7 @@ export function PageSwiper(props: PageSwiperProps) {
   const [peer, setPeer] = useState<Peer | null>(null);
   const [leaving, setLeaving] = useState<Leaving | null>(null);
   const [shownTab, setShownTab] = useState(activeTab);
+  const [todayVisited, setTodayVisited] = useState(activeTab === 'today');
 
   // Tap / Back change: keep the page we are leaving mounted so it can fade out instead of being cut away. This is
   // decided while rendering, so the old page is never unmounted and re-mounted (its state and DOM survive). A swipe
@@ -93,12 +95,19 @@ export function PageSwiper(props: PageSwiperProps) {
       animation.onfinish = null;
       animation.cancel();
     }
+    const outgoingAnimation = leavingMotion.current;
+    leavingMotion.current = null;
+    if (outgoingAnimation) {
+      outgoingAnimation.onfinish = null;
+      outgoingAnimation.cancel();
+    }
     if (rail.current) {
       rail.current.style.transform = '';
       rail.current.style.willChange = '';
     }
     document.documentElement.classList.remove('kc-page-moving', 'kc-page-dragging');
     setPagePosition(null);
+    setPageTransitioning(false);
   }, []);
 
   const rest = useCallback(() => {
@@ -162,17 +171,14 @@ export function PageSwiper(props: PageSwiperProps) {
         if (outgoing?.isConnected) outgoing.style.top = `${-scrolled}px`;
       });
     }
-    // Fade through: the old page fades out, the new one fades in while sliding 14 px (src/utils/pageTransition.ts).
+    // Fade through: the old page fades out, the new one fades in while sliding 12 px (src/utils/pageTransition.ts).
     document.documentElement.classList.add('kc-page-moving');
+    setPageTransitioning(true);
     const { incoming: animation, outgoing: leavingAnimation } = playPageChange(incoming, outgoing, side);
     motion.current = animation;
-    // The old page is invisible once ITS fade-out has finished (110 ms): unmount it then, not when the incoming
-    // animation ends (~300 ms). It used to stay laid out for ~190 ms of nothing. Removing it while the clipping class
-    // is still on cannot stretch the document (the class is removed with the incoming animation, below).
-    if (leavingAnimation) {
-      leavingAnimation.onfinish = () => { if (motion.current === animation) setLeaving(null); };
-    }
-    // The clipping class goes (and the swipe neighbour, if any, with it) when the incoming page has landed.
+    leavingMotion.current = leavingAnimation;
+    // Keep the leaving page hidden via `fill: 'forwards'` until `incoming` lands so unmounting never causes a
+    // mid-transition frame drop. Removing it while `kc-page-moving` is still on cannot stretch the document.
     animation.onfinish = () => {
       if (motion.current !== animation) return;
       flushSync(() => { setPeer(null); setLeaving(null); });
@@ -342,14 +348,37 @@ export function PageSwiper(props: PageSwiperProps) {
   }, [cancelMotion, rest, settle]);
 
   // The page that is not the active one: the swipe neighbour (beside the rail) or the page a tap just left (in place).
+  // `today` is kept mounted inside React 19 `<Activity>` once visited so return navigation is instant without holding
+  // heavier pages (like Custom photos) in memory.
   const other = peer && peer.tab !== activeTab
     ? { tab: peer.tab, placeholder: Boolean(peer.placeholder), style: { left: `${peer.side * 100}%`, top: peer.top } }
     : leaving && leaving.tab !== activeTab ? { tab: leaving.tab, placeholder: false, style: { left: 0, top: leaving.top } } : null;
   const pages = other ? [activeTab, other.tab] : [activeTab];
+  const todayGhost = other && other.tab === 'today' ? other : null;
+  const todayShown = activeTab === 'today' || Boolean(todayGhost);
+  const todayActivityVisible = activeTab === 'today' || Boolean(todayGhost && !todayGhost.placeholder);
+  if (todayActivityVisible && !todayVisited) setTodayVisited(true);
+  const nonTodayPages = pages.filter((tab) => tab !== 'today');
   return (
     <div className="relative overflow-x-clip min-h-[55dvh]" data-page-viewport>
       <div ref={rail} className="relative" data-page-rail>
-        {pages.map((tab) => {
+        {todayVisited && (
+          <div
+            key="today"
+            data-journal-page={todayShown ? 'today' : undefined}
+            hidden={!todayShown}
+            inert={Boolean(todayGhost) || !todayShown}
+            aria-hidden={todayGhost || !todayShown ? true : undefined}
+            className={todayGhost ? 'pointer-events-none absolute w-full [contain:layout_paint] will-change-[opacity]' : undefined}
+            style={todayGhost?.style}
+          >
+            {todayGhost?.placeholder && <div className="min-h-[55dvh]" />}
+            <Activity mode={todayActivityVisible ? 'visible' : 'hidden'}>
+              {renderTab('today')}
+            </Activity>
+          </div>
+        )}
+        {nonTodayPages.map((tab) => {
           const ghost = other && tab !== activeTab ? other : null;
           return (
             <div key={tab} data-journal-page={tab} inert={Boolean(ghost)} aria-hidden={ghost ? true : undefined}

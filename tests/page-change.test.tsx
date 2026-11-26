@@ -1,5 +1,5 @@
 import { act, cleanup, render, renderHook, screen } from '@testing-library/react';
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppProvider, useApp, useNavActions } from '../src/context/AppContext';
 import { useJournalText } from '../src/i18n/journal';
@@ -7,22 +7,29 @@ import { useLayoutText } from '../src/i18n/layout';
 import { useAdvancedText } from '../src/i18n/advanced';
 import { useMealSlots } from '../src/utils/mealSlots';
 import { LazyBody } from '../src/components/common/LazyBody';
+import { DeferredBody } from '../src/components/common/DeferredBody';
+import { PageSwiper } from '../src/components/common/PageSwiper';
+import { getFoodByIdMap, getMealNutritionMap, getSavedRecipes } from '../src/components/prebuilt/usePreBuiltMealsState';
+import { consumePendingMealSlot, revealMealSlot } from '../src/utils/journalNavigation';
 import { planGroupViews, UNGROUPED_PLAN_ID } from '../src/utils/planGroups';
 import { afterPaint } from '../src/utils/idle';
-import { PAGE_IN_MS, PAGE_OUT_MS, playPageChange } from '../src/utils/pageTransition';
+import { PAGE_IN_MS, PAGE_OUT_MS, playPageChange, setPageTransitioning } from '../src/utils/pageTransition';
 import { importMealJournal, normalizeMealJournal, saveMealPhoto, usePhotosForLinked, usePhotosForSlot } from '../src/utils/journalStore';
 import { deleteDatabase, resetDbForTests } from '../src/storage/idb';
 import { flushWrites } from '../src/storage/writeQueue';
 import { resetBootForTests } from '../src/storage/boot';
+import type { ActiveTab, FoodItem, PreBuiltMeal } from '../src/types';
 import type { MealPhoto, MealPlan, PlanGroup } from '../src/types/journal';
 
 // Page-change performance regression tests (docs/performance.md): what must NOT re-render on a tab change, and the
 // pure helpers behind the cheaper first frame.
 
 beforeEach(async () => {
+  setPageTransitioning(false);
+  consumePendingMealSlot();
   await deleteDatabase(); resetDbForTests(); resetBootForTests(); localStorage.clear();
 });
-afterEach(async () => { cleanup(); vi.useRealTimers(); await flushWrites(); });
+afterEach(async () => { setPageTransitioning(false); cleanup(); vi.useRealTimers(); await flushWrites(); });
 
 const wrapper = ({ children }: { children: ReactNode }) => <AppProvider>{children}</AppProvider>;
 
@@ -89,6 +96,21 @@ describe('LazyBody / DeferredBody', () => {
   it('without `defer` an open body is mounted in the first commit, as before', () => {
     render(<LazyBody open><p>body</p></LazyBody>);
     expect(screen.getByText('body')).toBeTruthy();
+  });
+
+  it('waits until an active page transition settles before mounting and fades in via .kc-deferred-in', () => {
+    vi.useFakeTimers();
+    setPageTransitioning(true);
+    const { container } = render(<DeferredBody><p>deferred</p></DeferredBody>);
+    expect(container.querySelector('.kc-body-skeleton')).not.toBeNull();
+    expect(screen.queryByText('deferred')).toBeNull();
+    // Still waiting while transition is active (before the safety timeout).
+    act(() => { vi.advanceTimersByTime(100); });
+    expect(screen.queryByText('deferred')).toBeNull();
+    act(() => { setPageTransitioning(false); });
+    act(() => { vi.advanceTimersByTime(300); });
+    expect(screen.getByText('deferred')).toBeTruthy();
+    expect(container.querySelector('.kc-deferred-in')).not.toBeNull();
   });
 });
 
@@ -177,5 +199,93 @@ describe('afterPaint', () => {
     afterPaint(cancelled)();
     await new Promise((resolve) => setTimeout(resolve, 80));
     expect(cancelled).not.toHaveBeenCalled();
+  });
+});
+
+describe('Custom WeakMap caches', () => {
+  const food = (id: string, isRecipe = false): FoodItem => ({
+    id,
+    name_de: id,
+    name_it: id,
+    name_en: id,
+    store: 'Generic',
+    category: 'prepared',
+    unit: 'g',
+    calories: 200,
+    carbs: 20,
+    protein: 10,
+    fat: 8,
+    fiber: 2,
+    salt: 0.5,
+    isRecipe,
+  });
+  const meal = (id: string, foodId: string): PreBuiltMeal => ({
+    id,
+    name: id,
+    slot: 'lunch',
+    createdAt: '2026-01-01T00:00:00Z',
+    ingredients: [{ foodId, amount: 150 }],
+  });
+
+  it('reuses cached maps and recipe lists for identical array references and recomputes for new ones', () => {
+    const foods1 = [food('f1'), food('r1', true)];
+    const foods2 = [...foods1, food('r2', true)];
+    const meals1 = [meal('m1', 'f1')];
+    const meals2 = [...meals1];
+
+    const map1 = getFoodByIdMap(foods1);
+    expect(getFoodByIdMap(foods1)).toBe(map1);
+    expect(map1.get('r1')?.id).toBe('r1');
+    const map2 = getFoodByIdMap(foods2);
+    expect(map2).not.toBe(map1);
+
+    const recipes1 = getSavedRecipes(foods1);
+    expect(getSavedRecipes(foods1)).toBe(recipes1);
+    expect(recipes1.map((r) => r.id)).toEqual(['r1']);
+    expect(getSavedRecipes(foods2).map((r) => r.id)).toEqual(['r1', 'r2']);
+
+    const nut1 = getMealNutritionMap(meals1, map1);
+    expect(getMealNutritionMap(meals1, map1)).toBe(nut1);
+    expect(nut1.get('m1')?.totalKcal).toBe(300);
+    expect(getMealNutritionMap(meals2, map1)).not.toBe(nut1);
+    expect(getMealNutritionMap(meals1, map2)).not.toBe(nut1);
+  });
+});
+
+describe('Today keep-alive and pending meal slot delivery', () => {
+  it('keeps Today mounted via Activity when switching away and back, while unmounting non-Today pages', () => {
+    function StatefulToday() {
+      const [count, setCount] = useState(0);
+      return <button type="button" onClick={() => setCount((c) => c + 1)}>today:{count}</button>;
+    }
+    function StatefulCustom() {
+      const [count, setCount] = useState(0);
+      return <button type="button" onClick={() => setCount((c) => c + 1)}>custom:{count}</button>;
+    }
+    const tabs: ActiveTab[] = ['today', 'prebuilt'];
+    const renderTab = (tab: ActiveTab) => (tab === 'today' ? <StatefulToday /> : <StatefulCustom />);
+
+    const { rerender, container } = render(
+      <PageSwiper tabs={tabs} activeTab="today" onChange={() => {}} renderTab={renderTab} />,
+    );
+    act(() => { screen.getByText('today:0').click(); });
+    expect(screen.getByText('today:1')).toBeTruthy();
+
+    rerender(<PageSwiper tabs={tabs} activeTab="prebuilt" onChange={() => {}} renderTab={renderTab} />);
+    expect(container.querySelectorAll('[data-journal-page]').length).toBe(1);
+    expect(container.querySelector('[data-journal-page]')?.getAttribute('data-journal-page')).toBe('prebuilt');
+    expect(screen.getByText('today:1').closest('[hidden]')).not.toBeNull();
+    act(() => { screen.getByText('custom:0').click(); });
+    expect(screen.getByText('custom:1')).toBeTruthy();
+
+    rerender(<PageSwiper tabs={tabs} activeTab="today" onChange={() => {}} renderTab={renderTab} />);
+    expect(screen.getByText('today:1')).toBeTruthy();
+    expect(screen.queryByText('custom:1')).toBeNull();
+  });
+
+  it('buffers revealMealSlot until Today consumes it', () => {
+    revealMealSlot('dinner');
+    expect(consumePendingMealSlot()).toBe('dinner');
+    expect(consumePendingMealSlot()).toBeNull();
   });
 });

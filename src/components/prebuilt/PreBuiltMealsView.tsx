@@ -64,8 +64,9 @@ export const PreBuiltMealsView: React.FC = () => {
           onToggle={() => toggleSection('foods')}
         />
         <div className="accordion-grid" data-open={sectionsOpen.foods} inert={!sectionsOpen.foods}>
-        <div className="accordion-inner space-y-3">
+        <div className="accordion-inner">
         <LazyBody open={sectionsOpen.foods} defer>
+        <div className="space-y-3">
         {/* Recent and favourite foods: one tap to log them. */}
         <CustomFoodsQuick />
         <div className="grid grid-cols-2 gap-2">
@@ -102,6 +103,7 @@ export const PreBuiltMealsView: React.FC = () => {
             <Search size={16} className="shrink-0" />
             <span className={ultraMinimal ? 'sr-only' : 'truncate'}>{t.database.browseAll}</span>
           </button>
+        </div>
         </div>
         </LazyBody>
         </div>

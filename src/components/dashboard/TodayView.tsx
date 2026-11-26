@@ -20,6 +20,7 @@ import { slideIn } from '../../utils/motion';
 import { mealItemId, useEditingPage, useLayout } from '../../utils/layoutStore';
 import { BUILT_IN_MEAL_SLOTS } from '../../utils/mealItems';
 import { useMealSlots } from '../../utils/mealSlots';
+import { consumePendingMealSlot } from '../../utils/journalNavigation';
 import { MealSlotId } from '../../types';
 import { Columns2, LayoutList, ListTree } from 'lucide-react';
 
@@ -60,9 +61,16 @@ export const TodayView: React.FC = () => {
 
   // "Go to the meal" from the photo viewer expands that meal (the date is already selected by the caller).
   useEffect(() => {
+    const openSlot = (slot: string) =>
+      setOpenSlots((prev) => (prev.includes(slot as MealSlotId) ? prev : [...prev, slot as MealSlotId]));
+    const pending = consumePendingMealSlot();
+    if (pending) openSlot(pending);
     const onOpenMeal = (event: Event) => {
       const slot = (event as CustomEvent<unknown>).detail;
-      if (typeof slot === 'string') setOpenSlots((prev) => (prev.includes(slot as MealSlotId) ? prev : [...prev, slot as MealSlotId]));
+      if (typeof slot === 'string') {
+        consumePendingMealSlot();
+        openSlot(slot);
+      }
     };
     window.addEventListener('kc:open-meal', onOpenMeal);
     return () => window.removeEventListener('kc:open-meal', onOpenMeal);

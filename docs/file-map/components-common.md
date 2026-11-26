@@ -65,6 +65,8 @@ DataBackup.tsx adds Export meal pictures via utils/photoExport.ts. The "Test mod
 
 (Round: page-change follow-up) `src/components/common/DeferredBody.tsx` (new): mounts its children after the first paint (`whenIdle`, at most 150 ms) behind a `.kc-body-skeleton`; used through `<LazyBody open defer>`. `LazyBody.tsx`: new `defer` prop, applied only to a body that is open on the first render of its page (a body opened by a tap mounts at once). `PageSwiper.tsx`: the leaving page / swipe neighbour is `contain: layout paint` + `will-change: opacity`; the leaving page is unmounted when its own fade-out ends (`playPageChange` returns both animations); the scroll reset of a page change lives here (tap: after the first frame via `afterPaint`; swipe / no animation: in the commit); the swipe neighbour is a placeholder (`peer.placeholder`) until 60 % of the commit distance (`PREVIEW_AT`). `Tabs.tsx`: the follow-the-tab layout effect has a dependency list; uses `useShell()`. `LibrarySectionHeader.tsx`: `useFitActions` depends on the scalar `extraActionCount` and measures in `requestAnimationFrame` / `ResizeObserver`; uses `useSettings()`.
 
+(Round: transition smoothness & Today keep-alive) `PageSwiper.tsx`: keeps `today` alive via React 19 `<Activity>` once visited, and defers leaving-page unmount until the incoming animation ends (~200 ms). `Tabs.tsx`: caches pill geometry in `measureLabels` for zero-layout indicator frames and uses `useTransition` for immediate pill feedback. `DeferredBody.tsx`: waits for `onPageTransitionSettled` before mounting and fades content in via `.kc-deferred-in`.
+
 ## Settings restructure round
 
 | File | Role |

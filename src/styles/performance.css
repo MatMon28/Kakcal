@@ -8,6 +8,16 @@
   contain: layout paint;
 }
 
+.kc-deferred-in {
+  animation: kc-fade-in 120ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kc-deferred-in {
+    animation: none;
+  }
+}
+
 /* An expanded card that is scrolled off screen is not laid out or painted either (the collapsed ones have the rule
    in journal-diary.css). `auto` remembers the real size once the card has been shown. Cards that are being opened
    by the user are on screen, so the animation and "Go to the meal" are unaffected. */
