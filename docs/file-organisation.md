@@ -42,7 +42,18 @@
 
 ## Strings: `src/i18n/`
 
-`translations.ts` is the file everything imports (`translations`, `TranslationKey`); it only composes `translations.en.ts` (`export const en`) and `translations.it.ts` (`export const it`). Add every new key to **both** language files. `TranslationKey` is still `typeof translations.en`.
+`translations.ts` is the file everything imports (`translations`, `TranslationKey`); it composes six domain-scoped files in `src/i18n/parts/`, each holding both `en` and `it: typeof en` in one place (`npm run typecheck` catches missing Italian keys):
+
+| Part (`src/i18n/parts/`) | Namespaces |
+| --- | --- |
+| `shell.ts` | `appName`, `pwa`, `nav`, `header`, `common` |
+| `settings.ts` | `settings`, `notifications` |
+| `today.ts` | `favorites`, `tracker`, `energy`, `macros`, `mealSlots`, `activities`, `quickAdd`, `water`, `weight`, `poop`, `stats` |
+| `modals.ts` | `foodModal`, `activityModal`, `barcodeModal` |
+| `period.ts` | `period` |
+| `library.ts` | `prebuilt`, `database`, `history`, `profile`, `categories` |
+
+New standalone features can keep using their own small feature file (`advanced.ts`, `layout.ts`, `journal.ts`). `TranslationKey` is still `typeof translations.en`.
 
 ## Context: `src/context/`
 

@@ -17,7 +17,7 @@ Meal-journal additions: `App.tsx` mounts only `Header` and the page surface (the
 | `src/context/AppContext.tsx` | Local state, persistence, legacy migrations, logging actions, tag catalog changes, and JSON backup version 2 (`exportDataJson` / `importDataJson`, see [../backup-update.md](../backup-update.md)) (`AppProvider`, `useApp`). |
 | `src/context/appContextType.ts`, `appStorage.ts`, `demoSeeds.ts` | Split out of `AppContext.tsx`: the `AppContextType` interface; `STORAGE_KEYS`, defaults (profile, period settings, quick foods) and the normalisers for stored data; `createDemoSeedDays()` (demo mode only). |
 | `src/types/index.ts`, `src/i18n/translations.ts` | TypeScript data contracts; `translations.ts` composes the English / Italian strings and exports `translations` and `TranslationKey`. |
-| `src/i18n/translations.en.ts`, `translations.it.ts` | The English and Italian string catalogues (add every new key to both). |
+| `src/i18n/parts/{shell,settings,today,modals,period,library}.ts` | Domain-split English and Italian string parts (`en` and `it: typeof en` together in each file so missing keys fail typecheck). |
 | `src/vite-env.d.ts` | Vite environment typings used by the demo switch. |
 | `src/assets/brand/kakcalculator-icon.svg`, `kakcalculator-wordmark.svg` | Generated app icon (solid poop with the K carved out, from `scripts/generate-icon.mjs`; source for the favicon and launcher artwork) and the **generated** full wordmark (k + solid poop + kcal as Nunito Black outlines; source of the header logo). |
 | `src/assets/brand/kakcalculator-wordmark-outline.svg` | Generated: the same wordmark, transparent, ink `currentColor`. |
