@@ -213,6 +213,6 @@ export async function saveLocalFile(content: Blob | string, name: string): Promi
     reader.onerror = () => reject(reader.error);
     reader.readAsDataURL(blob);
   });
-  const kind = name.endsWith('.json') ? 'json' : name.endsWith('.zip') ? 'zip' : name.endsWith('.xlsx') ? 'xlsx' : 'txt';
+  const kind = name.endsWith('.json') ? 'json' : name.endsWith('.zip') ? 'zip' : name.endsWith('.xlsx') ? 'xlsx' : name.endsWith('.pdf') ? 'pdf' : 'txt';
   return checkedResult(await JournalDevice.exportFile({ base64, filename: name, kind }));
 }

@@ -19,10 +19,14 @@ vi.mock('../src/utils/android', async (importOriginal) => ({
     setLaunchBackground: vi.fn().mockResolvedValue(undefined),
   },
 }));
-// Excel and the pictures ZIP are built in the browser; only their hand-over to the native plugin is under test here.
+// Excel, PDF and the pictures ZIP are built in the browser; only their hand-over to the native plugin is under test here.
 vi.mock('../src/utils/excelExport', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../src/utils/excelExport')>()),
   buildExcelExport: () => new Blob(['xlsx-bytes'], { type: 'application/octet-stream' }),
+}));
+vi.mock('../src/utils/pdfExport', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../src/utils/pdfExport')>()),
+  buildPdfReport: () => new Blob(['pdf-bytes'], { type: 'application/pdf' }),
 }));
 vi.mock('../src/utils/photoExport', () => ({ exportMealPictures: async () => new Blob(['zip-bytes'], { type: 'application/zip' }) }));
 
@@ -80,6 +84,7 @@ describe('Android APK: Export JSON goes through the native plugin', () => {
 
 // Round 2: the three buttons share ONE contract: { cancelled?, bytes? } in, "saved (size)" / nothing / red error out.
 describe.each([
+  { name: 'Export PDF report', click: 'Export PDF report', file: /^kakcal_report_\d{4}-\d{2}-\d{2}_\d{4}-\d{2}-\d{2}\.pdf$/, kind: 'pdf', saved: /PDF report exported\..*\(12\.4 KB\)/ },
   { name: 'Export to Excel', click: 'Export to Excel', file: /^kakcal_data_\d{4}-\d{2}-\d{2}\.xlsx$/, kind: 'xlsx', saved: /Excel file exported.*\(12\.4 KB\)/ },
   { name: 'Export meal pictures', click: 'Export meal pictures', file: /^kakcal_meal_pictures_\d{4}-\d{2}-\d{2}\.zip$/, kind: 'zip', saved: /1 pictures exported with their notes\. \(12\.4 KB\)/ },
 ])('Android APK: $name honours cancel and byte count', ({ click, file, kind, saved }) => {
@@ -89,6 +94,8 @@ describe.each([
     await act(async () => { fireEvent.click(screen.getByText(click)); });
     if (kind === 'xlsx') {
       await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.xlsx/i })); });
+    } else if (kind === 'pdf') {
+      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.pdf/i })); });
     }
   };
 

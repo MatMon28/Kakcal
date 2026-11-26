@@ -13,6 +13,7 @@
 | File or directory | Role |
 | --- | --- |
 | `src/components/modals/NotificationSettings.tsx` | Settings > Notifications: water interval and hours, one switch + time per meal, custom buttons, weight and log reminders, permission banner and test button. Can be opened remotely by the tour (`requestOpenNotificationSettings`). |
+| `src/components/modals/PdfExportModal.tsx` | Settings > Data Backup: week / month / custom range PDF report picker with toggles for the Daily log table and Detailed meal diary. |
 | `src/components/modals/AddFoodModal.tsx`, `CustomFoodModal.tsx`, `BarcodeLookupModal.tsx` | Food logging (catalogue search rows with weight and macros, default weight), custom food creation, and barcode lookup (own foods, then the offline catalogue, then Open Food Facts online; keeps sugar and the classic portion). |
 | `src/components/journal/MealDiary.tsx` | Meal-detail / note editor, complete meal-history filter dialog, and the optional note field shared with Add food. |
 | (Plans round) `AddFoodModal.tsx` | Recent foods of the slot: 5 chips + a "..." chip for 10 more (`common/RecentChips.tsx`). |

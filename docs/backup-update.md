@@ -87,7 +87,7 @@ Importing an old `1.x` file restores its embedded pictures, as before.
 
 **Visible behaviour:** saved: `Backup saved. (12.4 KB) ...`; cancel: nothing; forced failure: red error and no 0 B file (or the red error says the empty file could not be removed); killed or restarted mid-picker: the file is finished on the next start (toast, then the message in Settings).
 
-**Bridge contract (`src/utils/android.ts`):** `exportBackup({ json, filename? })` and `exportFile({ base64, filename, kind: 'json' | 'zip' | 'txt' | 'xlsx' })` resolve `{ cancelled?, bytes? }`; `takeLastExport()` resolves `{ exports?: NativeExportRecord[] }` (`{ id, status: 'saved' | 'failed', filename?, bytes?, detail? }`); the `exportFinished` event has no payload. `src/utils/nativeExport.ts` wraps both so they never reject (an APK built before this round has neither).
+**Bridge contract (`src/utils/android.ts`):** `exportBackup({ json, filename? })` and `exportFile({ base64, filename, kind: 'json' | 'zip' | 'txt' | 'xlsx' | 'pdf' })` resolve `{ cancelled?, bytes? }`; `takeLastExport()` resolves `{ exports?: NativeExportRecord[] }` (`{ id, status: 'saved' | 'failed', filename?, bytes?, detail? }`); the `exportFinished` event has no payload. `src/utils/nativeExport.ts` wraps both so they never reject (an APK built before this round has neither).
 
 **Rebuild the APK** (`node scripts/prepare-android.mjs && npx cap open android`); the web part alone does not fix it. No new permission or package; new private data: `filesDir/exports/` and the SharedPreferences keys of `journal_export` (see [storage-and-privacy.md](storage-and-privacy.md)).
 

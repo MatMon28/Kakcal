@@ -118,6 +118,7 @@ public class JournalDevicePlugin extends Plugin {
             case "json": return "application/json";
             case "zip": return "application/zip";
             case "xlsx": return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            case "pdf": return "application/pdf";
             default: return "text/plain";
         }
     }

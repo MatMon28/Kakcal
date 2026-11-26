@@ -41,7 +41,7 @@ interface JournalDevicePlugin {
    */
   exportBackup(data: { json: string; filename?: string }): Promise<ExportResult>;
   /** Local document-picker export, using the same native staging / picker / verified write as `exportBackup`. */
-  exportFile(data: { base64: string; filename: string; kind: 'json' | 'zip' | 'txt' | 'xlsx' }): Promise<ExportResult>;
+  exportFile(data: { base64: string; filename: string; kind: 'json' | 'zip' | 'txt' | 'xlsx' | 'pdf' }): Promise<ExportResult>;
   /** Exports that finished without a live call (read once, then cleared). Missing in APKs built before round 2. */
   takeLastExport(): Promise<{ exports?: NativeExportRecord[] }>;
   /** Tells the native launch surfaces (system launch screen, window, WebView) the current app background `#rrggbb`. */

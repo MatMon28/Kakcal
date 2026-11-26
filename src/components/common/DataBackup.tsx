@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle, FileSpreadsheet, TriangleAlert, DatabaseBackup } from 'lucide-react';
+import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle, FileSpreadsheet, FileText, TriangleAlert, DatabaseBackup } from 'lucide-react';
 import { TONE } from '../modals/settings/SettingsParts';
 import { useApp } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
@@ -11,11 +11,13 @@ import { exportMealPictures } from '../../utils/photoExport';
 import { saveLocalFile, withSize } from '../../utils/planSharing';
 import { useJournalText } from '../../i18n/journal';
 import { buildExcelExport } from '../../utils/excelExport';
+import { buildPdfReport } from '../../utils/pdfExport';
 import { useMealSlots } from '../../utils/mealSlots';
 import { StorageInfo } from './StorageInfo';
 import { getLastImportReport } from '../../utils/backupFormat';
 import { useAdvanced, useBodyEntries } from '../../utils/advancedStore';
 import { ExcelExportModal, type ExcelExportSelection } from '../modals/ExcelExportModal';
+import { PdfExportModal, type PdfExportSelection } from '../modals/PdfExportModal';
 
 /** The native side puts the real failure (mode, exception class, message) in the error: keep it for the device report. */
 const withDetail = (text: string, error: unknown): string => {
@@ -45,6 +47,7 @@ export const DataBackup: React.FC = () => {
   const j = useJournalText();
   const [exportingPhotos, setExportingPhotos] = useState(false);
   const [excelModalOpen, setExcelModalOpen] = useState(false);
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
   // Shown before exporting when pictures exist on this device: the backup does not contain them.
   const [confirmExport, setConfirmExport] = useState(false);
   // An export that finished while the app was away (activity re-created / process killed while the picker was open).
@@ -98,6 +101,29 @@ export const DataBackup: React.FC = () => {
       ),
       (bytes) => withSize(j('Excel file exported.', 'File Excel esportato.'), bytes),
       j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'),
+    );
+  };
+  const handlePdfExport = (selection: PdfExportSelection) => {
+    setPdfModalOpen(false);
+    void runExport(
+      () => saveLocalFile(
+        buildPdfReport({
+          dayLogs: allDayLogs,
+          profile: userProfile,
+          slotLabel,
+          text: j,
+          dateRange: selection.dateRange,
+          options: selection.options,
+          language,
+          memories,
+          bodyEntries,
+          bodyConfig: advanced.body,
+          settings,
+        }),
+        `kakcal_report_${selection.filenameSuffix}.pdf`,
+      ),
+      (bytes) => withSize(j('PDF report exported.', 'Report PDF esportato.'), bytes),
+      j('Could not export the PDF report. Check device storage and try again.', 'Impossibile esportare il report PDF. Controlla lo spazio e riprova.'),
     );
   };
   const handlePhotoExport = async () => {
@@ -224,6 +250,19 @@ export const DataBackup: React.FC = () => {
           aria-label={t.history.importBtn}
         />
       </div>
+      <button type="button" className="backup-photo-button" onClick={() => setPdfModalOpen(true)}>
+        <FileText size={18} />
+        <span><strong>{j('Export PDF report', 'Esporta report PDF')}</strong><small>{j('Weekly or monthly summary for you & your doctor (.pdf)', 'Riepilogo settimanale o mensile per te e il medico (.pdf)')}</small></span>
+        <Download size={16} />
+      </button>
+      {pdfModalOpen && (
+        <PdfExportModal
+          isOpen={pdfModalOpen}
+          onClose={() => setPdfModalOpen(false)}
+          dayLogs={allDayLogs}
+          onExport={handlePdfExport}
+        />
+      )}
       <button type="button" className="backup-photo-button" onClick={() => setExcelModalOpen(true)}>
         <FileSpreadsheet size={18} />
         <span><strong>{j('Export to Excel', 'Esporta in Excel')}</strong><small>{j('Choose period & info to export (.xlsx)', 'Scegli periodo e dati da esportare (.xlsx)')}</small></span>

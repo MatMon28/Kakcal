@@ -59,7 +59,7 @@ final class ExportStore {
     static final long STALE_MS = 24L * 60 * 60 * 1000;
     /** Files in the export directory without a record are swept once they are older than this. */
     static final long ORPHAN_FILE_MS = 10L * 60 * 1000;
-    static final List<String> KINDS = Arrays.asList("json", "zip", "txt", "xlsx");
+    static final List<String> KINDS = Arrays.asList("json", "zip", "txt", "xlsx", "pdf");
 
     /** Single background thread for writing into the chosen document (never the UI thread). */
     static final ExecutorService IO = Executors.newSingleThreadExecutor(runnable -> {
