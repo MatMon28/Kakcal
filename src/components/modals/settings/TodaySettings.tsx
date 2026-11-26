@@ -27,7 +27,7 @@ export const TodaySettings: React.FC = () => {
 
   // Food picker results, same behaviour as the Add Food search (type to find, typos OK)
   const pickerQuery = useDeferredValue(query.trim());
-  const { foods: catalogue } = useCatalogueSearch(pickerQuery, pickerIdx !== null, 25);
+  const { foods: catalogue } = useCatalogueSearch(pickerQuery, pickerIdx !== null, 25, language);
   const pickerResults = useMemo(() => {
     const q = pickerQuery;
     if (q.length < 2) return [];

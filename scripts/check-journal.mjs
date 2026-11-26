@@ -122,26 +122,33 @@ try {
   await button('Browse Foods').tap();
   await button('Try again').tap();
   const count = () => page.locator('[data-catalogue-count]').evaluate((e) => Number(e.textContent.replace(/\D/g, '')));
-  await page.waitForFunction(() => Number(document.querySelector('[data-catalogue-count]').textContent.replace(/\D/g, '')) >= 130000);
+  await page.waitForFunction(() => Number(document.querySelector('[data-catalogue-count]').textContent.replace(/\D/g, '')) >= 500000);
   const total = await count();
   const rows = page.locator('[data-food-id]');
-  assert.equal(await rows.count(), 36);
+  await page.waitForFunction(() => document.querySelectorAll('[data-food-id]').length === 36);
   const search = page.locator('main input[enterkeyhint="search"]');
   await search.fill('pasta');
-  assert.ok(await count() > 2000);
+  await page.waitForFunction((prevTotal) => {
+    const n = Number(document.querySelector('[data-catalogue-count]')?.textContent.replace(/\D/g, '') || 0);
+    return n > 2000 && n < prevTotal;
+  }, total);
   const first = await rows.first().getAttribute('data-food-id');
   await button('Next foods').tap();
-  assert.notEqual(await rows.first().getAttribute('data-food-id'), first);
+  await page.waitForFunction((prevId) => document.querySelector('[data-food-id]')?.getAttribute('data-food-id') !== prevId, first);
   await button('Previous foods').tap();
-  assert.equal(await rows.first().getAttribute('data-food-id'), first);
+  await page.waitForFunction((prevId) => document.querySelector('[data-food-id]')?.getAttribute('data-food-id') === prevId, first);
   await search.fill('');
+  await page.waitForFunction((prevTotal) => Number(document.querySelector('[data-catalogue-count]')?.textContent.replace(/\D/g, '') || 0) === prevTotal, total);
   await button('Dairy & Eggs').tap();
-  assert.ok(await count() < total && await count() > 100);
+  await page.waitForFunction((prevTotal) => {
+    const n = Number(document.querySelector('[data-catalogue-count]')?.textContent.replace(/\D/g, '') || 0);
+    return n < prevTotal && n > 100;
+  }, total);
   await button('All Categories').tap();
   await search.fill('8013355501520');
   const product = page.locator('[data-food-id="off-8013355501520"]');
   await product.waitFor();
-  assert.equal(await count(), 1);
+  await page.waitForFunction(() => Number(document.querySelector('[data-catalogue-count]')?.textContent.replace(/\D/g, '') || 0) === 1);
   await product.getByRole('button', { name: 'Add to favourites' }).tap();
   await button('Favourites').tap();
   assert.equal(await count(), 1, 'A remembered catalogue product must not be counted twice');
@@ -170,13 +177,13 @@ try {
   await offline.goto(url);
   await offline.waitForFunction(() => navigator.serviceWorker.controller !== null);
   await offline.evaluate(async () => {
-    const cache = await caches.open('kakcalculator-data-v1');
+    const cache = await caches.open('kakcalculator-data-v2');
     await cache.put('/data/off-foods.bin', new Response('<html></html>', { headers: { 'Content-Type': 'text/html' } }));
   });
   const openCatalogue = async () => {
     await offline.locator('nav[aria-label="Primary"]').getByRole('button', { name: 'Custom', exact: true }).click();
     await offline.getByRole('button', { name: 'Browse Foods', exact: true }).click();
-    await offline.waitForFunction(() => Number(document.querySelector('[data-catalogue-count]')?.textContent.replace(/\D/g, '')) >= 130000);
+    await offline.waitForFunction(() => Number(document.querySelector('[data-catalogue-count]')?.textContent.replace(/\D/g, '')) >= 500000);
   };
   await openCatalogue();
   await cached.setOffline(true);

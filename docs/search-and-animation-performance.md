@@ -1,6 +1,6 @@
 # Search and animation performance (review points 5 and 9)
 
-> **Scope:** how food search avoids doing work while the user types (precomputed names, cached results, a Web Worker for the 130,000-product catalogue, deferred rendering) and how a closing dialog is animated without cloning it. Files, measurements, behaviour changes and what was deliberately **not** changed.
+> **Scope:** how food search avoids doing work while the user types (precomputed names, cached results, a single Web Worker for the 550,000-product KOFF v2 catalogue, deferred rendering) and how a closing dialog is animated without cloning it. Files, measurements, behaviour changes and what was deliberately **not** changed.
 >
 > **Read when:** you touch food / meal / recipe search (`fuzzy.ts`, `foodSearchIndex.ts`, `catalogueSearch.ts`, `useCatalogueSearch.ts`, the worker), `Modal.tsx` / `dialogExit.ts`, or you profile typing or dialog-closing jank.
 >
@@ -16,11 +16,11 @@ Before: every keystroke in *Add food* (and the planner, the Custom ingredient / 
 | Precomputed names | Each food / saved meal is tokenized **once** (`WeakMap` keyed by the object, so it disappears with the food). | `src/utils/foodSearchIndex.ts` |
 | Match first, score later | Only foods that match are scored (before: all of them). | same |
 | Result cache | The sorted result of a query is cached per food list (24 queries; a new food list = fresh results), so backspacing, retyping and reopening a dialog cost nothing. `searchFoods(list, query, { combined })` and `searchMeals(list, query)` return **shared, already sorted arrays: do not modify them** (spread first). | same |
-| Catalogue in a worker | The catalogue is downloaded, parsed and searched in a Web Worker; the UI thread only receives at most 25-50 `FoodItem`s. If workers are unavailable or the worker script fails, the same search runs on the main thread (`loadOffCatalog()`, exactly as before). Answers are cached by normalized query + limit (60 entries, empty answers included). | `src/workers/offCatalogSearch.worker.ts`, `src/utils/catalogueSearch.ts` |
-| Hook | `useCatalogueSearch(query, enabled, limit)` returns `{ foods, pending }`: nothing runs below 2 characters, 90 ms debounce (cached queries skip it), the previous list stays visible while the next one is on its way if the text only grew / shrank, `pending` lets a dialog hold back its "no results" message. | `src/utils/useCatalogueSearch.ts` |
+| Catalogue in a worker | The 550,000-product KOFF v2 catalogue is downloaded, parsed (no search-string decode) and queried via an inverted index + sorted barcode array in a single Web Worker for Add food, the planner, pickers, `FoodDatabaseView` (Browse Foods) and `BarcodeLookupModal`; the UI thread only receives at most 25-50 `FoodItem`s (36 per page in Browse). If workers are unavailable or the worker script fails, the same calls run on the main thread (`loadOffCatalog()`). Search answers are cached by normalized query + limit + language (60 entries, empty answers included). | `src/workers/offCatalogSearch.worker.ts`, `src/utils/catalogueSearch.ts` |
+| Hook | `useCatalogueSearch(query, enabled, limit, lang)` returns `{ foods, pending }`: nothing runs below 2 characters, 90 ms debounce (cached queries skip it), the previous list stays visible while the next one is on its way if the text only grew / shrank, `pending` lets a dialog hold back its "no results" message. | `src/utils/useCatalogueSearch.ts` |
 | Deferred results | The input value stays urgent; the lists use `useDeferredValue(query)` so React can interrupt result rendering when the next key arrives. | `AddFoodModal.tsx`, `PlannerWizard.tsx`, `usePreBuiltMealsState.tsx`, `SettingsModal.tsx` |
 
-Callers moved to the new helpers: `AddFoodModal.tsx`, `journal/PlannerWizard.tsx` (entry editor), `prebuilt/usePreBuiltMealsState.tsx` (ingredient search, recipe ingredient search, meal and recipe filters), `modals/SettingsModal.tsx` (quick-food picker). `FoodDatabaseView.tsx` (browse / filter of the whole catalogue page) and `BarcodeLookupModal.tsx` still use the main-thread catalogue from `src/data/offCatalog.ts` (`parseOffCatalog` is now exported so the worker can share the parser). `ActivitySearch.tsx` still calls `fuzzyScore` / `fuzzyMatch` directly (about 300 activities, not a hot spot).
+Callers moved to the worker helpers: `AddFoodModal.tsx`, `journal/PlannerWizard.tsx` (entry editor), `prebuilt/usePreBuiltMealsState.tsx` (ingredient search, recipe ingredient search, meal and recipe filters), `modals/SettingsModal.tsx` (quick-food picker), `components/common/IngredientPicker.tsx`, `components/database/FoodDatabaseView.tsx` (`browseCatalogue`, `findCatalogueBarcodes`), and `components/modals/BarcodeLookupModal.tsx` (`findCatalogueBarcode`). `ActivitySearch.tsx` still calls `fuzzyScore` / `fuzzyMatch` directly (about 300 activities, not a hot spot).
 
 ### Measurements
 
@@ -38,7 +38,7 @@ Real Chromium, 390x844 touch viewport, typing "nutella" into *Add food* with the
 - The catalogue is fetched in the worker, still **only after two typed characters** (item 6 rule kept). The planner entry editor used to fetch it as soon as it mounted (`useOffCatalog(true)`); it now waits for two characters like *Add food*.
 - While a catalogue answer is pending, *Add food* and the planner show a short "..." (Add food) or nothing (planner) instead of "No results", so the empty message does not flash before catalogue-only matches such as "nutella" arrive.
 - Ranking is unchanged for Add food. The planner's meal suggestions are now sorted by match quality (before: list order); the Custom recipe ingredient search also scores the brand; the Custom recipe list and the Settings picker use the combined-name score as before.
-- The main thread still holds its own copy of the catalogue once the food database page or a barcode lookup is opened (the worker has a second copy). It is fetched from the HTTP / service-worker cache, not downloaded twice.
+- All catalogue surfaces (search, Browse Foods, Barcode Lookup) now share the single Web Worker copy, eliminating the duplicate main-thread buffer copy. It is fetched once from HTTP / service-worker cache (`kakcalculator-data-v2`).
 
 ## 2. Dialog animation does less DOM work
 

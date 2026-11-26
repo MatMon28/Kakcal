@@ -8,7 +8,8 @@ const BUILD_ASSETS = [/*__PRECACHE_ASSETS__*/];
 const CACHE_PREFIX = 'kakcalculator-shell-';
 const CACHE = CACHE_PREFIX + BUILD_ID;
 // Static, public food data (the Open Food Facts catalogue). Bump the suffix when it is rebuilt.
-const DATA_CACHE = 'kakcalculator-data-v1';
+const DATA_CACHE = 'kakcalculator-data-v2';
+const DATA_CACHE_PREFIX = 'kakcalculator-data-';
 const scope = self.registration.scope;
 const DATA_FILE = new URL('data/off-foods.bin', scope).href;
 const SHELL = new URL('index.html', scope).href;
@@ -22,10 +23,10 @@ let checkedCatalogue = false;
 async function isCatalogue(response) {
   if (!response.ok || response.headers.get('content-type')?.includes('text/html')) return false;
   const file = await response.clone().blob();
-  if (file.size < 88) return false;
-  const header = new DataView(await file.slice(0, 88).arrayBuffer());
-  return header.getUint32(0, true) === 0x464f464b && header.getUint32(4, true) === 1 &&
-    header.getUint32(8, true) > 0 && header.getUint32(84, true) === file.size;
+  if (file.size < 112) return false;
+  const header = new DataView(await file.slice(0, 112).arrayBuffer());
+  return header.getUint32(0, true) === 0x464f464b && header.getUint32(4, true) === 2 &&
+    header.getUint32(8, true) > 0 && header.getUint32(108, true) === file.size;
 }
 
 self.addEventListener('install', (event) => {
@@ -40,7 +41,9 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(caches.keys().then((keys) => {
     const shells = keys.filter((key) => key.startsWith(CACHE_PREFIX)).sort().reverse(); // newest first
     const keep = new Set(shells.slice(0, 2));
-    return Promise.all(shells.filter((key) => !keep.has(key)).map((key) => caches.delete(key)));
+    const staleShells = shells.filter((key) => !keep.has(key));
+    const staleData = keys.filter((key) => key.startsWith(DATA_CACHE_PREFIX) && key !== DATA_CACHE);
+    return Promise.all([...staleShells, ...staleData].map((key) => caches.delete(key)));
   }).then(() => self.clients.claim()));
 });
 

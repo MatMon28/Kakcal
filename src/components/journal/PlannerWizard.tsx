@@ -705,7 +705,7 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
   // Results follow the typing a moment later; the catalogue is searched in a worker (utils/catalogueSearch.ts) and
   // only once two characters are typed.
   const resultsQuery = useDeferredValue(q);
-  const { foods: catalogueFoods, pending: cataloguePending } = useCatalogueSearch(resultsQuery, true, 30);
+  const { foods: catalogueFoods, pending: cataloguePending } = useCatalogueSearch(resultsQuery, true, 30, language);
 
   const results = useMemo(() => {
     if (resultsQuery.length < 2) return { foods: [] as FoodItem[], meals: [] as typeof preBuiltMeals };

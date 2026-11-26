@@ -9,7 +9,7 @@ import { FoodItem, MealSlotId } from '../../types';
 import { AmountSelector } from '../common/AmountSelector';
 import { useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
-import { getLoadedOffCatalog, loadOffCatalog } from '../../data/offCatalog';
+import { findCatalogueBarcode } from '../../utils/catalogueSearch';
 import {
   Search,
   Loader2,
@@ -180,9 +180,9 @@ export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn
       return;
     }
     setBarcode(code);
-    // Own foods first, then the 130,000 products bundled for offline use.
+    // Own foods first, then the offline catalogue searched inside the worker.
     const localFood = allFoods.find((food) => food.barcode === code) ??
-      (getLoadedOffCatalog() ?? (await loadOffCatalog()))?.findByBarcode(code) ?? undefined;
+      (await findCatalogueBarcode(code)) ?? undefined;
     if (localFood) {
       rememberFood(localFood);
       setFetchedProduct(localFood);

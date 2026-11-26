@@ -9,8 +9,8 @@
 | File or directory | Role |
 | --- | --- |
 | `scripts/generate-usda-foods.py` | Extract the selected foods from the official USDA data archive. |
-| `public/data/off-foods.bin`, `off-foods.meta.json` | The offline Open Food Facts catalogue (130,000 products, KOFF v1) and its statistics; see [Open Food Facts catalogue](../data-off-catalogue.md). Copied into the APK by `scripts/prepare-android.mjs`. |
-| `scripts/build-off-catalog.mjs` | Streams the Open Food Facts CSV export, filters, ranks and writes the catalogue (`node scripts/build-off-catalog.mjs`). |
+| `public/data/off-foods.bin`, `off-foods.meta.json` | The offline Open Food Facts catalogue (550,000 products, KOFF v2) and its statistics; see [Open Food Facts catalogue](../data-off-catalogue.md). Copied into the APK by `scripts/prepare-android.mjs`. |
+| `scripts/build-off-catalog.mjs`, `scripts/build-off-catalog.d.mts` | Streams the Open Food Facts CSV export, filters obsolete/stale/duplicate records, balances IT/EU/US/UK quotas and writes the KOFF v2 catalogue (`node scripts/build-off-catalog.mjs`), plus TypeScript declarations for tests. |
 | `scripts/check-widget-layouts.mjs` | Fails the build when a widget layout uses a class RemoteViews cannot inflate. |
 | `public/licenses/OpenFoodFacts.txt` | ODbL notice for the catalogue data. |
 | `public/licenses/` | Bundled notices for Plus Jakarta Sans, Nunito, Lucide, React, Capacitor and runtime utilities; copied into the APK. |

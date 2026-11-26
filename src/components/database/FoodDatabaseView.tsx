@@ -3,7 +3,8 @@ import { useJournalText } from '../../i18n/journal';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useApp, useNavActions } from '../../context/AppContext';
 import { FOOD_CATEGORIES } from '../../data/foodCategories';
-import { catalogueScore, getLoadedOffCatalog, loadOffCatalog } from '../../data/offCatalog';
+import { catalogueScore } from '../../data/offCatalog';
+import { browseCatalogue, findCatalogueBarcodes } from '../../utils/catalogueSearch';
 import { FoodCategory, FoodItem, MealSlotId } from '../../types';
 import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
@@ -77,8 +78,13 @@ export const FoodDatabaseView: React.FC = () => {
   const [search, updateQuery] = useState('');
   const [selectedCategory, updateCategory] = useState<CatalogFilter>('all');
   const [page, setPage] = useState(0);
-  const [catalogue, setCatalogue] = useState(getLoadedOffCatalog);
-  const [failed, setFailed] = useState(false);
+  const [extraFavorites, setExtraFavorites] = useState<FoodItem[]>([]);
+  const [offState, setOffState] = useState<{ ready: boolean; failed: boolean; total: number; foods: FoodItem[] }>({
+    ready: false,
+    failed: false,
+    total: 0,
+    foods: [],
+  });
   const [attempt, setAttempt] = useState(0);
   const filters = useRef<HTMLDivElement>(null);
 
@@ -89,37 +95,53 @@ export const FoodDatabaseView: React.FC = () => {
   const [logSlot, setLogSlot] = useState<MealSlotId>(() => autoMealSlot());
   const [logAmount, setLogAmount] = useState<number>(100);
 
-  useEffect(() => {
-    if (catalogue) return;
-    let current = true;
-    setFailed(false);
-    void loadOffCatalog().then((data) => {
-      if (current) { setCatalogue(data); setFailed(!data); }
-    });
-    return () => { current = false; };
-  }, [attempt, catalogue]);
-
   const setSearch = (value: string) => { updateQuery(value); setPage(0); };
   const setSelectedCategory = (value: CatalogFilter) => { updateCategory(value); setPage(0); };
 
-  const favoriteIds = favoriteFoods ?? [];
+  const favoriteIds = useMemo(() => favoriteFoods ?? [], [favoriteFoods]);
   const favoriteSet = useMemo(() => new Set(favoriteIds), [favoriteIds]);
+
+  const missingFavCodes = useMemo(() => {
+    const known = new Set(allFoods.map((f) => f.id));
+    return favoriteIds
+      .filter((id) => id.startsWith('off-') && !known.has(id))
+      .map((id) => id.slice(4));
+  }, [allFoods, favoriteIds]);
+
+  useEffect(() => {
+    if (missingFavCodes.length === 0) {
+      setExtraFavorites((prev) => (prev.length === 0 ? prev : []));
+      return;
+    }
+    let current = true;
+    void findCatalogueBarcodes(missingFavCodes).then((resolved) => {
+      if (current) setExtraFavorites(resolved);
+    });
+    return () => { current = false; };
+  }, [missingFavCodes]);
 
   const hasCustomFoods = useMemo(() => allFoods.some((f) => f.isCustom), [allFoods]);
 
   const library = useMemo(() => {
     const byId = new Map(allFoods.map((food) => [food.id, food]));
-    for (const id of favoriteSet) {
-      if (catalogue && id.startsWith('off-') && !byId.has(id)) {
-        const food = catalogue.findByBarcode(id.slice(4));
-        if (food) byId.set(food.id, food);
-      }
+    for (const food of extraFavorites) {
+      if (!byId.has(food.id)) byId.set(food.id, food);
     }
     return [...byId.values()];
-  }, [allFoods, favoriteSet, catalogue]);
-  const excluded = useMemo(() => new Set(library.filter((f) => f.barcode).map((f) => Number(f.barcode))), [library]);
+  }, [allFoods, extraFavorites]);
 
-  const results = useMemo(() => {
+  const excluded = useMemo(() => {
+    const codes: number[] = [];
+    for (const f of library) {
+      if (f.barcode) {
+        const n = Number(f.barcode);
+        if (Number.isFinite(n)) codes.push(n);
+      }
+    }
+    return codes;
+  }, [library]);
+
+  const localResults = useMemo(() => {
     const q = search.trim();
     const matched = library.filter((f) => {
       const matchCategory =
@@ -142,24 +164,48 @@ export const FoodDatabaseView: React.FC = () => {
     const directLimit = Math.max(1, q.split(/\s+/).length);
     const pinned = (food: FoodItem, score: number) => favoriteSet.has(food.id) && (!q || score <= directLimit);
     ranked.sort((a, b) => Number(pinned(b.food, b.score)) - Number(pinned(a.food, a.score)) || a.score - b.score);
-    const off = selectedCategory === 'custom' || selectedCategory === 'favorites' ? null
-      : catalogue?.browse(q, selectedCategory === 'all' ? null : selectedCategory, excluded);
     const first: FoodItem[] = [], last: FoodItem[] = [];
     const cutoff = catalogueScore(q);
     for (const { food, score } of ranked) (pinned(food, score) || score <= cutoff ? first : last).push(food);
-    return { first, off, last, total: matched.length + (off?.count ?? 0) };
-  }, [library, search, selectedCategory, favoriteSet, catalogue, excluded]);
+    return { first, last, matchedCount: matched.length };
+  }, [library, search, selectedCategory, favoriteSet]);
 
-  const pages = Math.max(1, Math.ceil(results.total / PAGE_SIZE));
+  const needsOff = selectedCategory !== 'custom' && selectedCategory !== 'favorites';
+  const offCount = needsOff ? offState.total : 0;
+  const totalCount = localResults.matchedCount + offCount;
+  const pages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const currentPage = Math.min(page, pages - 1);
+  const start = currentPage * PAGE_SIZE;
+  const head = localResults.first.slice(start, start + PAGE_SIZE);
+  const offOffset = Math.max(0, start - localResults.first.length);
+  const offLimit = PAGE_SIZE - head.length;
+
+  useEffect(() => {
+    if (!needsOff) return;
+    let current = true;
+    void browseCatalogue({
+      query: search.trim(),
+      category: selectedCategory === 'all' ? null : selectedCategory,
+      excluded,
+      offset: offOffset,
+      limit: offLimit,
+      lang: language,
+    }).then((res) => {
+      if (!current) return;
+      if (!res) {
+        setOffState((prev) => ({ ...prev, failed: true }));
+      } else {
+        setOffState({ ready: true, failed: false, total: res.total, foods: res.foods });
+      }
+    });
+    return () => { current = false; };
+  }, [needsOff, search, selectedCategory, excluded, offOffset, offLimit, language, attempt]);
+
   const foods = useMemo(() => {
-    const start = currentPage * PAGE_SIZE, end = start + PAGE_SIZE;
-    const { first, off, last } = results;
-    const head = first.slice(start, end);
-    const middle = off?.page(Math.max(0, start - first.length), PAGE_SIZE - head.length) ?? [];
-    const tailStart = Math.max(0, start - first.length - (off?.count ?? 0));
-    return [...head, ...middle, ...last.slice(tailStart, tailStart + PAGE_SIZE - head.length - middle.length)];
-  }, [currentPage, results]);
+    const middle = needsOff ? offState.foods.slice(0, offLimit) : [];
+    const tailStart = Math.max(0, start - localResults.first.length - offCount);
+    return [...head, ...middle, ...localResults.last.slice(tailStart, tailStart + PAGE_SIZE - head.length - middle.length)];
+  }, [needsOff, offState.foods, offLimit, start, localResults.first.length, localResults.last, offCount, head]);
 
   const handleConfirmQuickLog = () => {
     if (!foodToLog || !Number.isFinite(logAmount) || logAmount <= 0) return;
@@ -197,7 +243,9 @@ export const FoodDatabaseView: React.FC = () => {
               {t.database.title}
             </h2>
             <span aria-live="polite" data-catalogue-count className="text-xs font-medium tabular-nums text-[var(--muted)]">
-              {!catalogue && !failed ? t.database.loadingCatalogue : t.database.itemsCount.replace('{count}', results.total.toLocaleString(language))}
+              {needsOff && !offState.ready && !offState.failed
+                ? t.database.loadingCatalogue
+                : t.database.itemsCount.replace('{count}', totalCount.toLocaleString(language))}
             </span>
           </div>
         </div>
@@ -226,9 +274,15 @@ export const FoodDatabaseView: React.FC = () => {
 
       {/* Search & Category Filters */}
       <div ref={filters} className="scroll-mt-32 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 space-y-3">
-        {failed && <p role="status" className="text-xs font-semibold text-[var(--muted)]">
+        {offState.failed && <p role="status" className="text-xs font-semibold text-[var(--muted)]">
           {t.database.catalogueUnavailable}{' '}
-          <button type="button" className="underline" onClick={() => setAttempt((n) => n + 1)}>{t.database.retry}</button>
+          <button
+            type="button"
+            className="underline"
+            onClick={() => { setOffState((prev) => ({ ...prev, failed: false })); setAttempt((n) => n + 1); }}
+          >
+            {t.database.retry}
+          </button>
         </p>}
         <div className="relative">
           <Search
@@ -324,7 +378,7 @@ export const FoodDatabaseView: React.FC = () => {
       </div>
 
       {/* Foods Grid */}
-      {results.total === 0 ? (
+      {totalCount === 0 ? (
         <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-8 text-center space-y-3">
           <p className="text-sm font-bold text-[var(--muted)]">
             {selectedCategory === 'favorites'

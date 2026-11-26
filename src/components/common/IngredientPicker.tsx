@@ -37,7 +37,7 @@ export function IngredientPicker({ onPick, slot, initialQuery = '', excludeId, s
   const [child, setChild] = useState<'barcode' | 'custom' | null>(null);
   const trimmed = query.trim();
   const deferred = useDeferredValue(trimmed);
-  const { foods: catalogue, pending } = useCatalogueSearch(deferred, true, 35);
+  const { foods: catalogue, pending } = useCatalogueSearch(deferred, true, 35, language);
   const byId = useMemo(() => new Map(allFoods.map((food) => [food.id, food])), [allFoods]);
   const favorites = useMemo(() => (favoriteFoods ?? []).flatMap((id) => {
     const food = byId.get(id);

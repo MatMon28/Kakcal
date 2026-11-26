@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import type { FoodItem } from '../types';
-import { normalizeSearch } from '../data/offCatalog';
+import { normalizeSearch, type CatalogLang } from '../data/offCatalog';
 import { peekCatalogueSearch, searchCatalogue } from './catalogueSearch';
 
 const NONE: FoodItem[] = [];
@@ -17,21 +17,27 @@ const DEBOUNCE_MS = 90;
  * - While the next answer is on its way the previous list stays on screen if the new text extends or shortens
  *   the old one (normal typing / backspace), so the result list does not blink empty between keystrokes.
  */
-export function useCatalogueSearch(query: string, enabled: boolean, limit = 30): { foods: FoodItem[]; pending: boolean } {
+export function useCatalogueSearch(
+  query: string,
+  enabled: boolean,
+  limit = 30,
+  lang?: CatalogLang,
+): { foods: FoodItem[]; pending: boolean } {
   const text = query.trim();
   const active = enabled && text.length >= 2;
-  const key = active ? normalizeSearch(text) : '';
+  const norm = active ? normalizeSearch(text) : '';
+  const key = active && norm ? `${lang ?? ''}|${norm}` : '';
   const [answer, setAnswer] = useState<{ key: string; foods: FoodItem[] }>({ key: '', foods: NONE });
 
   useEffect(() => {
     if (!key) return;
     let cancelled = false;
     const deliver = () => {
-      void searchCatalogue(text, limit).then((foods) => {
+      void searchCatalogue(text, limit, lang).then((foods) => {
         if (!cancelled) setAnswer({ key, foods });
       });
     };
-    if (peekCatalogueSearch(text, limit)) {
+    if (peekCatalogueSearch(text, limit, lang)) {
       deliver();
       return () => { cancelled = true; };
     }
@@ -40,10 +46,11 @@ export function useCatalogueSearch(query: string, enabled: boolean, limit = 30):
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [key, text, limit]);
+  }, [key, text, limit, lang]);
 
-  if (!active) return { foods: NONE, pending: false };
+  if (!active || !norm) return { foods: NONE, pending: false };
   if (answer.key === key) return { foods: answer.foods, pending: false };
-  const related = answer.key !== '' && (key.startsWith(answer.key) || answer.key.startsWith(key));
+  const prevNorm = answer.key.split('|')[1] ?? '';
+  const related = prevNorm !== '' && (norm.startsWith(prevNorm) || prevNorm.startsWith(norm));
   return { foods: related ? answer.foods : NONE, pending: true };
 }

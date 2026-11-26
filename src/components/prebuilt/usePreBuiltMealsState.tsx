@@ -349,7 +349,7 @@ export function usePreBuiltMealsState() {
     try {
       const result = await importRecipeFromUrl(importUrl, {
         localFoods: allFoods,
-        search: searchCatalogue,
+        search: (q, limit) => searchCatalogue(q, limit, language),
         onStage: (stage) => setImportStage(stage),
       });
       const { draft } = result;

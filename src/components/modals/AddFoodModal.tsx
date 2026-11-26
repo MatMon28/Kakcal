@@ -120,7 +120,7 @@ export const AddFoodModal: React.FC = () => {
   // (`useDeferredValue`), and the 130,000-product catalogue is searched in a Web Worker (utils/catalogueSearch.ts).
   // Item 6 still holds: the catalogue file is fetched only once two characters are typed, never when the dialog opens.
   const resultsQuery = useDeferredValue(trimmedQuery);
-  const { foods: catalogueFoods, pending: cataloguePending } = useCatalogueSearch(resultsQuery, isAddFoodOpen, 40);
+  const { foods: catalogueFoods, pending: cataloguePending } = useCatalogueSearch(resultsQuery, isAddFoodOpen, 40, language);
 
   // Favourite foods: shown as the whole list while the field is focused and empty,
   // matching the first character as soon as typing starts, and pinned to the top later.

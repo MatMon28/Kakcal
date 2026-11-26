@@ -49,6 +49,22 @@ import type { AppContextType } from './appContextType';
 // Still exported from here for existing importers; the value lives in `appStorage.ts`.
 export { DEFAULT_QUICK_FOODS };
 
+const USED_FOODS_LIMIT = 3000;
+
+/** Keeps all protected (favourited, quick-add, meal/recipe-linked) OFF foods plus the newest remaining ones up to `limit`. */
+function trimUsedFoods(list: FoodItem[], protectedIds: ReadonlySet<string>, limit = USED_FOODS_LIMIT): FoodItem[] {
+  if (list.length <= limit) return list;
+  const keptProtected: FoodItem[] = [];
+  const rest: FoodItem[] = [];
+  for (const item of list) {
+    if (protectedIds.has(item.id)) keptProtected.push(item);
+    else rest.push(item);
+  }
+  const restBudget = Math.max(0, limit - keptProtected.length);
+  const keptRest = new Set(rest.slice(0, restBudget));
+  return list.filter((item) => protectedIds.has(item.id) || keptRest.has(item));
+}
+
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // 1. Language
   const [language, setLanguageState] = useState<Language>(() => {
@@ -112,7 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
   usePersistLocal(STORAGE_KEYS.CUSTOM_FOODS, customFoods);
 
-  // Foods picked from the 130,000-product offline catalogue. Lookups by id (favourites, recents,
+  // Foods picked from the offline catalogue. Lookups by id (favourites, recents,
   // recipe ingredients) go through allFoods, so a picked or starred catalogue food is kept here.
   const [usedFoods, setUsedFoods] = useState<FoodItem[]>(() => {
     try {
@@ -123,11 +139,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   });
 
+  const protectedFoodIdsRef = useRef<Set<string>>(new Set());
+
   const rememberFood = (food: FoodItem) => {
     if (!food.id.startsWith('off-')) return; // the bundled and custom foods are always available
     setUsedFoods((prev) => {
       if (prev[0]?.id === food.id) return prev;
-      return [food, ...prev.filter((f) => f.id !== food.id)].slice(0, 3000);
+      return trimUsedFoods([food, ...prev.filter((f) => f.id !== food.id)], protectedFoodIdsRef.current);
     });
   };
   usePersistLocal(STORAGE_KEYS.USED_FOODS, usedFoods);
@@ -519,6 +537,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notifications: DEFAULT_NOTIFICATION_SETTINGS,
     };
   });
+
+  const protectedIds = new Set<string>([
+    ...(settings.favoriteFoods ?? []),
+    ...(settings.quickFoods ?? []),
+    ...preBuiltMeals.flatMap((m) => (m?.ingredients ?? []).map((ing) => ing.foodId)),
+    ...customFoods.flatMap((f) => (f?.recipeIngredients ?? []).map((ing) => ing.foodId)),
+  ]);
+  protectedFoodIdsRef.current = protectedIds;
 
   // Custom activity names (suggested next time)
   // Saved custom activities (name + MET). Older installs stored plain names: migrate them to 5 MET.
@@ -921,7 +947,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setCustomFoods(data.customFoods);
       }
       if (Array.isArray(data.usedFoods)) {
-        const used = data.usedFoods.filter((f: FoodItem) => f && typeof f.id === 'string' && f.id.startsWith('off-')).slice(0, 3000);
+        const importProtected = new Set<string>([
+          ...(Array.isArray(data.settings?.favoriteFoods) ? data.settings.favoriteFoods : settings.favoriteFoods),
+          ...(Array.isArray(data.settings?.quickFoods) ? data.settings.quickFoods : settings.quickFoods),
+          ...(Array.isArray(data.preBuiltMeals) ? data.preBuiltMeals : preBuiltMeals)
+            .flatMap((m: PreBuiltMeal) => (m.ingredients ?? []).map((ing) => ing.foodId)),
+          ...(Array.isArray(data.customFoods) ? data.customFoods : customFoods)
+            .flatMap((f: FoodItem) => (f.recipeIngredients ?? []).map((ing) => ing.foodId)),
+        ]);
+        const used = trimUsedFoods(
+          data.usedFoods.filter((f: FoodItem) => f && typeof f.id === 'string' && f.id.startsWith('off-')),
+          importProtected,
+        );
         setUsedFoods(used);
       }
       if (importedDays) {
