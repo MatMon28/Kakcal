@@ -1,11 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useApp, useSettings } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { NumericInput } from '../common/NumericInput';
 import { calculateMifflinBMR } from '../../utils/calculations';
 import { formatKcal } from '../../utils/formatters';
-import { Check } from 'lucide-react';
+import { Check, Flame, Minus, Plus, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { BodyMeasuresProfile } from './BodyMeasuresProfile';
+
+const CUSTOM_BMR_MIN = 500;
+const CUSTOM_BMR_MAX = 10000;
+const CUSTOM_BMR_STEP = 50;
+
+const clampCustomBmr = (val: number) =>
+  Math.min(CUSTOM_BMR_MAX, Math.max(CUSTOM_BMR_MIN, Math.round(val)));
 
 export const UserProfileModal: React.FC = () => {
   const {
@@ -16,6 +23,8 @@ export const UserProfileModal: React.FC = () => {
 
     t,
   } = useApp();
+  const { settings } = useSettings();
+  const ultraMinimal = settings.ultraMinimal;
 
   const [weightKg, setWeightKg] = useState<number>(userProfile.weightKg);
   const [heightCm, setHeightCm] = useState<number>(userProfile.heightCm);
@@ -27,21 +36,31 @@ export const UserProfileModal: React.FC = () => {
       ? userProfile.customBmrKcal
       : calculateMifflinBMR(userProfile)
   );
+  const [customInputFocused, setCustomInputFocused] = useState(false);
+  const [customInputText, setCustomInputText] = useState('');
 
   useEffect(() => {
     if (isProfileOpen) {
+      const initialCustom =
+        userProfile.customBmrKcal && userProfile.customBmrKcal > 0
+          ? userProfile.customBmrKcal
+          : calculateMifflinBMR(userProfile);
       setWeightKg(userProfile.weightKg);
       setHeightCm(userProfile.heightCm);
       setAge(userProfile.age);
       setSex(userProfile.sex);
       setUseCustomBmr(Boolean(userProfile.useCustomBmr));
-      setCustomBmrKcal(
-        userProfile.customBmrKcal && userProfile.customBmrKcal > 0
-          ? userProfile.customBmrKcal
-          : calculateMifflinBMR(userProfile)
-      );
+      setCustomBmrKcal(initialCustom);
+      setCustomInputText(String(initialCustom));
+      setCustomInputFocused(false);
     }
   }, [isProfileOpen, userProfile]);
+
+  useEffect(() => {
+    if (!customInputFocused) {
+      setCustomInputText(String(customBmrKcal));
+    }
+  }, [customBmrKcal, customInputFocused]);
 
   const safeProfile = useMemo(
     () => ({
@@ -55,6 +74,19 @@ export const UserProfileModal: React.FC = () => {
 
   const previewBmr = useMemo(() => calculateMifflinBMR(safeProfile), [safeProfile]);
 
+  const presets = useMemo(
+    () => [
+      { key: 'bmr', label: t.profile.presetBmr, value: previewBmr },
+      { key: 'sedentary', label: t.profile.presetSedentary, value: Math.round(previewBmr * 1.2) },
+      { key: 'light', label: t.profile.presetLight, value: Math.round(previewBmr * 1.375) },
+      { key: 'moderate', label: t.profile.presetModerate, value: Math.round(previewBmr * 1.55) },
+      { key: 'active', label: t.profile.presetActive, value: Math.round(previewBmr * 1.725) },
+    ],
+    [previewBmr, t.profile]
+  );
+
+  const deltaFromBmr = customBmrKcal - previewBmr;
+
   const handleSelectMode = (custom: boolean) => {
     setUseCustomBmr(custom);
     if (custom && (!customBmrKcal || customBmrKcal <= 0)) {
@@ -62,8 +94,29 @@ export const UserProfileModal: React.FC = () => {
     }
   };
 
+  const handleStepCustom = (delta: number) => {
+    setCustomBmrKcal((prev) => clampCustomBmr((prev || previewBmr) + delta));
+  };
+
+  const handleCustomInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setCustomInputText(raw);
+    const parsed = parseInt(raw.replace(/[^\d]/g, ''), 10);
+    if (!Number.isNaN(parsed) && parsed > 0) {
+      setCustomBmrKcal(Math.min(CUSTOM_BMR_MAX, parsed));
+    }
+  };
+
+  const handleCustomInputBlur = () => {
+    setCustomInputFocused(false);
+    const parsed = parseInt(customInputText.replace(/[^\d]/g, ''), 10);
+    const next = Number.isNaN(parsed) || parsed <= 0 ? previewBmr : clampCustomBmr(parsed);
+    setCustomBmrKcal(next);
+    setCustomInputText(String(next));
+  };
+
   const handleSave = () => {
-    const resolvedCustom = customBmrKcal > 0 ? Math.round(customBmrKcal) : previewBmr;
+    const resolvedCustom = customBmrKcal > 0 ? clampCustomBmr(customBmrKcal) : previewBmr;
     updateUserProfile({
       ...userProfile,
       ...safeProfile,
@@ -154,63 +207,183 @@ export const UserProfileModal: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-activity rounded-2xl p-3.5 space-y-3">
-          <div className="bg-[var(--inset)] p-1 rounded-xl grid grid-cols-2 gap-1" role="tablist" aria-label={t.profile.calculatedBmr}>
+        <div
+          data-kc-tone="photo"
+          className={`kc-themed-card bg-activity rounded-3xl ${ultraMinimal ? 'p-3 space-y-2.5' : 'p-3.5 sm:p-4 space-y-3'}`}
+        >
+          {/* Card Header */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <span
+                data-kc-tone-ink
+                className="size-7 rounded-full bg-[var(--surface)] border border-[var(--border)] flex items-center justify-center shrink-0 text-activity-ink"
+                aria-hidden="true"
+              >
+                <Flame size={15} strokeWidth={2.2} />
+              </span>
+              <span
+                data-kc-tone-ink
+                className="text-xs sm:text-sm font-extrabold text-activity-ink truncate"
+              >
+                {t.profile.dailyBurnTitle}
+              </span>
+            </div>
+            <span className="shrink-0 px-2.5 py-1 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[11px] font-bold tabular-nums text-[var(--text)]">
+              {t.energy.bmrShort} {formatKcal(previewBmr)} kcal
+            </span>
+          </div>
+
+          {/* Mode Switcher */}
+          <div
+            className="bg-[var(--inset)] border border-[var(--border)] p-1 rounded-full grid grid-cols-2 gap-1"
+            role="tablist"
+            aria-label={t.profile.dailyBurnTitle}
+          >
             <button
               type="button"
               role="tab"
               aria-selected={!useCustomBmr}
               onClick={() => handleSelectMode(false)}
-              className={`pressable py-1.5 px-2.5 rounded-lg text-xs font-extrabold transition-colors ${
+              className={`pressable py-1.5 px-2.5 rounded-full text-xs font-extrabold transition-colors flex items-center justify-center gap-1.5 ${
                 !useCustomBmr
-                  ? 'bg-[var(--text)] text-[var(--on-text)] shadow-sm'
-                  : 'text-[var(--muted)] hover:text-[var(--text)]'
+                  ? 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] shadow-sm'
+                  : 'text-[var(--muted)] hover:text-[var(--text)] border border-transparent'
               }`}
             >
-              {t.profile.bmrModeCalculated}
+              <span className="truncate">{t.profile.bmrModeCalculated}</span>
             </button>
             <button
               type="button"
               role="tab"
               aria-selected={useCustomBmr}
               onClick={() => handleSelectMode(true)}
-              className={`pressable py-1.5 px-2.5 rounded-lg text-xs font-extrabold transition-colors ${
+              className={`pressable py-1.5 px-2.5 rounded-full text-xs font-extrabold transition-colors flex items-center justify-center gap-1.5 ${
                 useCustomBmr
-                  ? 'bg-[var(--text)] text-[var(--on-text)] shadow-sm'
-                  : 'text-[var(--muted)] hover:text-[var(--text)]'
+                  ? 'bg-[var(--surface)] text-[var(--text)] border border-[var(--border)] shadow-sm'
+                  : 'text-[var(--muted)] hover:text-[var(--text)] border border-transparent'
               }`}
             >
-              {t.profile.bmrModeCustom}
+              <SlidersHorizontal size={13} strokeWidth={2.2} className="shrink-0" aria-hidden="true" />
+              <span className="truncate">{t.profile.bmrModeCustom}</span>
             </button>
           </div>
 
+          {/* Inner Body */}
           {!useCustomBmr ? (
-            <div className="flex items-center justify-between gap-2 px-0.5">
-              <span className="text-xs font-bold text-activity-accent">{t.profile.calculatedBmr}</span>
-              <span className="text-xl font-extrabold tabular-nums text-activity-ink">
-                {formatKcal(previewBmr)} kcal
-              </span>
+            <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] px-4 py-3.5 text-center space-y-1.5">
+              <div className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
+                {t.profile.restingMetabolicRate}
+              </div>
+              <div className="flex items-baseline justify-center gap-1.5">
+                <span
+                  data-kc-tone-ink
+                  className="text-3xl font-extrabold tabular-nums text-activity-ink tracking-tight"
+                >
+                  {formatKcal(previewBmr)}
+                </span>
+                <span className="text-sm font-bold text-[var(--muted)]">kcal</span>
+              </div>
+              {!ultraMinimal && (
+                <p className="text-[10px] font-medium text-[var(--muted)] leading-snug pt-0.5">
+                  {t.profile.bmrFormulaNote}
+                </p>
+              )}
             </div>
           ) : (
-            <div className="space-y-2">
-              <div className="flex items-center justify-between gap-2 px-0.5">
-                <label className="text-xs font-bold text-activity-accent">
-                  {t.profile.customBurnLabel}
-                </label>
-                <span className="text-[11px] font-semibold text-activity-accent opacity-80 tabular-nums">
-                  {t.energy.bmrShort} {formatKcal(previewBmr)} kcal
-                </span>
+            <>
+              <div className="rounded-2xl bg-[var(--surface)] border border-[var(--border)] p-3.5 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleStepCustom(-CUSTOM_BMR_STEP)}
+                    disabled={customBmrKcal <= CUSTOM_BMR_MIN}
+                    aria-label={t.profile.decreaseCalories}
+                    className="pressable size-9 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text)] disabled:opacity-40 shrink-0"
+                  >
+                    <Minus size={16} strokeWidth={2.5} />
+                  </button>
+
+                  <div className="flex items-baseline justify-center gap-1 min-w-0">
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      enterKeyHint="done"
+                      data-kc-tone-ink
+                      aria-label={t.profile.customBurnLabel}
+                      value={customInputFocused ? customInputText : String(customBmrKcal)}
+                      onFocus={() => {
+                        setCustomInputFocused(true);
+                        setCustomInputText(String(customBmrKcal));
+                      }}
+                      onChange={handleCustomInputChange}
+                      onBlur={handleCustomInputBlur}
+                      className="w-24 text-center text-3xl font-extrabold tabular-nums text-activity-ink bg-transparent focus:outline-none tracking-tight"
+                    />
+                    <span className="text-sm font-bold text-[var(--muted)] select-none">kcal</span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleStepCustom(CUSTOM_BMR_STEP)}
+                    disabled={customBmrKcal >= CUSTOM_BMR_MAX}
+                    aria-label={t.profile.increaseCalories}
+                    className="pressable size-9 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] flex items-center justify-center text-[var(--text)] disabled:opacity-40 shrink-0"
+                  >
+                    <Plus size={16} strokeWidth={2.5} />
+                  </button>
+                </div>
+
+                <div className="border-t border-[var(--border)] pt-2.5 flex items-center justify-between gap-2 text-[11px]">
+                  <span className="font-semibold text-[var(--muted)] tabular-nums truncate">
+                    {deltaFromBmr === 0
+                      ? t.profile.sameAsCalculatedBmr
+                      : `${deltaFromBmr > 0 ? '+' : ''}${formatKcal(deltaFromBmr)} kcal ${t.profile.vsCalculatedBmr}`}
+                  </span>
+                  <button
+                    type="button"
+                    data-kc-tone-ink
+                    onClick={() => setCustomBmrKcal(previewBmr)}
+                    className="pressable shrink-0 inline-flex items-center gap-1 font-bold underline underline-offset-2 text-activity-ink hover:opacity-80"
+                  >
+                    <RotateCcw size={11} strokeWidth={2.3} aria-hidden="true" />
+                    <span>{t.profile.resetToBmr}</span>
+                  </button>
+                </div>
               </div>
-              <NumericInput
-                value={customBmrKcal}
-                onChange={setCustomBmrKcal}
-                ariaLabel={t.profile.customBurnLabel}
-                unit="kcal"
-                min={500}
-                max={10000}
-                placeholder={String(previewBmr)}
-              />
-            </div>
+
+              {/* Quick Presets */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2 px-0.5">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
+                    {t.profile.quickPresets}
+                  </span>
+                  {!ultraMinimal && (
+                    <span className="text-[10px] font-semibold text-[var(--muted)]">
+                      {t.profile.tapToFill}
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {presets.map((preset) => {
+                    const active = customBmrKcal === preset.value;
+                    return (
+                      <button
+                        key={preset.key}
+                        type="button"
+                        onClick={() => setCustomBmrKcal(preset.value)}
+                        className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold tabular-nums border transition-colors ${
+                          active
+                            ? 'bg-[var(--text)] text-[var(--on-text)] border-transparent'
+                            : 'bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--text)] border-[var(--border)]'
+                        }`}
+                      >
+                        {preset.label} · {preset.value}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
           )}
         </div>
 

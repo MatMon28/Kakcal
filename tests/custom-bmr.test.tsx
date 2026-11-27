@@ -77,7 +77,20 @@ describe('personalised daily calorie burned', () => {
       fireEvent.click(customTab);
     });
 
-    const input = screen.getByLabelText(/daily calories burned/i) as HTMLInputElement;
+    // Stepper +50
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: /increase daily calories/i }));
+    });
+    const input = screen.getByRole('textbox', { name: /daily calories burned/i }) as HTMLInputElement;
+    expect(input.value).toBe(String(mifflin + 50));
+
+    // Reset to BMR
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: /reset to bmr/i }));
+    });
+    expect(input.value).toBe(String(mifflin));
+
+    // Direct input
     act(() => {
       fireEvent.focus(input);
       fireEvent.change(input, { target: { value: '2450' } });

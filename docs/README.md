@@ -27,7 +27,7 @@
 | Desktop layout (no sidebar, same as the phone), Custom Meals / Recipes card buttons in non-Classic styles (edit / delete / Log) | [desktop-and-fields-update.md](desktop-and-fields-update.md) |
 | Glass and Material theme styles (tokens, tinted Custom sections, frosted blur, Material tonal rules, widgets / splash for the two styles, adding another style) | [glass-material-update.md](glass-material-update.md) |
 | Style consistency audit (cross-style vs. Classic baseline, mode parity, Mono contrast, tab pill, semantic dock colours, Material / Glass fixes) | [style-audit.md](style-audit.md) |
-| All nine styles, their requirements, and styling new features (pages, cards, fields, modals, controls, tokens, Minimal text/icon rule, widgets, contrast, adding a style) | [styles-guide.md](styles-guide.md) |
+| All nine styles, their requirements, Ultra minimal (`settings.ultraMinimal`), and styling new features (pages, cards, fields, modals, controls, tokens, Minimal text/icon rule, widgets, contrast, adding a style) | [styles-guide.md](styles-guide.md) |
 | Change animations / springs / swipe feel / the page-change (tap / Back) transition / the logo-click poop animation | [motion.md](motion.md) |
 | Change swipe rules or Back button | [gestures.md](gestures.md) |
 | Change the launch animation or launch-screen colours | [launch-intro.md](launch-intro.md) |
