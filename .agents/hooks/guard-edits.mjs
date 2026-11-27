@@ -33,6 +33,7 @@ function checkIndexCssOrder(filePath) {
 }
 
 const RAW_PALETTE_RE = /\b(?:bg|text|border)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-\d{2,3}\b/g;
+const MOTION_UNSAFE_RE = /\b(?<!motion-safe:)animate-(?:pulse|bounce)\b/g;
 
 function checkComponentTokens(filePath) {
   if (!fs.existsSync(filePath)) return;
@@ -41,13 +42,49 @@ function checkComponentTokens(filePath) {
   if (matches.length > 0) {
     console.error(
       `Raw Tailwind palette colour class(es) in ${path.relative(repoRoot, filePath)}: ${matches.join(', ')}\n` +
-      `Use .kc-themed-card, data-kc-tone, and Kakcal CSS tokens (--surface, --inset, --border, --text, --muted, --on-text) instead.`
+      `Use .kc-themed-card, data-kc-tone, @theme utilities (bg-intake, text-carbs-ink, etc.), and Kakcal CSS tokens instead.`
     );
     process.exit(1);
   }
   if (/data-kc-tone\s*=/.test(content) && !content.includes('data-kc-tone-ink')) {
     console.error(
       `Missing data-kc-tone-ink in ${path.relative(repoRoot, filePath)}: components using data-kc-tone must mark header text/icons with data-kc-tone-ink for Minimal mode.`
+    );
+    process.exit(1);
+  }
+  if (/bg-\[var\(--text\)\]/.test(content) && /text-\[var\(--surface\)\]/.test(content)) {
+    console.error(
+      `Found bg-[var(--text)] with text-[var(--surface)] in ${path.relative(repoRoot, filePath)}: use text-[var(--on-text)] instead.`
+    );
+    process.exit(1);
+  }
+  if (/font-family\s*:/.test(content) || /\bfont-\[/.test(content)) {
+    console.error(
+      `Hardcoded font-family in ${path.relative(repoRoot, filePath)}: inherit Kakcal's theme font-family.`
+    );
+    process.exit(1);
+  }
+  const unsafeMotion = [...new Set(content.match(MOTION_UNSAFE_RE) ?? [])];
+  if (unsafeMotion.length > 0) {
+    console.error(
+      `Use motion-safe:${unsafeMotion[0]} in ${path.relative(repoRoot, filePath)} so prefers-reduced-motion is respected.`
+    );
+    process.exit(1);
+  }
+}
+
+function checkJournalCss(filePath) {
+  if (!fs.existsSync(filePath)) return;
+  const content = fs.readFileSync(filePath, 'utf8');
+  if (/font-weight\s*:\s*(?:650|750)\b/.test(content)) {
+    console.error(
+      `Off-scale font-weight (650/750) in ${path.relative(repoRoot, filePath)}: use standard weights 500, 600, 700, or 800.`
+    );
+    process.exit(1);
+  }
+  if (/font-family\s*:/.test(content)) {
+    console.error(
+      `Hardcoded font-family in ${path.relative(repoRoot, filePath)}: inherit Kakcal's theme font-family.`
     );
     process.exit(1);
   }
@@ -64,6 +101,9 @@ try {
   } else if (/(?:^|\/)src\/components\/.*\.(?:tsx|ts)$/.test(editedPath)) {
     const resolved = path.isAbsolute(editedPath) ? editedPath : path.resolve(repoRoot, editedPath);
     checkComponentTokens(resolved);
+  } else if (/(?:^|\/)src\/components\/journal\/css\/.*\.css$/.test(editedPath)) {
+    const resolved = path.isAbsolute(editedPath) ? editedPath : path.resolve(repoRoot, editedPath);
+    checkJournalCss(resolved);
   }
   process.stdout.write('{}\n');
 } catch (err) {

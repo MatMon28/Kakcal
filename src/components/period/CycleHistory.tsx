@@ -12,7 +12,8 @@ import {
 } from '../../utils/period';
 import { formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import { PeriodFlow } from '../../types';
-import { ChevronDown, Info } from 'lucide-react';
+import { Info } from 'lucide-react';
+import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 
 const FLOW_RANK: Record<PeriodFlow, number> = { none: 0, light: 1, medium: 2, heavy: 3 };
 
@@ -74,7 +75,7 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
           </span>
           {stats && (
             <div className="flex items-center gap-1.5">
-              <span className="text-[11px] font-bold text-[var(--muted)]">
+              <span className="text-[11px] font-bold tabular-nums text-[var(--muted)]">
                 {t.period.nCycles.replace('{n}', String(stats.n))}
               </span>
               <div className="flex p-0.5 bg-[var(--inset)] rounded-full">
@@ -82,8 +83,9 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
                   <button
                     key={String(v)}
                     type="button"
+                    aria-pressed={allTime === v}
                     onClick={() => setAllTime(v)}
-                    className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold ${
+                    className={`pressable px-2.5 py-1 rounded-full text-[11px] font-extrabold ${
                       allTime === v ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)]'
                     }`}
                   >
@@ -105,7 +107,7 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
               [t.period.longest, `${stats.longest}`],
               [t.period.stdDev, `±${stats.sd}`],
             ].map(([label, val]) => (
-              <div key={label} className="bg-[var(--inset)] rounded-2xl p-2.5 text-center">
+              <div key={label} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl p-2.5 text-center tabular-nums">
                 <span className="block text-[10px] font-bold uppercase text-[var(--muted)]">{label}</span>
                 <span className="block text-base font-extrabold text-[var(--text)]">{val}</span>
               </div>
@@ -167,17 +169,17 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
             const open = openId === c.start;
             const d = open ? detailsFor(c) : null;
             return (
-              <div key={c.start} className="bg-[var(--inset)] rounded-2xl">
+              <div key={c.start} className="bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
                 <button
                   type="button"
                   onClick={() => setOpenId(open ? null : c.start)}
-                  className="w-full flex items-center justify-between gap-2 px-3 py-2.5 text-left"
+                  className="pressable w-full flex items-center justify-between gap-2 px-3 py-2.5 text-left"
                   aria-expanded={open}
                 >
                   <span className="text-sm font-extrabold text-[var(--text)]">
                     {formatDateDisplay(c.start, language)}
                   </span>
-                  <span className="flex items-center gap-2 text-[11px] font-bold text-[var(--muted)]">
+                  <span className="flex items-center gap-2 text-[11px] font-bold tabular-nums text-[var(--muted)]">
                     <span>
                       {t.period.cycleLen}:{' '}
                       {c.length !== null
@@ -188,10 +190,11 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
                     <span>
                       {t.period.periodLen}: {c.periodLength}
                     </span>
-                    <ChevronDown size={14} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
+                    <CollapseArrow open={open} />
                   </span>
                 </button>
-                {open && d && (
+                <CollapseBody open={open}>
+                  {d && (
                   <div className="px-3 pb-3 grid grid-cols-1 sm:grid-cols-3 gap-2 text-[11px] font-bold">
                     <div className="bg-[var(--surface)] rounded-xl p-2">
                       <span className="block text-[var(--muted)] uppercase text-[10px]">{t.period.peakFlow}</span>
@@ -208,7 +211,8 @@ export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => 
                       <span className="text-[var(--text)]">{d.symptoms.join(', ') || t.period.none}</span>
                     </div>
                   </div>
-                )}
+                  )}
+                </CollapseBody>
               </div>
             );
           })}

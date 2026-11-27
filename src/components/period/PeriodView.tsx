@@ -23,7 +23,7 @@ import { Droplet, ChevronRight, Plus, Check, Pill, CalendarHeart, Trash2, Sticky
 const FLOWS: PeriodFlow[] = ['none', 'light', 'medium', 'heavy'];
 
 export const PeriodView: React.FC = () => {
-  const { t, language } = useSettings();
+  const { t, language, settings: appSettings } = useSettings();
   const { periodData, updatePeriodDay, clearPeriodDay } = useJournalData();
   const {
     setIsPeriodSheetOpen,
@@ -108,11 +108,11 @@ export const PeriodView: React.FC = () => {
     }`;
 
   return (
-    <div className="space-y-3.5">
+    <div className={appSettings.ultraMinimal ? 'space-y-2.5' : 'space-y-4'}>
       {/* Header */}
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-3">
         <div className="flex items-center gap-2.5">
-          <div className="kc-period-header-icon w-9 h-9 rounded-full bg-transparent text-[#6E2440] flex items-center justify-center shrink-0">
+          <div className="kc-period-header-icon w-9 h-9 rounded-full bg-transparent text-[var(--text-heart)] flex items-center justify-center shrink-0">
             <Droplet size={17} />
           </div>
           <div>
@@ -120,7 +120,7 @@ export const PeriodView: React.FC = () => {
             <p className="text-[11px] font-medium text-[var(--muted)]">{t.period.subtitle}</p>
           </div>
         </div>
-        <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[var(--inset)] text-[var(--muted)] shrink-0">
+        <span className="text-[11px] font-bold tabular-nums px-2.5 py-1 rounded-full bg-[var(--inset)] text-[var(--muted)] shrink-0">
           {t.period.statsLogged.replace('{n}', String(loggedCount))}
         </span>
       </div>
@@ -129,7 +129,7 @@ export const PeriodView: React.FC = () => {
       <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-3">
         <div className="flex items-center justify-between gap-2">
           <span className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">
-            <CalendarHeart size={15} className="kc-period-header-icon text-[#B85C7A]" />
+            <CalendarHeart size={15} className="kc-period-header-icon text-[var(--text-heart)]" />
             {t.period.statusTitle}
           </span>
           {!pillMode && status.hasData && status.predicted.fromHistory && (
@@ -152,12 +152,12 @@ export const PeriodView: React.FC = () => {
                 <span data-period-label className="block text-[10px] font-bold uppercase tracking-wider text-[#8A455C]">
                   {t.period.cycleDay}
                 </span>
-                <div className="flex items-baseline gap-2 mt-1">
+                <div className="flex items-baseline gap-2 mt-1 tabular-nums">
                   <span data-period-value className="text-3xl font-extrabold text-[#6E2440] leading-none">{status.cycleDay}</span>
                   <span data-period-label className="text-xs font-bold text-[#8A455C]">/ {status.predicted.length}</span>
                 </div>
                 {status.daysLate > 0 && (
-                  <span className="kc-period-pill inline-block mt-2 px-2 py-0.5 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[10px] font-extrabold">
+                  <span className="kc-period-pill inline-block mt-2 px-2 py-0.5 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[10px] font-extrabold tabular-nums">
                     {t.period.daysLate.replace('{n}', String(status.daysLate))}
                   </span>
                 )}
@@ -167,7 +167,7 @@ export const PeriodView: React.FC = () => {
                 <span data-period-label className="block text-[10px] font-bold uppercase tracking-wider text-[#5B4B93]">
                   {pillMode ? t.period.packDay : t.period.phase}
                 </span>
-                <span data-period-value className="block text-lg font-extrabold text-[#3B2E6E] mt-1 leading-tight">
+                <span data-period-value className="block text-lg font-extrabold text-[#3B2E6E] mt-1 leading-tight tabular-nums">
                   {pillMode
                     ? pd !== null
                       ? t.period.packDayOf.replace('{d}', String(pd)).replace('{n}', String(settings.packLength))
@@ -197,7 +197,7 @@ export const PeriodView: React.FC = () => {
                     ? formatDateDisplay(status.nextPeriod, language)
                     : '—'}
                 </span>
-                <span data-period-label className="block text-[11px] font-bold text-[#8A5617] mt-0.5">
+                <span data-period-label className="block text-[11px] font-bold tabular-nums text-[#8A5617] mt-0.5">
                   {status.daysLate > 0
                     ? t.period.daysLate.replace('{n}', String(status.daysLate))
                     : status.daysUntilNext === 0
@@ -206,7 +206,7 @@ export const PeriodView: React.FC = () => {
                 </span>
               </div>
 
-              <div data-period-card="ovulation" className={`rounded-2xl p-3.5 ${pillMode ? 'bg-[#E9FAEF]' : 'bg-[#E9FAEF]'}`}>
+              <div data-period-card="ovulation" className="rounded-2xl p-3.5 bg-[#E9FAEF]">
                 <span data-period-label className="block text-[10px] font-bold uppercase tracking-wider text-[#1D5C38]">
                   {pillMode ? t.period.withdrawalBleed : t.period.ovulation}
                 </span>
@@ -263,8 +263,8 @@ export const PeriodView: React.FC = () => {
           type="button"
           onClick={() => patch({ isPeriod: !draft.isPeriod })}
           aria-pressed={draft.isPeriod}
-          className={`w-full py-3 rounded-2xl text-sm font-extrabold border transition-colors flex items-center justify-center gap-2 ${
-            draft.isPeriod ? 'kc-period-chip bg-[#F4C6D8] text-[#6E2440] border-[#E79CBB]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+          className={`pressable w-full py-3 rounded-2xl text-sm font-extrabold border transition-colors flex items-center justify-center gap-2 ${
+            draft.isPeriod ? 'kc-period-chip bg-period text-period-ink border-period-border' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
           }`}
         >
           <Droplet size={16} />
@@ -273,7 +273,7 @@ export const PeriodView: React.FC = () => {
         </button>
 
         <div>
-          <span className="block text-xs font-bold text-[var(--text)] mb-1.5">{t.period.flow}</span>
+          <span className="block text-xs font-bold text-[var(--muted)] mb-1.5">{t.period.flow}</span>
           <div className="flex flex-wrap gap-1.5">
             {FLOWS.map((f) => (
               <button key={f} type="button" onClick={() => patch({ flow: f })} className={chip(draft.flow === f)} aria-pressed={draft.flow === f}>
@@ -288,14 +288,14 @@ export const PeriodView: React.FC = () => {
 
         {pillMode && (
           <div>
-            <span className="block text-xs font-bold text-[var(--text)] mb-1.5">{t.period.pill}</span>
+            <span className="block text-xs font-bold text-[var(--muted)] mb-1.5">{t.period.pill}</span>
             <button
               type="button"
               disabled={selInactive}
               onClick={() => patch({ pillTaken: !draft.pillTaken })}
               aria-pressed={Boolean(draft.pillTaken)}
-              className={`w-full py-2.5 rounded-2xl text-sm font-extrabold border transition-colors flex items-center justify-center gap-2 disabled:opacity-60 ${
-                draft.pillTaken ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+              className={`pressable w-full py-2.5 rounded-2xl text-sm font-extrabold border transition-colors flex items-center justify-center gap-2 disabled:opacity-60 ${
+                draft.pillTaken ? 'kc-chip-active bg-intake text-intake-ink border-intake-border' : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
               }`}
             >
               <Pill size={15} />
@@ -307,7 +307,7 @@ export const PeriodView: React.FC = () => {
         <button
           type="button"
           onClick={() => setRecapText(draft.notes ?? '')}
-          className="pressable w-full flex items-center justify-between bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 text-left"
+          className="pressable w-full flex items-center justify-between border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 text-left"
         >
           <span className="flex items-center gap-2 text-sm font-bold text-[var(--text)]">
             <StickyNote size={15} className="text-[var(--muted)]" />
@@ -331,7 +331,7 @@ export const PeriodView: React.FC = () => {
               rows={3}
               className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-base text-[var(--text)] resize-y"
             />
-            <button type="submit" className="kc-primary-btn pressable w-full py-3 rounded-2xl bg-[#C9EFD3] text-[#174A2B] font-extrabold text-sm">{t.common.save}</button>
+            <button type="submit" className="kc-primary-btn pressable w-full py-3 rounded-2xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold text-sm">{t.common.save}</button>
           </form>
         </Modal>
 
@@ -340,8 +340,8 @@ export const PeriodView: React.FC = () => {
           type="button"
           onClick={saveDay}
           disabled={!dirty}
-          className={`w-full py-3 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 transition-colors ${
-            dirty ? 'kc-primary-btn bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B]' : 'bg-[var(--inset)] text-[var(--muted)]'
+          className={`pressable w-full py-3 rounded-2xl text-sm font-extrabold flex items-center justify-center gap-2 transition-colors ${
+            dirty ? 'kc-primary-btn bg-intake hover:bg-intake-hover text-intake-ink' : 'bg-[var(--inset)] text-[var(--muted)]'
           }`}
         >
           {dirty ? <Plus size={16} strokeWidth={2.5} /> : <Check size={16} strokeWidth={2.5} />}

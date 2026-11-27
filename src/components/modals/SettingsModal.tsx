@@ -188,10 +188,10 @@ export const SettingsModal: React.FC = () => {
             aria-checked={settings.ultraMinimal}
             aria-label={t.settings.ultraMinimal}
             onClick={() => updateSettings({ ultraMinimal: !settings.ultraMinimal })}
-            className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
+            className="pressable w-full flex items-center justify-between gap-3 border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
           >
             <span className="flex items-center gap-2.5 min-w-0">
-              <span className={`size-8 rounded-full flex items-center justify-center shrink-0 ${TONE.lilac}`} aria-hidden="true">
+              <span data-settings-badge className={`size-8 rounded-full flex items-center justify-center shrink-0 ${TONE.lilac}`} aria-hidden="true">
                 <Minimize2 size={14} />
               </span>
               <span className="min-w-0">

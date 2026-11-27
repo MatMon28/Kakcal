@@ -1,6 +1,8 @@
 import React, { Children, useId, useLayoutEffect, useRef, useState } from 'react';
-import { ChevronDown, Plus, Search, X } from 'lucide-react';
+import { Plus, Search } from 'lucide-react';
 import { useSettings } from '../../context/AppContext';
+import { CollapseArrow } from './InlineCollapse';
+import { SearchInput } from './SearchInput';
 
 export const libraryPalettes = {
   meals: { text: '#7D4E14', muted: '#8A5617', border: '#E8C68E' },
@@ -96,19 +98,19 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
   const extraActionCount = Children.toArray(extraActions).length;
   useFitActions(rowRef, groupRef, ultraMinimal && !open, [open, ultraMinimal, Boolean(onCreate), Boolean(setQuery), extraActionCount]);
   const palette = libraryPalettes[tone];
-  // In Classic theme, only the coloured section header gets this palette; in the 6 new themes, inherit the theme tokens.
+  // In Classic theme, only the coloured section header row gets this palette; search inputs inherit document tokens.
   const headerStyle =
     settings.themeStyle === 'classic'
       ? ({
           '--text': palette.text, '--muted': palette.muted, '--border': palette.border,
-          '--bg': '#FBF8F2', '--inset': '#FBF8F2', '--hover': '#FFFFFF',
+          '--inset': 'var(--surface)', '--hover': 'var(--hover)',
         } as React.CSSProperties)
       : undefined;
   // Circle rule: search and + circles are transparent (they take the section colour, no border or shadow).
   const iconBtn = libraryIconButton;
   return (
-    <div className="space-y-2" style={headerStyle}>
-      <div ref={rowRef} data-library-header className="flex items-center justify-between gap-2">
+    <div className="space-y-2">
+      <div ref={rowRef} data-library-header style={headerStyle} className="flex items-center justify-between gap-2">
         {/* Title row toggles the whole section, like a meal card header on Today */}
         <button
           type="button"
@@ -165,7 +167,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
             aria-label={open ? t.common.collapse : t.common.expand}
             className="pressable size-8 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
           >
-            <ChevronDown size={16} className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
+            <CollapseArrow open={open} />
           </button>
         </div>
       </div>
@@ -175,36 +177,17 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
           role="search"
           aria-label={searchLabel}
           onSubmit={(event) => event.preventDefault()}
-          className="relative w-full"
         >
-          <Search
-            size={15}
-            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none"
-          />
-          <input
+          <SearchInput
             autoFocus
-            type="text"
-            enterKeyHint="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                event.stopPropagation();
-                closeSearch();
-              }
-            }}
-            aria-label={searchLabel}
+            value={query ?? ''}
+            onChange={setQuery}
+            ariaLabel={searchLabel}
             placeholder={`${searchLabel}…`}
-            className="w-full bg-[var(--inset)] rounded-2xl border border-[var(--border)] pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
+            clearLabel={t.common.close}
+            onClear={closeSearch}
+            onEscape={closeSearch}
           />
-          <button
-            type="button"
-            onClick={closeSearch}
-            aria-label={t.common.close}
-            className="pressable absolute right-2 top-1/2 -translate-y-1/2 size-7 flex items-center justify-center rounded-full text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)]"
-          >
-            <X size={14} />
-          </button>
         </form>
       )}
     </div>

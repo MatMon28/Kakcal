@@ -240,7 +240,7 @@ describe('meal builder laid out like the recipe builder', () => {
     const recap = document.querySelector('[data-meal-recap]')!;
     expect(recap.querySelector('[data-calories]')!.textContent).toBe('195 kcal');
     expect(review.contains(recap)).toBe(false);
-    expect(recap.parentElement?.className).toContain('border-t-2');
+    expect(recap.parentElement?.className).toContain('border-t');
     expect(recap.className).toContain('bg-[var(--surface)]');
     const pencil = button('Change amount for Rice');
     expect(pencil.textContent).toBe('');

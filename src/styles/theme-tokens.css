@@ -4,20 +4,58 @@
   /* Shared journal accents for cards, charts, logging controls, and widgets. */
   --color-nutrient: #F7E9AA;
   --color-nutrient-ink: #5D4911;
+  --color-nutrient-soft: #FCF4D6;
+  --color-nutrient-border: #E7D889;
+  --color-nutrient-hover: #F2E29A;
+
   --color-intake: #C9EFD3;
   --color-intake-ink: #17432A;
   --color-intake-accent: #286540;
   --color-intake-soft: #E6F8EB;
+  --color-intake-border: #9ADBB0;
+  --color-intake-hover: #B8E6C4;
+
   --color-activity: #F6D0D0;
   --color-activity-ink: #702D32;
   --color-activity-accent: #904149;
   --color-activity-soft: #FBE9E9;
   --color-activity-border: #E8AEAE;
   --color-activity-hover: #F2BFBF;
+
+  --color-carbs: #CFE7FE;
+  --color-carbs-ink: #183F66;
+  --color-carbs-muted: #3A6590;
+  --color-carbs-soft: #E8F3FF;
+  --color-carbs-border: #A9CFF5;
+  --color-carbs-hover: #BDDDFC;
+
+  --color-protein: #FAE0B4;
+  --color-protein-ink: #7D4E14;
+  --color-protein-muted: #9B6E32;
+  --color-protein-soft: #FDF3E0;
+  --color-protein-border: #E8C68E;
+  --color-protein-hover: #F7D69E;
+
+  --color-fat: #E2D6FF;
+  --color-fat-ink: #49346F;
+  --color-fat-soft: #F0E9FF;
+  --color-fat-border: #C9B8F2;
+  --color-fat-hover: #D4C4FF;
+
   --color-weight: #E2D6FF;
   --color-weight-ink: #49346F;
   --color-weight-accent: #6B518F;
   --color-weight-soft: #F0E9FF;
+
+  --color-period: #F4C6D8;
+  --color-period-ink: #6E2440;
+  --color-period-soft: #FBF1F4;
+  --color-period-border: #E79CBB;
+  --color-period-hover: #EFB3CC;
+
+  --color-teal: #CDEEEA;
+  --color-teal-ink: #0F4A47;
+  --color-teal-border: #A9DBD5;
 }
 
 :root {
@@ -47,9 +85,25 @@
   --text-warn: #7A2727;
   --text-sky: #1A4670;
   --text-heart: #B83B5E;
-  /* aliases used by newer components */
-  --bg-card: var(--surface);
-  --bg-inner: var(--inset);
+  --surface-solid: var(--surface);
+  --card-radius: 24px;
+  --micro-radius: 16px;
+  --pill-radius: 999px;
+  --badge-radius: 999px;
+  --bar-radius: 999px;
+  --water-fill: #2E7CC4;
+  --dock-1: var(--color-intake);
+  --dock-icon-1: var(--color-intake-ink);
+  --dock-2: var(--color-activity);
+  --dock-icon-2: var(--color-activity-ink);
+  --dock-3: var(--color-carbs);
+  --dock-icon-3: var(--color-carbs-ink);
+  --dock-4: var(--color-protein);
+  --dock-icon-4: var(--color-protein-ink);
+  --dock-5: var(--color-weight);
+  --dock-icon-5: var(--color-weight-ink);
+  --dock-6: var(--color-nutrient);
+  --dock-icon-6: var(--color-nutrient-ink);
   /* Ink for text drawn ON a solid var(--text) fill (selected segments, toasts). Must be opaque:
      --surface is translucent white in Aurora dark / lite-dark and made such labels white on white. */
   --on-text: var(--bg);

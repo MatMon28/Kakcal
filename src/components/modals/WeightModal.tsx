@@ -98,7 +98,7 @@ export const WeightModal: React.FC = () => {
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
-        <div className="bg-weight rounded-3xl p-4 flex items-center justify-between gap-2">
+        <div className="bg-weight rounded-2xl p-4 flex items-center justify-between gap-2">
           <span className="flex items-center gap-2.5 text-sm font-extrabold text-weight-ink">
             <span className="w-9 h-9 rounded-full bg-weight-soft flex items-center justify-center shrink-0">
               <Scale size={17} />

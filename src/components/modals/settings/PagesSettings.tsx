@@ -69,7 +69,7 @@ export const PagesSettings: React.FC = () => {
   }> = {
     today: {
       icon: <CalendarDays size={14} />,
-      tone: TONE.sky,
+      tone: TONE.red,
       title: t.nav.today,
       description: j('Always shown.', 'Sempre visibile.'),
       on: true,
@@ -86,7 +86,7 @@ export const PagesSettings: React.FC = () => {
     },
     prebuilt: {
       icon: <LayoutGrid size={14} />,
-      tone: TONE.mint,
+      tone: TONE.peach,
       title: t.nav.prebuilt,
       description: j('Meals, recipes, planner, shopping lists and Foods.', 'Pasti, ricette, pianificatore, liste della spesa e Alimenti.'),
       on: !settings.hideCustomPage,
@@ -94,7 +94,7 @@ export const PagesSettings: React.FC = () => {
     },
     history: {
       icon: <TrendingUp size={14} />,
-      tone: TONE.lilac,
+      tone: TONE.sky,
       title: t.nav.history,
       description: j('Charts, averages and the daily breakdown.', 'Grafici, medie e riepilogo giornaliero.'),
       on: !settings.hideStatisticsPage,
@@ -110,7 +110,7 @@ export const PagesSettings: React.FC = () => {
     },
     body: {
       icon: <Ruler size={14} />,
-      tone: TONE.slate,
+      tone: TONE.lilac,
       title: text.settings.bodyTitle,
       description: j('Body measurements and their charts.', 'Misure del corpo e i loro grafici.'),
       on: bodyOn,

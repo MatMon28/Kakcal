@@ -1,5 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import React, { useEffect, useState } from 'react';
 import {
   Apple,
   ArrowRight,
@@ -17,9 +16,9 @@ import {
   ShieldAlert,
   Smartphone,
   WifiOff,
-  X,
 } from 'lucide-react';
 import { AppIcon } from './Brand';
+import { Modal } from './Modal';
 import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
 
 import { detectInstallTarget, OPEN_INSTALL_GUIDE, type GuideLanguage, type InstallTarget, type OpenDetail } from './installGuideEvents';
@@ -59,13 +58,12 @@ export const InstallGuideHost: React.FC<{ lang?: GuideLanguage; initial?: OpenDe
   }, [lang]);
 
   if (!open) return null;
-  return createPortal(
+  return (
     <InstallGuideDialog
       target={target}
       language={language}
       onClose={() => setOpen(false)}
-    />,
-    document.body,
+    />
   );
 };
 
@@ -352,29 +350,6 @@ const InstallGuideDialog: React.FC<{ target: InstallTarget; language: GuideLangu
   const [busy, setBusy] = useState(false);
   const [apkBusy, setApkBusy] = useState(false);
   const [message, setMessage] = useState<{ kind: 'good' | 'neutral'; text: string } | null>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    closeRef.current?.focus({ preventScroll: true });
-  }, []);
-
-  useEffect(() => {
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        // Capture phase: the guide sits above open dialogs, so Escape closes only the guide.
-        event.preventDefault();
-        event.stopPropagation();
-        onClose();
-      }
-    };
-    document.addEventListener('keydown', onKey, true);
-    return () => {
-      document.body.style.overflow = previous;
-      document.removeEventListener('keydown', onKey, true);
-    };
-  }, [onClose]);
 
   const handleInstall = async () => {
     setBusy(true);
@@ -413,36 +388,46 @@ const InstallGuideDialog: React.FC<{ target: InstallTarget; language: GuideLangu
   const canPrompt = pwaState === 'available' && !installed;
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center sm:p-6">
-      <div className="anim-backdrop absolute inset-0 bg-black/55 sm:backdrop-blur-xs" aria-hidden="true" onClick={onClose} />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="install-guide-title"
-        className="anim-dialog relative flex max-h-[94dvh] w-full flex-col overflow-hidden rounded-t-3xl border border-[var(--border)] bg-[var(--bg)] text-[var(--text)] shadow-2xl shadow-black/30 sm:max-h-[90dvh] sm:max-w-2xl sm:rounded-3xl"
-      >
-        <header className="shrink-0 border-b border-[var(--border)] bg-[var(--surface)] px-4 pb-4 pt-3 sm:px-6 sm:pb-5 sm:pt-5">
-          <div className="mx-auto mb-2 h-1.5 w-11 rounded-full bg-[var(--border)] sm:hidden" aria-hidden="true" />
-          <div className="flex items-start gap-3">
-            <AppIcon className="mt-0.5 size-12 shrink-0 rounded-2xl shadow-sm sm:size-14" />
-            <div className="min-w-0 flex-1">
-              <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[var(--muted)]">{copy.eyebrow}</p>
-              <h2 id="install-guide-title" className="mt-0.5 text-xl font-extrabold tracking-tight sm:text-2xl">{copy.title}</h2>
-              <p className="mt-1 text-xs font-medium leading-relaxed text-[var(--muted)] sm:text-[13px]">{copy.lede}</p>
-            </div>
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={copy.title}
+      subtitle={copy.lede}
+      eyebrow={copy.eyebrow}
+      closeLabel={copy.close}
+      maxWidth="max-w-2xl"
+      headerPrefix={<AppIcon className="size-12 shrink-0 rounded-2xl shadow-sm sm:size-14" />}
+      footer={
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="./?view=app"
+            className="pressable inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--text)] px-4 text-xs font-extrabold text-[var(--on-text)] sm:flex-none"
+          >
+            {copy.openApp}
+            <ArrowUpRight size={14} aria-hidden="true" />
+          </a>
+          <button
+            type="button"
+            onClick={onClose}
+            className="pressable inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--inset)] px-4 text-xs font-extrabold text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--text)] sm:flex-none"
+          >
+            {copy.continueWeb}
+          </button>
+          {canPrompt && (
             <button
-              ref={closeRef}
               type="button"
-              onClick={onClose}
-              aria-label={copy.close}
-              className="pressable flex size-10 shrink-0 items-center justify-center rounded-full bg-[var(--inset)] text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--text)]"
+              onClick={() => void handleInstall()}
+              disabled={busy}
+              className="pressable hidden min-h-11 items-center gap-1.5 rounded-xl bg-intake hover:bg-intake-hover px-4 text-xs font-extrabold text-intake-ink disabled:opacity-60 sm:ml-auto sm:inline-flex"
             >
-              <X size={18} />
+              {busy ? copy.installing : copy.installNow}
+              <Download size={14} aria-hidden="true" />
             </button>
-          </div>
-        </header>
-
-        <div data-dialog-scroll className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-4 sm:px-6 sm:py-5">
+          )}
+        </div>
+      }
+    >
+      <div>
           {installed ? (
             <Note tone="good" icon={CheckCircle2} title={copy.installedTitle}>{copy.installedBody}</Note>
           ) : canPrompt ? (
@@ -561,7 +546,7 @@ const InstallGuideDialog: React.FC<{ target: InstallTarget; language: GuideLangu
                     <span>{copy.apkUpdate}</span>
                   </p>
                   <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] font-extrabold">
-                    <a href={RELEASES_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[#174A2B] underline decoration-[#9ADBB0] underline-offset-4 hover:decoration-[#174A2B]">
+                    <a href={RELEASES_URL} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-[var(--text-neg)] underline decoration-current/45 underline-offset-4 hover:decoration-current">
                       {copy.apkReleases}
                       <ExternalLink size={12} aria-hidden="true" />
                     </a>
@@ -613,43 +598,12 @@ const InstallGuideDialog: React.FC<{ target: InstallTarget; language: GuideLangu
             })}
           </div>
 
-          <p className="mt-4 flex items-center justify-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-[var(--muted)]">
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-[var(--muted)]">
             <LockKeyhole size={12} aria-hidden="true" />
             {copy.dataNote}
           </p>
-        </div>
-
-        <footer className="shrink-0 border-t border-[var(--border)] bg-[var(--surface)] px-4 pb-[max(0.75rem,env(safe-area-inset-bottom))] pt-3 sm:px-6">
-          <div className="flex flex-wrap items-center gap-2">
-            <a
-              href="./?view=app"
-              className="pressable inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl bg-[var(--text)] px-4 text-xs font-extrabold text-[var(--on-text)] sm:flex-none"
-            >
-              {copy.openApp}
-              <ArrowUpRight size={14} aria-hidden="true" />
-            </a>
-            <button
-              type="button"
-              onClick={onClose}
-              className="pressable inline-flex min-h-11 flex-1 items-center justify-center rounded-xl border border-[var(--border)] bg-[var(--inset)] px-4 text-xs font-extrabold text-[var(--muted)] hover:bg-[var(--hover)] hover:text-[var(--text)] sm:flex-none"
-            >
-              {copy.continueWeb}
-            </button>
-            {canPrompt && (
-              <button
-                type="button"
-                onClick={() => void handleInstall()}
-                disabled={busy}
-                className="pressable hidden min-h-11 items-center gap-1.5 rounded-xl bg-[#1E5E3A] px-4 text-xs font-extrabold text-[#EAF7EE] disabled:opacity-60 sm:ml-auto sm:inline-flex"
-              >
-                {busy ? copy.installing : copy.installNow}
-                <Download size={14} aria-hidden="true" />
-              </button>
-            )}
-          </div>
-        </footer>
       </div>
-    </div>
+    </Modal>
   );
 };
 

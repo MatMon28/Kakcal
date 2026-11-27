@@ -160,14 +160,14 @@ export const DeleteDataSettings: React.FC = () => {
               description={row.description}
               disabled={busy}
               onClick={() => setPending(row)}
-              trailing={<Trash2 size={14} className="shrink-0 text-[#C94444]" aria-hidden="true" />}
+              trailing={<Trash2 size={14} className="shrink-0 text-[var(--text-warn)]" aria-hidden="true" />}
             />
           ))}
         </SubSection>
       ))}
 
       {error && (
-        <p role="alert" className="text-[11px] font-bold text-[#C94444] px-1">
+        <p role="alert" className="text-[11px] font-bold text-[var(--text-warn)] px-1">
           {j('The data could not be deleted. Nothing was changed.', 'Non è stato possibile eliminare i dati. Non è cambiato nulla.')}
         </p>
       )}

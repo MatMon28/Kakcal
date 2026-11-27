@@ -2,7 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useJournalData, useSettings } from '../../context/AppContext';
 import { LazyBody } from '../common/LazyBody';
 import { getTodayDateString } from '../../utils/formatters';
-import { ChevronDown, Pill, Lock } from 'lucide-react';
+import { Pill, Lock } from 'lucide-react';
+import { CollapseArrow } from '../common/InlineCollapse';
+import { SwitchVisual } from '../common/Switch';
 
 /** Integer field validated on blur: clamps to [min,max], reverts empty/non-numeric to the last valid value. */
 const IntField: React.FC<{
@@ -27,7 +29,7 @@ const IntField: React.FC<{
   };
   return (
     <div>
-      <label className="block text-xs font-bold text-[var(--text)] mb-1">{label}</label>
+      <label className="block text-xs font-bold text-[var(--muted)] mb-1">{label}</label>
       <input
         type="text"
         inputMode="numeric"
@@ -44,21 +46,6 @@ const IntField: React.FC<{
   );
 };
 
-const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
-  <span
-    aria-hidden="true"
-    className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
-      on ? 'bg-[#C9EFD3] border-[#9ADBB0]' : 'bg-[var(--border)] border-[var(--border)]'
-    }`}
-  >
-    <span
-      className={`block w-5 h-5 rounded-full shadow-sm transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] ${
-        on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
-      }`}
-    />
-  </span>
-);
-
 export const PeriodSettingsAccordion: React.FC = () => {
   const { t } = useSettings();
   const { periodData, updatePeriodSettings } = useJournalData();
@@ -70,16 +57,13 @@ export const PeriodSettingsAccordion: React.FC = () => {
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="w-full flex items-center justify-between text-left"
+        className="pressable w-full flex items-center justify-between text-left"
         aria-expanded={open}
       >
-        <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">
+        <span className="text-sm font-extrabold text-[var(--text)]">
           {t.period.settingsTitle}
         </span>
-        <ChevronDown
-          size={16}
-          className={`text-[var(--muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
-        />
+        <CollapseArrow open={open} />
       </button>
 
       <div className="accordion-grid" data-open={open} inert={!open}>
@@ -108,9 +92,10 @@ export const PeriodSettingsAccordion: React.FC = () => {
             {/* Pill */}
             <button
               type="button"
-              aria-pressed={s.trackPill}
+              role="switch"
+              aria-checked={s.trackPill}
               onClick={() => updatePeriodSettings({ trackPill: !s.trackPill })}
-              className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
+              className="pressable w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
             >
               <span className="flex items-center gap-2 text-sm font-bold text-[var(--text)]">
                 <Pill size={15} className="text-[var(--muted)] shrink-0" />
@@ -140,7 +125,7 @@ export const PeriodSettingsAccordion: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-[var(--text)] mb-1">{t.period.packStart}</label>
+                  <label className="block text-xs font-bold text-[var(--muted)] mb-1">{t.period.packStart}</label>
                   <div className="flex gap-2">
                     <input
                       type="date"
@@ -151,7 +136,7 @@ export const PeriodSettingsAccordion: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => updatePeriodSettings({ packStart: getTodayDateString() })}
-                      className="kc-action-pill pressable px-3 py-2 rounded-xl bg-[#E2D6FF] hover:bg-[#D4C4FF] text-[#4D3582] text-xs font-extrabold whitespace-nowrap"
+                      className="kc-action-pill pressable px-3 py-2 rounded-xl bg-fat hover:bg-fat-hover text-fat-ink text-xs font-extrabold whitespace-nowrap"
                     >
                       {t.period.startPackToday}
                     </button>
@@ -165,9 +150,10 @@ export const PeriodSettingsAccordion: React.FC = () => {
 
             <button
               type="button"
-              aria-pressed={s.showNutrition}
+              role="switch"
+              aria-checked={s.showNutrition}
               onClick={() => updatePeriodSettings({ showNutrition: !s.showNutrition })}
-              className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
+              className="pressable w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
             >
               <span className="text-sm font-bold text-[var(--text)]">{t.period.showNutrition}</span>
               <SwitchVisual on={s.showNutrition} />
@@ -175,9 +161,10 @@ export const PeriodSettingsAccordion: React.FC = () => {
 
             <button
               type="button"
-              aria-pressed={s.showPhaseBandsInStats}
+              role="switch"
+              aria-checked={s.showPhaseBandsInStats}
               onClick={() => updatePeriodSettings({ showPhaseBandsInStats: !s.showPhaseBandsInStats })}
-              className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
+              className="pressable w-full flex items-center justify-between gap-2 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3.5 py-2.5 transition-colors text-left"
             >
               <span className="text-sm font-bold text-[var(--text)]">{t.period.showBands}</span>
               <SwitchVisual on={s.showPhaseBandsInStats} />

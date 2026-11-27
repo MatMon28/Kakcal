@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, ChevronDown, ChevronRight, Flame, Scale, Utensils, X } from 'lucide-react';
+import { CalendarDays, ChevronRight, Flame, Scale, Utensils, X } from 'lucide-react';
+import { CollapseArrow } from '../common/InlineCollapse';
 import { SecondaryNutrientCard, SecondaryNutrientRow } from '../common/FoodMacroGrid';
 import { useJournalData, useSettings } from '../../context/AppContext';
 import { LazyBody } from '../common/LazyBody';
@@ -306,7 +307,7 @@ export const HistoryView: React.FC = () => {
             [t.history.avgProtein, period.avgProtein, 'kc-macro-protein bg-[#FAE0B4] text-[#7D4E14]', 'text-[#2D1E0B]'],
             [t.history.avgFat, period.avgFat, 'kc-macro-fat bg-[#E2D6FF] text-[#523A8C]', 'text-[#1F1636]'],
           ] as const).map(([label, value, card, number]) => (
-            <div key={label} role="group" aria-label={`${label}: ${value} g`} className={`${card} rounded-3xl ${ultraMinimal ? 'p-2.5' : 'p-3.5'} text-center`}>
+            <div key={label} role="group" aria-label={`${label}: ${value} g`} className={`${card} rounded-3xl ${ultraMinimal ? 'p-2.5' : 'p-3.5'} text-center tabular-nums`}>
               <span className={`${ultraMinimal ? 'sr-only' : 'text-[10px] font-bold uppercase block truncate'}`}>{label}</span>
               <div className={`flex items-baseline justify-center gap-1 ${ultraMinimal ? '' : 'mt-0.5'}`}>
                 <span className={`text-lg sm:text-xl font-extrabold ${number}`}>{value}</span>
@@ -337,11 +338,11 @@ export const HistoryView: React.FC = () => {
                     title={formatDateDisplay(day.date, language)}
                     aria-label={formatDateDisplay(day.date, language)}
                     className={`pressable w-9 h-9 rounded-full flex items-center justify-center hover:scale-105 ${
-                      pooped ? 'kc-custom-stat-dot-active bg-[#FDF3E0] text-[#8A5A2B]' : 'kc-custom-stat-dot-empty bg-[#FDF3E0]/50 text-[#B89862]'
+                      pooped ? 'kc-custom-stat-dot-active bg-protein-soft text-[#8A5A2B]' : 'kc-custom-stat-dot-empty bg-protein-soft/50 text-protein-ink/75'
                     }`}
                   >
                     {pooped ? (
-                      <span className="relative flex items-center">
+                      <span className="relative flex items-center tabular-nums">
                         <PoopIcon size={16} />
                         {day.poops.length > 1 && <span className="text-[9px] font-extrabold ml-0.5">×{day.poops.length}</span>}
                       </span>
@@ -451,7 +452,7 @@ export const HistoryView: React.FC = () => {
                   {wDelta > 0 ? `+${wDelta.toFixed(1)}` : wDelta.toFixed(1)}
                 </span>
               )}
-              <ChevronDown size={16} className={`text-[var(--muted)] transition-transform duration-200 ${weightOpen ? 'rotate-180' : ''}`} />
+              <CollapseArrow open={weightOpen} />
             </span>
           </button>
 
@@ -532,7 +533,7 @@ export const HistoryView: React.FC = () => {
               {ultraMinimal ? <CalendarDays size={16} aria-hidden="true" className="text-[var(--muted)]" /> : <h3 className="text-sm font-extrabold text-[var(--text)]">{t.history.last7DaysChart}</h3>}
               <span className="flex items-center gap-2">
                 {!ultraMinimal && <span className="hidden sm:inline text-[11px] font-medium text-[var(--muted)]">{t.history.selectDayHint}</span>}
-                <ChevronDown size={16} className={`text-[var(--muted)] transition-transform duration-200 ${dailyOpen ? 'rotate-180' : ''}`} />
+                <CollapseArrow open={dailyOpen} />
               </span>
             </button>
             <div className="accordion-grid" data-open={dailyOpen} inert={!dailyOpen}>
@@ -548,7 +549,7 @@ export const HistoryView: React.FC = () => {
                         key={day.date}
                         type="button"
                         onClick={() => setInspectedDate(day.date)}
-                        className="pressable w-full text-left p-3.5 rounded-2xl bg-[var(--inset)] hover:bg-[var(--hover)] space-y-2 group"
+                        className="pressable w-full text-left p-3.5 rounded-2xl border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] space-y-2 group"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <div className="flex items-center gap-2">
@@ -556,7 +557,7 @@ export const HistoryView: React.FC = () => {
                               {formatDateDisplay(day.date, language)}
                             </span>
                             {!settings.hidePoop && day.poops.length > 0 && (
-                              <span data-stat-pill="poop" className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]" title={t.quickAdd.poop}>
+                              <span data-stat-pill="poop" className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-protein text-protein-ink tabular-nums" title={t.quickAdd.poop}>
                                 <PoopIcon size={12} />
                                 {day.poops.length > 1 && <span className="text-[10px] font-extrabold">×{day.poops.length}</span>}
                               </span>

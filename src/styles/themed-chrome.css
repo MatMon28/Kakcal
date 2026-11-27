@@ -268,6 +268,15 @@ html[data-style="pop"] .kc-hero-intake {
 html[data-style="pop"] .kc-hero-burned {
   --ring-fill: #7f1d1d;
 }
+html[data-style="pop"] .kc-macro-carbs {
+  --ring-fill: #1e40af;
+}
+html[data-style="pop"] .kc-macro-protein {
+  --ring-fill: #9a3412;
+}
+html[data-style="pop"] .kc-macro-fat {
+  --ring-fill: #5b21b6;
+}
 html[data-style="pop"] :is([data-nutrient="fiber"], [data-nutrient="salt"], [data-nutrient="sugar"]) {
   --ring-fill: #854d0e;
 }

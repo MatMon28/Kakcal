@@ -40,6 +40,13 @@
 * **Period & Body icons (`BodyView.tsx`, `BodyMeasureModal.tsx`, `PeriodView.tsx`, `PeriodCalendar.tsx`, `themed-tones.css`, `themed-cards.css`):** `[data-body-icon]` badges follow dock geometry (`--dock-btn-radius`, `--dock-btn-border`, `--clip-sm`) with Minimal hairline plates + violet ink and Mono single-hue plates; Period summary cards (`[data-period-card]`), header icons (`.kc-period-header-icon`), calendar arrows (`[data-cal-month-nav]`) and Period dock actions (`cycle`, `pill`, `intercourse`) match every style.
 * **Big Widget (`WidgetGallery.tsx`, `widget-preview.css`, `JournalWidgetProvider.java`, `widget_{large,medium}*.xml`):** Large and Medium widgets now match each style's surface, Intake / Burned / Macro cards, badges, icons and progress bars in both browser gallery and Android. Full specification in [styles-guide.md](styles-guide.md).
 
+## Classic intra-style & mode-parity checklist
+
+* Verify `Classic · Light`, `Classic · Lite Dark`, and `Classic · Dark` contrast (`>= 4.5:1` text/muted/icons on `--surface`/`--bg`, `>= 3.0:1` bars/markers).
+* Verify zero arbitrary hex colour drift (`bg-[#...]`, `text-[#...]`, `border-[#...]`) outside `src/styles/theme-*.css`.
+* Verify zero `border-[var(--border)]` on Classic pastel cards.
+* Verify Web `WidgetGallery` Classic Light & Dark match Android `widget_{tray,surface,large,medium}{,_dark}.xml`.
+
 ## Regression coverage
 
 `tests/themes.test.ts` now checks the continuous tab indicator tokens, semantic dock bindings, Material chip / search rules, full-field `--tone-*` pairs, Minimal text/icon-only `--tone-ink-*` AA contrast, Mono stepped tones, and Settings / Calendar / Layout-switch / Meal-planner theme hooks.

@@ -48,7 +48,7 @@ export const TodayFastingBar: React.FC = () => {
       <section
         aria-label={ft.status.fastingActive}
         data-kc-tone="diary"
-        className={`rounded-3xl border border-[var(--border)] bg-[#F7E9AA] text-[#5D4911] ${
+        className={`rounded-3xl bg-nutrient text-nutrient-ink ${
           ultra ? 'px-3.5 py-2.5' : 'px-4 py-3.5'
         }`}
       >
@@ -99,7 +99,7 @@ export const TodayFastingBar: React.FC = () => {
     <section
       aria-label={ft.status.eatingWindow}
       data-kc-tone="diary"
-      className={`rounded-3xl border border-[var(--border)] bg-[#F7E9AA] text-[#5D4911] ${
+      className={`rounded-3xl bg-nutrient text-nutrient-ink ${
         ultra ? 'px-3.5 py-2.5' : 'px-4 py-3.5'
       }`}
     >

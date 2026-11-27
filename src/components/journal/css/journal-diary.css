@@ -63,8 +63,8 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 12px;
-  font-weight: 650;
+  font-size: 13px;
+  font-weight: 700;
 }
 .journal-diary-result strong > small {
   font-size: 10px;
@@ -84,64 +84,13 @@
   display: block;
   text-align: right;
   font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 .journal-diary-result b small {
   display: block;
-  font-size: 9px;
-  font-weight: 400;
-  color: var(--muted);
-}
-.journal-meal-detail-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.journal-meal-detail-top > strong {
-  font-size: 28px;
-  letter-spacing: -1px;
-}
-.journal-meal-detail-top small {
-  font-size: 12px;
-  color: var(--muted);
-  letter-spacing: 0;
-}
-.journal-meal-macro-summary {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: -10px;
-}
-.journal-meal-macro-summary > span {
-  opacity: 0.4;
-  padding: 0 4px;
-}
-.journal-detail-foods {
-  display: grid;
-}
-.journal-detail-foods > div {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 13px 0;
-  border-bottom: 1px solid var(--border);
-}
-.journal-detail-foods strong {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-}
-.journal-detail-foods small {
-  display: block;
   font-size: 11px;
-  color: var(--muted);
   font-weight: 400;
-  margin-top: 4px;
-}
-.journal-detail-foods b {
-  font-size: 12px;
-  text-align: right;
-}
-.journal-detail-foods b small {
-  display: inline;
+  color: var(--muted);
 }
 .journal-detail-note {
   display: grid;
@@ -176,7 +125,7 @@
 }
 .journal-inline-plan strong {
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .journal-inline-plan p {
   line-height: 1.75;
@@ -186,8 +135,8 @@
   display: flex;
   align-items: center;
   gap: 3px;
-  font-size: 10px;
-  font-weight: 650;
+  font-size: 11px;
+  font-weight: 700;
   padding: 6px 8px;
   border: 1px solid currentColor;
   border-radius: var(--pill-radius, 8px);
@@ -313,9 +262,6 @@
   display: flex;
   gap: 10px;
 }
-.journal-gallery-search .journal-search {
-  flex: 1;
-}
 .journal-lightbox {
   position: relative;
 }
@@ -349,40 +295,6 @@
 .journal-photo-prev:disabled,
 .journal-photo-next:disabled {
   opacity: 0.3;
-}
-.journal-settings-toggle {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 15px;
-  padding: 13px 12px;
-  border-radius: var(--micro-radius, 12px);
-  background: var(--inset);
-  text-align: left;
-}
-.journal-settings-toggle > span:first-child {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-.journal-settings-toggle strong {
-  display: block;
-  font-size: 12px;
-}
-.journal-settings-toggle small {
-  display: block;
-  font-size: 10px;
-  color: var(--muted);
-  line-height: 1.7;
-  margin-top: 4px;
-}
-.journal-library-grid-footer {
-  text-align: center;
-  color: var(--muted);
-  font-size: 10px;
-  padding: 26px 0 2px;
-  opacity: 0.65;
 }
 html[data-style]:not([data-style='classic']) .journal-feature {
   --feature-ink: var(--text);

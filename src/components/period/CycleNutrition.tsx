@@ -70,7 +70,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
     <div className="space-y-1.5">
       <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">{title}</span>
       <div className="overflow-x-auto no-scrollbar">
-        <table className="w-full text-[11px] font-bold">
+        <table className="w-full text-[11px] font-bold tabular-nums">
           <thead>
             <tr className="text-[var(--muted)]">
               <th className="text-left py-1 pr-2 font-bold">{t.period.phase}</th>
@@ -196,8 +196,8 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.period.weightByDay}</span>
           <div className="flex p-0.5 bg-[var(--inset)] rounded-full">
             {[false, true].map((v) => (
-              <button key={String(v)} type="button" onClick={() => setRelative(v)}
-                className={`px-2.5 py-1 rounded-full text-[11px] font-extrabold ${relative === v ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)]'}`}>
+              <button key={String(v)} type="button" aria-pressed={relative === v} onClick={() => setRelative(v)}
+                className={`pressable px-2.5 py-1 rounded-full text-[11px] font-extrabold ${relative === v ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)]'}`}>
                 {v ? t.period.relative : t.period.absolute}
               </button>
             ))}
@@ -247,7 +247,7 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
         <div className="flex items-center justify-between gap-2">
           <span className="text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.period.symptomCompare}</span>
           <select aria-label={t.period.chooseTag} value={selectedTag} disabled={!selectedTag} onChange={(e) => setTag(e.target.value)}
-            className="bg-[var(--inset)] border border-[var(--border)] rounded-xl px-2 py-1 text-[11px] font-bold text-[var(--text)] focus:outline-none">
+            className="bg-[var(--inset)] border border-[var(--border)] rounded-xl px-2 py-1 text-[11px] font-bold text-[var(--text)] focus:outline-none focus-visible:outline-2 focus-visible:outline-[var(--muted)] focus-visible:outline-offset-1">
             {!selectedTag && <option value="">{t.period.noTagOptions}</option>}
             {tagOptions.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
           </select>

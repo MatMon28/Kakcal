@@ -254,7 +254,7 @@ export const DataBackup: React.FC = () => {
             `Hai ${photos.length} foto su questo dispositivo. NON saranno nel file di backup. Usa "Esporta le foto dei pasti" per salvarle separatamente.`,
           )}</span>
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={() => void handleExport()} className="pressable py-2 rounded-xl bg-[#174A2B] text-white font-extrabold">{j('Export without pictures', 'Esporta senza foto')}</button>
+            <button type="button" onClick={() => void handleExport()} className="pressable py-2 rounded-xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold">{j('Export without pictures', 'Esporta senza foto')}</button>
             <button type="button" onClick={() => setConfirmExport(false)} className="pressable py-2 rounded-xl bg-white/70 text-[#4F3500] font-extrabold">{j('Cancel', 'Annulla')}</button>
           </div>
         </div>

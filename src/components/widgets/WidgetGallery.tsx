@@ -1,4 +1,4 @@
-import { Droplets, Flame, Footprints, Scale, Sparkles, Utensils, UtensilsCrossed } from 'lucide-react';
+import { Droplets, Flame, Footprints, Scale, Sparkles, Utensils } from 'lucide-react';
 import { PoopIcon } from '../common/PoopIcon';
 import type { TourLang, TourUi } from '../tour/tourContent';
 import { BASE_WIDGET_ACTIONS, WIDGET_ACTIONS, readWidgetAppearance, type WidgetAction, type WidgetSnapshot } from './widgetContract';
@@ -15,7 +15,7 @@ const EXTRA_SMALL_ACTIONS: readonly WidgetAction[] = ['food', 'water', 'poop'];
 
 function ActionIcon({ action }: { action: WidgetAction }) {
   const props = { size: 20, strokeWidth: 1.9, 'aria-hidden': true as const };
-  if (action === 'food') return <UtensilsCrossed {...props} />;
+  if (action === 'food') return <Utensils {...props} />;
   if (action === 'movement') return <Footprints {...props} />;
   if (action === 'water') return <Droplets {...props} />;
   if (action === 'poop') return <PoopIcon size={20} strokeWidth={4.5} />;
@@ -183,7 +183,7 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
   const percent = (value: number) => (snapshot ? `${Math.round(value)}` : '--');
 
   return (
-    <div role="group" aria-label={compact ? ui.widgetLabels.medium : ui.widgetLabels.large} className={`widget-large rounded-[26px] border p-2.5 ${look.style === 'dark' ? 'widget-large-dark border-white/20 text-white' : 'border-[var(--border)] bg-[var(--surface)]'}`}>
+    <div role="group" aria-label={compact ? ui.widgetLabels.medium : ui.widgetLabels.large} className={`widget-large rounded-3xl border p-2.5 ${look.style === 'dark' ? 'widget-large-dark border-white/20 text-white' : 'border-[var(--border)] bg-[var(--surface)]'}`}>
       <div className="grid grid-cols-2 gap-2">
         <EnergyCard
           tone="intake"
@@ -235,7 +235,7 @@ export function WidgetGallery(props: GalleryProps) {
         </span>
       </div>
 
-      <div className="widget-wallpaper space-y-5 rounded-[28px] border border-[var(--border)] p-4 sm:p-5">
+      <div className="widget-wallpaper space-y-5 rounded-3xl border border-[var(--border)] p-4 sm:p-5">
         <div className="flex flex-wrap items-start gap-5">
           <figure className="min-w-0 flex-[1_1_290px] space-y-2">
             <figcaption className="flex items-center justify-between gap-2 text-[11px] font-bold text-[var(--text)]">

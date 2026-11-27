@@ -22,7 +22,7 @@
 }
 .journal-date-pair .journal-date-text {
   font-size: 13px;
-  font-weight: 750;
+  font-weight: 800;
 }
 
 /* Saved draft offered at the top of the planner. */
@@ -42,7 +42,7 @@
 .journal-draft-text strong,
 .journal-draft-text small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .journal-draft-text strong { font-size: 13px; font-weight: 800; }
-.journal-draft-text small { font-size: 11px; font-weight: 650; color: var(--muted); }
+.journal-draft-text small { font-size: 11px; font-weight: 700; color: var(--muted); }
 .journal-draft-continue {
   flex-shrink: 0;
   padding: 8px 14px;
@@ -102,7 +102,7 @@
 .journal-plan-suggestion strong,
 .journal-plan-suggestion small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .journal-plan-suggestion strong { font-size: 13px; font-weight: 800; }
-.journal-plan-suggestion small { font-size: 11px; font-weight: 650; color: var(--muted); }
+.journal-plan-suggestion small { font-size: 11px; font-weight: 700; color: var(--muted); }
 .journal-plan-suggestion svg { flex-shrink: 0; color: var(--muted); }
 
 /* Custom > Foods: the Recent / Favourites pills are the Meal diary's All / Favorites pills, in the Foods green.

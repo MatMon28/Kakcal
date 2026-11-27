@@ -56,7 +56,14 @@ export function IngredientRow({ food, name, amount, prefix, onEdit, editLabel, s
               {swap.icon === 'search' ? <Search size={13} /> : <ArrowLeftRight size={13} />}{swap.text}
             </button>
           )}
-          <button type="button" data-ingredient-delete className={ingredientIconButton} onClick={onDelete} aria-label={deleteLabel} title={deleteLabel}>
+          <button
+            type="button"
+            data-ingredient-delete
+            className="pressable size-8 rounded-full bg-[var(--surface)] border border-[var(--border)] text-[var(--muted)] hover:bg-activity hover:text-activity-ink flex items-center justify-center"
+            onClick={onDelete}
+            aria-label={deleteLabel}
+            title={deleteLabel}
+          >
             <Trash2 size={14} />
           </button>
         </div>

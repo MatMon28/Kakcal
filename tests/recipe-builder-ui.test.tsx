@@ -123,7 +123,7 @@ describe('quick portions in the builder', () => {
     expect(summary.contains(ingredients)).toBe(false);
     expect(summary.querySelector('[data-ingredient-edit]')).toBeNull();
     expect(ingredients.querySelector('[data-ingredient-edit]')).toBeTruthy();
-    expect(ingredients.className).toContain('border-t-2');
+    expect(ingredients.className).toContain('border-t');
   });
 });
 

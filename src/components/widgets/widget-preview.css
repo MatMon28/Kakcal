@@ -126,6 +126,22 @@ html[data-style='angular'] .quick-widget {
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
 }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-intake { background: rgb(46 96 69 / 62%); color: #E6F8EB; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-intake * { color: #E6F8EB; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-intake .kc-hero-track { background: rgb(255 255 255 / 20%); }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-intake .kc-hero-fill { background: #C9EFD3; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-balance-badge-intake { background: #C9EFD3; color: #17432A; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-burned { background: rgb(138 66 73 / 62%); color: #FBE9E9; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-burned * { color: #FBE9E9; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-burned .kc-hero-track { background: rgb(255 255 255 / 20%); }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-burned .kc-hero-fill { background: #F6D0D0; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-hero-burned .kc-balance-badge { background: #F6D0D0; color: #702D32; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-macro-carbs { background: rgb(44 85 125 / 62%); }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-macro-carbs * { color: #E3F1FF; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-macro-protein { background: rgb(135 96 31 / 62%); }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-macro-protein * { color: #FFF1D9; }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-macro-fat { background: rgb(106 83 144 / 62%); }
+html[data-style='classic'] .widget-large.widget-large-dark .kc-macro-fat * { color: #F1EAFF; }
 
 /* Large and Medium widgets follow the active app theme style (matching Small widget transparency + theme geometry). */
 html[data-style]:not([data-style='classic']) .widget-large {

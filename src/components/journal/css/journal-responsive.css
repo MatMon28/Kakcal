@@ -8,59 +8,7 @@
     translate: 0 0;
   }
 }
-@media (min-width: 760px) {
-  /* Outside Minimal mode every field takes the whole row (a single column at every width). */
-  .custom-library-grid > [data-library-section='meals'],
-  .custom-library-grid > [data-library-section='recipes'] {
-    padding: 19px;
-    border-radius: 20px;
-  }
-  .custom-library-grid > [data-library-section='meals'] h2,
-  .custom-library-grid > [data-library-section='recipes'] h2 {
-    font-size: 15px;
-    letter-spacing: -0.35px;
-  }
-  .custom-library-grid [data-library-card] {
-    padding: 13px;
-    border: 0;
-    border-radius: var(--micro-radius, 12px);
-  }
-  .custom-library-grid [data-library-card] h3 {
-    font-size: 12px;
-    line-height: 1.6;
-  }
-  .custom-library-grid [data-library-card] > div:first-child {
-    align-items: center;
-  }
-  .custom-library-grid [data-library-card] > div:first-child > div:last-child {
-    gap: 1px;
-  }
-  .custom-library-grid [data-library-card] > div:first-child > div:last-child button {
-    width: 26px;
-    height: 26px;
-    padding: 0;
-  }
-  .custom-library-grid [data-library-card] > div:first-child > div:last-child button span {
-    display: none;
-  }
-  .custom-library-grid [data-library-card] [data-calories] {
-    font-size: 12px;
-  }
-  .custom-library-grid [data-library-card] [data-calories] > span {
-    font-size: 9px;
-  }
-  .custom-library-grid [data-library-card] .journal-library-photo {
-    margin-top: -2px;
-  }
-  .custom-library-grid > [data-library-section='foods'] {
-    padding: 17px 20px;
-    border-radius: 20px;
-  }
-}
 @media (max-width: 759px) {
-  .journal-feature {
-    padding: 17px;
-  }
   .journal-recent-meals {
     grid-template-columns: minmax(0, 1fr);
     gap: 8px;
@@ -78,13 +26,13 @@
     flex-shrink: 0;
   }
   .journal-meal-preview small {
-    font-size: 10px;
+    font-size: 11px;
   }
   .journal-meal-preview strong {
-    font-size: 12px;
+    font-size: 13px;
   }
   .journal-meal-preview > span > span {
-    font-size: 10px;
+    font-size: 11px;
   }
   .journal-preview-arrow {
     display: none;
@@ -100,7 +48,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
   .journal-photo-preview strong {
-    font-size: 10px;
+    font-size: 12px;
   }
   .journal-photo-grid > .journal-photo-preview > span {
     aspect-ratio: 1;
@@ -110,13 +58,24 @@
   }
   .journal-form-actions .journal-private-label {
     max-width: 130px;
-    font-size: 9px;
+    font-size: 11px;
   }
 }
 html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark'])
   :is(.journal-recent-meal, .journal-plan-row, .journal-search) {
   background: var(--surface);
   color: var(--text);
+  border-color: var(--border);
+}
+html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark'])
+  :is(.journal-recent-meal:hover, .journal-plan-row:hover) {
+  background: var(--hover);
+}
+html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark']) .journal-star {
+  color: var(--muted);
+}
+html[data-style='classic']:is([data-theme='dark'], [data-theme='lite-dark']) .journal-star.is-favorite {
+  color: #f5c98b;
 }
 @media (prefers-reduced-motion: reduce) {
   .journal-filter-grid {

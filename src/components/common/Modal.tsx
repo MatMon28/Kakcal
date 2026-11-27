@@ -15,6 +15,10 @@ interface ModalProps {
   onBack?: () => void;
   title: string;
   subtitle?: string;
+  eyebrow?: string;
+  headerPrefix?: React.ReactNode;
+  closeLabel?: string;
+  backLabel?: string;
   children: React.ReactNode;
   maxWidth?: string;
   footer?: React.ReactNode;
@@ -59,6 +63,10 @@ export const Modal: React.FC<ModalProps> = ({
   onBack,
   title,
   subtitle,
+  eyebrow,
+  headerPrefix,
+  closeLabel,
+  backLabel,
   children,
   maxWidth = 'max-w-lg',
   footer,
@@ -307,11 +315,13 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
         <div className="px-5 py-3.5 sm:py-4 border-b border-[var(--border)] flex items-center justify-between gap-3 shrink-0 touch-none" {...dragHandlers}>
           {onBack && (
-            <button type="button" onClick={onBack} aria-label={t.common.back} title={t.common.back} className="pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center">
+            <button type="button" onClick={onBack} aria-label={backLabel ?? t.common.back} title={backLabel ?? t.common.back} className="pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center">
               <ArrowLeft size={17} />
             </button>
           )}
+          {headerPrefix}
           <div className="min-w-0 flex-1">
+            {eyebrow && <p className="text-[11px] font-extrabold uppercase tracking-[0.14em] text-[var(--muted)] mb-0.5">{eyebrow}</p>}
             <h2 id={titleId} className="text-base sm:text-lg font-extrabold text-[var(--text)] tracking-tight break-words">
               {title}
             </h2>
@@ -320,7 +330,7 @@ export const Modal: React.FC<ModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            aria-label={t.common.close}
+            aria-label={closeLabel ?? t.common.close}
             className="pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
           >
             <X size={17} />

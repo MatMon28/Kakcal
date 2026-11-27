@@ -11,7 +11,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint src vite.config.ts",
     "test": "vitest run",
-    "check": "npm run typecheck && npm run lint && npm run test && vite build && node scripts/check-widget-layouts.mjs",
+    "check": "npm run typecheck && npm run lint && npm run test && vite build && node scripts/check-widget-layouts.mjs && node scripts/check-classic-coherence.mjs",
     "test:browser": "node scripts/smoke.mjs && node scripts/check-journal.mjs"
   },
   "dependencies": {

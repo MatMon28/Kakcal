@@ -20,21 +20,7 @@ import {
 } from '../../utils/notifications';
 import type { DailyReminderSetting, NotificationSettings as NotificationSettingsData } from '../../types';
 import type { FastingNotificationSettings } from '../../types/fasting';
-
-const Switch: React.FC<{ on: boolean }> = ({ on }) => (
-  <span
-    aria-hidden="true"
-    className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
-      on ? 'bg-[#C9EFD3] border-[#9ADBB0]' : 'bg-[var(--border)] border-[var(--border)]'
-    }`}
-  >
-    <span
-      className={`block w-5 h-5 rounded-full transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] shadow-sm ${
-        on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
-      }`}
-    />
-  </span>
-);
+import { SwitchVisual } from '../common/Switch';
 
 const TimeField: React.FC<{ label: string; value: string; onChange: (v: string) => void }> = ({ label, value, onChange }) => (
   <label className="flex items-center gap-2 text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
@@ -71,19 +57,20 @@ const Row: React.FC<RowProps> = ({ icon, tone, title, desc, on, onToggle, disabl
   <div className="bg-[var(--inset)] rounded-2xl">
     <button
       type="button"
-      aria-pressed={on}
+      role="switch"
+      aria-checked={on}
       disabled={disabled}
       onClick={onToggle}
-      className="w-full min-h-[52px] flex items-center justify-between gap-3 px-3 py-2.5 text-left rounded-2xl hover:bg-[var(--hover)] transition-colors disabled:opacity-50"
+      className="pressable w-full min-h-[52px] flex items-center justify-between gap-3 px-3 py-2.5 text-left rounded-2xl hover:bg-[var(--hover)] transition-colors disabled:opacity-50"
     >
       <span className="flex items-center gap-2.5 min-w-0">
-        <span className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone}`}>{icon}</span>
+        <span data-settings-badge className={`size-8 rounded-full flex items-center justify-center shrink-0 ${tone}`}>{icon}</span>
         <span className="min-w-0">
           <span className="block text-xs font-extrabold text-[var(--text)] leading-tight">{title}</span>
           {desc && <span className="block text-[11px] font-medium text-[var(--muted)] leading-tight mt-0.5">{desc}</span>}
         </span>
       </span>
-      <Switch on={on} />
+      <SwitchVisual on={on} />
     </button>
     {on && children && <div className="px-3 pb-3 pt-1 space-y-2.5">{children}</div>}
   </div>
@@ -205,7 +192,7 @@ export const NotificationSettings: React.FC = () => {
       {/* Meals: one switch and one time for every meal */}
       <div className="bg-[var(--inset)] rounded-2xl px-3 py-3 space-y-2">
         <div className="flex items-center gap-2.5">
-          <span className="size-8 rounded-full flex items-center justify-center shrink-0 bg-intake text-intake-ink">
+          <span data-settings-badge className="size-8 rounded-full flex items-center justify-center shrink-0 bg-intake text-intake-ink">
             <UtensilsCrossed size={15} />
           </span>
           <span className="min-w-0">
@@ -220,14 +207,15 @@ export const NotificationSettings: React.FC = () => {
               <div key={slot} className="bg-[var(--surface)] rounded-xl">
                 <button
                   type="button"
-                  aria-pressed={m.enabled}
+                  role="switch"
+                  aria-checked={m.enabled}
                   onClick={() => toggle(m.enabled, (enabled) => meal(slot, { enabled }))}
-                  className="w-full min-h-[44px] flex items-center justify-between gap-3 px-3 py-2 text-left rounded-xl hover:bg-[var(--hover)] transition-colors"
+                  className="pressable w-full min-h-[44px] flex items-center justify-between gap-3 px-3 py-2 text-left rounded-xl hover:bg-[var(--hover)] transition-colors"
                 >
                   <span className="text-xs font-bold text-[var(--text)]">{t.mealSlots[slot]}</span>
                   <span className="flex items-center gap-2 shrink-0">
                     {m.enabled && <span className="text-[11px] font-extrabold tabular-nums text-[var(--muted)]">{m.time}</span>}
-                    <span className="scale-[0.82] origin-right"><Switch on={m.enabled} /></span>
+                    <SwitchVisual on={m.enabled} compact />
                   </span>
                 </button>
                 {m.enabled && (

@@ -1,4 +1,4 @@
-import { WorkflowFooter } from '../common/WorkflowFooter';
+import { QuickLogFoodModal } from '../common/QuickLogFoodModal';
 import { useJournalText } from '../../i18n/journal';
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useApp, useNavActions } from '../../context/AppContext';
@@ -6,9 +6,7 @@ import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { catalogueScore } from '../../data/offCatalog';
 import { browseCatalogue, findCatalogueBarcodes } from '../../utils/catalogueSearch';
 import { FoodCategory, FoodItem, MealSlotId } from '../../types';
-import { Modal } from '../common/Modal';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
-import { AmountSelector } from '../common/AmountSelector';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
@@ -235,7 +233,7 @@ export const FoodDatabaseView: React.FC = () => {
           >
             <ArrowLeft size={16} />
           </button>
-          <div className="w-9 h-9 rounded-full bg-transparent text-[#1A5632] flex items-center justify-center shrink-0">
+          <div className="w-9 h-9 rounded-full bg-transparent text-[var(--intake-on-surface)] flex items-center justify-center shrink-0">
             <BookOpen size={17} />
           </div>
           <div>
@@ -273,7 +271,7 @@ export const FoodDatabaseView: React.FC = () => {
       </div>
 
       {/* Search & Category Filters */}
-      <div ref={filters} className="scroll-mt-32 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 space-y-3">
+      <div ref={filters} className="scroll-mt-32 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-3">
         {offState.failed && <p role="status" className="text-xs font-semibold text-[var(--muted)]">
           {t.database.catalogueUnavailable}{' '}
           <button
@@ -407,7 +405,7 @@ export const FoodDatabaseView: React.FC = () => {
               <div
                 key={food.id}
                 data-food-id={food.id}
-                className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 flex flex-col justify-between gap-3"
+                className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex flex-col justify-between gap-3"
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
@@ -461,7 +459,7 @@ export const FoodDatabaseView: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setFoodToDelete(food)}
-                        className="pressable w-7 h-7 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                        className="pressable size-8 rounded-full text-[var(--muted)] hover:text-activity-ink hover:bg-activity flex items-center justify-center"
                         title={t.common.delete}
                         aria-label={t.common.delete}
                       >
@@ -499,20 +497,8 @@ export const FoodDatabaseView: React.FC = () => {
       )}
 
       {/* Quick Log Modal */}
-      <Modal
-        isOpen={foodToLog !== null}
-        onClose={() => setFoodToLog(null)}
-        onBack={() => setFoodToLog(null)}
-        footer={<WorkflowFooter primary={j('Log food', 'Registra alimento')} onPrimary={handleConfirmQuickLog}
-          disabled={!Number.isFinite(logAmount) || logAmount <= 0} moreDisabled={!Number.isFinite(logAmount) || logAmount <= 0}
-          more={j('Add more', 'Aggiungi altro')} onMore={() => {
-            if (!foodToLog || !Number.isFinite(logAmount) || logAmount <= 0) return;
-            rememberFood(foodToLog);
-            setFoodLogSeed([{ food: foodToLog, amount: logAmount }]);
-            setTargetMealSlot(logSlot);
-            setIsAddFoodOpen(true);
-            setFoodToLog(null);
-          }} />}
+      <QuickLogFoodModal
+        food={foodToLog}
         title={
           foodToLog
             ? language === 'it'
@@ -520,47 +506,25 @@ export const FoodDatabaseView: React.FC = () => {
               : foodToLog.name_en || foodToLog.name_de
             : ''
         }
-        maxWidth="max-w-md"
-      >
-        <div className="space-y-4">
-          {foodToLog && (
-            <div className="flex items-center justify-between bg-[#C9EFD3] rounded-2xl px-4 py-3 tabular-nums">
-              <span className="text-xs font-bold text-[#1D5C38]">
-                {foodToLog.calories} kcal / 100{foodToLog.unit}
-              </span>
-              <span className="text-xl font-extrabold text-[#142E1F]">
-                {Math.round((foodToLog.calories * logAmount) / 100)} kcal
-              </span>
-            </div>
-          )}
-
-          <div className="grid grid-cols-3 gap-1.5">
-            {mealSlots.map((slot) => (
-              <button
-                key={slot.id}
-                type="button"
-                onClick={() => setLogSlot(slot.id)}
-                className={`pressable py-2 px-1.5 text-center text-xs font-bold rounded-xl border truncate ${
-                  logSlot === slot.id
-                    ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
-                    : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
-                }`}
-              >
-                {slot.label}
-              </button>
-            ))}
-          </div>
-
-          <AmountSelector
-            value={logAmount}
-            onChange={setLogAmount}
-            unit={foodToLog?.unit || 'g'}
-            food={foodToLog ?? undefined}
-          />
-          {foodToLog && <FoodMacroGrid food={foodToLog} amount={logAmount} />}
-
-        </div>
-      </Modal>
+        onClose={() => setFoodToLog(null)}
+        onBack={() => setFoodToLog(null)}
+        mealSlots={mealSlots}
+        slot={logSlot}
+        onSlotChange={setLogSlot}
+        amount={logAmount}
+        onAmountChange={setLogAmount}
+        primaryLabel={j('Log food', 'Registra alimento')}
+        onConfirm={handleConfirmQuickLog}
+        moreLabel={j('Add more', 'Aggiungi altro')}
+        onMore={() => {
+          if (!foodToLog || !Number.isFinite(logAmount) || logAmount <= 0) return;
+          rememberFood(foodToLog);
+          setFoodLogSeed([{ food: foodToLog, amount: logAmount }]);
+          setTargetMealSlot(logSlot);
+          setIsAddFoodOpen(true);
+          setFoodToLog(null);
+        }}
+      />
 
       <ConfirmDialog
         open={foodToDelete !== null}

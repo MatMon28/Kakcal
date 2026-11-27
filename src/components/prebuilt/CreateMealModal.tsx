@@ -96,8 +96,8 @@ export function CreateMealModal({ s }: { s: LibraryState }) {
             })}
           </div>
           {newIngredients.length > 0 && (
-            <div className="border-t-2 border-[var(--border)] pt-4 mt-4">
-              <div data-meal-recap className="space-y-2.5 rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+            <div className="border-t border-[var(--border)] pt-4 mt-4">
+              <div data-meal-recap className="space-y-2.5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5">
                 <p className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)] text-xs font-extrabold uppercase tracking-wider">
                   <span>{j('Meal recap', 'Riepilogo pasto')}</span>
                   <span className="text-[var(--muted)] normal-case tracking-normal">{t.prebuilt.ingredientsCount.replace('{count}', String(newIngredients.length))}</span>

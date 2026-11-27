@@ -61,8 +61,17 @@ export const FastingNoteModal: React.FC<FastingNoteModalProps> = ({
       title={editingNote ? ft.notes.editNote : ft.notes.addTitle}
       maxWidth="max-w-md"
       dockId="fast-note"
+      footer={
+        <button
+          type="submit"
+          form="fasting-note-form"
+          className="kc-fast-cta pressable w-full py-3 rounded-2xl bg-intake hover:bg-intake-hover text-intake-ink text-sm font-extrabold"
+        >
+          {ft.notes.save}
+        </button>
+      }
     >
-      <form onSubmit={handleSave} className="space-y-4">
+      <form id="fasting-note-form" onSubmit={handleSave} className="space-y-4">
         <div>
           <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)] mb-2">
             {ft.notes.mood}
@@ -128,17 +137,10 @@ export const FastingNoteModal: React.FC<FastingNoteModalProps> = ({
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder={ft.notes.placeholder}
-              className="kc-fast-input mt-1.5 w-full rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] resize-none normal-case tracking-normal"
+              className="kc-fast-input mt-1.5 w-full rounded-2xl bg-[var(--inset)] border border-[var(--border)] px-3 py-2.5 text-sm font-medium text-[var(--text)] placeholder:text-[var(--muted)] focus:outline-none focus:border-[var(--muted)] focus-visible:outline-2 focus-visible:outline-[var(--muted)] focus-visible:outline-offset-1 resize-none normal-case tracking-normal"
             />
           </label>
         </div>
-
-        <button
-          type="submit"
-          className="kc-fast-cta pressable w-full py-3 rounded-2xl bg-[#F7E9AA] hover:bg-[#F2E29A] text-[#5D4911] border border-[#E7D889] text-sm font-extrabold"
-        >
-          {ft.notes.save}
-        </button>
       </form>
     </Modal>
   );

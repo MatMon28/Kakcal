@@ -2,7 +2,7 @@
 .custom-library-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 18px;
+  gap: 16px;
   align-items: start;
 }
 .custom-library-grid > section,
@@ -72,8 +72,8 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   border-radius: var(--pill-radius, 8px);
   color: inherit;
   flex-shrink: 0;
@@ -83,7 +83,6 @@
 }
 .journal-icon-button:hover {
   background: #ffffff35;
-  transform: translateY(-1px);
 }
 .journal-section-body {
   padding-top: 0;
@@ -110,7 +109,7 @@
   background: transparent;
   border: 0;
   outline: none;
-  font-size: 11px;
+  font-size: 14px;
   color: inherit;
 }
 .journal-search input::placeholder {
@@ -138,7 +137,6 @@
 }
 .journal-recent-meal:hover {
   background: #fffaf0;
-  transform: translateY(-2px);
 }
 .journal-meal-preview {
   display: flex;
@@ -164,19 +162,19 @@
   min-width: 0;
 }
 .journal-meal-preview small {
-  font-size: 9px;
+  font-size: 11px;
   opacity: 0.65;
 }
 .journal-meal-preview strong {
-  font-size: 12px;
-  font-weight: 750;
+  font-size: 13px;
+  font-weight: 800;
   margin: 3px 0;
 }
 .journal-meal-preview > span > span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 9px;
+  font-size: 11px;
   opacity: 0.65;
 }
 .journal-preview-arrow {
@@ -191,12 +189,13 @@
   margin-top: 3px;
 }
 .journal-recent-meal-footer > span {
-  font-size: 9px;
+  font-size: 11px;
   opacity: 0.8;
 }
 .journal-recent-meal-footer strong {
   font-size: 12px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 .journal-star {
   display: inline-flex;
@@ -223,7 +222,7 @@
   align-items: center;
   justify-content: space-between;
   font-size: 11px;
-  font-weight: 650;
+  font-weight: 700;
   margin-top: -8px;
 }
 .journal-week-heading > div {
@@ -256,12 +255,13 @@
   color: #fff;
 }
 .journal-week button > span {
-  font-size: 9px;
+  font-size: 11px;
   opacity: 0.7;
 }
 .journal-week button > strong {
   font-size: 12px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .journal-week i {
@@ -309,30 +309,22 @@
   min-width: 0;
 }
 .journal-plan-row small {
-  font-size: 9px;
-  opacity: 0.65;
+  font-size: 11px;
+  opacity: 0.7;
+  margin-bottom: 2px;
 }
 .journal-plan-row strong {
-  font-size: 12px;
-  font-weight: 750;
-  margin: 3px 0;
+  font-size: 13px;
+  font-weight: 700;
+  margin: 2px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .journal-plan-row-note {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 9px;
-  opacity: 0.65;
-}
-.journal-plan-row small {
-  font-size: 9px;
-  opacity: 0.7;
-  margin-bottom: 2px;
-}
-.journal-plan-row strong {
   font-size: 11px;
-  font-weight: 650;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  opacity: 0.65;
 }

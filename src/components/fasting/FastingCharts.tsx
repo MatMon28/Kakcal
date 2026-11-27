@@ -25,7 +25,7 @@ export const FastingDaysBarChart: React.FC<{
     <section
       aria-label={ft.stats.fastingTimeTitle}
       data-kc-tone="planner"
-      className={`rounded-3xl border border-[var(--border)] bg-[#CFE7FE] text-[#183F66] ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
+      className={`rounded-3xl bg-carbs text-carbs-ink ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
@@ -82,8 +82,8 @@ export const FastingDaysBarChart: React.FC<{
                     bar.hours === 0
                       ? 'kc-fast-bar-empty bg-current opacity-15 rounded-full'
                       : bar.onTarget
-                      ? 'kc-fast-bar bg-[#2B6CB0] opacity-95'
-                      : 'kc-fast-bar bg-[#2B6CB0] opacity-55'
+                      ? 'kc-fast-bar bg-[#2B6CB0]'
+                      : 'kc-fast-bar bg-[#4B89C8]'
                   } ${active ? 'ring-2 ring-current' : ''}`}
                   style={{ height: `${hPct}%` }}
                 />
@@ -130,7 +130,7 @@ export const FastingHungerChart: React.FC<{
     <section
       aria-label={ft.stats.hungerTitle}
       data-kc-tone="recipes"
-      className={`rounded-3xl border border-[var(--border)] bg-[#E2D6FF] text-[#49346F] ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
+      className={`rounded-3xl bg-fat text-fat-ink ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
     >
       <div className="flex items-start justify-between gap-2">
         <div>

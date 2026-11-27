@@ -43,9 +43,22 @@ export const WaterModal: React.FC = () => {
       onClose={() => setIsWaterOpen(false)}
       title={t.water.title}
       maxWidth="max-w-md"
+      footer={
+        <button
+          type="button"
+          onClick={handleAdd}
+          disabled={amount <= 0}
+          className="pressable w-full py-3 bg-carbs hover:bg-carbs-hover text-carbs-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
+        >
+          <Check size={18} strokeWidth={2.5} />
+          <span>
+            {t.water.save} · {amount} ml
+          </span>
+        </button>
+      }
     >
       <div className="space-y-4">
-        <div className="bg-[#CFE7FE] rounded-3xl p-4 space-y-3">
+        <div className="bg-carbs rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-2.5 text-sm font-extrabold text-[#183B5E]">
               <span className="w-9 h-9 rounded-full bg-[#E8F3FF] flex items-center justify-center shrink-0">
@@ -77,9 +90,9 @@ export const WaterModal: React.FC = () => {
               key={q.value}
               type="button"
               onClick={() => setAmount(q.value)}
-              className={`pressable py-2.5 px-1 rounded-2xl text-[11px] sm:text-xs font-extrabold border text-center ${
+              className={`pressable py-2.5 px-1 rounded-2xl text-[11px] sm:text-xs font-extrabold tabular-nums border text-center ${
                 amount === q.value
-                  ? 'bg-[#CFE7FE] text-[#183B5E] border-[#8EC2F2]'
+                  ? 'bg-carbs text-carbs-ink border-carbs-border'
                   : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
               }`}
             >
@@ -87,18 +100,6 @@ export const WaterModal: React.FC = () => {
             </button>
           ))}
         </div>
-
-        <button
-          type="button"
-          onClick={handleAdd}
-          disabled={amount <= 0}
-          className="pressable w-full py-3 bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
-        >
-          <Check size={18} strokeWidth={2.5} />
-          <span>
-            {t.water.save} · {amount} ml
-          </span>
-        </button>
       </div>
     </Modal>
   );

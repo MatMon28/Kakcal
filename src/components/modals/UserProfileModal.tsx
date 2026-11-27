@@ -132,6 +132,16 @@ export const UserProfileModal: React.FC = () => {
       onClose={() => setIsProfileOpen(false)}
       title={t.profile.title}
       maxWidth="max-w-md"
+      footer={
+        <button
+          type="button"
+          onClick={handleSave}
+          className="pressable w-full py-3 bg-intake hover:bg-intake-hover text-intake-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+        >
+          <Check size={18} strokeWidth={2.5} />
+          <span>{t.profile.saveBtn}</span>
+        </button>
+      }
     >
       <div className="space-y-4">
         {/* Sex Selection */}
@@ -389,16 +399,6 @@ export const UserProfileModal: React.FC = () => {
 
         {/* Advanced > Body measurements: choose what to track (renders nothing when the option is off) */}
         <BodyMeasuresProfile />
-
-        {/* Save */}
-        <button
-          type="button"
-          onClick={handleSave}
-          className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
-        >
-          <Check size={18} strokeWidth={2.5} />
-          <span>{t.profile.saveBtn}</span>
-        </button>
       </div>
     </Modal>
   );

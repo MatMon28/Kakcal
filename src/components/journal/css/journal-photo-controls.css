@@ -34,7 +34,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .journal-date-field.is-bar {
   min-height: 42px;
@@ -93,7 +93,8 @@
 .journal-date-field:focus-within,
 .journal-meal-select:focus-visible {
   border-color: var(--muted);
-  outline: none;
+  outline: 2px solid var(--muted);
+  outline-offset: 1px;
 }
 .journal-meal-select {
   gap: 8px;

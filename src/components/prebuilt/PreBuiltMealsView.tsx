@@ -74,7 +74,7 @@ export const PreBuiltMealsView: React.FC = () => {
             type="button"
             data-library-food-btn
             onClick={openBarcode}
-            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--intake-on-surface)] border border-[var(--border)] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.prebuilt.barcode}
             aria-label={t.prebuilt.barcode}
           >
@@ -85,7 +85,7 @@ export const PreBuiltMealsView: React.FC = () => {
             type="button"
             data-library-food-btn
             onClick={openCustomFood}
-            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            className="pressable w-full min-w-0 px-3 py-2.5 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--intake-on-surface)] border border-[var(--border)] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.customFood}
             aria-label={t.database.customFood}
           >
@@ -96,7 +96,7 @@ export const PreBuiltMealsView: React.FC = () => {
             type="button"
             data-library-food-btn
             onClick={() => { setTargetMealSlot(autoMealSlot()); setActiveTab('database'); }}
-            className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 rounded-full bg-[#FBF8F2] hover:bg-white text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
+            className="pressable col-span-2 w-full min-w-0 px-3 py-2.5 rounded-full bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--intake-on-surface)] border border-[var(--border)] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5"
             title={t.database.browseAll}
             aria-label={t.database.browseAll}
           >

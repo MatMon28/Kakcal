@@ -205,7 +205,7 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                     />
                   </CollapseBody>
                 </div>
-                <div data-recipe-summary className="space-y-2.5 rounded-2xl border-2 border-[var(--border)] bg-[var(--surface)] p-3.5 shadow-sm">
+                <div data-recipe-summary className="space-y-2.5 rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-3.5">
                   <p className="flex items-center justify-between gap-2 pb-2 border-b border-[var(--border)] text-xs font-extrabold uppercase tracking-wider">
                     <span>{j('Recipe recap', 'Riepilogo ricetta')}</span>
                     <span className="text-[var(--muted)] tabular-nums normal-case tracking-normal">{recipeTotals.grams} g</span>
@@ -220,7 +220,7 @@ export function RecipeBuilderModal({ s }: { s: LibraryState }) {
                     {settings.trackSugar && <span data-nutrient="sugar" className="bg-nutrient text-nutrient-ink rounded-lg py-1">{t.macros.sugar} {recipeTotals.sugar100}g</span>}
                   </div>
                 </div>
-                <div className="border-t-2 border-[var(--border)] pt-4" data-recipe-ingredients>
+                <div className="border-t border-[var(--border)] pt-4" data-recipe-ingredients>
                   <p className="px-1 mb-2.5 flex items-center justify-between gap-2 text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)]">
                     <span>{j('Ingredients', 'Ingredienti')}</span>
                     <span className="normal-case tracking-normal">{t.prebuilt.ingredientsCount.replace('{count}', String(recipeIngs.length))}</span>

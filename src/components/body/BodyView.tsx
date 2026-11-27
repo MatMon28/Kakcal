@@ -162,7 +162,7 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
             selected={selected}
             onSelect={setPicked}
           />
-          <div className="flex justify-between px-1 text-[10px] font-bold text-[var(--muted)]">
+          <div className="flex justify-between px-1 text-[10px] font-bold tabular-nums text-[var(--muted)]">
             <span>{formatDateDisplay(from, language)}</span>
             <span>{formatDateDisplay(to, language)}</span>
           </div>

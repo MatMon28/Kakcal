@@ -13,6 +13,10 @@ interface Props {
    * A "−" pressed after a "+" steps back by only 10 g above 100 g and 20 g above 300 g.
    */
   foodSteps?: boolean;
+  /** Fixed step increment/decrement (overrides adaptive 10/50 steps when provided). */
+  step?: number;
+  min?: number;
+  max?: number;
 }
 
 // Below 100 → step 10, at/above 100 → step 50
@@ -51,7 +55,7 @@ export const foodStepDownAfterPlus = (v: number) => {
   return foodStepDown(v);
 };
 
-export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact, ariaLabel, foodSteps }) => {
+export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact, ariaLabel, foodSteps, step, min = 0, max }) => {
   const valRef = useRef(value);
   valRef.current = value;
   // Food portions: remembers that "+" was used, so the next "−" steps back gently (see `foodStepDownAfterPlus`).
@@ -59,8 +63,14 @@ export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact,
   // (typed, quick preset, another food), which forgets the "+".
   const usedPlus = useRef(false);
   const lastEmitted = useRef(value);
-  const up = (v: number) => (foodSteps ? foodStepUp(v) : stepUp(v));
+  const clamp = (v: number) => {
+    const rounded = Math.round(v * 100) / 100;
+    const clampedMin = Math.max(min, rounded);
+    return max !== undefined ? Math.min(max, clampedMin) : clampedMin;
+  };
+  const up = (v: number) => (step !== undefined ? clamp(v + step) : foodSteps ? foodStepUp(v) : stepUp(v));
   const down = (v: number) => {
+    if (step !== undefined) return clamp(v - step);
     if (!foodSteps) return stepDown(v);
     return usedPlus.current ? foodStepDownAfterPlus(v) : foodStepDown(v);
   };
@@ -120,7 +130,7 @@ export const AmountStepper: React.FC<Props> = ({ value, onChange, unit, compact,
       <button
         type="button"
         className={btn}
-        disabled={value <= 0}
+        disabled={value <= min}
         onPointerDown={() => startHold('down')}
         onPointerUp={stopHold}
         onPointerLeave={stopHold}

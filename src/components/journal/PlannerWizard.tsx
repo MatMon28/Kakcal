@@ -962,12 +962,17 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
                     onChange={(e) => patch({ items: items.map((v, i) => (i === index ? { ...v, amount: Number(e.target.value) } : v)) })}
                   />
                   <small>{item.food.unit}</small>
-                  <button aria-label={`${j('Remove', 'Rimuovi')} ${name(item.food)}`} type="button" onClick={() => removeItem(index)}>
+                  <button
+                    aria-label={`${j('Remove', 'Rimuovi')} ${name(item.food)}`}
+                    type="button"
+                    onClick={() => removeItem(index)}
+                    className="pressable size-8 rounded-full text-[var(--muted)] hover:bg-activity hover:text-activity-ink flex items-center justify-center shrink-0"
+                  >
                     <X size={15} />
                   </button>
                 </div>
               ))}
-              <p className="journal-result-count" data-language={language}>{kcal} kcal</p>
+              <p className="journal-result-count tabular-nums" data-language={language}>{kcal} kcal</p>
             </div>
           )}
         </>

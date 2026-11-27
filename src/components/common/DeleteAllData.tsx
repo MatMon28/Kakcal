@@ -35,13 +35,13 @@ export const DeleteAllData: React.FC = () => {
         type="button"
         onClick={() => setStep(1)}
         disabled={busy}
-        className="pressable w-full min-h-[54px] py-2 px-3 rounded-xl bg-[#D93636]/10 hover:bg-[#D93636]/20 border border-[#D93636]/25 text-[#C94444] font-bold text-xs flex items-center justify-center gap-1.5"
+        className="pressable w-full min-h-[54px] py-2 px-3 rounded-xl bg-[color-mix(in_srgb,var(--text-warn)_12%,transparent)] hover:bg-[color-mix(in_srgb,var(--text-warn)_20%,transparent)] border border-[color-mix(in_srgb,var(--text-warn)_28%,transparent)] text-[var(--text-warn)] font-bold text-xs flex items-center justify-center gap-1.5"
       >
         <Trash2 size={13} className="shrink-0" />
         <span>{copy.button}</span>
       </button>
 
-      {error && <p role="alert" className="text-xs text-[#C94444]">{j('Could not erase the data.', 'Impossibile eliminare i dati.')}</p>}
+      {error && <p role="alert" className="text-xs text-[var(--text-warn)]">{j('Could not erase the data.', 'Impossibile eliminare i dati.')}</p>}
       <ConfirmDialog
         open={step === 1}
         title={copy.firstTitle}

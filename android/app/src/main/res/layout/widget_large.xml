@@ -187,7 +187,8 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:layout_marginTop="8dp"
-        android:background="#E6DECF" />
+        android:layout_marginBottom="6dp"
+        android:background="#E2D9C8" />
 
     <include layout="@layout/widget_actions_five" />
 </LinearLayout>

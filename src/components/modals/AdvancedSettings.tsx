@@ -25,22 +25,8 @@ import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { NumericInput } from '../common/NumericInput';
 import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
+import { SwitchVisual } from '../common/Switch';
 import { TONE } from './settings/SettingsParts';
-
-const Switch: React.FC<{ on: boolean }> = ({ on }) => (
-  <span
-    aria-hidden="true"
-    className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
-      on ? 'bg-[#C9EFD3] border-[#9ADBB0]' : 'bg-[var(--border)] border-[var(--border)]'
-    }`}
-  >
-    <span
-      className={`block w-5 h-5 rounded-full transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] shadow-sm ${
-        on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
-      }`}
-    />
-  </span>
-);
 
 const chip = (letter: string, tone: string) => (
   <span className={`size-7 rounded-full flex items-center justify-center shrink-0 text-[11px] font-extrabold ${tone}`}>{letter}</span>
@@ -95,17 +81,18 @@ export const AdvancedSettings: React.FC = () => {
         <div className="flex items-center gap-1 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl transition-colors">
           <button
             type="button"
-            aria-pressed={advanced.goalsEnabled}
+            role="switch"
+            aria-checked={advanced.goalsEnabled}
             onClick={() => setGoalsEnabled(!advanced.goalsEnabled)}
-            className="flex-1 min-w-0 flex items-center justify-between gap-3 pl-3 pr-1 py-3 text-left"
+            className="pressable flex-1 min-w-0 flex items-center justify-between gap-3 pl-3 pr-1 py-3 text-left"
           >
             <span className="flex items-center gap-2.5 min-w-0">
-              <span className="size-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
+              <span data-settings-badge className="size-8 rounded-full bg-intake text-intake-ink flex items-center justify-center shrink-0">
                 <Target size={15} />
               </span>
               <span className="block text-xs font-extrabold text-[var(--text)]">{text.settings.goalsTitle}</span>
             </span>
-            <Switch on={advanced.goalsEnabled} />
+            <SwitchVisual on={advanced.goalsEnabled} />
           </button>
           {/* Collapse arrow: hides the list of goals and limits (only while the group is on). */}
           {advanced.goalsEnabled ? (
@@ -135,9 +122,10 @@ export const AdvancedSettings: React.FC = () => {
                 <div key={key} className="bg-[var(--inset)] rounded-2xl px-3 py-2.5 space-y-2.5">
                   <button
                     type="button"
-                    aria-pressed={goal.enabled}
+                    role="switch"
+                    aria-checked={goal.enabled}
                     onClick={() => updateGoal(key, { enabled: !goal.enabled })}
-                    className="w-full flex items-center justify-between gap-3 text-left"
+                    className="pressable w-full flex items-center justify-between gap-3 text-left"
                   >
                     <span className="flex items-center gap-2.5 min-w-0">
                       {GOAL_ICON[key]}
@@ -148,7 +136,7 @@ export const AdvancedSettings: React.FC = () => {
                         )}
                       </span>
                     </span>
-                    <span className="scale-[0.85] origin-right shrink-0"><Switch on={goal.enabled} /></span>
+                    <SwitchVisual on={goal.enabled} compact />
                   </button>
 
                   {goal.enabled && (
@@ -215,9 +203,10 @@ export const AdvancedSettings: React.FC = () => {
             <div className="bg-[var(--inset)] rounded-2xl px-3 py-2.5 space-y-2.5" data-balance-target>
               <button
                 type="button"
-                aria-pressed={advanced.balance.enabled}
+                role="switch"
+                aria-checked={advanced.balance.enabled}
                 onClick={() => updateBalance({ enabled: !advanced.balance.enabled })}
-                className="w-full flex items-center justify-between gap-3 text-left"
+                className="pressable w-full flex items-center justify-between gap-3 text-left"
               >
                 <span className="flex items-center gap-2.5 min-w-0">
                   <span className="size-7 rounded-full bg-intake text-intake-ink flex items-center justify-center shrink-0"><Scale size={14} /></span>
@@ -226,7 +215,7 @@ export const AdvancedSettings: React.FC = () => {
                     <span className="block text-[10px] font-medium text-[var(--muted)]">{j('Aim for a deficit or a surplus every day.', 'Punta a un deficit o a un surplus ogni giorno.')}</span>
                   </span>
                 </span>
-                <span className="scale-[0.85] origin-right shrink-0"><Switch on={advanced.balance.enabled} /></span>
+                <SwitchVisual on={advanced.balance.enabled} compact />
               </button>
               {advanced.balance.enabled && (
                 <div className="flex items-center gap-2">
@@ -262,17 +251,18 @@ export const AdvancedSettings: React.FC = () => {
       <div className="space-y-2.5">
         <button
           type="button"
-          aria-pressed={layout.enabled}
+          role="switch"
+          aria-checked={layout.enabled}
           onClick={() => setLayoutEnabled(!layout.enabled)}
-          className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
+          className="pressable w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-3 transition-colors text-left"
         >
           <span className="flex items-center gap-2.5 min-w-0">
-            <span className="size-8 rounded-full bg-[#E2D6FF] text-[#49346F] flex items-center justify-center shrink-0">
+            <span data-settings-badge className="size-8 rounded-full bg-weight text-weight-ink flex items-center justify-center shrink-0">
               <LayoutDashboard size={15} />
             </span>
             <span className="block text-xs font-extrabold text-[var(--text)]">{layoutText.title}</span>
           </span>
-          <Switch on={layout.enabled} />
+          <SwitchVisual on={layout.enabled} />
         </button>
 
         <button

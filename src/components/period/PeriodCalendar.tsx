@@ -3,7 +3,8 @@ import { useJournalData, useSettings } from '../../context/AppContext';
 import { LazyBody } from '../common/LazyBody';
 import { PeriodStatus, pillMarkerFor, PillMarker } from '../../utils/period';
 import { addDaysToDateString, formatFullDate, getTodayDateString, dateFormatter } from '../../utils/formatters';
-import { ChevronLeft, ChevronRight, ChevronDown, Heart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { CollapseArrow } from '../common/InlineCollapse';
 
 /** Capsule marker (≥14px) used in calendar cells and the legend. */
 export const PillCapsule: React.FC<{ kind: PillMarker; size?: number }> = ({ kind, size = 14 }) => {
@@ -30,14 +31,14 @@ export const PillCapsule: React.FC<{ kind: PillMarker; size?: number }> = ({ kin
   if (kind === 'break') {
     return (
       <svg {...common}>
-        <rect x="0.75" y="0.75" width={w - 1.5} height={h - 1.5} rx={r} fill="none" stroke="#9A93AC" strokeWidth={1.3} />
-        <line x1={w * 0.3} y1={h * 0.78} x2={w * 0.7} y2={h * 0.22} stroke="#9A93AC" strokeWidth={1.3} strokeLinecap="round" />
+        <rect x="0.75" y="0.75" width={w - 1.5} height={h - 1.5} rx={r} fill="none" stroke="var(--muted)" strokeWidth={1.3} />
+        <line x1={w * 0.3} y1={h * 0.78} x2={w * 0.7} y2={h * 0.22} stroke="var(--muted)" strokeWidth={1.3} strokeLinecap="round" />
       </svg>
     );
   }
   if (kind === 'due') {
     return (
-      <svg {...common} className="animate-pulse">
+      <svg {...common} className="motion-safe:animate-pulse">
         <rect x="0.75" y="0.75" width={w - 1.5} height={h - 1.5} rx={r} fill="none" stroke={accent} strokeWidth={1.5} strokeDasharray="2.5 2" />
       </svg>
     );
@@ -51,8 +52,8 @@ export const PillCapsule: React.FC<{ kind: PillMarker; size?: number }> = ({ kin
   }
   if (kind === 'future') {
     return (
-      <svg {...common} opacity={0.35}>
-        <rect x="0.75" y="0.75" width={w - 1.5} height={h - 1.5} rx={r} fill="none" stroke="#9A93AC" strokeWidth={1.2} />
+      <svg {...common} opacity={0.55}>
+        <rect x="0.75" y="0.75" width={w - 1.5} height={h - 1.5} rx={r} fill="none" stroke="var(--muted)" strokeWidth={1.2} />
       </svg>
     );
   }
@@ -307,7 +308,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
           <span>{t.period.legend}</span>
           <span className="flex items-center gap-2">
             <span className="text-[10px] font-medium opacity-80">{t.period.daySummaryHint}</span>
-            <ChevronDown size={14} className={`shrink-0 transition-transform ${legendOpen ? 'rotate-180' : ''}`} />
+            <CollapseArrow open={legendOpen} />
           </span>
         </button>
         <div className="accordion-grid" data-open={legendOpen} inert={!legendOpen}>

@@ -27,20 +27,20 @@ export function NotificationShowcase({ ui, lang, onOpen }: Props) {
     {
       id: 'meal', screen: 'food', when: text.meal, title: copy.mealTitle.replace('{meal}', meals.lunch),
       body: copy.mealBody.replace('{meal}', meals.lunch.toLowerCase()),
-      tone: 'bg-[#C9EFD3] text-[#174A2B]', icon: <UtensilsCrossed size={16} aria-hidden="true" />,
+      tone: 'bg-intake text-intake-ink', icon: <UtensilsCrossed size={16} aria-hidden="true" />,
     },
     {
       id: 'custom', screen: 'tracker', when: text.custom, title: copy.customTitle,
       body: copy.customBody.replace('{names}', text.sampleCustom),
-      tone: 'bg-[#E4D9F8] text-[#41296E]', icon: <Sparkles size={16} aria-hidden="true" />,
+      tone: 'bg-nutrient text-nutrient-ink', icon: <Sparkles size={16} aria-hidden="true" />,
     },
     {
       id: 'weight', screen: 'weight', when: text.weight, title: copy.weightTitle, body: copy.weightBody,
-      tone: 'bg-[#D8E8F8] text-[#1E3F66]', icon: <Scale size={16} aria-hidden="true" />,
+      tone: 'bg-weight text-weight-ink', icon: <Scale size={16} aria-hidden="true" />,
     },
     {
       id: 'log', screen: 'today', when: text.log, title: copy.logTitle, body: copy.logBody,
-      tone: 'bg-[#FAE0B4] text-[#7D4E14]', icon: <ClipboardCheck size={16} aria-hidden="true" />,
+      tone: 'bg-protein text-protein-ink', icon: <ClipboardCheck size={16} aria-hidden="true" />,
     },
   ];
 
@@ -51,7 +51,7 @@ export function NotificationShowcase({ ui, lang, onOpen }: Props) {
         {text.heading}
       </h3>
       <p className="mt-1 text-xs font-semibold text-[var(--muted)]">{text.hint}</p>
-      <ul data-testid="notification-showcase" className="mt-4 grid gap-2.5 rounded-[28px] bg-[var(--inset)] p-3 sm:grid-cols-2">
+      <ul data-testid="notification-showcase" className="mt-4 grid gap-2.5 rounded-3xl bg-[var(--inset)] p-3 sm:grid-cols-2">
         {cards.map((card) => (
           <li key={card.id} className={card.id === 'log' ? 'sm:col-span-2' : undefined}>
             <button

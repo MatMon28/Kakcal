@@ -8,7 +8,20 @@
 
 Food values are per 100 g/ml. Logged portions retain a nutrient snapshot. The journal and widget use the same calorie and macro functions. BMR uses Mifflin-St Jeor (unless the profile swaps it for a personalised daily calorie burned amount via `useCustomBmr` / `customBmrKcal`, while `restingKcalPerHour` for MET activities still uses Mifflin-St Jeor); total burned is BMR + activity + estimated thermogenesis. Net is intake minus expenditure. The water estimate uses the profile and activity. Estimates are not direct measurements.
 
-Shared accents: intake/food green `#C9EFD3`, activity/burned red `#F6D0D0`, weight violet `#E2D6FF`, water/carbs blue `#CFE7FE`, protein/poop peach `#FAE0B4`, fat lavender `#E2D6FF`, and custom tracker lemon `#F7E9AA`. Fibre, salt and sugar all use the same lemon field with dark ink, including in dark themes. Portion selectors use the wheat, salt-crystal and candy icons instead of those three text headings, with localized accessible names and gram values. Unknown values remain unknown and the sugar switch still governs visibility. Meal and tracker header icon circles are transparent; dock and widget actions keep their filled circles.
+Shared accents (defined as `@theme` tokens in [theme-tokens.css](../src/styles/theme-tokens.css)):
+
+| Role | Token | Light Fill | Ink |
+| --- | --- | --- | --- |
+| Intake / Food | `intake` | `#C9EFD3` | `#17432A` |
+| Activity / Burned | `activity` | `#F6D0D0` | `#702D32` |
+| Water / Carbs / Planner | `carbs` | `#CFE7FE` | `#183F66` |
+| Protein / Poop / Meals | `protein` | `#FAE0B4` | `#7D4E14` |
+| Weight / Fat / Recipes | `fat` / `weight` | `#E2D6FF` | `#49346F` |
+| Nutrient / Diary / Fasting | `nutrient` | `#F7E9AA` | `#5D4911` |
+| Period | `period` | `#F4C6D8` | `#6E2440` |
+| Shopping | `teal` | `#CDEEEA` | `#0F4A47` |
+
+Fibre, salt and sugar all use the `nutrient` lemon field with dark ink, including in dark themes. Portion selectors use the wheat, salt-crystal and candy icons instead of those three text headings, with localized accessible names and gram values. Unknown values remain unknown and the sugar switch still governs visibility. Meal, tracker, section, and page header icon circles are transparent; dock, widget, Settings row, Body icon, and modal summary banner circles keep their filled plates.
 
 **Inverse ink token `--on-text`** (`src/index.css` (rules in `src/styles/*.css`, see [file-organisation.md](file-organisation.md)), `:root`, = `var(--bg)`). Selected segments, active chips, toasts and dark buttons are filled with `var(--text)`; their label must use `text-[var(--on-text)]`, **never `text-[var(--surface)]`**. In Aurora Dark and Lite Dark `--surface` is a translucent white (`rgba(255,255,255,.07/.11)`), so the label became white on a white pill and was unreadable (e.g. the Compact / Normal / Expanded switch). `--bg` is opaque in every theme and style.
 

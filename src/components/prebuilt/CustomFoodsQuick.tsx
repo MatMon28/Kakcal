@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Check, Clock, Star } from 'lucide-react';
+import { Clock, Star } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
@@ -7,9 +7,7 @@ import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { allMealItems } from '../../utils/mealItems';
 import { usePersistentState } from '../../utils/usePersistentState';
 import type { FoodItem, MealSlotId } from '../../types';
-import { Modal } from '../common/Modal';
-import { AmountSelector } from '../common/AmountSelector';
-import { FoodMacroGrid } from '../common/FoodMacroGrid';
+import { QuickLogFoodModal } from '../common/QuickLogFoodModal';
 import { FoodResultRow } from '../common/FoodResultRow';
 import { JournalChip } from '../journal/JournalUI';
 
@@ -100,46 +98,24 @@ export const CustomFoodsQuick: React.FC = () => {
         </button>
       )}
 
-      <Modal isOpen={food !== null} onClose={() => setFood(null)} title={food ? nameOf(food) : ''} maxWidth="max-w-md">
-        {food && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between bg-[#C9EFD3] rounded-2xl px-4 py-3 tabular-nums">
-              <span className="text-xs font-bold text-[#1D5C38]">{food.calories} kcal / 100{food.unit}</span>
-              <span className="text-xl font-extrabold text-[#142E1F]">{Math.round((food.calories * amount) / 100)} kcal</span>
-            </div>
-            <div className="grid grid-cols-3 gap-1.5">
-              {mealSlots.map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSlot(s.id)}
-                  className={`pressable py-2 px-1.5 text-center text-xs font-bold rounded-xl border truncate ${
-                    slot === s.id ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]' : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
-            <AmountSelector value={amount} onChange={setAmount} unit={food.unit} food={food} />
-            <FoodMacroGrid food={food} amount={amount} />
-            <button
-              type="button"
-              disabled={amount <= 0}
-              onClick={() => {
-                setLastAmount(food.id, amount);
-                rememberFood(food);
-                logFoodItem(slot, food, amount);
-                setFood(null);
-              }}
-              className="pressable w-full py-3 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
-            >
-              <Check size={18} strokeWidth={2.5} />
-              <span>{t.foodModal.addBtn} ({slotLabel(slot)})</span>
-            </button>
-          </div>
-        )}
-      </Modal>
+      <QuickLogFoodModal
+        food={food}
+        title={food ? nameOf(food) : ''}
+        onClose={() => setFood(null)}
+        mealSlots={mealSlots}
+        slot={slot}
+        onSlotChange={setSlot}
+        amount={amount}
+        onAmountChange={setAmount}
+        primaryLabel={`${t.foodModal.addBtn} (${slotLabel(slot)})`}
+        onConfirm={() => {
+          if (!food) return;
+          setLastAmount(food.id, amount);
+          rememberFood(food);
+          logFoodItem(slot, food, amount);
+          setFood(null);
+        }}
+      />
     </div>
   );
 };

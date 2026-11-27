@@ -19,11 +19,11 @@ export const CustomPageSettings: React.FC = () => {
     updateSettings({ hideCustomButtons: { ...settings.hideCustomButtons, [key]: !shown } });
 
   const fields: { key: CustomFieldId; icon: React.ReactNode; tone: string; title: string }[] = [
-    { key: 'diary', icon: <NotebookText size={14} />, tone: TONE.lilac, title: j('Meal diary', 'Diario dei pasti') },
+    { key: 'diary', icon: <NotebookText size={14} />, tone: TONE.butter, title: j('Meal diary', 'Diario dei pasti') },
     { key: 'meals', icon: <UtensilsCrossed size={14} />, tone: TONE.peach, title: j('Meals', 'Pasti') },
     { key: 'recipes', icon: <ChefHat size={14} />, tone: TONE.lilac, title: j('Recipes', 'Ricette') },
     { key: 'planner', icon: <CalendarDays size={14} />, tone: TONE.sky, title: j('Meal planner', 'Pianificatore pasti') },
-    { key: 'shopping', icon: <ShoppingCart size={14} />, tone: TONE.mint, title: j('Shopping lists', 'Liste della spesa') },
+    { key: 'shopping', icon: <ShoppingCart size={14} />, tone: TONE.teal, title: j('Shopping lists', 'Liste della spesa') },
     { key: 'photos', icon: <Camera size={14} />, tone: TONE.rose, title: j('Photo diary', 'Diario fotografico') },
     { key: 'foods', icon: <BookOpen size={14} />, tone: TONE.mint, title: j('Foods', 'Alimenti') },
   ];

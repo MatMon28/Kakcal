@@ -27,8 +27,8 @@
 }
 .journal-photo-preview strong {
   display: block;
-  font-size: 10px;
-  font-weight: 650;
+  font-size: 12px;
+  font-weight: 700;
   margin-top: 9px;
   white-space: nowrap;
   overflow: hidden;
@@ -36,7 +36,7 @@
 }
 .journal-photo-preview small {
   display: block;
-  font-size: 9px;
+  font-size: 11px;
   opacity: 0.7;
   margin-top: 3px;
 }
@@ -76,7 +76,7 @@
   gap: 7px;
   min-width: 0;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
 }
 .journal-form input:not([type='file']),
 .journal-form select,
@@ -86,10 +86,10 @@
   background: var(--inset);
   color: var(--text);
   border: 1px solid var(--border);
-  border-radius: var(--pill-radius, 10px);
+  border-radius: min(var(--pill-radius, 10px), 12px);
   width: 100%;
   min-width: 0;
-  font-size: 12px;
+  font-size: 14px;
   font-weight: 500;
   padding: 10px 12px;
   outline: none;
@@ -102,6 +102,11 @@
 .journal-form :is(input, select, textarea):focus,
 .journal-log-note textarea:focus {
   border-color: var(--muted);
+}
+.journal-form :is(input, select, textarea):focus-visible,
+.journal-log-note textarea:focus-visible {
+  outline: 2px solid var(--muted);
+  outline-offset: 1px;
 }
 .journal-form label > small {
   color: var(--muted);
@@ -133,7 +138,7 @@
 }
 .journal-form legend {
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
   margin-bottom: 9px;
 }
 .journal-slot-options {
@@ -247,7 +252,7 @@
   justify-content: center;
   gap: 7px;
   font-size: 12px;
-  font-weight: 650;
+  font-weight: 700;
   padding: 11px 15px;
   border-radius: var(--pill-radius, 10px);
   transition:
@@ -268,7 +273,6 @@
 .journal-primary-button:hover,
 .journal-secondary-button:hover {
   opacity: 0.8;
-  transform: translateY(-1px);
 }
 .journal-primary-button:disabled,
 .journal-secondary-button:disabled {

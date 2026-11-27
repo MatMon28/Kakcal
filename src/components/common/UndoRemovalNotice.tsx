@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type React from 'react';
 import { RotateCcw } from 'lucide-react';
 import { useJournalText } from '../../i18n/journal';
+import { prefersReducedMotion } from '../../utils/motion';
 import { clearRemovalScope, dismissRemoval, getRemovals, subscribeToRemovals, undoRemoval } from '../../utils/undoRemoval';
 
 /** Draft-only deletions stop being undoable once the draft closes or is saved. */
@@ -49,7 +50,7 @@ export function UndoRemovalNotice({ floating = false }: { floating?: boolean }) 
   const resetVisual = (animate: boolean) => {
     const el = pillRef.current;
     if (!el) return;
-    el.style.transition = animate ? 'transform 160ms ease, opacity 160ms ease' : '';
+    el.style.transition = animate && !prefersReducedMotion() ? 'transform 160ms ease, opacity 160ms ease' : '';
     el.style.transform = '';
     el.style.opacity = '';
   };
@@ -143,7 +144,7 @@ export function UndoRemovalNotice({ floating = false }: { floating?: boolean }) 
         <button
           type="button"
           onClick={() => undoRemoval(removal.id)}
-          className="pressable inline-flex items-center gap-1.5 rounded-xl bg-[#C9EFD3] px-3 min-h-9 font-extrabold text-xs text-[#174A2B]"
+          className="pressable inline-flex items-center gap-1.5 rounded-xl bg-intake hover:bg-intake-hover px-3 min-h-9 font-extrabold text-xs text-intake-ink"
         >
           <RotateCcw size={14} /> {j('Undo', 'Annulla')}
         </button>

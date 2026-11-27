@@ -68,7 +68,7 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
       </span>
     ) : null
   ) : latest ? (
-    <span className="kc-custom-pill inline-flex items-center gap-1 rounded-lg px-2 py-1 bg-[#FDF3E0] text-[#7D4E14] text-[11px] font-extrabold leading-none max-w-full">
+    <span className="kc-custom-pill inline-flex items-center gap-1 rounded-lg px-2 py-1 bg-protein-soft text-protein-ink text-[11px] font-extrabold leading-none max-w-full tabular-nums">
       <span className="truncate">{sizeLabel(latest.size)}</span>
       {latest.bristol && <span className="shrink-0">· B{latest.bristol}</span>}
       {entries.length > 1 && <span className="shrink-0">+{entries.length - 1}</span>}
@@ -109,7 +109,7 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
                 <PoopIcon size={15} className="text-[var(--muted)] shrink-0" />
                 <span className={`font-bold text-[var(--text)] ${settings.ultraMinimal ? 'sr-only' : ''}`}>{sizeLabel(p.size)}</span>
                 {p.bristol && (
-                  <span className="kc-custom-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] text-[10px] font-extrabold">
+                  <span className="kc-custom-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-protein text-protein-ink text-[10px] font-extrabold tabular-nums">
                     <BristolIcon type={p.bristol} size={13} className="text-current" />
                     B{p.bristol}
                   </span>

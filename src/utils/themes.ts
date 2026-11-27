@@ -130,7 +130,10 @@ export function getRelativeLuminance(hex: string): number {
 }
 
 export function getBestContrastText(bgHex: string): string {
-  return getRelativeLuminance(bgHex) > 0.42 ? '#090e17' : '#ffffff';
+  const lum = getRelativeLuminance(bgHex);
+  const onDark = (lum + 0.05) / (getRelativeLuminance('#090e17') + 0.05);
+  const onWhite = 1.05 / (lum + 0.05);
+  return onDark >= onWhite ? '#090e17' : '#ffffff';
 }
 
 export function getMonoVariables(baseHex: string, mode: Theme): Record<string, string> {
@@ -238,7 +241,6 @@ export function getMonoVariables(baseHex: string, mode: Theme): Record<string, s
     '--border': borderCol,
     '--text': textMain,
     '--muted': textMuted,
-    '--brand-flame-color': accent,
     '--header-btn-bg': surfaceBg,
     '--header-icon-color': textMain,
     '--nav-bg': surfaceBg,

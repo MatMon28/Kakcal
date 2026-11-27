@@ -63,7 +63,7 @@ export function SecondaryNutrientCard({ nutrient, value, average = false }: {
       role="group"
       title={labels[nutrient]}
       aria-label={`${labels[nutrient]}: ${value} g`}
-      className={`bg-nutrient text-nutrient-ink rounded-2xl relative h-full flex flex-col items-center justify-center text-center ${
+      className={`bg-nutrient text-nutrient-ink rounded-3xl relative h-full flex flex-col items-center justify-center text-center ${
         ultraMinimal ? 'min-h-[80px] pt-7 pb-5 px-2' : 'min-h-[96px] pt-8 pb-6 px-2 sm:px-3'
       }`}
     >

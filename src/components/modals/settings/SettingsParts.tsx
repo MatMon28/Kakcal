@@ -1,4 +1,7 @@
 import React from 'react';
+import { SwitchVisual } from '../../common/Switch';
+
+export { SwitchVisual };
 
 /**
  * Shared look of every Settings group and sub-section (Today, Custom page, Pages, Notifications, Backup, Delete...).
@@ -6,39 +9,18 @@ import React from 'react';
  * so no two sub-sections look alike by accident.
  */
 
-/** Badge colours: each Settings group has its own colour, so the groups are easy to tell apart. */
 export const TONE = {
-  sky: 'bg-[#CFE7FE] text-[#183F66]',
-  lilac: 'bg-[#E2D6FF] text-[#4D3582]',
-  butter: 'bg-[#F7E9AA] text-[#6E5B14]',
-  mint: 'bg-[#C9EFD3] text-[#174A2B]',
-  peach: 'bg-[#FAE0B4] text-[#7D4E14]',
+  sky: 'bg-carbs text-carbs-ink',
+  lilac: 'bg-fat text-fat-ink',
+  butter: 'bg-nutrient text-nutrient-ink',
+  mint: 'bg-intake text-intake-ink',
+  peach: 'bg-protein text-protein-ink',
   sand: 'bg-[#EDE6D6] text-[#5B4D2E]',
-  rose: 'bg-[#F4C6D8] text-[#6E2440]',
+  rose: 'bg-period text-period-ink',
   slate: 'bg-[#D9DEE8] text-[#2F3A4E]',
-  teal: 'bg-[#BFE9E4] text-[#14524B]',
-  red: 'bg-[#F6D0D0] text-[#8C2D32]',
+  teal: 'bg-teal text-teal-ink',
+  red: 'bg-activity text-activity-ink',
 } as const;
-
-/** The on / off switch drawing (the button or row around it owns the interaction). */
-export const SwitchVisual: React.FC<{ on: boolean }> = ({ on }) => (
-  <span
-    aria-hidden="true"
-    data-settings-switch={on ? 'on' : 'off'}
-    className={`w-11 h-6 rounded-full p-0.5 transition-colors duration-150 shrink-0 inline-flex items-center border ${
-      on
-        ? 'bg-[#C9EFD3] border-[#9ADBB0]'
-        : 'bg-[var(--border)] border-[var(--border)]'
-    }`}
-  >
-    <span
-      data-settings-switch-thumb
-      className={`block w-5 h-5 rounded-full transition-transform [transition-duration:420ms] [transition-timing-function:var(--ease-bounce)] shadow-sm ${
-        on ? 'translate-x-5 bg-[#1E5E3A]' : 'translate-x-0 bg-[#FBF8F2]'
-      }`}
-    />
-  </span>
-);
 
 /** Heading of every sub-section inside a Settings group (same style everywhere), with an optional hint line. */
 export const SubSection: React.FC<{ title: string; hint?: string; children: React.ReactNode }> = ({ title, hint, children }) => (

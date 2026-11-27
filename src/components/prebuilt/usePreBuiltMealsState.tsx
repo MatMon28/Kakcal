@@ -13,7 +13,6 @@ import {
   type RecipeImportErrorCode,
 } from '../../utils/recipeImport';
 import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
-import { Search, X } from 'lucide-react';
 import { usePersistentState } from '../../utils/usePersistentState';
 import { useJournalText } from '../../i18n/journal';
 import { useCustomDockActions } from '../journal/CustomShortcuts';
@@ -507,30 +506,6 @@ export function usePreBuiltMealsState() {
   const visibleMeals = isMealFiltering ? mealResults : preBuiltMeals;
   const visibleRecipes = isRecipeFiltering ? recipeListResults : savedRecipes;
 
-  const searchInput = (value: string, onChange: (v: string) => void, placeholder?: string) => (
-    <div className="relative">
-      <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
-      <input
-        type="text"
-        enterKeyHint="search"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder || t.settings.searchText}
-        className="w-full bg-[var(--surface)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)] transition-colors"
-      />
-      {value && (
-        <button
-          type="button"
-          onClick={() => onChange('')}
-          className="pressable absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
-          aria-label={t.common.clear}
-        >
-          <X size={14} />
-        </button>
-      )}
-    </div>
-  );
-
   return {
     preBuiltMeals,
     addPreBuiltMeal,
@@ -649,7 +624,6 @@ export function usePreBuiltMealsState() {
     isRecipeFiltering,
     visibleMeals,
     visibleRecipes,
-    searchInput,
   };
 }
 

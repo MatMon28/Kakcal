@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
 import { useApp } from '../../../context/AppContext';
 import { Modal } from '../../common/Modal';
+import { ConfirmDialog } from '../../common/ConfirmDialog';
 import { IconPicker } from '../../common/IconPicker';
 import { TrackerIcon } from '../../common/TrackerIcon';
 import { SwitchVisual } from './SettingsParts';
@@ -19,6 +20,7 @@ export const CustomButtonsSettings: React.FC = () => {
   const [newBtnIcon, setNewBtnIcon] = useState('sparkles');
   const [newBtnStats, setNewBtnStats] = useState(true);
   const [editingBtnId, setEditingBtnId] = useState<string | null>(null);
+  const [deletingBtnId, setDeletingBtnId] = useState<string | null>(null);
   const widgetShortcutEnabled = settings.customButtons.length > 0 && settings.widgetCustomButton;
 
   const startEditBtn = (id: string) => {
@@ -93,8 +95,8 @@ export const CustomButtonsSettings: React.FC = () => {
               </button>
               <button
                 type="button"
-                onClick={() => updateSettings({ customButtons: settings.customButtons.filter((x) => x.id !== b.id) })}
-                className="pressable w-8 h-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                onClick={() => setDeletingBtnId(b.id)}
+                className="pressable w-8 h-8 rounded-full text-[var(--muted)] hover:text-activity-ink hover:bg-activity flex items-center justify-center"
                 title={t.settings.deleteCustomBtn}
                 aria-label={t.settings.deleteCustomBtn}
               >
@@ -170,9 +172,10 @@ export const CustomButtonsSettings: React.FC = () => {
             {/* Statistics question */}
             <button
               type="button"
-              aria-pressed={newBtnStats}
+              role="switch"
+              aria-checked={newBtnStats}
               onClick={() => setNewBtnStats((v) => !v)}
-              className="w-full flex items-center justify-between gap-2 bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-left"
+              className="pressable w-full flex items-center justify-between gap-2 bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-left"
             >
               <span className="text-xs font-bold text-[var(--text)]">{t.settings.showStatsQ}</span>
               <SwitchVisual on={newBtnStats} />
@@ -190,13 +193,27 @@ export const CustomButtonsSettings: React.FC = () => {
                 type="button"
                 disabled={!newBtnName.trim()}
                 onClick={finishBtnForm}
-                className="kc-primary-btn pressable flex-1 py-2.5 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold disabled:opacity-40"
+                className="kc-primary-btn pressable flex-1 py-2.5 rounded-xl bg-intake hover:bg-intake-hover text-intake-ink text-xs font-extrabold disabled:opacity-40"
               >
                 {t.common.save}
               </button>
             </div>
           </div>
         </Modal>
+
+        <ConfirmDialog
+          open={deletingBtnId !== null}
+          title={t.settings.deleteCustomBtn}
+          message={settings.customButtons.find((x) => x.id === deletingBtnId)?.name ?? ''}
+          confirmLabel={t.common.delete}
+          onCancel={() => setDeletingBtnId(null)}
+          onConfirm={() => {
+            if (deletingBtnId) {
+              updateSettings({ customButtons: settings.customButtons.filter((x) => x.id !== deletingBtnId) });
+            }
+            setDeletingBtnId(null);
+          }}
+        />
 
         <button
           type="button"
@@ -211,14 +228,15 @@ export const CustomButtonsSettings: React.FC = () => {
       {/* Widget shortcut: below the list and the add button */}
       <button
         type="button"
-        aria-pressed={widgetShortcutEnabled}
+        role="switch"
+        aria-checked={widgetShortcutEnabled}
         aria-label={t.settings.widgetCustomButton}
         disabled={settings.customButtons.length === 0}
         onClick={() => updateSettings({ widgetCustomButton: !settings.widgetCustomButton })}
-        className="w-full flex items-center justify-between gap-3 bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
+        className="pressable w-full flex items-center justify-between gap-3 border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <span className="flex items-center gap-2.5 min-w-0">
-          <span className="kc-custom-icon-badge size-8 rounded-full bg-[#F7E9AA] text-[#6E5B14] flex items-center justify-center shrink-0">
+          <span data-settings-badge className="kc-custom-icon-badge size-8 rounded-full bg-nutrient text-nutrient-ink flex items-center justify-center shrink-0">
             <Sparkles size={15} />
           </span>
           <span className="min-w-0">

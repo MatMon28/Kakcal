@@ -38,6 +38,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:textSize">11sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
     <style name="WidgetValue">
@@ -48,6 +49,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:textSize">26sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
     <style name="WidgetMacro">
@@ -65,6 +67,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:textSize">17sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
     </style>
 
     <style name="WidgetMacroPercent">
@@ -73,6 +76,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:textSize">11sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
     </style>
     <!-- Medium widget: shorter energy cards (no progress bar and a smaller value). -->
     <style name="WidgetCardCompact" parent="WidgetCard">
@@ -104,6 +108,7 @@
         <item name="android:singleLine">true</item>
         <item name="android:textSize">24sp</item>
         <item name="android:textStyle">bold</item>
+        <item name="android:fontFeatureSettings">tnum</item>
         <!-- API 26+: the value shrinks when the launcher gives the widget little height (older versions keep 24 sp). -->
         <item name="android:autoSizeTextType">uniform</item>
         <item name="android:autoSizeMinTextSize">12sp</item>

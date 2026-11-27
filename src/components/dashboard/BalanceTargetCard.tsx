@@ -44,7 +44,7 @@ export const BalanceTargetCard: React.FC<BalanceTargetCardProps> = ({ net, avera
       role="group"
       data-balance-card
       aria-label={`${title}: ${signed} kcal, ${kindLabel} ${formatKcal(balance.kcal)} kcal`}
-      className={`kc-themed-card bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4'}`}
+      className={`kc-themed-card bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}
     >
       <div className="flex items-center justify-between gap-2">
         <span className="inline-flex min-w-0 items-center gap-2 text-[var(--text)]" title={title}>
@@ -60,7 +60,7 @@ export const BalanceTargetCard: React.FC<BalanceTargetCardProps> = ({ net, avera
       </div>
       <div className="mt-3 w-full h-2.5 rounded-full bg-[var(--inset)] overflow-hidden">
         <div
-          className={`h-full rounded-full transition-[width] duration-500 ease-out ${reached ? 'bg-[#4FA872]' : 'bg-intake-accent'}`}
+          className={`h-full rounded-full transition-[width] duration-500 ease-out ${reached ? 'bg-[var(--intake-on-surface)]' : 'bg-intake-accent'}`}
           style={{ width: `${pct > 0 ? Math.max(4, pct) : 0}%` }}
         />
       </div>
@@ -68,7 +68,7 @@ export const BalanceTargetCard: React.FC<BalanceTargetCardProps> = ({ net, avera
         <span className="text-[var(--muted)]">
           {kindLabel} {formatKcal(balance.kcal)} kcal
         </span>
-        <span className={reached ? 'text-[#2E7D4F]' : 'text-[var(--muted)]'}>{status}</span>
+        <span className={reached ? 'text-[var(--text-neg)]' : 'text-[var(--muted)]'}>{status}</span>
       </div>
     </div>
   );

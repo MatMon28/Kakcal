@@ -2,8 +2,6 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   CalendarDays,
-  ChevronDown,
-  ChevronUp,
   Droplets,
   Footprints,
   History,
@@ -15,6 +13,7 @@ import {
   Square,
   Trash2,
 } from 'lucide-react';
+import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 import { useSettings, useShell } from '../../context/AppContext';
 import { useFastingText } from '../../i18n/fasting';
 import type { FastingMood, FastingNote, FastingSession } from '../../types/fasting';
@@ -228,7 +227,7 @@ export const FastingView: React.FC = () => {
       <section
         aria-label={ft.pageTitle}
         data-kc-tone="diary"
-        className={`rounded-3xl border border-[var(--border)] bg-[#F7E9AA] text-[#5D4911] ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
+        className={`rounded-3xl bg-nutrient text-nutrient-ink ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
       >
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
@@ -286,7 +285,7 @@ export const FastingView: React.FC = () => {
               aria-label={timerExpanded ? t.common.collapse : t.common.expand}
               className="kc-fast-icon-btn pressable size-9 rounded-full bg-[#FCF4D6]/85 hover:bg-[#FCF4D6] border border-[#8A6D1B]/25 text-[#5D4911] flex items-center justify-center"
             >
-              {timerExpanded ? <ChevronUp size={17} /> : <ChevronDown size={17} />}
+              <CollapseArrow open={timerExpanded} className="!text-current" />
             </button>
           </div>
         </div>
@@ -304,22 +303,27 @@ export const FastingView: React.FC = () => {
                 <button
                   key={n.id}
                   type="button"
-                  data-fast-marker={n.mood}
                   onClick={() => {
                     setEditingNote(n);
                     setNoteModalOpen(true);
                   }}
                   title={`${formatDurationCompact(n.elapsedMs)} · ${ft.moods[n.mood]}`}
                   aria-label={`${ft.notes.editNote}: ${ft.moods[n.mood]}`}
-                  className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-3.5 rounded-full border-2 border-[var(--surface)] shadow-sm"
-                  style={{ left: `${leftPct}%`, backgroundColor: MARKER_COLOR[n.mood] }}
-                />
+                  className="pressable absolute top-1/2 -translate-y-1/2 -translate-x-1/2 size-7 flex items-center justify-center rounded-full"
+                  style={{ left: `${leftPct}%` }}
+                >
+                  <span
+                    data-fast-marker={n.mood}
+                    className="size-3.5 rounded-full border-2 border-[var(--surface)] shadow-sm block"
+                    style={{ backgroundColor: MARKER_COLOR[n.mood] }}
+                  />
+                </button>
               );
             })}
         </div>
 
         {/* Expanded settings: protocol presets, custom hours, start time & projected end */}
-        {timerExpanded && (
+        <CollapseBody open={timerExpanded}>
           <div className="kc-fast-divider mt-4 pt-3.5 border-t border-[#8A6D1B]/20 space-y-3">
             <div>
               <span className="block text-[10px] font-extrabold uppercase tracking-wider opacity-75 mb-1.5">
@@ -408,7 +412,7 @@ export const FastingView: React.FC = () => {
               </div>
             )}
           </div>
-        )}
+        </CollapseBody>
 
         <button
           type="button"
@@ -502,7 +506,7 @@ export const FastingView: React.FC = () => {
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
         <div
           data-kc-tone="foods"
-          className="rounded-3xl border border-[var(--border)] bg-[#C9EFD3] text-[#17432A] p-3.5 sm:p-4"
+          className="rounded-3xl bg-intake text-intake-ink p-3.5 sm:p-4"
         >
           <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80">
             {ft.stats.avgDuration}
@@ -520,13 +524,13 @@ export const FastingView: React.FC = () => {
 
         <div
           data-kc-tone="photo"
-          className="rounded-3xl border border-[var(--border)] bg-[#F6D0D0] text-[#702D32] p-3.5 sm:p-4"
+          className="rounded-3xl bg-activity text-activity-ink p-3.5 sm:p-4"
         >
           <div className="flex items-center justify-between gap-1">
             <span data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
               {ft.stats.completionRate}
             </span>
-            <span className="kc-fast-badge rounded-full bg-[#702D32] text-[#FBF8F2] px-2 py-0.5 text-[10px] font-extrabold tabular-nums shrink-0">
+            <span className="kc-fast-badge rounded-full bg-activity-ink text-[#FBF8F2] px-2 py-0.5 text-[10px] font-extrabold tabular-nums shrink-0">
               {stats.completionRate}%
             </span>
           </div>
@@ -545,7 +549,7 @@ export const FastingView: React.FC = () => {
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div
           data-kc-tone="planner"
-          className="rounded-3xl border border-[var(--border)] bg-[#CFE7FE] text-[#183F66] p-3 text-center"
+          className="rounded-3xl bg-carbs text-carbs-ink p-3 text-center"
         >
           <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
             {ft.stats.currentStreak}
@@ -559,7 +563,7 @@ export const FastingView: React.FC = () => {
 
         <div
           data-kc-tone="meals"
-          className="rounded-3xl border border-[var(--border)] bg-[#FAE0B4] text-[#7D4E14] p-3 text-center"
+          className="rounded-3xl bg-protein text-protein-ink p-3 text-center"
         >
           <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
             {ft.stats.totalHours}
@@ -569,7 +573,7 @@ export const FastingView: React.FC = () => {
 
         <div
           data-kc-tone="recipes"
-          className="rounded-3xl border border-[var(--border)] bg-[#E2D6FF] text-[#49346F] p-3 text-center"
+          className="rounded-3xl bg-fat text-fat-ink p-3 text-center"
         >
           <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
             {ft.stats.peakHungerHr}
@@ -599,7 +603,7 @@ export const FastingView: React.FC = () => {
           type="button"
           aria-expanded={notesOpen}
           onClick={() => setNotesOpen((v) => !v)}
-          className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-[var(--hover)] transition-colors"
+          className="pressable w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-[var(--hover)] transition-colors"
         >
           <span className="flex items-center gap-2 min-w-0">
             <NotebookPen size={16} className="text-[var(--muted)] shrink-0" aria-hidden="true" />
@@ -608,10 +612,10 @@ export const FastingView: React.FC = () => {
               {periodNotes.length}
             </span>
           </span>
-          {notesOpen ? <ChevronUp size={16} className="text-[var(--muted)]" /> : <ChevronDown size={16} className="text-[var(--muted)]" />}
+          <CollapseArrow open={notesOpen} />
         </button>
 
-        {notesOpen && (
+        <CollapseBody open={notesOpen}>
           <div className="px-3.5 pb-3.5 space-y-2 border-t border-[var(--border)] pt-3">
             {periodNotes.length === 0 ? (
               <p className="py-4 text-center text-xs font-bold text-[var(--muted)]">{ft.notes.empty}</p>
@@ -666,7 +670,7 @@ export const FastingView: React.FC = () => {
               ))
             )}
           </div>
-        )}
+        </CollapseBody>
       </section>
 
       {/* 6. Session History (collapsed by default) */}
@@ -675,7 +679,7 @@ export const FastingView: React.FC = () => {
           type="button"
           aria-expanded={historyOpen}
           onClick={() => setHistoryOpen((v) => !v)}
-          className="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-[var(--hover)] transition-colors"
+          className="pressable w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-[var(--hover)] transition-colors"
         >
           <span className="flex items-center gap-2 min-w-0">
             <History size={16} className="text-[var(--muted)] shrink-0" aria-hidden="true" />
@@ -684,10 +688,10 @@ export const FastingView: React.FC = () => {
               {periodSessions.length}
             </span>
           </span>
-          {historyOpen ? <ChevronUp size={16} className="text-[var(--muted)]" /> : <ChevronDown size={16} className="text-[var(--muted)]" />}
+          <CollapseArrow open={historyOpen} />
         </button>
 
-        {historyOpen && (
+        <CollapseBody open={historyOpen}>
           <div className="px-3.5 pb-3.5 space-y-2 border-t border-[var(--border)] pt-3">
             {periodSessions.length === 0 ? (
               <p className="py-4 text-center text-xs font-bold text-[var(--muted)]">{ft.history.empty}</p>
@@ -709,8 +713,8 @@ export const FastingView: React.FC = () => {
                         </span>
                         <span
                           data-fast-pill={timing.reached ? 'reached' : 'partial'}
-                          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                            timing.reached ? 'bg-[#C9EFD3] text-[#17432A]' : 'bg-[#FAE0B4] text-[#7D4E14]'
+                          className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold tabular-nums ${
+                            timing.reached ? 'bg-intake text-intake-ink' : 'bg-protein text-protein-ink'
                           }`}
                         >
                           {pct}%
@@ -728,7 +732,7 @@ export const FastingView: React.FC = () => {
               })
             )}
           </div>
-        )}
+        </CollapseBody>
       </section>
 
       <FastingNoteModal
@@ -751,7 +755,7 @@ export const FastingView: React.FC = () => {
         createPortal(
           <div
             role="status"
-            className="fixed bottom-[calc(max(0.875rem,calc(env(safe-area-inset-bottom)+0.375rem))+4.5rem)] sm:bottom-[calc(max(1.5rem,calc(env(safe-area-inset-bottom)+0.375rem))+4.5rem)] left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none"
+            className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-1/2 -translate-x-1/2 z-40 px-3 pointer-events-none"
           >
             <div className="kc-fast-toast rounded-2xl border border-[var(--border)] bg-[var(--surface-solid,var(--surface))] text-[var(--text)] px-4 py-2.5 shadow-lg text-xs font-extrabold whitespace-nowrap">
               {ft.notes.noActiveFast}

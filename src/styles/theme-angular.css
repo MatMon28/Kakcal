@@ -28,7 +28,6 @@ html[data-style="angular"] {
   --clip-xs: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%);
   --clip-dock: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
 
-  --brand-flame-color: #ff551a;
   --burned-bg: #ff551a;
   --burned-text: #0b1019;
   --burned-label: #0b1019;
@@ -68,6 +67,7 @@ html[data-style="angular"][data-theme="dark"] {
   --protein-text: #fde047;
   --fat-bg: #3b2366;
   --fat-text: #d8b4fe;
+  --water-fill: #60a5fa;
 
   --pill-c-bg: #1d3c78;
   --pill-c-text: #93c5fd;

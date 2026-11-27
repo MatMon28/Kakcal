@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Pencil, Trash2 } from 'lucide-react';
+import { ConfirmDialog } from '../common/ConfirmDialog';
 import { Modal } from '../common/Modal';
 import { useSettings } from '../../context/AppContext';
 import { useFastingText } from '../../i18n/fasting';
@@ -46,6 +47,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
   const [protocol, setProtocol] = useState<FastingProtocol>('16:8');
   const [customFastH, setCustomFastH] = useState(16);
   const [customEatH, setCustomEatH] = useState(8);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [startInput, setStartInput] = useState('');
   const [endInput, setEndInput] = useState('');
 
@@ -88,6 +90,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
   };
 
   const handleDelete = () => {
+    setConfirmDelete(false);
     removePastSession(session.id);
     onClose();
   };
@@ -113,6 +116,7 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
   const poly = pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' ');
 
   return (
+    <>
     <Modal
       isOpen={Boolean(session)}
       onClose={() => { setEditing(false); onClose(); }}
@@ -120,9 +124,20 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
       title={title}
       subtitle={subtitle}
       maxWidth="max-w-md"
+      footer={
+        editing ? (
+          <button
+            type="submit"
+            form="fasting-session-form"
+            className="kc-fast-cta pressable w-full py-3 rounded-2xl bg-intake hover:bg-intake-hover text-intake-ink text-sm font-extrabold"
+          >
+            {ft.history.saveSession}
+          </button>
+        ) : undefined
+      }
     >
       {editing ? (
-        <form onSubmit={handleSave} className="space-y-4">
+        <form id="fasting-session-form" onSubmit={handleSave} className="space-y-4">
           <div>
             <span className="block text-[11px] font-extrabold uppercase tracking-wider text-[var(--muted)] mb-2">
               {ft.timer.protocol}
@@ -194,13 +209,6 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
               />
             </label>
           </div>
-
-          <button
-            type="submit"
-            className="kc-fast-cta pressable w-full py-3 rounded-2xl bg-[#F7E9AA] hover:bg-[#F2E29A] text-[#5D4911] border border-[#E7D889] text-sm font-extrabold"
-          >
-            {ft.history.saveSession}
-          </button>
         </form>
       ) : (
         <div className="space-y-3.5">
@@ -215,9 +223,9 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
             </button>
             <button
               type="button"
-              onClick={handleDelete}
+              onClick={() => setConfirmDelete(true)}
               data-fast-pill="danger"
-              className="pressable inline-flex items-center gap-1.5 rounded-full bg-[#F6D0D0] text-[#7A2727] px-3 py-1.5 text-xs font-extrabold"
+              className="pressable inline-flex items-center gap-1.5 rounded-full bg-activity hover:bg-activity-hover text-activity-ink px-3 py-1.5 text-xs font-extrabold"
             >
               <Trash2 size={13} aria-hidden="true" />
               <span>{t.common.delete}</span>
@@ -332,5 +340,14 @@ export const FastingSessionModal: React.FC<FastingSessionModalProps> = ({ sessio
         </div>
       )}
     </Modal>
+    <ConfirmDialog
+      open={confirmDelete}
+      title={t.common.delete}
+      message={title}
+      confirmLabel={t.common.delete}
+      onCancel={() => setConfirmDelete(false)}
+      onConfirm={handleDelete}
+    />
+    </>
   );
 };
