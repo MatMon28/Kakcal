@@ -1,7 +1,7 @@
 import React from 'react';
 import { SecondaryNutrientCard, SecondaryNutrientRow, type SecondaryNutrient } from '../common/FoodMacroGrid';
 import { useApp } from '../../context/AppContext';
-import { GoalBadge } from '../common/GoalBadge';
+import { TileGoalOverlay } from '../common/GoalBadge';
 
 type MacroKey = 'carbs' | 'protein' | 'fat';
 
@@ -16,18 +16,28 @@ const MACRO_TONES: Record<MacroKey, { card: string; label: string; number: strin
 export const MacroCard: React.FC<{ macro: MacroKey }> = ({ macro }) => {
   const { currentMacros, settings, t } = useApp();
   const ultraMinimal = settings.ultraMinimal;
-  const macroPadding = ultraMinimal ? 'p-2.5 sm:p-3' : 'p-3.5 sm:p-4';
   const tone = MACRO_TONES[macro];
   const grams = currentMacros[`${macro}Grams`];
   const percent = currentMacros[`${macro}Percent`];
 
   return (
-    <div role="group" aria-label={`${t.macros[macro]}: ${grams} g`} className={`${tone.card} rounded-3xl ${macroPadding} relative text-center h-full min-w-0 flex flex-col justify-center`}>
-      <GoalBadge goal={macro} amount={grams} className="absolute top-1.5 right-1.5" />
-      <span className={`${ultraMinimal ? 'sr-only' : `text-[11px] font-bold uppercase tracking-wider ${tone.label} block truncate`}`}>
+    <div
+      role="group"
+      aria-label={`${t.macros[macro]}: ${grams} g`}
+      className={`${tone.card} rounded-3xl relative text-center h-full min-w-0 flex flex-col items-center justify-center ${
+        ultraMinimal ? 'min-h-[88px] pt-4 pb-6 px-2.5' : 'min-h-[116px] pt-8 pb-7 px-2.5 sm:px-3.5'
+      }`}
+    >
+      <span
+        className={
+          ultraMinimal
+            ? 'sr-only'
+            : `absolute top-[13px] left-1/2 -translate-x-1/2 max-w-[calc(100%-20px)] truncate text-center text-[11px] font-bold uppercase tracking-wider ${tone.label}`
+        }
+      >
         {t.macros[macro]}
       </span>
-      <div className="flex items-baseline justify-center gap-0.5 mt-1">
+      <div className="flex items-baseline justify-center gap-0.5">
         <span className={`text-xl sm:text-2xl font-extrabold tabular-nums ${tone.number} tracking-tight`}>
           {grams}
         </span>
@@ -36,6 +46,7 @@ export const MacroCard: React.FC<{ macro: MacroKey }> = ({ macro }) => {
       <span className={`text-xs font-bold tabular-nums ${tone.label} block mt-0.5`}>
         {percent}%
       </span>
+      <TileGoalOverlay goal={macro} amount={grams} unit="g" ultraMinimal={ultraMinimal} />
     </div>
   );
 };

@@ -1,8 +1,10 @@
+import { AlertTriangle, CircleCheck } from 'lucide-react';
 import { useAdvancedText } from '../../i18n/advanced';
 import { goalState, useAdvanced } from '../../utils/advancedStore';
 import { useApp } from '../../context/AppContext';
 import type { GoalKey } from '../../types/advanced';
 import type { ThemeStyle } from '../../types';
+import { BorderProgressRing } from './BorderProgressRing';
 
 /**
  * Small badge shown inside a Today field when its goal is reached:
@@ -99,5 +101,65 @@ export function GoalBadge({ goal, amount, className = '' }: { goal: GoalKey; amo
         )}
       </svg>
     </span>
+  );
+}
+
+const roundDisplay = (n: number) => String(Math.round(n * 100) / 100);
+
+/**
+ * Perimeter border progress ring + bottom-right status readout for Today summary tiles.
+ * Renders nothing when no goal/limit is active for the metric, causing zero layout shift.
+ */
+export function TileGoalOverlay({
+  goal,
+  amount,
+  unit,
+  ultraMinimal = false,
+  formatNumber,
+}: {
+  goal: GoalKey;
+  amount: number;
+  unit: string;
+  ultraMinimal?: boolean;
+  formatNumber?: (n: number) => string;
+}) {
+  const config = useAdvanced();
+  const text = useAdvancedText();
+  const { userProfile } = useApp();
+  const state = goalState(config, goal, amount, userProfile.weightKg);
+  if (!state) return null;
+
+  const fmt = formatNumber ?? roundDisplay;
+  const isMinReached = state.mode === 'objective' && state.reached;
+  const isMaxExceeded = state.mode === 'limit' && state.exceeded;
+  const excess = isMaxExceeded ? Math.max(0, Math.round((amount - state.value) * 100) / 100) : 0;
+
+  const ariaLabel = isMinReached
+    ? text.goal.objectiveReached
+    : isMaxExceeded
+      ? `${fmt(excess)}${unit} ${text.goal.over}`
+      : `${fmt(amount)} / ${fmt(state.value)}${unit}`;
+
+  return (
+    <>
+      <BorderProgressRing value={amount} target={state.value} />
+      <span
+        data-goal-readout={isMaxExceeded ? 'exceeded' : isMinReached ? 'reached' : 'progress'}
+        title={ariaLabel}
+        aria-label={ariaLabel}
+        style={isMinReached || isMaxExceeded ? { color: 'var(--ring-fill, currentColor)' } : undefined}
+        className={`pointer-events-none absolute ${
+          ultraMinimal ? 'bottom-2 right-2.5 text-[10px]' : 'bottom-[11px] right-3.5 text-[11px]'
+        } inline-flex max-w-[calc(100%-24px)] items-center gap-1 whitespace-nowrap font-bold tabular-nums leading-none ${
+          isMinReached || isMaxExceeded ? '' : 'opacity-[0.78]'
+        }`}
+      >
+        {isMinReached && <CircleCheck size={14} stroke="currentColor" strokeWidth={2.2} className="shrink-0" aria-hidden="true" />}
+        {isMaxExceeded && <AlertTriangle size={14} stroke="currentColor" strokeWidth={2.2} className="shrink-0" aria-hidden="true" />}
+        <span className="truncate">
+          {isMaxExceeded ? `${fmt(excess)}${unit} ${text.goal.over}` : `${fmt(amount)} / ${fmt(state.value)}${unit}`}
+        </span>
+      </span>
+    </>
   );
 }

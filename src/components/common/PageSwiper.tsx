@@ -360,7 +360,7 @@ export function PageSwiper(props: PageSwiperProps) {
   if (todayActivityVisible && !todayVisited) setTodayVisited(true);
   const nonTodayPages = pages.filter((tab) => tab !== 'today');
   return (
-    <div className="relative overflow-x-clip min-h-[55dvh]" data-page-viewport>
+    <div className="relative -mx-2 px-2 overflow-x-clip min-h-[55dvh]" data-page-viewport>
       <div ref={rail} className="relative" data-page-rail>
         {todayVisited && (
           <div

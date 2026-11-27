@@ -2,7 +2,7 @@ import { Candy, Wheat } from 'lucide-react';
 import type { FoodItem } from '../../types';
 import { useApp } from '../../context/AppContext';
 import { SaltCrystalIcon } from './SaltCrystalIcon';
-import { GoalBadge } from './GoalBadge';
+import { TileGoalOverlay } from './GoalBadge';
 
 const extraIcons = { fiber: Wheat, salt: SaltCrystalIcon, sugar: Candy };
 type Extra = keyof typeof extraIcons;
@@ -56,18 +56,32 @@ export function SecondaryNutrientCard({ nutrient, value, average = false }: {
   const { t, settings } = useApp();
   const labels = average ? { fiber: t.stats.avgFiber, salt: t.stats.avgSalt, sugar: t.stats.avgSugar } : t.macros;
   const Icon = extraIcons[nutrient];
+  const ultraMinimal = settings.ultraMinimal;
   return (
-    <div data-nutrient={nutrient} role="group" title={labels[nutrient]} aria-label={`${labels[nutrient]}: ${value} g`}
-      className={`bg-nutrient text-nutrient-ink rounded-2xl relative flex flex-col items-center justify-center gap-0.5 text-center ${settings.ultraMinimal ? 'px-2 py-2.5' : 'px-2 py-3 sm:px-3'}`}>
-      {/* Settings > Advanced: objective / limit reached (daily totals only, not the period averages). Corner placement like the macro cards. */}
-      {!average && <GoalBadge goal={nutrient} amount={value} className="absolute top-1.5 right-1.5" />}
-      {/* The name (or its icon in Ultra minimal) always sits above the number, both centred like the macro cards. */}
-      {settings.ultraMinimal
-        ? <Icon size={16} aria-hidden="true" />
-        : <span className="block max-w-full text-[11px] font-bold uppercase leading-tight tracking-wider">{labels[nutrient]}</span>}
-      <span className="whitespace-nowrap text-base sm:text-lg font-extrabold leading-tight">{value}
-        {(!settings.ultraMinimal || average) && <small className="ml-0.5 text-xs font-semibold">{settings.ultraMinimal ? '/day' : 'g'}</small>}
+    <div
+      data-nutrient={nutrient}
+      role="group"
+      title={labels[nutrient]}
+      aria-label={`${labels[nutrient]}: ${value} g`}
+      className={`bg-nutrient text-nutrient-ink rounded-2xl relative h-full flex flex-col items-center justify-center text-center ${
+        ultraMinimal ? 'min-h-[80px] pt-7 pb-5 px-2' : 'min-h-[96px] pt-8 pb-6 px-2 sm:px-3'
+      }`}
+    >
+      {/* The name (or its icon in Ultra minimal) always sits centred at the top of the card. */}
+      <span
+        className={`absolute ${
+          ultraMinimal ? 'top-2.5' : 'top-3'
+        } left-1/2 -translate-x-1/2 max-w-[calc(100%-20px)] truncate text-center ${
+          ultraMinimal ? 'inline-flex items-center' : 'text-[11px] font-bold uppercase leading-tight tracking-wider'
+        }`}
+      >
+        {ultraMinimal ? <Icon size={15} aria-hidden="true" /> : labels[nutrient]}
       </span>
+      <span className="whitespace-nowrap text-base sm:text-lg font-extrabold leading-tight">{value}
+        {(!ultraMinimal || average) && <small className="ml-0.5 text-xs font-semibold">{ultraMinimal ? '/day' : 'g'}</small>}
+      </span>
+      {/* Settings > Advanced: perimeter ring + bottom-right readout (daily totals only, not period averages). */}
+      {!average && <TileGoalOverlay goal={nutrient} amount={value} unit="g" ultraMinimal={ultraMinimal} />}
     </div>
   );
 }

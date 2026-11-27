@@ -25,6 +25,7 @@ const advancedText = {
       objectiveReached: 'Goal reached',
       limitReached: 'Limit reached',
       limitExceeded: 'Limit exceeded',
+      over: 'over',
     },
     measure: {
       waist: 'Waist',
@@ -102,6 +103,7 @@ const advancedText = {
       objectiveReached: 'Obiettivo raggiunto',
       limitReached: 'Limite raggiunto',
       limitExceeded: 'Limite superato',
+      over: 'oltre',
     },
     measure: {
       waist: 'Vita',

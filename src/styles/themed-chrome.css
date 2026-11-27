@@ -213,3 +213,69 @@ html[data-style]:not([data-style="classic"]) [data-macro="sugar"] {
   border-radius: var(--pill-radius, 8px) !important;
   clip-path: var(--clip-xs, none);
 }
+
+/* Today summary tiles: perimeter border progress ring tokens & smooth dash transition */
+.kc-hero-intake {
+  --ring-fill: var(--intake-fill, var(--color-intake-accent));
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+.kc-hero-burned {
+  --ring-fill: var(--burned-fill, var(--color-activity-accent));
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+.kc-macro-carbs {
+  --ring-fill: var(--carbs-text, #1A4670);
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+.kc-macro-protein {
+  --ring-fill: var(--protein-text, #7D4E14);
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+.kc-macro-fat {
+  --ring-fill: var(--fat-text, #523A8C);
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+[data-nutrient="fiber"] {
+  --ring-fill: var(--fiber-text, var(--color-nutrient-ink));
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+[data-nutrient="salt"] {
+  --ring-fill: var(--salt-text, var(--color-nutrient-ink));
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+[data-nutrient="sugar"] {
+  --ring-fill: var(--sugar-text, var(--color-nutrient-ink));
+  --ring-track: color-mix(in srgb, var(--ring-fill) 16%, transparent);
+}
+
+/* Angular & Pop: use chromatic card-matched accents instead of flat black/white for intake, burned, and micro rings */
+html[data-style="angular"] .kc-hero-intake {
+  --ring-fill: #0f5132;
+}
+html[data-style="angular"][data-theme="light"] .kc-hero-intake {
+  --ring-fill: #34d399;
+}
+html[data-style="angular"] .kc-hero-burned {
+  --ring-fill: #450a0a;
+}
+html[data-style="angular"] :is([data-nutrient="fiber"], [data-nutrient="salt"], [data-nutrient="sugar"]) {
+  --ring-fill: #0c4a6e;
+}
+
+html[data-style="pop"] .kc-hero-intake {
+  --ring-fill: #14532d;
+}
+html[data-style="pop"] .kc-hero-burned {
+  --ring-fill: #7f1d1d;
+}
+html[data-style="pop"] :is([data-nutrient="fiber"], [data-nutrient="salt"], [data-nutrient="sugar"]) {
+  --ring-fill: #854d0e;
+}
+.kc-ring-fill {
+  transition: stroke-dasharray 400ms cubic-bezier(0.22, 1, 0.36, 1), opacity 180ms ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .kc-ring-fill {
+    transition: none;
+  }
+}
