@@ -232,14 +232,14 @@ export const DataBackup: React.FC = () => {
         <div
           role={notice.error ? 'alert' : 'status'}
           className={`p-2.5 rounded-xl text-xs font-bold flex items-center gap-2 ${
-            notice.error ? 'bg-[#F6D0D0] text-[#7A2727]' : 'bg-[#C9EFD3] text-[#174A2B]'
+            notice.error ? 'kc-danger-btn bg-[#F6D0D0] text-[#7A2727]' : 'kc-modal-banner bg-[#C9EFD3] text-[#174A2B]'
           }`}
         >
           {notice.error ? <AlertCircle size={15} /> : <CheckCircle size={15} />}
           <span>{notice.text}</span>
         </div>
       )}
-      <div role="note" className="p-2.5 rounded-xl text-xs font-bold flex items-start gap-2 bg-[#FFE9B8] text-[#6B4A00]">
+      <div role="note" className="kc-modal-banner p-2.5 rounded-xl text-xs font-bold flex items-start gap-2 bg-[#FFE9B8] text-[#6B4A00]">
         <TriangleAlert size={15} className="shrink-0 mt-0.5" />
         <span>{j(
           'The backup contains all your data (meals, recipes, plans, shopping lists, settings, favourites...) but NOT your pictures. Export the pictures separately if you want to keep them.',
@@ -247,15 +247,15 @@ export const DataBackup: React.FC = () => {
         )}</span>
       </div>
       {confirmExport && (
-        <div role="alertdialog" aria-label={j('Pictures are not included', 'Foto non incluse')} className="p-3 rounded-xl text-xs bg-[#FFD98A] text-[#4F3500] flex flex-col gap-2">
+        <div role="alertdialog" aria-label={j('Pictures are not included', 'Foto non incluse')} className="kc-modal-banner p-3 rounded-xl text-xs bg-[#FFD98A] text-[#4F3500] flex flex-col gap-2">
           <strong className="flex items-center gap-1.5"><TriangleAlert size={15} />{j('Pictures are not included', 'Foto non incluse')}</strong>
           <span>{j(
             `You have ${photos.length} picture(s) on this device. They will NOT be in the backup file. Use "Export meal pictures" to save them separately.`,
             `Hai ${photos.length} foto su questo dispositivo. NON saranno nel file di backup. Usa "Esporta le foto dei pasti" per salvarle separatamente.`,
           )}</span>
           <div className="grid grid-cols-2 gap-2">
-            <button type="button" onClick={() => void handleExport()} className="pressable py-2 rounded-xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold">{j('Export without pictures', 'Esporta senza foto')}</button>
-            <button type="button" onClick={() => setConfirmExport(false)} className="pressable py-2 rounded-xl bg-white/70 text-[#4F3500] font-extrabold">{j('Cancel', 'Annulla')}</button>
+            <button type="button" onClick={() => void handleExport()} className="kc-primary-btn pressable py-2 rounded-xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold">{j('Export without pictures', 'Esporta senza foto')}</button>
+            <button type="button" onClick={() => setConfirmExport(false)} className="pressable py-2 rounded-xl bg-[var(--surface)] text-[var(--text)] font-extrabold">{j('Cancel', 'Annulla')}</button>
           </div>
         </div>
       )}
@@ -263,7 +263,7 @@ export const DataBackup: React.FC = () => {
         <button
           type="button"
           onClick={handleExportClick}
-          className="pressable py-2.5 px-2 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs flex items-center justify-center gap-1.5"
+          className="kc-primary-btn pressable py-2.5 px-2 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs flex items-center justify-center gap-1.5"
         >
           <Download size={15} />
           <span>{t.history.exportBtn}</span>
@@ -271,7 +271,7 @@ export const DataBackup: React.FC = () => {
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
-          className="pressable py-2.5 px-2 rounded-xl bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183F66] font-extrabold text-xs flex items-center justify-center gap-1.5"
+          className="kc-action-pill pressable py-2.5 px-2 rounded-xl bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183F66] font-extrabold text-xs flex items-center justify-center gap-1.5"
         >
           <Upload size={15} />
           <span>{t.history.importBtn}</span>

@@ -110,14 +110,14 @@ export const PeriodView: React.FC = () => {
   return (
     <div className={appSettings.ultraMinimal ? 'space-y-2.5' : 'space-y-4'}>
       {/* Header */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-3">
+      <div className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${appSettings.ultraMinimal ? 'p-3' : 'p-4 sm:p-5'} flex items-center justify-between gap-3`}>
         <div className="flex items-center gap-2.5">
           <div className="kc-period-header-icon w-9 h-9 rounded-full bg-transparent text-[var(--text-heart)] flex items-center justify-center shrink-0">
             <Droplet size={17} />
           </div>
           <div>
             <h2 className="text-base sm:text-lg font-extrabold text-[var(--text)]">{t.period.title}</h2>
-            <p className="text-[11px] font-medium text-[var(--muted)]">{t.period.subtitle}</p>
+            {!appSettings.ultraMinimal && <p className="text-[11px] font-medium text-[var(--muted)]">{t.period.subtitle}</p>}
           </div>
         </div>
         <span className="text-[11px] font-bold tabular-nums px-2.5 py-1 rounded-full bg-[var(--inset)] text-[var(--muted)] shrink-0">
@@ -355,7 +355,7 @@ export const PeriodView: React.FC = () => {
               clearPeriodDay(selected);
               discard();
             }}
-            className="pressable w-full py-2.5 rounded-2xl text-xs font-bold text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center gap-1.5"
+            className="kc-danger-icon-hover pressable w-full py-2.5 rounded-2xl text-xs font-bold text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center gap-1.5"
           >
             <Trash2 size={13} />
             <span>{t.period.deleteDay}</span>

@@ -104,6 +104,42 @@ describe('repository invariants', () => {
       expect(matches.length, `[data-kc-tone="${tone}"] count`).toBeGreaterThanOrEqual(2);
     }
     expect(css).toContain('html[data-style="minimal"] [data-kc-tone] [data-kc-tone-ink]');
+    expect(css).toContain('[data-kc-tone][data-kc-tone-ink]');
+  });
+
+  it('wires settings.ultraMinimal across all top-level page views (UM-01)', () => {
+    const views = [
+      'src/components/dashboard/TodayView.tsx',
+      'src/components/fasting/FastingView.tsx',
+      'src/components/prebuilt/PreBuiltMealsView.tsx',
+      'src/components/period/PeriodView.tsx',
+      'src/components/body/BodyView.tsx',
+      'src/components/history/HistoryView.tsx',
+      'src/components/database/FoodDatabaseView.tsx',
+    ];
+    for (const rel of views) {
+      const content = fs.readFileSync(path.join(ROOT, rel), 'utf8');
+      expect(content, rel).toContain('ultraMinimal');
+    }
+  });
+
+  it('avoids hardcoded English /day or >avg< strings in src/components (UM-05)', () => {
+    const stack = [path.join(ROOT, 'src/components')];
+    const violations: string[] = [];
+    while (stack.length > 0) {
+      const dir = stack.pop()!;
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) stack.push(full);
+        else if (/\.(ts|tsx)$/.test(entry.name)) {
+          const content = fs.readFileSync(full, 'utf8');
+          if (/['"]\/day['"]|>avg</.test(content)) {
+            violations.push(path.relative(ROOT, full));
+          }
+        }
+      }
+    }
+    expect(violations).toEqual([]);
   });
 
   it('avoids raw Tailwind palette colour classes in src/components', () => {

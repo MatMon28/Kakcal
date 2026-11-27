@@ -35,12 +35,15 @@ html[data-style="material"] main div.rounded-3xl {
 }
 
 /* State layers: hover / press tint the container instead of lifting or scaling it a lot. */
-html[data-style="material"] .pressable:not(:disabled):hover { filter: brightness(0.97); }
-html[data-style="material"] .pressable:not(:disabled):active { filter: brightness(0.93); }
-html[data-style="material"][data-theme="lite-dark"] .pressable:not(:disabled):hover,
-html[data-style="material"][data-theme="dark"] .pressable:not(:disabled):hover { filter: brightness(1.12); }
-html[data-style="material"][data-theme="lite-dark"] .pressable:not(:disabled):active,
-html[data-style="material"][data-theme="dark"] .pressable:not(:disabled):active { filter: brightness(1.2); }
+html[data-style="material"] .pressable:active:not(:disabled) {
+  transform: scale(0.97);
+}
+html[data-style="material"] .pressable:not(:disabled):hover {
+  box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--text) 8%, transparent);
+}
+html[data-style="material"] .pressable:not(:disabled):active {
+  box-shadow: inset 0 0 0 999px color-mix(in srgb, var(--text) 12%, transparent);
+}
 
 /* Keyboard focus: the Material 3 two-tone ring. */
 html[data-style="material"] :is(button, [role="button"], input, textarea, select):focus-visible {
@@ -50,7 +53,10 @@ html[data-style="material"] :is(button, [role="button"], input, textarea, select
 
 /* Filled containers have no outline in Material: the generic themed rules draw a 1 px --border on nested cards,
    ingredient lists, food buttons, custom pills and Period / Day overview cards; here only the tone separates them. */
-html[data-style="material"]:not([data-style="classic"]) :is([data-library-card], [data-library-ingredients], [data-library-food-btn], .kc-custom-pill, [data-custom-nutrient] .kc-custom-num-input, [data-period-card], [data-day-overview-card], [data-day-overview-row], .kc-modal-banner, [data-kc-tone], .kc-fast-icon-btn, .kc-fast-row-btn, .kc-fast-input, .kc-fast-subbox, .kc-fast-chip, .kc-fast-mood-btn, .kc-fast-cta[data-active-fast="true"], .kc-fast-secondary-btn, .kc-fast-row, [data-fast-pill], [data-fast-mood], .kc-custom-stat-dot-empty, .journal-date-field, .journal-meal-select, .journal-draft-card, .journal-plan-card, .journal-meal-card, .journal-quick-food-grid button, .journal-plan-suggestion, .journal-stepper > button, .journal-form label.journal-stepper-value, .journal-weekdays button, .journal-food-chip, .journal-plan-nav > button, .journal-shopping-items, [data-cal-popover], [data-cal-today-btn]) {
+html[data-style="material"]:not([data-style="classic"]) :is(section, article, div, button, li, ul, input, select, textarea).border:not(.border-dashed) {
+  border-color: transparent !important;
+}
+html[data-style="material"]:not([data-style="classic"]) :is([data-library-card], [data-library-ingredients], [data-library-food-btn], .kc-custom-pill, [data-custom-nutrient] .kc-custom-num-input, [data-period-card], [data-day-overview-card], [data-day-overview-row], .kc-modal-banner, [data-kc-tone], .kc-fast-icon-btn, .kc-fast-row-btn, .kc-fast-input, .kc-fast-subbox, .kc-fast-chip, .kc-fast-mood-btn, .kc-fast-cta[data-active-fast="true"], .kc-fast-secondary-btn, .kc-fast-row, [data-fast-pill], [data-fast-mood], .kc-custom-stat-dot-empty, .journal-date-field, .journal-meal-select, .journal-draft-card, .journal-plan-card, .journal-meal-card, .journal-quick-food-grid button, .journal-plan-suggestion, .journal-stepper > button, .journal-form label.journal-stepper-value, .journal-weekdays button, .journal-food-chip, .journal-plan-nav > button, .journal-shopping-items, [data-cal-popover], [data-cal-today-btn], .journal-form :is(input, select, textarea), .journal-slot-options button, .journal-slot-picker > button, .personal-icon-trigger, .personal-icon-options, .backup-photo-button) {
   border-color: transparent !important;
 }
 html[data-style="material"]:not([data-style="classic"]) [data-cal-popover] {

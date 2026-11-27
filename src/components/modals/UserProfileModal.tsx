@@ -152,7 +152,7 @@ export const UserProfileModal: React.FC = () => {
             onClick={() => setSex('male')}
             className={`pressable py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center ${
               sex === 'male'
-                ? 'bg-[#CFE7FE] text-[#183B5E] border-[#9EC8F5]'
+                ? 'kc-chip-active bg-[#CFE7FE] text-[#183B5E] border-[#9EC8F5]'
                 : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
             }`}
           >
@@ -164,7 +164,7 @@ export const UserProfileModal: React.FC = () => {
             onClick={() => setSex('female')}
             className={`pressable py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center ${
               sex === 'female'
-                ? 'bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]'
+                ? 'kc-chip-active bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]'
                 : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
             }`}
           >
@@ -383,7 +383,7 @@ export const UserProfileModal: React.FC = () => {
                         onClick={() => setCustomBmrKcal(preset.value)}
                         className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold tabular-nums border transition-colors ${
                           active
-                            ? 'bg-[var(--text)] text-[var(--on-text)] border-transparent'
+                            ? 'kc-chip-active bg-[var(--text)] text-[var(--on-text)] border-transparent'
                             : 'bg-[var(--surface)] hover:bg-[var(--hover)] text-[var(--text)] border-[var(--border)]'
                         }`}
                       >

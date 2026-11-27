@@ -253,4 +253,41 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
       expect(java, style).toContain(`"${style}".equals(themeStyle)`);
     }
   });
+
+  it('maintains >= 4.5:1 AA contrast across all 10 Mono hues × 3 modes (NC-01)', () => {
+    const lum = (hex: string) => {
+      const c = hex.replace('#', '');
+      const [r, g, b] = [0, 2, 4].map((i) => {
+        const v = parseInt(c.slice(i, i + 2), 16) / 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+      });
+      return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    };
+    const contrast = (a: string, b: string) => {
+      const la = lum(a);
+      const lb = lum(b);
+      return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
+    };
+    for (const { hex } of MONO_HUES) {
+      for (const mode of ['light', 'lite-dark', 'dark'] as const) {
+        const vars = getMonoVariables(hex, mode);
+        expect(contrast(vars['--nav-active-bg'], vars['--nav-active-color']), `${hex} ${mode} nav`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(vars['--intake-bg'], vars['--intake-text']), `${hex} ${mode} intake`).toBeGreaterThanOrEqual(4.5);
+        expect(contrast(vars['--burned-bg'], vars['--burned-text']), `${hex} ${mode} burned`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  });
+
+  it('defines --water-fill, avoids --micro-radius: 999px, and binds all ActionDock actions (NC-08, NC-14, NC-19)', () => {
+    for (const file of ['theme-angular.css', 'theme-aurora.css', 'theme-pop.css', 'theme-playful.css', 'theme-minimal-mono.css', 'theme-glass.css', 'theme-material.css']) {
+      const css = read(file);
+      expect(css, file).not.toContain('--micro-radius: 999px');
+      expect(css, file).toContain('--water-fill:');
+    }
+    const cardsCss = read('themed-cards.css');
+    for (const action of ['food', 'activity', 'water', 'poop', 'weight', 'custom', 'fast-note', 'meal', 'recipe', 'recipe-import', 'plan', 'photo', 'upper', 'lower', 'body-custom', 'cycle', 'intercourse', 'pill']) {
+      expect(cardsCss, action).toContain(`[data-dock-action="${action}"]`);
+    }
+    expect(cardsCss).not.toContain('border-color: var(--nav-active-bg');
+  });
 });

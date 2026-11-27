@@ -315,7 +315,7 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
         <div className="px-5 py-3.5 sm:py-4 border-b border-[var(--border)] flex items-center justify-between gap-3 shrink-0 touch-none" {...dragHandlers}>
           {onBack && (
-            <button type="button" onClick={onBack} aria-label={backLabel ?? t.common.back} title={backLabel ?? t.common.back} className="pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center">
+            <button type="button" onClick={onBack} aria-label={backLabel ?? t.common.back} title={backLabel ?? t.common.back} className="kc-icon-btn pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] flex items-center justify-center">
               <ArrowLeft size={17} />
             </button>
           )}
@@ -331,7 +331,7 @@ export const Modal: React.FC<ModalProps> = ({
             type="button"
             onClick={onClose}
             aria-label={closeLabel ?? t.common.close}
-            className="pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+            className="kc-icon-btn pressable w-10 h-10 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
           >
             <X size={17} />
           </button>

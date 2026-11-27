@@ -19,7 +19,6 @@ html[data-style="minimal"] {
   --clip-sm: none;
   --clip-xs: none;
   --clip-dock: none;
-  --brand-flame-color: #3b82f6;
 }
 
 html[data-style="minimal"][data-theme="dark"] {
@@ -51,6 +50,7 @@ html[data-style="minimal"][data-theme="dark"] {
   --carbs-bg: #0d1320; --carbs-text: #bfdbfe;
   --protein-bg: #0d1320; --protein-text: #fde68a;
   --fat-bg: #0d1320; --fat-text: #e9d5ff;
+  --water-fill: #60a5fa;
 
   --pill-c-bg: #060911; --pill-c-text: #93c5fd;
   --pill-p-bg: #060911; --pill-p-text: #fde047;
@@ -110,6 +110,7 @@ html[data-style="minimal"][data-theme="lite-dark"] {
   --carbs-bg: #263347; --carbs-text: #dbeafe;
   --protein-bg: #263347; --protein-text: #fef08a;
   --fat-bg: #263347; --fat-text: #f3e8ff;
+  --water-fill: #93c5fd;
 
   --pill-c-bg: #172030; --pill-c-text: #bfdbfe;
   --pill-p-bg: #172030; --pill-p-text: #fde68a;
@@ -168,6 +169,7 @@ html[data-style="minimal"][data-theme="light"] {
   --carbs-bg: #ffffff; --carbs-text: #172554;
   --protein-bg: #ffffff; --protein-text: #713f12;
   --fat-bg: #ffffff; --fat-text: #3b0764;
+  --water-fill: #2563eb;
 
   --pill-c-bg: #e2e8f0; --pill-c-text: #172554;
   --pill-p-bg: #e2e8f0; --pill-p-text: #713f12;
@@ -195,8 +197,8 @@ html[data-style="minimal"][data-theme="light"] {
   --tone-ink-recipes: #5b21b6;
   --tone-ink-planner: #1d4ed8;
   --tone-ink-photo: #9f1239;
-  --tone-ink-foods: #15803d;
-  --tone-ink-teal: #0f766e;
+  --tone-ink-foods: #166534;
+  --tone-ink-teal: #115e59;
 }
 
 /* 6. MONO THEME (Dynamic Monochromatic Palette Driven by JS in src/utils/themes.ts) */

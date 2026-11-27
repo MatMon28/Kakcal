@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, ChevronRight, Flame, Scale, Utensils, X } from 'lucide-react';
+import { ArrowDownLeft, CalendarDays, ChevronRight, Flame, Scale, X } from 'lucide-react';
 import { CollapseArrow } from '../common/InlineCollapse';
 import { SecondaryNutrientCard, SecondaryNutrientRow } from '../common/FoodMacroGrid';
 import { useJournalData, useSettings } from '../../context/AppContext';
@@ -209,7 +209,7 @@ export const HistoryView: React.FC = () => {
                   range === key ? 'bg-[var(--text)] text-[var(--on-text)]' : 'text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
-                {ultraMinimal ? key === 'custom' ? <CalendarDays size={14} /> : key : label}
+                {ultraMinimal ? (key === 'custom' ? <CalendarDays size={14} /> : `${key}d`) : label}
               </button>
             ))}
           </div>
@@ -254,8 +254,8 @@ export const HistoryView: React.FC = () => {
               <span className={`${ultraMinimal ? 'inline-flex items-center gap-1 text-intake-accent' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider text-intake-accent'}`} title={t.history.avgIntake}>
                 {ultraMinimal && (
                   <>
-                    <Utensils size={14} aria-hidden="true" />
-                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-intake-accent/15 text-intake-accent">avg</span>
+                    <ArrowDownLeft size={14} strokeWidth={2.4} aria-hidden="true" />
+                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-current/15">{language === 'it' ? 'med' : 'avg'}</span>
                   </>
                 )}
                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.history.avgIntake}</span>
@@ -282,7 +282,7 @@ export const HistoryView: React.FC = () => {
                 {ultraMinimal && (
                   <>
                     <Flame size={14} aria-hidden="true" />
-                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-activity-accent/15 text-activity-accent">avg</span>
+                    <span className="text-[10px] font-extrabold tracking-wider uppercase px-1.5 py-0.5 rounded bg-current/15">{language === 'it' ? 'med' : 'avg'}</span>
                   </>
                 )}
                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.history.avgExpenditure}</span>
@@ -307,12 +307,12 @@ export const HistoryView: React.FC = () => {
             [t.history.avgProtein, period.avgProtein, 'kc-macro-protein bg-[#FAE0B4] text-[#7D4E14]', 'text-[#2D1E0B]'],
             [t.history.avgFat, period.avgFat, 'kc-macro-fat bg-[#E2D6FF] text-[#523A8C]', 'text-[#1F1636]'],
           ] as const).map(([label, value, card, number]) => (
-            <div key={label} role="group" aria-label={`${label}: ${value} g`} className={`${card} rounded-3xl ${ultraMinimal ? 'p-2.5' : 'p-3.5'} text-center tabular-nums`}>
+            <div key={label} role="group" title={label} aria-label={`${label}: ${value} g`} className={`${card} rounded-3xl ${ultraMinimal ? 'p-2.5' : 'p-3.5'} text-center tabular-nums`}>
               <span className={`${ultraMinimal ? 'sr-only' : 'text-[10px] font-bold uppercase block truncate'}`}>{label}</span>
               <div className={`flex items-baseline justify-center gap-1 ${ultraMinimal ? '' : 'mt-0.5'}`}>
                 <span className={`text-lg sm:text-xl font-extrabold ${number}`}>{value}</span>
                 <span className={`text-[10px] sm:text-[11px] font-bold ${ultraMinimal ? 'opacity-75' : ''}`}>
-                  {ultraMinimal ? '/day' : 'g'}
+                  {ultraMinimal ? t.stats.perDay.replace(/\s+/g, '') : 'g'}
                 </span>
               </div>
             </div>
@@ -322,9 +322,11 @@ export const HistoryView: React.FC = () => {
             <div className="kc-custom-stat-header flex items-center justify-between text-[#7D4E14]">
               {ultraMinimal ? <span className="inline-flex items-center" title={t.poop.poopsInPeriod}><PoopIcon size={15} /><span className="sr-only">{t.poop.poopsInPeriod}</span></span> : <span className="text-sm font-extrabold">{t.poop.poopsInPeriod}</span>}
               <span className="text-sm font-extrabold tabular-nums">
-                {t.poop.countOf
-                  .replace('{a}', String(period.daysWithPoop.length))
-                  .replace('{b}', String(period.total))}
+                {ultraMinimal
+                  ? `${period.daysWithPoop.length}/${period.total}`
+                  : t.poop.countOf
+                      .replace('{a}', String(period.daysWithPoop.length))
+                      .replace('{b}', String(period.total))}
               </span>
             </div>
             <div className="flex flex-wrap gap-1.5 mt-3">
@@ -365,7 +367,7 @@ export const HistoryView: React.FC = () => {
                   <div key={button.id} data-stats-tone="custom" className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
                     <div className="kc-custom-stat-header flex items-center justify-between text-[#6E5B14]">
                       <span className="flex items-center gap-2 text-sm font-extrabold" aria-label={button.name} title={button.name}>
-                        <TrackerIcon icon={button.icon} size={15} /> <span className={ultraMinimal ? 'sr-only' : ''}>{button.name}</span>
+                        <TrackerIcon icon={button.icon} size={15} /> <span>{button.name}</span>
                       </span>
                       <span className="text-sm font-extrabold tabular-nums">{doneDays}/{period.total}</span>
                     </div>
@@ -397,7 +399,7 @@ export const HistoryView: React.FC = () => {
                 <div key={button.id} data-stats-tone="custom" className={`kc-themed-card bg-[#F7E9AA] rounded-3xl ${ultraMinimal ? 'relative p-3 pb-8' : 'p-4 sm:p-5'}`}>
                   <div className="kc-custom-stat-header flex items-center justify-between gap-2 text-[#6E5B14]">
                     <span className="flex items-center gap-2 text-sm font-extrabold" aria-label={button.name} title={button.name}>
-                      <TrackerIcon icon={button.icon} size={15} /> <span className={ultraMinimal ? 'sr-only' : ''}>{button.name}</span>
+                      <TrackerIcon icon={button.icon} size={15} /> <span>{button.name}</span>
                     </span>
                     <span className="text-right tabular-nums">
                       <span className="block text-sm font-extrabold" aria-label={`${button.name}: ${average}${button.unit ? ` ${button.unit}` : ''} ${t.stats.perDay}`}>
@@ -430,11 +432,12 @@ export const HistoryView: React.FC = () => {
               );
             });
   const weightNode = (
-<div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">
+<div className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
           <button
             type="button"
             onClick={() => setWeightOpen(!weightOpen)}
             aria-expanded={weightOpen}
+            title={t.stats.weightTrend}
             className="w-full flex items-center justify-between gap-2 text-left"
           >
             <span className="flex items-center gap-2 text-sm font-extrabold text-[var(--text)]">
@@ -445,7 +448,7 @@ export const HistoryView: React.FC = () => {
             </span>
             <span className="flex items-center gap-2 tabular-nums">
               <span className="text-xs font-bold text-[var(--muted)]">
-                {wMin === wMax ? wMax.toFixed(1) : `${wMin.toFixed(1)} – ${wMax.toFixed(1)}`} kg
+                {wMin === wMax ? wMax.toFixed(1) : `${wMin.toFixed(1)} – ${wMax.toFixed(1)}`}{ultraMinimal ? '' : ' kg'}
               </span>
               {wp.length >= 2 && wDelta !== 0 && (
                 <span data-stat-pill="weight" className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-weight text-weight-ink">
@@ -464,7 +467,7 @@ export const HistoryView: React.FC = () => {
                   <span className={`text-[var(--muted)] ${ultraMinimal ? 'sr-only' : ''}`}>
                     {activeWeightPt.date ? formatDateDisplay(activeWeightPt.date, language) : t.stats.profileWeight}
                   </span>
-                  <span className="text-[var(--weight-on-surface)] font-extrabold">{activeWeightPt.kg.toFixed(1)} kg</span>
+                  <span className="text-[var(--weight-on-surface)] font-extrabold">{activeWeightPt.kg.toFixed(1)}{ultraMinimal ? '' : ' kg'}</span>
                 </div>
                 <svg viewBox={`0 0 ${W_SVG} ${H_SVG}`} className="w-full h-32 overflow-visible">
                   {periodStatusForBands && (() => {
@@ -522,12 +525,13 @@ export const HistoryView: React.FC = () => {
         </div>
   );
   const dailyNode = (
-          <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5">
+          <div className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
             <button
               type="button"
               onClick={() => setDailyOpen(!dailyOpen)}
               aria-expanded={dailyOpen}
               aria-label={t.history.last7DaysChart}
+              title={t.history.last7DaysChart}
               className="w-full flex items-center justify-between gap-2 text-left"
             >
               {ultraMinimal ? <CalendarDays size={16} aria-hidden="true" className="text-[var(--muted)]" /> : <h3 className="text-sm font-extrabold text-[var(--text)]">{t.history.last7DaysChart}</h3>}
@@ -574,7 +578,7 @@ export const HistoryView: React.FC = () => {
                           <div>
                             <div className="flex items-center justify-between text-[11px] mb-1">
                               <span className={`font-bold text-[var(--intake-on-surface)] ${ultraMinimal ? 'inline-flex items-center' : ''}`} title={t.energy.intake}>
-                                {ultraMinimal && <Utensils size={12} aria-hidden="true" />}
+                                {ultraMinimal && <ArrowDownLeft size={12} strokeWidth={2.4} aria-hidden="true" />}
                                 <span className={ultraMinimal ? 'sr-only' : ''}>{t.energy.intake}</span>
                               </span>
                               <span className="font-extrabold text-[var(--text)]">{formatKcal(day.intake)}{!ultraMinimal && ' kcal'}</span>
@@ -599,7 +603,7 @@ export const HistoryView: React.FC = () => {
                         {settings.trackSugar && (
                           <div data-nutrient="sugar" className="flex items-center justify-between gap-2 rounded-xl bg-nutrient text-nutrient-ink px-2.5 py-1.5 text-[11px] tabular-nums">
                             <span className="font-bold">{t.macros.sugar}</span>
-                            <span className="font-extrabold">{day.sugar} g</span>
+                            <span className="font-extrabold">{day.sugar}{ultraMinimal ? '' : ' g'}</span>
                           </div>
                         )}
                       </button>
@@ -667,9 +671,9 @@ export const HistoryView: React.FC = () => {
           <>
             {/* Original layout (advanced layout off) */}
             {rangeNode}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">{intakeNode}{burnedNode}</div>
+            <div className={`grid grid-cols-2 ${ultraMinimal ? 'gap-2.5' : 'gap-3 sm:gap-4'}`}>{intakeNode}{burnedNode}</div>
             {advanced.balance.enabled && balanceNode}
-            <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5 tabular-nums">{macroNodes}</div>
+            <div className={`grid grid-cols-3 ${ultraMinimal ? 'gap-2' : 'gap-2.5 sm:gap-3.5'} tabular-nums`}>{macroNodes}</div>
             <SecondaryNutrientRow fiber={period.avgFiber} salt={period.avgSalt} sugar={period.avgSugar} average />
             {waterNode}
             {!settings.hidePoop && poopNode}

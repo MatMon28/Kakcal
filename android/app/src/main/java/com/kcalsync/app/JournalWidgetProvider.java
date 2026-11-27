@@ -173,7 +173,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             }
         }
         if (!essential) view.setViewVisibility(R.id.widget_custom, customButton ? View.VISIBLE : View.GONE);
-        if (!large) applyTrayShape(context, view, themeStyle, dark);
+        if (!large) applyTrayShape(context, view, themeStyle, dark, monoHue);
         if (large) {
             bindLarge(view, strings, prefs, locale, medium);
             applyLargeTheme(context, view, themeStyle, dark, monoHue, medium);
@@ -188,15 +188,25 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
      * tray (9-patch, see scripts/render-widget-tray.mjs). Setting a background replaces the view's padding
      * with the drawable's, so the 4 dp padding is restored right after.
      */
-    private static void applyTrayShape(Context context, RemoteViews view, String themeStyle, boolean dark) {
+    private static void applyTrayShape(Context context, RemoteViews view, String themeStyle, boolean dark, String monoHue) {
         int tray;
         if ("angular".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_angular_dark : R.drawable.widget_tray_angular;
         else if ("minimal".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_minimal_dark : R.drawable.widget_tray_minimal;
         else if ("mono".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_mono_dark : R.drawable.widget_tray_mono;
         else if ("material".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_material_dark : R.drawable.widget_tray_material;
+        else if ("glass".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_glass_dark : R.drawable.widget_tray_glass;
+        else if ("aurora".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_aurora_dark : R.drawable.widget_tray_aurora;
+        else if ("playful".equals(themeStyle)) tray = dark ? R.drawable.widget_tray_playful_dark : R.drawable.widget_tray_playful;
         else return;
         int pad = Math.round(4 * context.getResources().getDisplayMetrics().density);
         view.setInt(R.id.widget_tray, "setBackgroundResource", tray);
+        if ("mono".equals(themeStyle) && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            int hue = parseColorSafe(monoHue, "#64748b");
+            int base = dark ? Color.parseColor("#131926") : Color.WHITE;
+            int tinted = mixColor(base, hue, dark ? 0.20f : 0.14f);
+            int argb = Color.argb(218, Color.red(tinted), Color.green(tinted), Color.blue(tinted));
+            view.setColorStateList(R.id.widget_tray, "setBackgroundTintList", ColorStateList.valueOf(argb));
+        }
         view.setViewPadding(R.id.widget_tray, pad, pad, pad, pad);
     }
 
@@ -345,7 +355,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             pBg = inBg; pText = Color.parseColor(dark ? "#fde68a" : "#713f12");
             fBg = inBg; fText = Color.parseColor(dark ? "#e9d5ff" : "#3b0764");
         } else if ("glass".equals(themeStyle)) {
-            surface = Color.parseColor(dark ? "#99241d4a" : "#7Affffff");
+            surface = Color.parseColor(dark ? "#BD241d4a" : "#BDf4f7fd");
             divider = Color.parseColor(dark ? "#26ffffff" : "#99ffffff");
             inBg = Color.parseColor(dark ? "#A62dbe9f" : "#E679d4be");
             inText = Color.parseColor(dark ? "#d5fbef" : "#08352d");
@@ -426,6 +436,15 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             setLayeredBackground(view, R.id.widget_carbs_card, dark ? R.drawable.widget_card_pop_carbs_dark : R.drawable.widget_card_pop_carbs, macroPad, macroPad, macroPad + Math.round(3 * d), macroPad + Math.round(3 * d));
             setLayeredBackground(view, R.id.widget_protein_card, dark ? R.drawable.widget_card_pop_protein_dark : R.drawable.widget_card_pop_protein, macroPad, macroPad, macroPad + Math.round(3 * d), macroPad + Math.round(3 * d));
             setLayeredBackground(view, R.id.widget_fat_card, dark ? R.drawable.widget_card_pop_fat_dark : R.drawable.widget_card_pop_fat, macroPad, macroPad, macroPad + Math.round(3 * d), macroPad + Math.round(3 * d));
+        } else if ("minimal".equals(themeStyle)) {
+            int minSurface = dark ? R.drawable.widget_surface_minimal_dark : R.drawable.widget_surface_minimal_light;
+            int minCard = dark ? R.drawable.widget_card_minimal_dark : R.drawable.widget_card_minimal_light;
+            setLayeredBackground(view, R.id.widget_root, minSurface, rootPad, rootPad, rootPad, rootPad);
+            setLayeredBackground(view, R.id.widget_intake_card, minCard, cardPadH, cardPadV, cardPadH, cardPadV);
+            setLayeredBackground(view, R.id.widget_burned_card, minCard, cardPadH, cardPadV, cardPadH, cardPadV);
+            setLayeredBackground(view, R.id.widget_carbs_card, minCard, macroPad, macroPad, macroPad, macroPad);
+            setLayeredBackground(view, R.id.widget_protein_card, minCard, macroPad, macroPad, macroPad, macroPad);
+            setLayeredBackground(view, R.id.widget_fat_card, minCard, macroPad, macroPad, macroPad, macroPad);
         } else {
             tintShape(view, R.id.widget_root, rootDrawable, surface, rootPad, rootPad);
             tintShape(view, R.id.widget_intake_card, cardDrawable, inBg, cardPadH, cardPadV);
@@ -481,6 +500,13 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         }
     }
 
+    private static int parseColorSafe(String color, String fallback) {
+        try {
+            if (color != null) return Color.parseColor(color);
+        } catch (Exception ignored) {}
+        return Color.parseColor(fallback);
+    }
+
     private static int mixColor(int c1, int c2, float weight) {
         int r = Math.round(Color.red(c1) * (1f - weight) + Color.red(c2) * weight);
         int g = Math.round(Color.green(c1) * (1f - weight) + Color.green(c2) * weight);
@@ -493,7 +519,8 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         r = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
         g = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
         b = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
-        return (0.2126 * r + 0.7152 * g + 0.0722 * b) > 0.42 ? Color.parseColor("#090e17") : Color.WHITE;
+        double lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        return (lum + 0.05) / 0.054 >= 1.05 / (lum + 0.05) ? Color.parseColor("#090e17") : Color.WHITE;
     }
 
     private static Bitmap renderStyledActionBitmap(Context context, int index, String themeStyle, boolean dark, String monoHue) {
@@ -518,17 +545,17 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 fill = Color.parseColor(fills[index]);
                 ink = Color.parseColor(inks[index]);
             } else if ("pop".equals(themeStyle)) {
-                String[] fills = { "#7ef29d", "#ff7a7a", "#7cc4fa", "#ffb84d", "#c99eff", dark ? "#fde047" : "#ffffff" };
+                String[] fills = { "#7ef29d", "#ff7a7a", "#7cc4fa", "#ffb84d", "#c99eff", "#fde047" };
                 fill = Color.parseColor(fills[index]);
                 ink = Color.parseColor("#09080d");
                 border = dark ? Color.parseColor("#fef9c3") : Color.BLACK;
                 borderWidth = 4.5f;
             } else if ("playful".equals(themeStyle)) {
                 String[] fills = dark
-                    ? new String[]{ "#065f46", "#9f1239", "#1e3a8a", "#854d0e", "#4c1d95", "#854d0e" }
+                    ? new String[]{ "#065f46", "#9f1239", "#1e3a8a", "#9a3412", "#4c1d95", "#854d0e" }
                     : new String[]{ "#34d399", "#fb7185", "#60a5fa", "#fbbf24", "#c084fc", "#fcd34d" };
                 String[] inks = dark
-                    ? new String[]{ "#d1fae5", "#ffe4e6", "#bfdbfe", "#fde68a", "#e9d5ff", "#fef08a" }
+                    ? new String[]{ "#d1fae5", "#ffe4e6", "#bfdbfe", "#ffedd5", "#e9d5ff", "#fef08a" }
                     : new String[]{ "#042f2e", "#3b0413", "#172554", "#422006", "#2e1065", "#422006" };
                 fill = Color.parseColor(fills[index]);
                 ink = Color.parseColor(inks[index]);
@@ -549,10 +576,10 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                 // Frosted plates with a white rim, like the glass dock (theme-glass.css --dock-1..6).
                 String[] fills = dark
                     ? new String[]{ "#2f9d7c", "#c4507a", "#4a78d6", "#c98a4a", "#7e63d6", "#c9a92a" }
-                    : new String[]{ "#8fdcc2", "#f4a6bd", "#9bc0f6", "#f6c28b", "#c3a8f6", "#f3df86" };
+                    : new String[]{ "#84dec0", "#f8a6c0", "#96c0fa", "#fac68e", "#c2aafa", "#f6e48a" };
                 String[] inks = dark
                     ? new String[]{ "#eafff6", "#fff0f6", "#eef4ff", "#fff3e6", "#f3edff", "#fffbe0" }
-                    : new String[]{ "#0b3b2e", "#52122e", "#10264f", "#5a3208", "#2b1a6b", "#4a3c0d" };
+                    : new String[]{ "#09382b", "#52122e", "#10264f", "#5a3208", "#2b1a6b", "#4a3c0d" };
                 fill = Color.parseColor(fills[index]);
                 ink = Color.parseColor(inks[index]);
                 border = Color.parseColor(dark ? "#47FFFFFF" : "#A6FFFFFF");

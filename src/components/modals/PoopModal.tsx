@@ -65,7 +65,7 @@ export const PoopModal: React.FC = () => {
                 onClick={() => setSize(o.size)}
                 className={`pressable py-2.5 min-h-[72px] rounded-2xl flex flex-col items-center justify-between gap-1 border ${
                   size === o.size
-                    ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
+                    ? 'kc-chip-active bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
@@ -98,7 +98,7 @@ export const PoopModal: React.FC = () => {
                 title={bristolLabels[bt]}
                 className={`pressable py-2 rounded-xl flex flex-col items-center gap-0.5 border ${
                   bristol === bt
-                    ? 'bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
+                    ? 'kc-chip-active bg-[#FAE0B4] text-[#7D4E14] border-[#E8C68E]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                 }`}
               >
@@ -108,7 +108,7 @@ export const PoopModal: React.FC = () => {
             ))}
           </div>
           {bristol && (
-            <p className="text-xs font-bold text-[#7D4E14] bg-[#FAE0B4] rounded-xl px-3 py-1.5 mt-2">
+            <p className="kc-modal-banner text-xs font-bold text-[#7D4E14] bg-[#FAE0B4] rounded-xl px-3 py-1.5 mt-2">
               {bristolLabels[bristol]}
             </p>
           )}
@@ -132,7 +132,7 @@ export const PoopModal: React.FC = () => {
         <button
           type="button"
           onClick={handleSave}
-          className="pressable w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+          className="kc-primary-btn pressable w-full py-3 bg-[#FAE0B4] hover:bg-[#F7D69E] text-[#7D4E14] font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>{t.poop.save}</span>

@@ -69,7 +69,7 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
         )}
       </div>
       {goalReached && (
-        <span className="inline-flex items-center justify-center size-4 rounded-full bg-[#1E5E3A] text-white shrink-0">
+        <span className="inline-flex items-center justify-center size-4 rounded-full bg-[var(--water-fill,var(--carbs-text))] text-[var(--on-text)] shrink-0">
           <Check size={10} strokeWidth={3} />
         </span>
       )}
@@ -112,7 +112,7 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
             {entries.map((w) => (
               <div key={w.id} className="py-2 flex items-center justify-between gap-2">
                 <span className="flex items-center gap-2 text-xs sm:text-sm tabular-nums min-w-0">
-                  <Droplets size={13} className="text-[#2E7CC4] shrink-0" />
+                  <Droplets size={13} className="text-[var(--water-fill,var(--carbs-text))] shrink-0" />
                   <span className="font-bold text-[var(--text)]">{w.ml}{settings.ultraMinimal ? '' : ' ml'}</span>
                   <span className="text-[var(--muted)] font-medium">
                     {new Date(w.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -121,7 +121,7 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
                 <button
                   type="button"
                   onClick={() => removeWaterEntry(w.id)}
-                  className="pressable size-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
+                  className="kc-danger-icon-hover pressable size-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
                   title={t.common.delete}
                   aria-label={`${t.common.delete} ${w.ml} ml`}
                 >

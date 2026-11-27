@@ -24,6 +24,7 @@ export const MacroCard: React.FC<{ macro: MacroKey }> = ({ macro }) => {
     <div
       role="group"
       aria-label={`${t.macros[macro]}: ${grams} g`}
+      title={t.macros[macro]}
       className={`${tone.card} rounded-3xl relative text-center h-full min-w-0 flex flex-col items-center justify-center ${
         ultraMinimal ? 'min-h-[88px] pt-4 pb-6 px-2.5' : 'min-h-[116px] pt-8 pb-7 px-2.5 sm:px-3.5'
       }`}
@@ -71,7 +72,7 @@ export const MacroNutrientsOverview: React.FC = () => {
   return (
     <div className={ultraMinimal ? 'space-y-2' : 'space-y-3'}>
       {/* Row 1: Carbs, Protein, Fat side by side with % below grams */}
-      <div className="grid grid-cols-3 gap-2.5 sm:gap-3.5">
+      <div className={`grid grid-cols-3 ${ultraMinimal ? 'gap-2' : 'gap-2.5 sm:gap-3.5'}`}>
         <MacroCard macro="carbs" />
         <MacroCard macro="protein" />
         <MacroCard macro="fat" />

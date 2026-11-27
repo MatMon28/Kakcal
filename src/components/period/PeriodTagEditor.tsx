@@ -70,7 +70,7 @@ export function PeriodTagEditor({ group, selected, onChange }: {
                   deletePeriodTag(group, tag.id);
                 }}
                 aria-label={t.period.removeTag.replace('{tag}', tag.label)}
-                className="pressable w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#F6D0D0] hover:text-[#7A2727]"
+                className="kc-danger-icon-hover pressable w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#F6D0D0] hover:text-[#7A2727]"
               >
                 <X size={14} />
               </button>

@@ -344,7 +344,7 @@ export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn
             aria-label={isCameraActive ? 'Stop camera' : 'Start camera'}
             className={`pressable px-3 py-2.5 rounded-2xl border flex items-center justify-center shrink-0 ${
               isCameraActive
-                ? 'bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]'
+                ? 'kc-danger-btn bg-[#F6D0D0] text-[#7A2727] border-[#E8AEAE]'
                 : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
             }`}
           >
@@ -355,7 +355,7 @@ export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn
             type="button"
             onClick={() => handleLookup()}
             disabled={isLoading || !barcode.trim()}
-            className="pressable px-4 py-2.5 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center gap-1.5 text-xs disabled:opacity-40 shrink-0"
+            className="kc-primary-btn pressable px-4 py-2.5 bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold rounded-2xl flex items-center gap-1.5 text-xs disabled:opacity-40 shrink-0"
           >
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -404,11 +404,11 @@ export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn
         </div>
 
         {errorMsg && !isLoading && (
-          <div className="p-3 bg-[#F6D0D0] rounded-2xl space-y-2 text-xs font-bold text-[#7A2727]">
+          <div className="kc-danger-btn p-3 bg-[#F6D0D0] rounded-2xl space-y-2 text-xs font-bold text-[#7A2727]">
             <p role="status" className="flex items-start gap-2">
               <AlertCircle size={16} className="shrink-0" /> {errorMsg}
             </p>
-            <button type="button" onClick={() => { stopCamera(); setCustomOpen(true); }} className="pressable rounded-full bg-[#FBF8F2] px-3 py-2">
+            <button type="button" onClick={() => { stopCamera(); setCustomOpen(true); }} className="pressable rounded-full bg-[var(--surface)] text-[var(--text)] px-3 py-2">
               {t.foodModal.addCustomFood}
             </button>
           </div>
@@ -418,7 +418,7 @@ export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn
           <div className="bg-[var(--inset)] border border-[var(--border)] rounded-3xl p-4 space-y-3.5">
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B] text-[11px] font-extrabold">
+                <span className="kc-action-pill inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#C9EFD3] text-[#174A2B] text-[11px] font-extrabold">
                   <CheckCircle2 size={13} />
                   <span>{foundLocally ? t.barcodeModal.foundLocally : t.barcodeModal.productFound}</span>
                 </span>
@@ -442,7 +442,7 @@ export const BarcodeLookupModal: React.FC<BarcodeLookupModalProps> = ({ onReturn
                   onClick={() => setTargetMealSlot(s)}
                   className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap border ${
                     targetMealSlot === s
-                      ? 'bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+                      ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
                       : 'bg-[var(--surface)] text-[var(--muted)] border-[var(--border)]'
                   }`}
                 >

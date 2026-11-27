@@ -366,7 +366,7 @@ export const AddFoodModal: React.FC = () => {
   const pill = (active: boolean) =>
     `pressable px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border ${
       active
-        ? 'bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
+        ? 'kc-chip-active bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
         : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
     }`;
 
@@ -395,7 +395,7 @@ export const AddFoodModal: React.FC = () => {
             <FavoriteButton foodId={activeFood.id} />
           </div>
 
-          <div className="flex items-center justify-between bg-[#C9EFD3] rounded-2xl px-4 py-3">
+          <div className="kc-modal-banner flex items-center justify-between bg-[#C9EFD3] rounded-2xl px-4 py-3">
             <span className="text-xs font-bold tabular-nums text-[#1D5C38]">
               {activeFood.calories} kcal / 100{activeFood.unit}
             </span>
@@ -432,7 +432,7 @@ export const AddFoodModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeQueued(q.key)}
-                      className="pressable w-6 h-6 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                      className="kc-danger-icon-hover pressable w-6 h-6 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
                       aria-label={t.common.delete}
                     >
                       <Trash2 size={13} />
@@ -538,7 +538,7 @@ export const AddFoodModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setChild('barcode')}
-                      className="pressable px-3.5 py-2 rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183F66] text-xs font-extrabold flex items-center gap-1.5"
+                      className="kc-action-pill pressable px-3.5 py-2 rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183F66] text-xs font-extrabold flex items-center gap-1.5"
                     >
                       <ScanBarcode size={14} />
                       {t.foodModal.orBarcode}
@@ -555,14 +555,14 @@ export const AddFoodModal: React.FC = () => {
                       className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] active:bg-[var(--border)] transition-colors"
                     >
                       <span className="flex items-center gap-2.5 min-w-0">
-                        <span className="w-7 h-7 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center shrink-0">
+                        <span className="journal-tone-circle is-meal w-7 h-7 rounded-full bg-[#FAE0B4] text-[#7D4E14] flex items-center justify-center shrink-0">
                           <UtensilsCrossed size={13} />
                         </span>
                         <span className="min-w-0">
                           <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate block">
                             {res.m.name}
                           </span>
-                          <span className="inline-block mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
+                          <span className="journal-tone-badge is-meal inline-block mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
                             {t.prebuilt.title}
                             {res.m.slot ? ` · ${slotLabel(res.m.slot)}` : ''}
                           </span>
@@ -624,7 +624,7 @@ export const AddFoodModal: React.FC = () => {
                           key={m.id}
                           type="button"
                           onClick={() => queueMeal(m)}
-                          className="pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#FAE0B4] hover:bg-[#F7D69E] text-left"
+                          className="journal-food-chip is-meal pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#FAE0B4] hover:bg-[#F7D69E] text-left"
                         >
                           <span className="flex items-center gap-2 min-w-0">
                             <UtensilsCrossed size={14} className="text-[#7D4E14] shrink-0" />
@@ -671,7 +671,7 @@ export const AddFoodModal: React.FC = () => {
                           key={p.date}
                           type="button"
                           onClick={() => queueLoggedItems(p.items)}
-                          className="pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#CFE7FE] hover:bg-[#BDDDFC] text-left"
+                          className="journal-plan-suggestion is-past pressable w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-2xl bg-[#CFE7FE] hover:bg-[#BDDDFC] text-left"
                         >
                           <span className="flex items-center gap-2.5 min-w-0">
                             <History size={14} className="text-[#1A4670] shrink-0" />
@@ -715,7 +715,7 @@ export const AddFoodModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => removeQueued(q.key)}
-                      className="w-5 h-5 rounded-full text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center"
+                      className="kc-danger-icon-hover w-5 h-5 rounded-full text-[var(--muted)] hover:text-[#8C2D32] flex items-center justify-center"
                       aria-label={t.common.delete}
                     >
                       <X size={12} />

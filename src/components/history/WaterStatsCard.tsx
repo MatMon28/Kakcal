@@ -29,7 +29,7 @@ export const WaterStatsCard: React.FC<{ days: WaterStatsDay[]; onInspect: (date:
   const perDay = j('/ day', '/ giorno');
 
   return (
-    <div data-water-stats className={`kc-themed-card bg-[#CFE7FE] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'}`}>
+    <div data-water-stats className={`kc-themed-card bg-[#CFE7FE] rounded-3xl ${ultraMinimal ? 'relative p-3 pb-8' : 'p-4 sm:p-5'}`}>
       <div className="kc-custom-stat-header flex items-center justify-between gap-2 text-[#1A4670]">
         <span className="flex items-center gap-2 text-sm font-extrabold" aria-label={name} title={name}>
           <Droplets size={15} aria-hidden="true" />
@@ -37,7 +37,7 @@ export const WaterStatsCard: React.FC<{ days: WaterStatsDay[]; onInspect: (date:
         </span>
         <span className="text-right tabular-nums">
           <span className="block text-sm font-extrabold" aria-label={`${name}: ${average} ml ${perDay}`}>
-            {average} ml{!ultraMinimal && ` ${perDay}`}
+            {average}{!ultraMinimal && ` ml ${perDay}`}
           </span>
           {!ultraMinimal && (
             <span className="kc-custom-stat-sub block text-[11px] font-bold text-[#2E6A9F]">

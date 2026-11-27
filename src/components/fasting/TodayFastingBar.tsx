@@ -62,10 +62,12 @@ export const TodayFastingBar: React.FC = () => {
           <button
             type="button"
             onClick={() => setActiveTab('fasting')}
-            className="kc-fast-pill-cta pressable inline-flex items-center gap-1 rounded-full bg-[#8A6D1B] text-[#FFFDF7] px-3 py-1 text-[11px] font-extrabold shrink-0"
+            aria-label={ft.status.openFasting}
+            title={ft.status.openFasting}
+            className={`kc-fast-pill-cta pressable inline-flex items-center justify-center gap-1 rounded-full bg-[#8A6D1B] text-[#FFFDF7] ${ultra ? 'size-7 p-0' : 'px-3 py-1'} text-[11px] font-extrabold shrink-0`}
           >
-            <span>{ultra ? ft.pageTitle : ft.status.openFasting}</span>
-            <ArrowRight size={12} aria-hidden="true" />
+            <span className={ultra ? 'sr-only' : ''}>{ft.status.openFasting}</span>
+            <ArrowRight size={13} aria-hidden="true" />
           </button>
         </div>
 
@@ -111,16 +113,20 @@ export const TodayFastingBar: React.FC = () => {
               ? ultra
                 ? protocolLabel
                 : `${ft.status.eatingWindow} · ${protocolLabel}`
+              : ultra
+              ? protocolLabel
               : `${ft.status.ready} · ${protocolLabel}`}
           </span>
         </div>
         <button
           type="button"
           onClick={() => setActiveTab('fasting')}
-          className="kc-fast-pill-cta pressable inline-flex items-center gap-1 rounded-full bg-[#8A6D1B] text-[#FFFDF7] px-3 py-1 text-[11px] font-extrabold shrink-0"
+          aria-label={ft.status.openFasting}
+          title={ft.status.openFasting}
+          className={`kc-fast-pill-cta pressable inline-flex items-center justify-center gap-1 rounded-full bg-[#8A6D1B] text-[#FFFDF7] ${ultra ? 'size-7 p-0' : 'px-3 py-1'} text-[11px] font-extrabold shrink-0`}
         >
-          <span>{ultra ? ft.pageTitle : ft.status.openFasting}</span>
-          <ArrowRight size={12} aria-hidden="true" />
+          <span className={ultra ? 'sr-only' : ''}>{ft.status.openFasting}</span>
+          <ArrowRight size={13} aria-hidden="true" />
         </button>
       </div>
 

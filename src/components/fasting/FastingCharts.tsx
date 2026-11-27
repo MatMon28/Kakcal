@@ -28,13 +28,13 @@ export const FastingDaysBarChart: React.FC<{
       className={`rounded-3xl bg-carbs text-carbs-ink ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" title={ft.stats.fastingTimeTitle}>
           <Timer size={15} data-kc-tone-ink aria-hidden="true" />
-          <h3 data-kc-tone-ink className="text-sm font-extrabold">{ft.stats.fastingTimeTitle}</h3>
+          <h3 data-kc-tone-ink className={ultra ? 'sr-only' : 'text-sm font-extrabold'}>{ft.stats.fastingTimeTitle}</h3>
         </div>
         <div className="text-right tabular-nums">
           <div className="text-sm font-extrabold">
-            {ft.stats.perDay.replace('{time}', formatDurationCompact(avgDurationMs))}
+            {ultra ? formatDurationCompact(avgDurationMs) : ft.stats.perDay.replace('{time}', formatDurationCompact(avgDurationMs))}
           </div>
           {!ultra && (
             <div className="text-[11px] font-bold opacity-80">
@@ -47,14 +47,16 @@ export const FastingDaysBarChart: React.FC<{
         </div>
       </div>
 
-      <div className="kc-fast-subbox mt-2.5 flex items-center justify-between gap-2 rounded-full bg-[#E8F3FF]/75 px-3 py-1 text-[11px] font-extrabold tabular-nums">
-        <span>
-          {selectedBar
-            ? `${formatDateDisplay(selectedBar.date, language)} · ${selectedBar.hours}h (${selectedBar.fastCount})`
-            : ft.stats.tapDayHint}
-        </span>
-        <span className="opacity-80">{ft.stats.targetLabel.replace('{hours}', String(targetHours))}</span>
-      </div>
+      {(!ultra || selectedBar) && (
+        <div className="kc-fast-subbox mt-2.5 flex items-center justify-between gap-2 rounded-full bg-[#E8F3FF]/75 px-3 py-1 text-[11px] font-extrabold tabular-nums">
+          <span>
+            {selectedBar
+              ? `${formatDateDisplay(selectedBar.date, language)} · ${selectedBar.hours}h (${selectedBar.fastCount})`
+              : ft.stats.tapDayHint}
+          </span>
+          <span className="opacity-80">{ft.stats.targetLabel.replace('{hours}', String(targetHours))}</span>
+        </div>
+      )}
 
       <div className="relative mt-4 h-28 flex items-end gap-1 sm:gap-1.5 px-1">
         <div
@@ -133,15 +135,17 @@ export const FastingHungerChart: React.FC<{
       className={`rounded-3xl bg-fat text-fat-ink ${ultra ? 'p-3.5' : 'p-4 sm:p-5'}`}
     >
       <div className="flex items-start justify-between gap-2">
-        <div>
-          <h3 data-kc-tone-ink className="text-sm font-extrabold">{ft.stats.hungerTitle}</h3>
+        <div title={ft.stats.hungerTitle}>
+          <h3 data-kc-tone-ink className={ultra ? 'sr-only' : 'text-sm font-extrabold'}>{ft.stats.hungerTitle}</h3>
           {!ultra && <p className="text-[11px] font-bold opacity-80">{ft.stats.hungerSubtitle}</p>}
         </div>
-        <span data-fast-pill="neutral" className="rounded-full bg-[#F0E9FF]/85 text-[#49346F] px-2.5 py-1 text-[11px] font-extrabold tabular-nums shrink-0">
-          {selected
-            ? `${ft.stats.hrLabel.replace('{hour}', String(selected.hour))} · ${selected.avgHunger}/5 (${ft.stats.samples.replace('{count}', String(selected.count))})`
-            : ft.stats.tapPoint}
-        </span>
+        {(!ultra || selected) && (
+          <span data-fast-pill="neutral" className="rounded-full bg-[#F0E9FF]/85 text-[#49346F] px-2.5 py-1 text-[11px] font-extrabold tabular-nums shrink-0">
+            {selected
+              ? `${ft.stats.hrLabel.replace('{hour}', String(selected.hour))} · ${selected.avgHunger}/5 (${ft.stats.samples.replace('{count}', String(selected.count))})`
+              : ft.stats.tapPoint}
+          </span>
+        )}
       </div>
 
       {coords.length === 0 ? (

@@ -157,7 +157,9 @@ export function TileGoalOverlay({
         {isMinReached && <CircleCheck size={14} stroke="currentColor" strokeWidth={2.2} className="shrink-0" aria-hidden="true" />}
         {isMaxExceeded && <AlertTriangle size={14} stroke="currentColor" strokeWidth={2.2} className="shrink-0" aria-hidden="true" />}
         <span className="truncate">
-          {isMaxExceeded ? `${fmt(excess)}${unit} ${text.goal.over}` : `${fmt(amount)} / ${fmt(state.value)}${unit}`}
+          {isMaxExceeded
+            ? `${fmt(excess)}${ultraMinimal ? '' : unit} ${text.goal.over}`
+            : `${fmt(amount)} / ${fmt(state.value)}${ultraMinimal ? '' : unit}`}
         </span>
       </span>
     </>

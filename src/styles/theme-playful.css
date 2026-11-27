@@ -11,16 +11,13 @@ html[data-style="playful"] {
   --pill-radius: 9px;
   --dock-radius: 40px;
   --dock-btn-radius: 9999px;
-  --card-border: none;
   --pill-border: none;
-  --dock-border: none;
   --dock-btn-border: none;
   --clip-lg: none;
   --clip-md: none;
   --clip-sm: none;
   --clip-xs: none;
   --clip-dock: none;
-  --brand-flame-color: #fb7185;
 }
 
 html[data-style="playful"][data-theme="dark"] {
@@ -54,12 +51,13 @@ html[data-style="playful"][data-theme="dark"] {
   --burned-label: #ffe4e6;
   --burned-track: rgba(255, 228, 230, 0.22);
   --burned-fill: #ffe4e6;
-  --badge-bg: rgba(0, 0, 0, 0.28);
-  --badge-text: #ffe4e6;
+  --badge-bg: #ffe4e6;
+  --badge-text: #9f1239;
 
   --carbs-bg: #1e3a8a; --carbs-text: #dbeafe;
   --protein-bg: #713f12; --protein-text: #fef08a;
   --fat-bg: #4c1d95; --fat-text: #e9d5ff;
+  --water-fill: #60a5fa;
 
   --pill-c-bg: #1e3a8a; --pill-c-text: #bfdbfe;
   --pill-p-bg: #854d0e; --pill-p-text: #fde68a;
@@ -71,7 +69,7 @@ html[data-style="playful"][data-theme="dark"] {
   --dock-1: #065f46; --dock-icon-1: #d1fae5;
   --dock-2: #9f1239; --dock-icon-2: #ffe4e6;
   --dock-3: #1e3a8a; --dock-icon-3: #bfdbfe;
-  --dock-4: #854d0e; --dock-icon-4: #fde68a;
+  --dock-4: #9a3412; --dock-icon-4: #ffedd5;
   --dock-5: #4c1d95; --dock-icon-5: #e9d5ff;
   --dock-6: #854d0e; --dock-icon-6: #fef08a;
 
@@ -108,24 +106,25 @@ html[data-style="playful"][data-theme="lite-dark"] {
   --card-border: 1px solid rgba(255, 255, 255, 0.14);
   --card-shadow: 0 6px 18px rgba(15, 12, 45, 0.3);
 
-  --intake-bg: #34d399;
-  --intake-text: #042f2e;
-  --intake-label: #042f2e;
-  --intake-track: rgba(4, 47, 46, 0.22);
-  --intake-fill: #042f2e;
-  --intake-badge-bg: #042f2e; --intake-badge-text: #a7f3d0;
+  --intake-bg: #0f766e;
+  --intake-text: #ccfbf1;
+  --intake-label: #ccfbf1;
+  --intake-track: rgba(204, 251, 241, 0.22);
+  --intake-fill: #ccfbf1;
+  --intake-badge-bg: #ccfbf1; --intake-badge-text: #0f766e;
 
-  --burned-bg: #fb7185;
-  --burned-text: #3b0413;
-  --burned-label: #3b0413;
-  --burned-track: rgba(59, 4, 19, 0.22);
-  --burned-fill: #3b0413;
-  --badge-bg: rgba(59, 4, 19, 0.22);
-  --badge-text: #3b0413;
+  --burned-bg: #be123c;
+  --burned-text: #ffe4e6;
+  --burned-label: #ffe4e6;
+  --burned-track: rgba(255, 228, 230, 0.22);
+  --burned-fill: #ffe4e6;
+  --badge-bg: #ffe4e6;
+  --badge-text: #be123c;
 
   --carbs-bg: #3730a3; --carbs-text: #eef2ff;
   --protein-bg: #854d0e; --protein-text: #fef9c3;
   --fat-bg: #581c87; --fat-text: #faf5ff;
+  --water-fill: #93c5fd;
 
   --pill-c-bg: #1e3a8a; --pill-c-text: #dbeafe;
   --pill-p-bg: #713f12; --pill-p-text: #fef08a;
@@ -134,16 +133,16 @@ html[data-style="playful"][data-theme="lite-dark"] {
   --dock-bg: #363173;
   --dock-border: 1px solid rgba(255, 255, 255, 0.14);
   --dock-shadow: 0 8px 24px rgba(15, 12, 45, 0.35);
-  --dock-1: #34d399; --dock-icon-1: #042f2e;
-  --dock-2: #fb7185; --dock-icon-2: #3b0413;
-  --dock-3: #60a5fa; --dock-icon-3: #172554;
-  --dock-4: #fbbf24; --dock-icon-4: #451a03;
-  --dock-5: #c084fc; --dock-icon-5: #2e1065;
-  --dock-6: #fde047; --dock-icon-6: #422006;
+  --dock-1: #0f766e; --dock-icon-1: #ccfbf1;
+  --dock-2: #be123c; --dock-icon-2: #ffe4e6;
+  --dock-3: #1d4ed8; --dock-icon-3: #dbeafe;
+  --dock-4: #b45309; --dock-icon-4: #fef3c7;
+  --dock-5: #6d28d9; --dock-icon-5: #ede9fe;
+  --dock-6: #a16207; --dock-icon-6: #fef9c3;
 
-  --fiber-bg: #fde047; --fiber-text: #422006;
-  --salt-bg: #fde047; --salt-text: #422006;
-  --sugar-bg: #fde047; --sugar-text: #422006;
+  --fiber-bg: #a16207; --fiber-text: #fef9c3;
+  --salt-bg: #a16207; --salt-text: #fef9c3;
+  --sugar-bg: #a16207; --sugar-text: #fef9c3;
 
   --tone-diary: #544b24;   --tone-diary-in: #665b2e;
   --tone-meals: #5c422b;   --tone-meals-in: #6e5035;
@@ -192,6 +191,7 @@ html[data-style="playful"][data-theme="light"] {
   --carbs-bg: #dbeafe; --carbs-text: #172554;
   --protein-bg: #fef08a; --protein-text: #422006;
   --fat-bg: #e9d5ff; --fat-text: #2e1065;
+  --water-fill: #2563eb;
 
   --pill-c-bg: #dbeafe; --pill-c-text: #172554;
   --pill-p-bg: #fef08a; --pill-p-text: #422006;

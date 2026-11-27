@@ -24,6 +24,28 @@ html[data-style]:not([data-style="classic"]) .kc-header-surface {
   -webkit-backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 14px));
 }
 
+html:is([data-style="angular"], [data-style="pop"], [data-style="playful"], [data-style="minimal"], [data-style="mono"]) .kc-header-surface {
+  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 96%), transparent);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+html[data-style="aurora"] body,
+html[data-style="aurora"] [data-journal-root] {
+  background: transparent;
+  background-attachment: scroll;
+}
+html[data-style="aurora"] body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: var(--app-bg-image, var(--bg));
+  transform: translateZ(0);
+  will-change: transform;
+}
+
 /* Floating transparent page pill when revealed during scroll (no header background behind it) */
 .kc-header-surface[data-pill-floating="true"] .kc-nav-pill {
   background: color-mix(in srgb, var(--surface) 76%, transparent) !important;
@@ -80,6 +102,9 @@ html[data-style]:not([data-style="classic"]) .kc-hero-intake {
 html[data-style]:not([data-style="classic"]) .kc-hero-intake * {
   color: inherit;
 }
+html[data-style]:not([data-style="classic"]) .kc-hero-intake .kc-hero-label {
+  color: var(--intake-label, inherit);
+}
 html[data-style]:not([data-style="classic"]) .kc-hero-intake .kc-hero-track {
   background: var(--intake-track) !important;
   border-radius: var(--bar-radius, 999px) !important;
@@ -99,6 +124,9 @@ html[data-style]:not([data-style="classic"]) .kc-hero-burned {
 }
 html[data-style]:not([data-style="classic"]) .kc-hero-burned * {
   color: inherit;
+}
+html[data-style]:not([data-style="classic"]) .kc-hero-burned .kc-hero-label {
+  color: var(--burned-label, inherit);
 }
 html[data-style]:not([data-style="classic"]) .kc-hero-burned .kc-hero-track {
   background: var(--burned-track) !important;
@@ -180,6 +208,11 @@ html[data-style]:not([data-style="classic"]) [data-nutrient="fiber"] *,
 html[data-style]:not([data-style="classic"]) [data-nutrient="salt"] *,
 html[data-style]:not([data-style="classic"]) [data-nutrient="sugar"] * {
   color: inherit !important;
+}
+
+html[data-style]:not([data-style="classic"]) [data-goal-readout]:is([data-goal-readout="reached"], [data-goal-readout="exceeded"]),
+html[data-style]:not([data-style="classic"]) [data-goal-readout]:is([data-goal-readout="reached"], [data-goal-readout="exceeded"]) * {
+  color: var(--ring-fill, currentColor) !important;
 }
 
 /* Numeric Macro Pills (Meal cards, Food rows, Recipes, Database, Day Overview) */

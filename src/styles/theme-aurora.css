@@ -5,7 +5,7 @@ html[data-style="aurora"] {
   --nav-radius: 999px;
   --nav-pill-radius: 999px;
   --card-radius: 22px;
-  --micro-radius: 999px;
+  --micro-radius: 18px;
   --badge-radius: 999px;
   --bar-radius: 999px;
   --pill-radius: 999px;
@@ -19,7 +19,6 @@ html[data-style="aurora"] {
   --clip-xs: none;
   --clip-dock: none;
 
-  --brand-flame-color: #34d399;
   --intake-bg: linear-gradient(135deg, #4ade80 0%, #2dd4bf 100%);
   --intake-text: #06281e;
   --intake-label: #06281e;
@@ -37,6 +36,7 @@ html[data-style="aurora"] {
 
   --nav-active-bg: linear-gradient(135deg, #fb923c 0%, #f43f5e 100%);
   --nav-active-color: #1f060d;
+  --nav-active-accent: #f43f5e;
 
   --dock-1: #34d399; --dock-icon-1: #06281e;
   --dock-2: #fb7185; --dock-icon-2: #2d0811;
@@ -75,6 +75,7 @@ html[data-style="aurora"][data-theme="dark"] {
   --protein-text: #fbbf24;
   --fat-bg: rgba(255, 255, 255, 0.07);
   --fat-text: #c084fc;
+  --water-fill: #60a5fa;
 
   --pill-c-bg: rgba(96, 165, 250, 0.18);
   --pill-c-text: #93c5fd;
@@ -122,6 +123,7 @@ html[data-style="aurora"][data-theme="lite-dark"] {
   --protein-text: #fde047;
   --fat-bg: rgba(255, 255, 255, 0.11);
   --fat-text: #e9d5ff;
+  --water-fill: #93c5fd;
 
   --pill-c-bg: rgba(96, 165, 250, 0.28);
   --pill-c-text: #dbeafe;
@@ -169,6 +171,7 @@ html[data-style="aurora"][data-theme="light"] {
   --protein-text: #b45309;
   --fat-bg: #ffffff;
   --fat-text: #6d28d9;
+  --water-fill: #2563eb;
 
   --pill-c-bg: #dbeafe;
   --pill-c-text: #1e3a8a;

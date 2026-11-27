@@ -127,7 +127,7 @@ export const ExcelExportModal: React.FC<ExcelExportModalProps> = ({
           type="button"
           disabled={selectedCount === 0}
           onClick={handleConfirm}
-          className="pressable w-full py-3 rounded-2xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold text-sm flex items-center justify-center gap-2 disabled:opacity-45 disabled:pointer-events-none"
+          className="kc-primary-btn pressable w-full py-3 rounded-2xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold text-sm flex items-center justify-center gap-2 disabled:opacity-45 disabled:pointer-events-none"
         >
           <FileSpreadsheet size={16} />
           <span>{j(`Export .xlsx (${selectedCount})`, `Esporta .xlsx (${selectedCount})`)}</span>

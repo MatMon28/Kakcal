@@ -26,9 +26,9 @@
 
 * Background: `--app-bg-image` (luminous pearl-white cool-mist gradient `--bg: #eef2fa` in Light — closer to white than pink — dusk violet in Lite Dark, deep violet in Dark), fixed behind the page.
 * Scroll performance & opacity: the backdrop gradient renders on a single GPU-promoted `body::before` layer (`content: ""`, `will-change: transform`; `themed-glass.css` matches `themed-chrome.css` specificity so `background-attachment: scroll` wins), header blur disables once scrolled down (`[data-pill-floating="true"]`), `.kc-icon-btn` skips nested blur, `.kc-nav-pill` / `.kc-dock` use `blur(10px)` without `saturate()` matrix overhead, and `--card-shadow` uses 2 crisp layers instead of 5. Scrolling cards keep balanced Liquid Glass opacity (`0.72` light, `0.66–0.68` smoked dark) with `--glass-sheen`.
-* Intake, Burned, Carbs, Protein, Fat, Fibre / Salt are translucent **gradient tiles**; Today in the page pill is pink; the dock buttons are mint, pink, blue, orange, purple and yellow.
+* Intake, Burned, Carbs, Protein, Fat, Fibre / Salt are translucent **gradient tiles**; Today in the page pill is pink (with `--nav-active-accent` solid fallback for borders); the dock buttons are mint, pink, blue, orange, purple and yellow.
 * Dialogs are frosted panes (`--glass-dialog`, 90 % opaque so text behind never competes) over a tinted scrim (`--glass-scrim`; the scrim blur is desktop-only like the base one, because blur is costly on phones). The header is a thin sheet of glass.
-* The fixed pastel buttons and rows written as Tailwind arbitrary colours (`bg-[#C9EFD3]` mint, `#CFE7FE` blue, `#FAE0B4` orange, `#E2D6FF` purple, `#F6D0D0` red, `#F7E9AA` yellow: Log food, Water, Poop, Custom ... dialogs) are re-tinted by attribute selectors in `themed-glass.css` into translucent, more saturated glass with a white rim. Their dark ink classes are untouched, so the tint must stay light; do not darken them.
+* Legacy fixed pastel buttons and rows written as Tailwind arbitrary colours (`bg-[#C9EFD3]`, etc.) are re-tinted by Light-mode-only attribute selectors in `themed-glass.css`; new controls must use `.kc-primary-btn`, `.kc-danger-btn`, `.kc-chip-active`, `.kc-action-pill`, `.kc-modal-banner`, and `data-kc-tone` instead.
 * `prefers-reduced-transparency: reduce` removes every blur and makes the surfaces opaque.
 
 ## Material

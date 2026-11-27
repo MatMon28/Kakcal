@@ -170,17 +170,17 @@ export function LibraryPhoto({
   return (
     <div className="journal-library-photo">
       {matching.length ? (
-        <button type="button" onClick={() => setView(true)}>
+        <button type="button" onClick={() => setView(true)} title={j('View photo', 'Vedi foto')} aria-label={j('View photo', 'Vedi foto')}>
           <StoredImage src={matching[0].src} alt={matching[0].note} decoding="async" />
           <span>
             <Camera size={13} />
-            {j('View photo', 'Vedi foto')}
+            <span className={settings.ultraMinimal ? 'sr-only' : ''}>{j('View photo', 'Vedi foto')}</span>
           </span>
         </button>
       ) : (
-        <button type="button" className="journal-attach-photo" onClick={() => setAdd(true)}>
+        <button type="button" className="journal-attach-photo" onClick={() => setAdd(true)} title={j('Add a photo', 'Aggiungi una foto')} aria-label={j('Add a photo', 'Aggiungi una foto')}>
           <Camera size={13} />
-          {j('Add a photo', 'Aggiungi una foto')}
+          <span className={settings.ultraMinimal ? 'sr-only' : ''}>{j('Add a photo', 'Aggiungi una foto')}</span>
         </button>
       )}
       {add && (

@@ -117,6 +117,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
           onClick={onToggle}
           aria-expanded={open}
           aria-label={`${title}: ${open ? t.common.collapse : t.common.expand}`}
+          title={title}
           className="min-w-0 flex-1 flex items-center gap-2.5 text-left"
         >
           <span className="size-9 rounded-full bg-transparent text-[var(--text)] flex items-center justify-center shrink-0">
@@ -135,7 +136,7 @@ export function LibrarySectionHeader({ title, tone, summary, icon, count, create
         <div className="flex items-center gap-1.5 shrink-0">
           <div ref={groupRef} className="flex items-center gap-1.5">
           {extraActions}
-          {setQuery && !ultraMinimal && (
+          {setQuery && (
             <button
               id={`${inputId}-toggle`}
               type="button"

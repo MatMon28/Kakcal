@@ -34,6 +34,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
     setSelectedDate,
     t,
   } = useApp();
+  const ultraMinimal = settings.ultraMinimal;
 
   if (!date) return null;
 
@@ -124,7 +125,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
             </div>
             <div className="flex items-baseline gap-1 mt-1 tabular-nums">
               <span className="text-xl font-extrabold text-intake-ink">{formatKcal(intake)}</span>
-              <span className="text-[11px] font-semibold text-intake-accent">kcal</span>
+              {!ultraMinimal && <span className="text-[11px] font-semibold text-intake-accent">kcal</span>}
             </div>
           </div>
 
@@ -141,14 +142,14 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
             </div>
             <div className="flex items-baseline gap-1 mt-1 tabular-nums">
               <span className="text-xl font-extrabold text-activity-ink">{formatKcal(burned)}</span>
-              <span className="text-[11px] font-semibold text-activity-accent">kcal</span>
+              {!ultraMinimal && <span className="text-[11px] font-semibold text-activity-accent">kcal</span>}
             </div>
           </div>
         </div>
 
         {/* Macros summary when food was logged */}
         {allItems.length > 0 && (
-          <FoodMacroGrid mode="facts" amount={100} food={{ carbs: macros.carbsGrams, protein: macros.proteinGrams,
+          <FoodMacroGrid mode={ultraMinimal ? 'minimal' : 'facts'} amount={100} food={{ carbs: macros.carbsGrams, protein: macros.proteinGrams,
             fat: macros.fatGrams, fiber: macros.fiberGrams, salt: macros.saltGrams, sugar: macros.sugarGrams }} />
         )}
 

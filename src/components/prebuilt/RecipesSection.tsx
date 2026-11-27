@@ -102,7 +102,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
                         onClick={() => setPendingDelete({ kind: 'recipe', id: recipe.id, name: nameOf(recipe) })}
                         title={t.common.delete}
                         aria-label={`${t.common.delete}: ${nameOf(recipe)}`}
-                        className="pressable size-8 rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                        className="kc-danger-icon-hover pressable size-8 rounded-xl bg-[var(--surface)] text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
                       >
                         <Trash2 size={14} />
                       </button>

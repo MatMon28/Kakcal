@@ -192,7 +192,7 @@ export const RecipePortionPicker: React.FC<RecipePortionPickerProps> = ({
             <button
               type="button"
               aria-pressed={isSamePortion(value, wholeGrams)}
-              className={`${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
+              className={`kc-chip-pressable ${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
               onClick={() => onChange(isSamePortion(value, wholeGrams) ? 0 : Math.round(wholeGrams * 10) / 10)}
             >
               {j('Whole', 'Intera')} · {formatWeightAmount(wholeGrams)} g
@@ -202,7 +202,7 @@ export const RecipePortionPicker: React.FC<RecipePortionPickerProps> = ({
                 key={parts}
                 type="button"
                 aria-pressed={isSamePortion(value, grams)}
-                className={`${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
+                className={`kc-chip-pressable ${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
                 onClick={() => onChange(isSamePortion(value, grams) ? 0 : grams)}
               >
                 1/{parts} · {grams} g
@@ -226,7 +226,7 @@ export const RecipePortionPicker: React.FC<RecipePortionPickerProps> = ({
                 key={w}
                 type="button"
                 aria-pressed={Math.abs(displayGrams - w) <= 0.5}
-                className={`${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
+                className={`kc-chip-pressable ${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
                 onClick={() => onChange(w === 100 ? 0 : w)}
               >
                 {w} g
@@ -236,7 +236,7 @@ export const RecipePortionPicker: React.FC<RecipePortionPickerProps> = ({
               <button
                 type="button"
                 aria-pressed={isSamePortion(value, wholeGrams)}
-                className={`${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
+                className={`kc-chip-pressable ${smallButton} aria-pressed:bg-[#E2D6FF] aria-pressed:text-[#4D3582]`}
                 onClick={() => onChange(Math.round(wholeGrams * 10) / 10)}
               >
                 {j('Whole', 'Intera')} ({formatWeightAmount(wholeGrams)} g)

@@ -42,7 +42,7 @@ export function MealSummaryCard({
   return (
     <div
       data-meal-summary={slot}
-      className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl overflow-hidden text-[var(--text)]"
+      className="kc-themed-card bg-[var(--surface)] border border-[var(--border)] rounded-3xl overflow-hidden text-[var(--text)]"
     >
       <div className="px-4 py-3.5 flex flex-col gap-2.5">
         <div className="flex items-center gap-2.5 w-full">

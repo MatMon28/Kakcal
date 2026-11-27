@@ -63,7 +63,6 @@ html[data-style="pop"][data-theme="dark"] {
   --border: #fef9c3;
   --text: #ffffff;
   --muted: #cbd5e1;
-  --brand-flame-color: #fde047;
   --header-btn-bg: #211c2b;
   --header-icon-color: #fef9c3;
   --nav-bg: #211c2b;
@@ -102,7 +101,6 @@ html[data-style="pop"][data-theme="lite-dark"] {
   --border: #e2e8f0;
   --text: #ffffff;
   --muted: #e2e8f0;
-  --brand-flame-color: #fde047;
   --header-btn-bg: #322d42;
   --header-icon-color: #ffffff;
   --nav-bg: #322d42;
@@ -141,7 +139,6 @@ html[data-style="pop"][data-theme="light"] {
   --border: #000000;
   --text: #000000;
   --muted: #1e293b;
-  --brand-flame-color: #000000;
   --header-btn-bg: #ffffff;
   --header-icon-color: #000000;
   --nav-bg: #ffffff;
@@ -159,7 +156,7 @@ html[data-style="pop"][data-theme="light"] {
   --dock-border: 2.5px solid #000000;
   --dock-shadow: 4px 4px 0px rgba(0, 0, 0, 0.25);
   --dock-btn-border: none;
-  --dock-6: #ffffff; --dock-icon-6: #000000;
+  --dock-6: #fde047; --dock-icon-6: #000000;
 
   --water-fill: #1d6fb8;
   --fiber-bg: #fef08a; --fiber-text: #000000;

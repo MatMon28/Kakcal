@@ -1,5 +1,5 @@
 import React from 'react';
-import { Footprints, Route, Trash2 } from 'lucide-react';
+import { Flame, Footprints, Route, Trash2, Zap } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { activityLogLabel } from '../../utils/activityLabel';
 import { TrackerCard } from './TrackerCard';
@@ -35,7 +35,7 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
       ? latest.distanceKm.toString()
       : latest?.durationMin !== undefined
       ? (Math.round((latest.durationMin / 10) * 10) / 10).toString()
-      : '3.5';
+      : String(activities.length);
 
   // Collapsed: one line only — in ultra minimal, route icon + distance number (matching reference).
   const summary = ultraMinimal ? (
@@ -69,14 +69,14 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
     >
       <div className="space-y-2">
         <div className="flex flex-wrap gap-1.5">
-          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`} aria-label={`${t.energy.bmrShort}: ${currentExpenditure.bmr}`} title={t.energy.bmrShort}>
-            {ultraMinimal ? currentExpenditure.bmr : `${t.energy.bmrShort} ${currentExpenditure.bmr}`}
+          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)] gap-1`} aria-label={`${t.energy.bmrShort}: ${currentExpenditure.bmr}`} title={t.energy.bmrShort}>
+            {ultraMinimal ? <><Flame size={11} aria-hidden="true" /><span className="sr-only">{t.energy.bmrShort}</span> {currentExpenditure.bmr}</> : `${t.energy.bmrShort} ${currentExpenditure.bmr}`}
           </span>
-          <span className={`${pill} bg-[var(--inset)] text-[var(--text)]`} aria-label={`${t.energy.activitiesShort}: ${currentExpenditure.activityExpenditure}`} title={t.energy.activitiesShort}>
-            {ultraMinimal ? <><Footprints size={11} /> {currentExpenditure.activityExpenditure}</> : `${t.energy.activitiesShort} ${currentExpenditure.activityExpenditure}`}
+          <span className={`${pill} bg-[var(--inset)] text-[var(--text)] gap-1`} aria-label={`${t.energy.activitiesShort}: ${currentExpenditure.activityExpenditure}`} title={t.energy.activitiesShort}>
+            {ultraMinimal ? <><Footprints size={11} aria-hidden="true" /><span className="sr-only">{t.energy.activitiesShort}</span> {currentExpenditure.activityExpenditure}</> : `${t.energy.activitiesShort} ${currentExpenditure.activityExpenditure}`}
           </span>
-          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)]`} aria-label={`${t.energy.tefShort}: ${currentExpenditure.tef}`} title={t.energy.tefShort}>
-            {ultraMinimal ? currentExpenditure.tef : `${t.energy.tefShort} ${currentExpenditure.tef}`}
+          <span className={`${pill} bg-[var(--inset)] text-[var(--muted)] gap-1`} aria-label={`${t.energy.tefShort}: ${currentExpenditure.tef}`} title={t.energy.tefShort}>
+            {ultraMinimal ? <><Zap size={11} aria-hidden="true" /><span className="sr-only">{t.energy.tefShort}</span> {currentExpenditure.tef}</> : `${t.energy.tefShort} ${currentExpenditure.tef}`}
           </span>
         </div>
 
@@ -122,7 +122,7 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
                   <button
                     type="button"
                     onClick={() => removeActivity(act.id)}
-                    className="pressable size-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
+                    className="kc-danger-icon-hover pressable size-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
                     title={t.common.delete}
                     aria-label={`${t.common.delete}: ${name(act)}`}
                   >

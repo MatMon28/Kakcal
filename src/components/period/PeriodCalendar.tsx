@@ -3,7 +3,7 @@ import { useJournalData, useSettings } from '../../context/AppContext';
 import { LazyBody } from '../common/LazyBody';
 import { PeriodStatus, pillMarkerFor, PillMarker } from '../../utils/period';
 import { addDaysToDateString, formatFullDate, getTodayDateString, dateFormatter } from '../../utils/formatters';
-import { ChevronLeft, ChevronRight, Heart } from 'lucide-react';
+import { ChevronLeft, ChevronRight, CornerUpLeft, Heart } from 'lucide-react';
 import { CollapseArrow } from '../common/InlineCollapse';
 
 /** Capsule marker (≥14px) used in calendar cells and the legend. */
@@ -68,7 +68,8 @@ interface Props {
 }
 
 export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectDay, status }) => {
-  const { t, language } = useSettings();
+  const { t, language, settings: appSettings } = useSettings();
+  const ultraMinimal = appSettings.ultraMinimal;
   const { periodData } = useJournalData();
   const todayStr = getTodayDateString();
   const settings = periodData.settings;
@@ -168,7 +169,7 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
   }, [status.nextPeriod, status.nextPeriodRange, settings.periodDuration, pillMode]);
 
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-3">
+    <div className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'} space-y-3`}>
       <div className="flex items-center justify-between gap-2">
         <button
           type="button"
@@ -185,9 +186,12 @@ export const PeriodCalendar: React.FC<Props> = ({ selected, onSelect, onInspectD
             <button
               type="button"
               onClick={jumpToday}
-              className="kc-period-pill pressable px-2.5 py-1 rounded-full bg-[#F4C6D8] text-[#6E2440] text-[11px] font-extrabold"
+              title={t.header.todayReturn}
+              aria-label={t.header.todayReturn}
+              className={`kc-period-pill pressable rounded-full bg-[#F4C6D8] text-[#6E2440] text-[11px] font-extrabold inline-flex items-center justify-center ${ultraMinimal ? 'size-7 p-0' : 'px-2.5 py-1'}`}
             >
-              {t.header.today}
+              {ultraMinimal && <CornerUpLeft size={13} strokeWidth={2.5} aria-hidden="true" />}
+              <span className={ultraMinimal ? 'sr-only' : ''}>{t.header.today}</span>
             </button>
           )}
         </div>

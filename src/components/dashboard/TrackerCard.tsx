@@ -91,6 +91,7 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
         tabIndex={0}
         aria-expanded={open}
         aria-label={`${title}: ${open ? t.common.collapse : t.common.expand}`}
+        title={title}
         onClick={onToggle}
         onKeyDown={(e) => {
           if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {

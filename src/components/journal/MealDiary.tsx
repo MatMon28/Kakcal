@@ -135,7 +135,7 @@ function useMealNote() {
 }
 
 export function MealDiary() {
-  const { language } = useSettings();
+  const { language, settings } = useSettings();
   const { label } = useMealSlots();
   const { memories } = useMealJournal();
   const meals = useDiaryMeals();
@@ -181,9 +181,9 @@ export function MealDiary() {
           <JournalChip active={!favorites} onClick={() => setFavorites(false)}>
             {j('All', 'Tutti')}
           </JournalChip>
-          <JournalChip active={favorites} onClick={() => setFavorites(!favorites)}>
+          <JournalChip active={favorites} onClick={() => setFavorites(!favorites)} title={j('Favorites', 'Preferiti')} aria-label={j('Favorites', 'Preferiti')}>
             <Star size={13} fill={favorites ? 'currentColor' : 'none'} />
-            {j('Favorites', 'Preferiti')}
+            <span className={settings.ultraMinimal ? 'sr-only' : ''}>{j('Favorites', 'Preferiti')}</span>
           </JournalChip>
         </div>
         <div className="journal-recent-meals">
@@ -202,7 +202,7 @@ export function MealDiary() {
               </button>
               <div className="journal-recent-meal-footer">
                 <span>
-                  <strong>{Math.round(calculateTotalCalories(meal.items))}</strong> kcal
+                  <strong>{Math.round(calculateTotalCalories(meal.items))}</strong>{!settings.ultraMinimal && ' kcal'}
                 </span>
                 <FavoriteMeal date={meal.date} slot={meal.slot} />
               </div>
@@ -567,7 +567,7 @@ function MealDetails({ meal, onClose }: { meal: DiaryMeal; onClose: () => void }
               <p className="flex-1 min-w-0 font-bold text-sm break-words">{item.name}</p>
               <button type="button" className="journal-secondary-button" aria-label={j(`Edit amount for ${item.name}`, `Modifica quantità per ${item.name}`)}
                 onClick={() => setAmountEdit({ id: item.id, value: item.amount })}><Pencil size={14} /> {item.amount} {item.unit}</button>
-              <button type="button" className="pressable size-9 rounded-full grid place-items-center hover:bg-[#F6D0D0] hover:text-[#7A2727]"
+              <button type="button" className="kc-danger-icon-hover pressable size-9 rounded-full grid place-items-center hover:bg-[#F6D0D0] hover:text-[#7A2727]"
                 aria-label={j(`Delete ${item.name}`, `Elimina ${item.name}`)} onClick={() => {
                   if (amountEdit?.id === item.id) setAmountEdit(null);
                   removeLoggedFoodItem(meal.slot, item.id, meal.date);

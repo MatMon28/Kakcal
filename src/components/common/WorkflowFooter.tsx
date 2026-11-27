@@ -16,7 +16,7 @@ export function WorkflowFooter({ primary, onPrimary, disabled, more, onMore, mor
           <Plus size={16} className="shrink-0" /> {more}
         </button>
       )}
-      <button type="button" onClick={onPrimary} disabled={disabled} className="pressable min-h-11 min-w-0 py-2 px-2 rounded-2xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 disabled:opacity-40">
+      <button type="button" onClick={onPrimary} disabled={disabled} className="kc-primary-btn pressable min-h-11 min-w-0 py-2 px-2 rounded-2xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-1.5 disabled:opacity-40">
         <Check size={16} className="shrink-0" /> {primary}
       </button>
     </div>

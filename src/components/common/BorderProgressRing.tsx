@@ -9,8 +9,14 @@ interface RingGeometry {
   fallbackLen: number;
 }
 
-/** Builds a clockwise rounded-rectangle SVG path starting at the bottom-left edge (x0, y1 - r). */
-function buildPerimeterPath(w: number, h: number, outerRadius: number, borderWidth: number): RingGeometry | null {
+/** Builds a clockwise rounded-rectangle (or Angular chamfered) SVG path starting at the bottom-left edge. */
+function buildPerimeterPath(
+  w: number,
+  h: number,
+  outerRadius: number,
+  borderWidth: number,
+  angular: boolean,
+): RingGeometry | null {
   const strokeWidth = h < 88 ? 4 : 5;
   const inset = strokeWidth / 2 + (borderWidth > 0 ? 1 : 0.5);
   const x0 = inset;
@@ -18,6 +24,14 @@ function buildPerimeterPath(w: number, h: number, outerRadius: number, borderWid
   const x1 = w - inset;
   const y1 = h - inset;
   if (x1 <= x0 || y1 <= y0) return null;
+
+  if (angular) {
+    const baseChamfer = h >= 88 ? 14 : h >= 80 ? 11 : 9;
+    const c = Math.max(0, Math.min(baseChamfer - inset * 0.4, (x1 - x0) / 3, (y1 - y0) / 3));
+    const d = `M ${x0} ${y1 - c} L ${x0} ${y0} L ${x1 - c} ${y0} L ${x1} ${y0 + c} L ${x1} ${y1} L ${x0 + c} ${y1} Z`;
+    const fallbackLen = 2 * ((x1 - x0 - c) + (y1 - y0 - c)) + 2 * Math.SQRT2 * c;
+    return { w, h, d, strokeWidth, fallbackLen };
+  }
 
   const innerRadius = Math.max(0, outerRadius - borderWidth);
   const r = Math.max(0, Math.min(innerRadius - inset, (x1 - x0) / 2, (y1 - y0) / 2));
@@ -66,7 +80,7 @@ export function BorderProgressRing({
     const cs = getComputedStyle(host);
     const borderWidth = parseFloat(cs.borderLeftWidth) || 0;
     const outerRadius = parseFloat(cs.borderTopLeftRadius) || 0;
-    const next = buildPerimeterPath(w, h, outerRadius, borderWidth);
+    const next = buildPerimeterPath(w, h, outerRadius, borderWidth, themeStyle === 'angular');
     if (!next) return;
 
     setGeom((prev) =>
@@ -78,7 +92,7 @@ export function BorderProgressRing({
         ? prev
         : next,
     );
-  }, []);
+  }, [themeStyle]);
 
   useEffect(() => {
     const svg = svgRef.current;

@@ -167,6 +167,7 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
       role="button"
       tabIndex={0}
       aria-label={details.title}
+      title={details.title}
       aria-expanded={open}
       onClick={onToggle}
       onKeyDown={(e) => {

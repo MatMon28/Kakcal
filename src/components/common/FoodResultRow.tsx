@@ -10,6 +10,8 @@ interface FoodResultRowProps {
   onClick: () => void;
   /** Show the favourite star (food search); recipe builders leave it out. */
   favorite?: boolean;
+  /** Omit display units (g/ml/kcal) in Ultra Minimal display lists. */
+  compact?: boolean;
 }
 
 /**
@@ -17,7 +19,7 @@ interface FoodResultRowProps {
  * used, else the product's classic portion, else 100 g/ml) with the carbs / protein / fat of
  * exactly that weight, and its calories on the right.
  */
-export const FoodResultRow: React.FC<FoodResultRowProps> = ({ food, onClick, favorite = false }) => {
+export const FoodResultRow: React.FC<FoodResultRowProps> = ({ food, onClick, favorite = false, compact = false }) => {
   const { language, t } = useApp();
   const amount = getDefaultAmount(food);
   const factor = amount / 100;
@@ -38,7 +40,7 @@ export const FoodResultRow: React.FC<FoodResultRowProps> = ({ food, onClick, fav
         <span className="mt-1 flex items-center gap-1.5">
           <span className="shrink-0 text-[11px] font-bold tabular-nums text-[var(--text)]">
             {amount}
-            {food.unit}
+            {!compact && food.unit}
           </span>
           <MacroPills carbs={scaled(food.carbs)} protein={scaled(food.protein)} fat={scaled(food.fat)} sugar={scaled(food.sugar ?? null)} />
         </span>
@@ -50,7 +52,7 @@ export const FoodResultRow: React.FC<FoodResultRowProps> = ({ food, onClick, fav
       </button>
       <span className="shrink-0 text-right tabular-nums leading-tight">
         <span className="block text-sm font-extrabold text-[var(--text)]">{Math.round(food.calories * factor)}</span>
-        <span className="block text-[10px] font-bold text-[var(--muted)]">kcal</span>
+        {!compact && <span className="block text-[10px] font-bold text-[var(--muted)]">kcal</span>}
       </span>
       {favorite && <FavoriteButton foodId={food.id} food={food} />}
     </div>

@@ -10,8 +10,9 @@ html[data-style="angular"] .rounded-lg {
   clip-path: var(--clip-sm);
 }
 
-/* Angular: the meal selection chips (Add food, Custom meals) are `rounded-full`, which the rules above do not cover. */
-html[data-style="angular"] [data-slot-chip] {
+/* Angular: the meal selection chips & rounded-full action pills/buttons */
+html[data-style="angular"] [data-slot-chip],
+html[data-style="angular"] :is(button.rounded-full, a.rounded-full, [data-favorite-btn], [data-portion-mode-switch]) {
   border-radius: 0px !important;
   clip-path: var(--clip-xs);
 }

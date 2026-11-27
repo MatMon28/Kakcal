@@ -42,7 +42,7 @@ export const LayoutPencil: React.FC<{ page: LayoutPageId }> = ({ page }) => {
       aria-pressed={editing}
       title={editing ? text.done : text.edit}
       data-layout-pencil={page}
-      className={`pressable size-9 rounded-full border flex items-center justify-center ${
+      className={`kc-icon-btn pressable size-9 rounded-full border flex items-center justify-center ${
         editing
           ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
           : 'bg-[var(--surface)] hover:bg-[var(--hover)] border-[var(--border)] text-[var(--muted)] hover:text-[var(--text)]'
@@ -141,13 +141,13 @@ export const LayoutToolbar: React.FC<{
           >
             <Plus size={13} />
             {text.add}
-            {hidden.length > 0 && <span className="rounded-full bg-[#F6D0D0] text-[#7A2727] px-1.5 text-[10px]">{hidden.length}</span>}
+            {hidden.length > 0 && <span className="kc-danger-btn rounded-full bg-[#F6D0D0] text-[#7A2727] px-1.5 text-[10px]">{hidden.length}</span>}
           </button>
           <button type="button" onClick={() => setConfirmReset(true)} className={`${action} bg-[var(--inset)] text-[var(--text)] hover:bg-[var(--hover)]`}>
             <RotateCcw size={13} />
             {text.reset}
           </button>
-          <button type="button" onClick={done} className={`${action} bg-[#C9EFD3] text-[#174A2B]`}>
+          <button type="button" onClick={done} className={`kc-primary-btn ${action} bg-[#C9EFD3] text-[#174A2B]`}>
             <Check size={13} />
             {text.done}
           </button>
@@ -182,7 +182,7 @@ export const LayoutToolbar: React.FC<{
                           onClick={() => setPendingMeal({ id: item.id.slice(5), name: item.label })}
                           aria-label={`${text.deleteMeal}: ${item.label}`}
                           title={text.deleteMeal}
-                          className="pressable size-9 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[#F6D0D0] hover:text-[#7A2727] text-[var(--muted)] flex items-center justify-center"
+                          className="kc-danger-icon-hover pressable size-9 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[#F6D0D0] hover:text-[#7A2727] text-[var(--muted)] flex items-center justify-center"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -227,7 +227,7 @@ export const LayoutToolbar: React.FC<{
                   disabled={!name.trim()}
                   aria-label={extra === 'meal' ? text.addMeal : text.addMeasure}
                   title={extra === 'meal' ? text.addMeal : text.addMeasure}
-                  className="pressable size-[2.65rem] shrink-0 rounded-xl bg-[#C9EFD3] text-[#174A2B] disabled:opacity-40 flex items-center justify-center"
+                  className="kc-primary-btn pressable size-[2.65rem] shrink-0 rounded-xl bg-[#C9EFD3] text-[#174A2B] disabled:opacity-40 flex items-center justify-center"
                 >
                   <Plus size={18} strokeWidth={2.5} />
                 </button>

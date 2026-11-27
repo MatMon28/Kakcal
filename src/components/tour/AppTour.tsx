@@ -216,9 +216,9 @@ export function AppTour() {
           <p className="mt-3 text-[15px] leading-relaxed text-[var(--muted)]">{ui.pageLede}</p>
         </div>
 
-        <section aria-label={ui.installHeading} className="mb-10 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
+        <section aria-label={ui.installHeading} className="kc-themed-card mb-10 rounded-3xl border border-[var(--border)] bg-[var(--surface)] p-4 sm:p-5">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#C9EFD3] text-[#174A2B]">
+            <span className="kc-action-pill flex size-12 shrink-0 items-center justify-center rounded-2xl bg-[#C9EFD3] text-[#174A2B]">
               <Download size={22} aria-hidden="true" />
             </span>
             <div className="min-w-0 flex-1">
@@ -229,7 +229,7 @@ export function AppTour() {
             <button
               type="button"
               onClick={() => openInstallGuide(undefined, lang)}
-              className="pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E5E3A] px-5 text-sm font-extrabold text-[#EAF7EE] hover:bg-[#174A2B]"
+              className="kc-primary-btn pressable inline-flex min-h-11 shrink-0 items-center justify-center gap-1.5 rounded-xl bg-[#1E5E3A] px-5 text-sm font-extrabold text-[#EAF7EE] hover:bg-[#174A2B]"
             >
               {ui.installCta}
               <ArrowUpRight size={15} aria-hidden="true" />

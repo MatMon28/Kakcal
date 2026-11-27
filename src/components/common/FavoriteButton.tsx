@@ -30,6 +30,7 @@ export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant 
         toggle(foodId);
       }}
       aria-pressed={active}
+      data-favorite-btn={active ? 'active' : 'idle'}
       aria-label={active ? t.favorites.remove : t.favorites.add}
       title={active ? t.favorites.remove : t.favorites.add}
       className={`pressable ${size} shrink-0 rounded-full flex items-center justify-center border ${

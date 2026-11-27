@@ -64,8 +64,10 @@ export const FoodDatabaseView: React.FC = () => {
     setTargetMealSlot,
     favoriteFoods,
     language,
+    settings,
     t,
   } = useApp();
+  const ultraMinimal = settings.ultraMinimal;
   const { returnFromDatabase } = useNavActions();
   const { options: mealSlots } = useMealSlots();
   const autoMealSlot = useAutoMealSlot();
@@ -220,9 +222,9 @@ export const FoodDatabaseView: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className={ultraMinimal ? 'space-y-2.5' : 'space-y-4'}>
       {/* Header with Back button */}
-      <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex items-center justify-between gap-3 flex-wrap">
+      <div className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3' : 'p-4 sm:p-5'} flex items-center justify-between gap-3 flex-wrap`}>
         <div className="flex items-center gap-2.5">
           <button
             type="button"
@@ -252,26 +254,29 @@ export const FoodDatabaseView: React.FC = () => {
           <button
             type="button"
             onClick={openBarcode}
-            className="pressable px-3.5 py-2.5 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-bold text-xs flex items-center gap-1.5"
+            className={`pressable ${ultraMinimal ? 'size-9 p-0 justify-center' : 'px-3.5 py-2.5'} rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] font-bold text-xs flex items-center gap-1.5`}
             title={t.prebuilt.barcode}
+            aria-label={t.prebuilt.barcode}
           >
             <ScanBarcode size={15} />
-            <span className="hidden sm:inline">{t.prebuilt.barcode}</span>
+            <span className={ultraMinimal ? 'sr-only' : 'hidden sm:inline'}>{t.prebuilt.barcode}</span>
           </button>
 
           <button
             type="button"
             onClick={openCustomFood}
-            className="pressable px-4 py-2.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs flex items-center gap-1.5"
+            title={t.database.createCustom}
+            aria-label={t.database.createCustom}
+            className={`kc-primary-btn pressable ${ultraMinimal ? 'size-9 p-0 justify-center' : 'px-4 py-2.5'} rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] font-extrabold text-xs flex items-center gap-1.5`}
           >
             <Plus size={15} strokeWidth={2.5} />
-            <span>{t.database.createCustom}</span>
+            <span className={ultraMinimal ? 'sr-only' : ''}>{t.database.createCustom}</span>
           </button>
         </div>
       </div>
 
       {/* Search & Category Filters */}
-      <div ref={filters} className="scroll-mt-32 bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-3">
+      <div ref={filters} className={`scroll-mt-32 bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3 space-y-2.5' : 'p-4 sm:p-5 space-y-3'}`}>
         {offState.failed && <p role="status" className="text-xs font-semibold text-[var(--muted)]">
           {t.database.catalogueUnavailable}{' '}
           <button
@@ -314,27 +319,32 @@ export const FoodDatabaseView: React.FC = () => {
             type="button"
             onClick={() => setSelectedCategory('all')}
             aria-pressed={selectedCategory === 'all'}
-            className={`pressable px-3 py-1.5 rounded-full font-bold whitespace-nowrap ${
+            title={t.database.allCategories}
+            aria-label={t.database.allCategories}
+            className={`pressable ${ultraMinimal ? 'size-8 p-0 justify-center' : 'px-3 py-1.5'} rounded-full font-bold whitespace-nowrap flex items-center gap-1.5 ${
               selectedCategory === 'all'
-                ? 'bg-[#C9EFD3] text-[#174A2B]'
+                ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B]'
                 : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)]'
             }`}
           >
-            {t.database.allCategories}
+            {ultraMinimal && <Utensils size={13} aria-hidden="true" />}
+            <span className={ultraMinimal ? 'sr-only' : ''}>{t.database.allCategories}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setSelectedCategory(selectedCategory === 'favorites' ? 'all' : 'favorites')}
             aria-pressed={selectedCategory === 'favorites'}
-            className={`pressable flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold whitespace-nowrap ${
+            title={t.database.favoriteFilter}
+            aria-label={t.database.favoriteFilter}
+            className={`pressable flex items-center justify-center gap-1.5 ${ultraMinimal ? 'size-8 p-0' : 'px-3 py-1.5'} rounded-full font-bold whitespace-nowrap ${
               selectedCategory === 'favorites'
-                ? 'bg-[#FAE0B4] text-[#B45309]'
+                ? 'kc-chip-active bg-[#FAE0B4] text-[#B45309]'
                 : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)]'
             }`}
           >
             <Star size={13} fill={selectedCategory === 'favorites' ? 'currentColor' : 'none'} />
-            <span>{t.database.favoriteFilter}</span>
+            <span className={ultraMinimal ? 'sr-only' : ''}>{t.database.favoriteFilter}</span>
           </button>
 
           {hasCustomFoods && (
@@ -342,14 +352,16 @@ export const FoodDatabaseView: React.FC = () => {
               type="button"
               onClick={() => setSelectedCategory('custom')}
               aria-pressed={selectedCategory === 'custom'}
-              className={`pressable flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold whitespace-nowrap ${
+              title={t.database.customFilter}
+              aria-label={t.database.customFilter}
+              className={`pressable flex items-center justify-center gap-1.5 ${ultraMinimal ? 'size-8 p-0' : 'px-3 py-1.5'} rounded-full font-bold whitespace-nowrap ${
                 selectedCategory === 'custom'
-                  ? 'bg-[#E2D6FF] text-[#4D3582]'
+                  ? 'kc-chip-active bg-[#E2D6FF] text-[#4D3582]'
                   : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)]'
               }`}
             >
               <Sparkles size={13} />
-              <span>{t.database.customFilter}</span>
+              <span className={ultraMinimal ? 'sr-only' : ''}>{t.database.customFilter}</span>
             </button>
           )}
 
@@ -361,14 +373,16 @@ export const FoodDatabaseView: React.FC = () => {
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
                 aria-pressed={selectedCategory === cat}
-                className={`pressable flex items-center gap-1.5 px-3 py-1.5 rounded-full font-bold whitespace-nowrap ${
+                title={t.categories[cat]}
+                aria-label={t.categories[cat]}
+                className={`pressable flex items-center justify-center gap-1.5 ${ultraMinimal ? 'size-8 p-0' : 'px-3 py-1.5'} rounded-full font-bold whitespace-nowrap ${
                   selectedCategory === cat
-                    ? 'bg-[#C9EFD3] text-[#174A2B]'
+                    ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B]'
                     : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)]'
                 }`}
               >
                 <Icon size={13} />
-                <span>{t.categories[cat]}</span>
+                <span className={ultraMinimal ? 'sr-only' : ''}>{t.categories[cat]}</span>
               </button>
             );
           })}
@@ -386,7 +400,7 @@ export const FoodDatabaseView: React.FC = () => {
           <button
             type="button"
             onClick={openCustomFood}
-            className="pressable inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold"
+            className="kc-primary-btn pressable inline-flex items-center gap-1.5 px-4 py-2.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold"
           >
             <Plus size={14} strokeWidth={2.5} />
             <span>{t.database.createCustom}</span>
@@ -405,7 +419,7 @@ export const FoodDatabaseView: React.FC = () => {
               <div
                 key={food.id}
                 data-food-id={food.id}
-                className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 flex flex-col justify-between gap-3"
+                className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3 gap-2.5' : 'p-4 sm:p-5 gap-3'} flex flex-col justify-between`}
               >
                 <div>
                   <div className="flex items-start justify-between gap-2">
@@ -434,18 +448,20 @@ export const FoodDatabaseView: React.FC = () => {
                       <span className="text-base font-extrabold text-[var(--text)]">
                         {food.calories}
                       </span>
-                      <span className="text-[10px] font-bold text-[var(--muted)] ml-0.5">
-                        kcal
-                      </span>
+                      {!ultraMinimal && (
+                        <span className="text-[10px] font-bold text-[var(--muted)] ml-0.5">
+                          kcal
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className="pt-3"><FoodMacroGrid food={food} amount={100} mode="facts" /></div>
+                  <div className="pt-3"><FoodMacroGrid food={food} amount={100} mode={ultraMinimal ? 'minimal' : 'facts'} /></div>
                 </div>
 
                 <div className="pt-2 border-t border-[var(--border)] flex items-center justify-between gap-2">
                   <div className="min-w-0 space-y-0.5 text-[11px] font-medium text-[var(--muted)]">
-                    <p className="truncate">100{food.unit} · {t.categories[food.category]}</p>
+                    {!ultraMinimal && <p className="truncate">100{food.unit} · {t.categories[food.category]}</p>}
                     {food.source?.url?.startsWith('https://') && (
                       <a href={food.source.url} target="_blank" rel="noreferrer" className="inline-flex max-w-full items-center gap-1 underline decoration-current/35 underline-offset-2 hover:text-[var(--text)]" aria-label={`${t.database.foodSource}: ${food.source.label}`}>
                         <span className="truncate">{food.source.label}</span>
@@ -473,10 +489,12 @@ export const FoodDatabaseView: React.FC = () => {
                         setLogSlot(autoMealSlot());
                         setLogAmount(getDefaultAmount(food));
                       }}
-                      className="pressable px-3.5 py-1.5 rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold flex items-center gap-1"
+                      title={t.mealSlots.addItem}
+                      aria-label={`${t.mealSlots.addItem}: ${primaryName}`}
+                      className={`kc-action-pill pressable ${ultraMinimal ? 'size-8 p-0 justify-center' : 'px-3.5 py-1.5'} rounded-full bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold flex items-center gap-1`}
                     >
                       <Plus size={13} strokeWidth={2.5} />
-                      <span>{t.mealSlots.addItem}</span>
+                      <span className={ultraMinimal ? 'sr-only' : ''}>{t.mealSlots.addItem}</span>
                     </button>
                   </div>
                 </div>

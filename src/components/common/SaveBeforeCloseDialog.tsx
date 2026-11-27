@@ -57,7 +57,7 @@ export const SaveBeforeCloseDialog: React.FC<SaveBeforeCloseDialogProps> = ({ op
             type="button"
             onClick={onSave}
             autoFocus
-            className="pressable w-full min-h-11 px-3 py-2.5 rounded-2xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#17432A] text-sm font-extrabold inline-flex items-center justify-center gap-1.5"
+            className="kc-primary-btn pressable w-full min-h-11 px-3 py-2.5 rounded-2xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#17432A] text-sm font-extrabold inline-flex items-center justify-center gap-1.5"
           >
             <Check size={16} strokeWidth={2.5} aria-hidden="true" />
             {saveLabel ?? text.save}
@@ -73,7 +73,7 @@ export const SaveBeforeCloseDialog: React.FC<SaveBeforeCloseDialogProps> = ({ op
             <button
               type="button"
               onClick={onDiscard}
-              className="pressable min-h-11 px-2 py-2.5 rounded-2xl bg-[#F6D0D0] hover:bg-[#F0BDBD] text-[#7A2727] text-sm font-extrabold inline-flex items-center justify-center gap-1.5 leading-tight"
+              className="kc-danger-btn pressable min-h-11 px-2 py-2.5 rounded-2xl bg-[#F6D0D0] hover:bg-[#F0BDBD] text-[#7A2727] text-sm font-extrabold inline-flex items-center justify-center gap-1.5 leading-tight"
             >
               {discardLabel ?? text.discard}
             </button>

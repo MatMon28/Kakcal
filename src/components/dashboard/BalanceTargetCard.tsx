@@ -48,7 +48,7 @@ export const BalanceTargetCard: React.FC<BalanceTargetCardProps> = ({ net, avera
     >
       <div className="flex items-center justify-between gap-2">
         <span className="inline-flex min-w-0 items-center gap-2 text-[var(--text)]" title={title}>
-          <span className="size-7 rounded-full bg-intake text-intake-ink flex items-center justify-center shrink-0">
+          <span className="kc-action-pill size-7 rounded-full bg-intake text-intake-ink flex items-center justify-center shrink-0">
             <Scale size={14} aria-hidden="true" />
           </span>
           <span className={ultraMinimal ? 'sr-only' : 'text-[11px] sm:text-xs font-bold uppercase tracking-wider truncate'}>
@@ -56,19 +56,23 @@ export const BalanceTargetCard: React.FC<BalanceTargetCardProps> = ({ net, avera
             {average ? ` · ${j('avg', 'media')}` : ''}
           </span>
         </span>
-        <span className="text-sm font-extrabold tabular-nums text-[var(--text)] shrink-0">{signed} kcal</span>
+        <span className="text-sm font-extrabold tabular-nums text-[var(--text)] shrink-0">
+          {signed}{ultraMinimal ? '' : ' kcal'}
+        </span>
       </div>
       <div className="mt-3 w-full h-2.5 rounded-full bg-[var(--inset)] overflow-hidden">
         <div
-          className={`h-full rounded-full transition-[width] duration-500 ease-out ${reached ? 'bg-[var(--intake-on-surface)]' : 'bg-intake-accent'}`}
+          className={`h-full rounded-full transition-[width] duration-500 ease-out ${reached ? 'bg-[var(--intake-on-surface)]' : 'bg-[var(--intake-fill,var(--intake-on-surface))]'}`}
           style={{ width: `${pct > 0 ? Math.max(4, pct) : 0}%` }}
         />
       </div>
       <div className="mt-2 flex items-center justify-between gap-2 text-[11px] font-bold tabular-nums">
         <span className="text-[var(--muted)]">
-          {kindLabel} {formatKcal(balance.kcal)} kcal
+          {kindLabel} {formatKcal(balance.kcal)}{ultraMinimal ? '' : ' kcal'}
         </span>
-        <span className={reached ? 'text-[var(--text-neg)]' : 'text-[var(--muted)]'}>{status}</span>
+        <span className={reached ? 'text-[var(--text-neg)]' : 'text-[var(--muted)]'}>
+          {ultraMinimal ? (reached ? '✓' : formatKcal(left)) : status}
+        </span>
       </div>
     </div>
   );

@@ -120,7 +120,7 @@ export const AmountSelector: React.FC<Props> = ({ value, onChange, unit, compact
                 compact ? 'py-1.5 text-[11px]' : 'py-1.5 text-xs'
               } font-bold border ${
                 value === q
-                  ? 'bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
+                  ? 'kc-chip-active bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
                   : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
               }`}
             >
@@ -315,7 +315,7 @@ export const AmountSelector: React.FC<Props> = ({ value, onChange, unit, compact
                   key={p.id}
                   className={`inline-flex items-center rounded-xl border text-xs font-bold ${
                     active
-                      ? 'bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
+                      ? 'kc-chip-active bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
                   }`}
                 >
@@ -425,7 +425,7 @@ export const AmountSelector: React.FC<Props> = ({ value, onChange, unit, compact
                     compact ? 'py-1.5 text-[11px]' : 'py-1.5 text-xs'
                   } font-bold border ${
                     active
-                      ? 'bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
+                      ? 'kc-chip-active bg-[#C9EFD3] text-[#1A5632] border-[#9ADBB0]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] hover:text-[var(--text)] border-[var(--border)]'
                   }`}
                 >
@@ -523,7 +523,7 @@ export const AmountSelector: React.FC<Props> = ({ value, onChange, unit, compact
             <button
               type="button"
               onClick={handleSaveCustomPortion}
-              className="pressable py-1.5 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold"
+              className="kc-primary-btn pressable py-1.5 rounded-xl bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B] text-xs font-extrabold"
             >
               {txt.saveAndUse}
             </button>

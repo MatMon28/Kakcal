@@ -280,7 +280,7 @@ export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, traili
                     setSelectedDate(todayStr);
                     setCalOpen(false);
                   }}
-                  className={`pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 ${settings.ultraMinimal ? 'mt-3 size-9 p-0' : 'mt-3 w-full py-2'}`}
+                  className={`pressable rounded-full bg-[#CFE7FE] hover:bg-[#BDDDFC] text-[#183B5E] border border-[#A9CFF5] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 ${settings.ultraMinimal ? 'mt-3 mx-auto flex size-9 p-0' : 'mt-3 w-full py-2'}`}
                   title={t.header.todayReturn}
                   aria-label={t.header.todayReturn}
                 >

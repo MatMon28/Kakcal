@@ -130,7 +130,7 @@ export const BurnedCard: React.FC<{ compact?: boolean }> = ({ compact = false })
 
 export const EnergyBalanceCards: React.FC<{ compact?: boolean }> = ({ compact = false }) => (
   <>
-    <div data-energy-overview className="grid grid-cols-2 gap-3 sm:gap-4">
+    <div data-energy-overview className="grid grid-cols-2 gap-2.5 sm:gap-4">
       <IntakeCard compact={compact} />
       <BurnedCard compact={compact} />
     </div>

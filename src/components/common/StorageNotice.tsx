@@ -23,7 +23,7 @@ export function StorageNotice() {
   return (
     <div
       role="alert"
-      className="fixed inset-x-3 top-[calc(0.5rem+env(safe-area-inset-top))] z-[2147483000] mx-auto max-w-lg rounded-2xl bg-[#F6D0D0] px-4 py-3 text-xs font-bold text-[#7A2727] shadow-lg flex items-start gap-3"
+      className="kc-danger-btn fixed inset-x-3 top-[calc(0.5rem+env(safe-area-inset-top))] z-[2147483000] mx-auto max-w-lg rounded-2xl bg-[#F6D0D0] px-4 py-3 text-xs font-bold text-[#7A2727] shadow-lg flex items-start gap-3"
     >
       <span className="flex-1">{TEXT[language][error]}</span>
       <button type="button" onClick={clearStorageError} aria-label="Dismiss" className="pressable shrink-0 rounded-full p-1">

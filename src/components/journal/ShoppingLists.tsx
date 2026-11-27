@@ -36,7 +36,7 @@ function useFoodLookup() {
  * bought; the pencil switches to editing, where lines can be removed and new ones added.
  */
 export function ShoppingLists() {
-  const { language } = useSettings();
+  const { language, settings } = useSettings();
   const { plans, planGroups, shoppingLists } = useMealJournal();
   const j = useJournalText();
   const today = useToday();
@@ -103,7 +103,7 @@ export function ShoppingLists() {
                     </span>
                     <span>
                       <strong>{g?.name}</strong>
-                      <small>{j(`${bought} of ${list.items.length} bought`, `${bought} di ${list.items.length} comprati`)}</small>
+                      <small>{settings.ultraMinimal ? `${bought}/${list.items.length}` : j(`${bought} of ${list.items.length} bought`, `${bought} di ${list.items.length} comprati`)}</small>
                       <span className="journal-shopping-progress" aria-hidden="true">
                         <i style={{ width: `${percent}%` }} />
                       </span>

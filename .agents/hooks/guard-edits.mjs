@@ -64,6 +64,12 @@ function checkComponentTokens(filePath) {
     );
     process.exit(1);
   }
+  if (/['"]\/day['"]|>avg</.test(content)) {
+    console.error(
+      `Hardcoded English '/day' or '>avg<' in ${path.relative(repoRoot, filePath)}: use localized t.stats.perDay or j('avg', 'med').`
+    );
+    process.exit(1);
+  }
   const unsafeMotion = [...new Set(content.match(MOTION_UNSAFE_RE) ?? [])];
   if (unsafeMotion.length > 0) {
     console.error(

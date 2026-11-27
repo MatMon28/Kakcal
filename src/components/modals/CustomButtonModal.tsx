@@ -122,7 +122,7 @@ export function CustomButtonModal() {
                       type="button"
                       onClick={() => removeCustomEntry(def.id, entry.id, selectedDate)}
                       aria-label={t.tracker.removeEntry.replace('{amount}', formatQty(entry.amount))}
-                      className="pressable size-9 rounded-full flex items-center justify-center shrink-0 text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0]"
+                      className="kc-danger-icon-hover pressable size-9 rounded-full flex items-center justify-center shrink-0 text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0]"
                     >
                       <Trash2 size={15} />
                     </button>

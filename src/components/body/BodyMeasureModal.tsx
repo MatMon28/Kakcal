@@ -156,7 +156,7 @@ const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack:
                     onClick={() => removeBodyEntry(key, entry.date)}
                     aria-label={`${text.body.remove}: ${formatDateDisplay(entry.date, language)}`}
                     title={text.body.remove}
-                    className="pressable size-7 rounded-full text-[var(--muted)] hover:bg-[#F6D0D0] hover:text-[#7A2727] flex items-center justify-center"
+                    className="kc-danger-icon-hover pressable size-7 rounded-full text-[var(--muted)] hover:bg-[#F6D0D0] hover:text-[#7A2727] flex items-center justify-center"
                   >
                     <Trash2 size={13} />
                   </button>

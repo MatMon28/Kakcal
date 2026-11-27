@@ -28,7 +28,7 @@ export function Collapsible({ title, children, defaultOpen = false, open: contro
   };
   const id = useId();
   return (
-    <section className="rounded-3xl border border-[var(--border)] bg-[var(--inset)]/40 overflow-hidden">
+    <section className="kc-themed-card rounded-3xl border border-[var(--border)] bg-[var(--inset)]/40 overflow-hidden">
       <button
         type="button"
         aria-expanded={open}

@@ -109,10 +109,14 @@ export function JournalHeaderButton({
 export function JournalChip({
   active,
   onClick,
+  title,
+  'aria-label': ariaLabel,
   children,
 }: {
   active: boolean;
   onClick: () => void;
+  title?: string;
+  'aria-label'?: string;
   children: ReactNode;
 }) {
   return (
@@ -120,6 +124,8 @@ export function JournalChip({
       type="button"
       onClick={onClick}
       aria-pressed={active}
+      title={title}
+      aria-label={ariaLabel}
       className={`pressable journal-chip flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap ${active ? 'is-active' : ''}`}
     >
       {children}

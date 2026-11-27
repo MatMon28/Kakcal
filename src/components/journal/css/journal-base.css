@@ -38,6 +38,13 @@
     padding: 12px;
   }
 }
+[data-minimal='true'] .journal-feature-body {
+  gap: 8px;
+}
+[data-minimal='true'] .journal-plan-card,
+[data-minimal='true'] .journal-recent-meal {
+  padding: 10px 12px;
+}
 .journal-feature {
   --feature-bg: #f7e9aa;
   --feature-ink: #5d4911;
@@ -242,7 +249,7 @@
   justify-content: center;
   gap: 5px;
   height: 53px;
-  border-radius: var(--pill-radius, 9px);
+  border-radius: min(var(--pill-radius, 9px), 14px);
   transition:
     background 0.2s,
     transform 0.2s;

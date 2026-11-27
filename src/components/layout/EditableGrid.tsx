@@ -185,7 +185,7 @@ const Controls: React.FC<ControlsProps> = ({ item, customSize, onResizeStart, on
         type="button"
         data-ctl
         data-layout-remove
-        className={`${ctl} -top-3 right-1 !bg-[#F6D0D0] !text-[#7A2727] !border-[#E4AAAA]`}
+        className={`kc-danger-btn ${ctl} -top-3 right-1 !bg-[#F6D0D0] !text-[#7A2727] !border-[#E4AAAA]`}
         onClick={onRemove}
         aria-label={`${text.remove}: ${item.label}`}
         title={text.remove}
@@ -852,7 +852,7 @@ export const EditableGrid: React.FC<{
               animate && cell && !moving ? 'transition-[top,left,width] duration-200 ease-out' : ''
             } ${
               isEditing
-                ? `touch-pan-y rounded-3xl outline-none ${isSelected ? 'z-20' : ''} ${
+                ? `touch-pan-y outline-none ${isSelected ? 'z-20' : ''} ${
                     isLifted ? 'cursor-grabbing shadow-2xl will-change-transform scale-[1.02] opacity-95' : 'cursor-pointer'
                   }`
                 : ''

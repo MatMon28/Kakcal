@@ -36,7 +36,7 @@ export const BodyMeasuresProfile: React.FC = () => {
         onClick={() => toggleTrackedMeasure(id)}
         className={`pressable flex items-center gap-2 rounded-2xl border px-2.5 py-2 text-left min-w-0 ${
           on
-            ? 'bg-[#E2D6FF] text-[#49346F] border-[#C9B6F5]'
+            ? 'kc-chip-active bg-[#E2D6FF] text-[#49346F] border-[#C9B6F5]'
             : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
         }`}
       >
@@ -83,7 +83,7 @@ export const BodyMeasuresProfile: React.FC = () => {
                 onClick={() => setPendingRemove(m)}
                 aria-label={`${text.profile.remove}: ${m.name}`}
                 title={text.profile.remove}
-                className="pressable size-9 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[#F6D0D0] hover:text-[#7A2727] text-[var(--muted)] flex items-center justify-center"
+                className="kc-danger-icon-hover pressable size-9 shrink-0 rounded-full bg-[var(--inset)] hover:bg-[#F6D0D0] hover:text-[#7A2727] text-[var(--muted)] flex items-center justify-center"
               >
                 <X size={15} />
               </button>
@@ -126,7 +126,7 @@ export const BodyMeasuresProfile: React.FC = () => {
             disabled={!name.trim()}
             aria-label={text.profile.add}
             title={text.profile.add}
-            className="pressable size-[2.65rem] shrink-0 rounded-xl bg-[#E2D6FF] text-[#49346F] disabled:opacity-40 flex items-center justify-center"
+            className="kc-primary-btn pressable size-[2.65rem] shrink-0 rounded-xl bg-[#E2D6FF] text-[#49346F] disabled:opacity-40 flex items-center justify-center"
           >
             <Plus size={18} strokeWidth={2.5} />
           </button>

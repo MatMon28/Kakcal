@@ -136,7 +136,7 @@ export function UndoRemovalNotice({ floating = false }: { floating?: boolean }) 
         onLostPointerCapture={(event) => {
           if (event.target === event.currentTarget) finishDrag(event, true);
         }}
-        className="select-none flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 shadow-lg text-[var(--text)] cursor-grab active:cursor-grabbing"
+        className="kc-toast select-none flex items-center justify-between gap-3 rounded-2xl border border-[var(--border)] bg-[var(--surface)] px-3 py-1.5 shadow-lg text-[var(--text)] cursor-grab active:cursor-grabbing"
       >
         <span role="status" className="text-xs font-bold" key={removal.id}>
           {removal.scheduled ? j('Deletion scheduled', 'Eliminazione programmata') : j('Item removed', 'Elemento rimosso')}
@@ -144,7 +144,7 @@ export function UndoRemovalNotice({ floating = false }: { floating?: boolean }) 
         <button
           type="button"
           onClick={() => undoRemoval(removal.id)}
-          className="pressable inline-flex items-center gap-1.5 rounded-xl bg-intake hover:bg-intake-hover px-3 min-h-9 font-extrabold text-xs text-intake-ink"
+          className="kc-action-pill pressable inline-flex items-center gap-1.5 rounded-xl bg-intake hover:bg-intake-hover px-3 min-h-9 font-extrabold text-xs text-intake-ink"
         >
           <RotateCcw size={14} /> {j('Undo', 'Annulla')}
         </button>

@@ -17,7 +17,8 @@ const PHASE_COLORS: Record<CyclePhase, string> = {
 };
 
 export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) => {
-  const { t, language, userProfile } = useSettings();
+  const { t, language, userProfile, settings: appSettings } = useSettings();
+  const ultraMinimal = appSettings.ultraMinimal;
   const { periodData, allDayLogs } = useJournalData();
   const todayStr = getTodayDateString();
   const settings = periodData.settings;
@@ -180,10 +181,10 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
   }, [allDayLogs, periodData.logs, selectedTag]);
 
   return (
-    <div className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5 space-y-4">
+    <div className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultraMinimal ? 'p-3 space-y-3' : 'p-4 sm:p-5 space-y-4'}`}>
       <div>
         <span className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)]">{t.period.nutritionTitle}</span>
-        <p className="text-[11px] font-medium text-[var(--muted)]">{t.period.nutritionNote}</p>
+        {!ultraMinimal && <p className="text-[11px] font-medium text-[var(--muted)]">{t.period.nutritionNote}</p>}
       </div>
       {pillMode && <p className="text-[11px] font-medium text-[var(--muted)]">{t.period.pillHidesPhase}</p>}
 
@@ -254,13 +255,13 @@ export const CycleNutrition: React.FC<{ status: PeriodStatus }> = ({ status }) =
         </div>
         {selectedTag && (
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-[#F4C6D8] rounded-2xl p-3">
-            <span className="block text-[10px] font-bold uppercase text-[#6E2440]">{t.period.taggedDays} · {t.period.days.replace('{n}', String(compare.taggedN))}</span>
-            <span className="block text-lg font-extrabold text-[#6E2440]">{compare.taggedN >= 3 && compare.tagged !== null ? `${compare.tagged} kcal` : t.period.notEnough}</span>
+          <div data-period-card="cycle" className="bg-[#F4C6D8] rounded-2xl p-3">
+            <span data-period-label className="block text-[10px] font-bold uppercase text-[#6E2440]">{t.period.taggedDays} · {t.period.days.replace('{n}', String(compare.taggedN))}</span>
+            <span data-period-value className="block text-lg font-extrabold text-[#6E2440]">{compare.taggedN >= 3 && compare.tagged !== null ? `${compare.tagged}${ultraMinimal ? '' : ' kcal'}` : t.period.notEnough}</span>
           </div>
           <div className="bg-[var(--inset)] rounded-2xl p-3">
             <span className="block text-[10px] font-bold uppercase text-[var(--muted)]">{t.period.otherDays} · {t.period.days.replace('{n}', String(compare.otherN))}</span>
-            <span className="block text-lg font-extrabold text-[var(--text)]">{compare.otherN >= 3 && compare.other !== null ? `${compare.other} kcal` : t.period.notEnough}</span>
+            <span className="block text-lg font-extrabold text-[var(--text)]">{compare.otherN >= 3 && compare.other !== null ? `${compare.other}${ultraMinimal ? '' : ' kcal'}` : t.period.notEnough}</span>
           </div>
         </div>
         )}

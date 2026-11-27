@@ -96,19 +96,19 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
   );
 
   return (
-    <section aria-label={name} className="bg-[var(--surface)] border border-[var(--border)] rounded-3xl p-4 sm:p-5" data-measure={id}>
+    <section aria-label={name} className={`bg-[var(--surface)] border border-[var(--border)] rounded-3xl ${ultra ? 'p-3' : 'p-4 sm:p-5'}`} data-measure={id}>
       <div className="flex items-center justify-between gap-2">
-        <span className="flex items-center gap-2.5 min-w-0">
+        <span className="flex items-center gap-2.5 min-w-0" title={name}>
           <span data-body-icon className="size-9 rounded-2xl bg-weight text-weight-ink flex items-center justify-center shrink-0">
             <BodyPartIcon id={isDefaultMeasure(id) ? id : 'custom'} size={22} />
           </span>
-          <span className={`text-sm font-extrabold text-[var(--text)] truncate ${ultra ? 'sr-only' : ''}`}>{name}</span>
+          <span className={`text-sm font-extrabold text-[var(--text)] truncate ${ultra && isDefaultMeasure(id) ? 'sr-only' : ''}`}>{name}</span>
         </span>
         {!paired && (
           <span className="flex items-center gap-2 tabular-nums shrink-0">
             {deltaChip(deltaOf(sides[0].inRange))}
             <span className="text-base font-extrabold text-[var(--weight-on-surface)]">
-              {latestOf(sides[0]) ? `${latestOf(sides[0])!.value} ${unit}` : '–'}
+              {latestOf(sides[0]) ? `${latestOf(sides[0])!.value}${ultra ? '' : ` ${unit}`}` : '–'}
             </span>
           </span>
         )}
@@ -133,7 +133,7 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
                 </span>
                 <span className="flex items-center gap-1.5 shrink-0">
                   {deltaChip(deltaOf(s.inRange))}
-                  <span className="text-sm font-extrabold text-[var(--weight-on-surface)]">{latest ? `${latest.value} ${unit}` : '–'}</span>
+                  <span className="text-sm font-extrabold text-[var(--weight-on-surface)]">{latest ? `${latest.value}${ultra ? '' : ` ${unit}`}` : '–'}</span>
                 </span>
               </div>
             );
@@ -152,7 +152,7 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
               {formatDateDisplay(point.date, language)}
               {selectedSeries?.side && ` · ${sideName(selectedSeries.side)}`}
             </span>
-            <span className="text-[var(--weight-on-surface)] font-extrabold">{point.value} {unit}</span>
+            <span className="text-[var(--weight-on-surface)] font-extrabold">{point.value}{ultra ? '' : ` ${unit}`}</span>
           </div>
           <BodyChart
             series={sides.map((s) => ({ id: s.id, entries: s.inRange, alt: s.alt }))}
@@ -208,7 +208,7 @@ export const BodyView: React.FC = () => {
   const actions: DockAction[] = BODY_GROUPS
     .filter((g) => measures.some((m) => groupOfMeasure(m.id) === g))
     .map((g) => ({
-      id: g,
+      id: g === 'custom' ? 'body-custom' : g,
       icon: <BodyPartIcon id={GROUP_ICON[g]} size={22} />,
       label: text.group[g],
       tone: GROUP_TONE[g],

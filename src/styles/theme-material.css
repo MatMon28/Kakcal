@@ -44,7 +44,6 @@ html[data-style="material"][data-theme="light"] {
   --nav-active-bg: #f4d7da;
   --nav-active-color: #3e1218;
   --meal-icon-color: #49454f;
-  --brand-flame-color: #8e2b3c;
   --dock-bg: #f7edf7;
   --dock-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
   --mat-dialog-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.15), 0 4px 4px rgba(0, 0, 0, 0.3);
@@ -68,6 +67,7 @@ html[data-style="material"][data-theme="light"] {
   --fiber-bg: #ebe5b9; --fiber-text: #4a4310;
   --salt-bg: #ebe5b9; --salt-text: #4a4310;
   --sugar-bg: #ebe5b9; --sugar-text: #4a4310;
+  --water-fill: #1d4ed8;
 
   --dock-1: #cde8d2; --dock-icon-1: #0f3a24;
   --dock-2: #f0d4d6; --dock-icon-2: #55151f;
@@ -109,7 +109,6 @@ html[data-style="material"][data-theme="lite-dark"] {
   --nav-active-bg: #7a4650;
   --nav-active-color: #ffe0e3;
   --meal-icon-color: #e6e0e9;
-  --brand-flame-color: #ffb3bd;
   --dock-bg: #403d45;
   --dock-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 4px 8px 3px rgba(0, 0, 0, 0.25);
   --mat-dialog-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.3), 0 4px 4px rgba(0, 0, 0, 0.45);
@@ -133,6 +132,7 @@ html[data-style="material"][data-theme="lite-dark"] {
   --fiber-bg: #5e582c; --fiber-text: #f6eeb8;
   --salt-bg: #5e582c; --salt-text: #f6eeb8;
   --sugar-bg: #5e582c; --sugar-text: #f6eeb8;
+  --water-fill: #93c5fd;
 
   --dock-1: #36604a; --dock-icon-1: #d6f2dc;
   --dock-2: #70363f; --dock-icon-2: #ffe0e3;
@@ -168,7 +168,6 @@ html[data-style="material"][data-theme="dark"] {
   --nav-active-bg: #633b48;
   --nav-active-color: #ffd8e4;
   --meal-icon-color: #cac4d0;
-  --brand-flame-color: #ffb3bd;
   --dock-bg: #2b2930;
   --dock-shadow: 0 1px 3px rgba(0, 0, 0, 0.5), 0 4px 8px 3px rgba(0, 0, 0, 0.3);
   --mat-dialog-shadow: 0 8px 12px 6px rgba(0, 0, 0, 0.35), 0 4px 4px rgba(0, 0, 0, 0.5);
@@ -192,6 +191,7 @@ html[data-style="material"][data-theme="dark"] {
   --fiber-bg: #4c4720; --fiber-text: #f0e8b0;
   --salt-bg: #4c4720; --salt-text: #f0e8b0;
   --sugar-bg: #4c4720; --sugar-text: #f0e8b0;
+  --water-fill: #60a5fa;
 
   --dock-1: #2b4e37; --dock-icon-1: #cdebd4;
   --dock-2: #5e2a34; --dock-icon-2: #ffd9dd;

@@ -19,7 +19,7 @@ const MAX = 20;
  * quick-log pop-up as Foods > Add (meal chips, amount, macros). Recipes with a standard portion start from it.
  */
 export const CustomFoodsQuick: React.FC = () => {
-  const { allFoods, allDayLogs, favoriteFoods, logFoodItem, rememberFood, language, t } = useApp();
+  const { allFoods, allDayLogs, favoriteFoods, logFoodItem, rememberFood, language, settings, t } = useApp();
   const { options: mealSlots, label: slotLabel } = useMealSlots();
   const autoMealSlot = useAutoMealSlot();
   const j = useJournalText();
@@ -60,13 +60,13 @@ export const CustomFoodsQuick: React.FC = () => {
     <div data-custom-foods-quick className="space-y-2">
       {/* Same pill selection as the Meal diary's All / Favorites chips (journal.css: .journal-chip). */}
       <div className="journal-chip-row" role="group" aria-label={j('Recent and favourite foods', 'Alimenti recenti e preferiti')} data-no-swipe>
-        <JournalChip active={tab === 'recent'} onClick={() => { setTab('recent'); setAll(false); }}>
+        <JournalChip active={tab === 'recent'} onClick={() => { setTab('recent'); setAll(false); }} title={j('Recent', 'Recenti')} aria-label={j('Recent', 'Recenti')}>
           <Clock size={13} />
-          {j('Recent', 'Recenti')}
+          <span className={settings.ultraMinimal ? 'sr-only' : ''}>{j('Recent', 'Recenti')}</span>
         </JournalChip>
-        <JournalChip active={tab === 'favorites'} onClick={() => { setTab('favorites'); setAll(false); }}>
+        <JournalChip active={tab === 'favorites'} onClick={() => { setTab('favorites'); setAll(false); }} title={j('Favourites', 'Preferiti')} aria-label={j('Favourites', 'Preferiti')}>
           <Star size={13} fill={tab === 'favorites' ? 'currentColor' : 'none'} />
-          {j('Favourites', 'Preferiti')}
+          <span className={settings.ultraMinimal ? 'sr-only' : ''}>{j('Favourites', 'Preferiti')}</span>
         </JournalChip>
       </div>
 
@@ -83,6 +83,7 @@ export const CustomFoodsQuick: React.FC = () => {
               key={f.id}
               food={f}
               favorite
+              compact={settings.ultraMinimal}
               onClick={() => {
                 setFood(f);
                 setSlot(autoMealSlot());

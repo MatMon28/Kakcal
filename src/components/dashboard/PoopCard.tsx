@@ -56,7 +56,11 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
   // Collapsed: latest entry as a peach pill, or "none today" (in ultra minimal: signal bars + poop + bristol).
   const summary = settings.ultraMinimal ? (
     latest ? (
-      <span className="kc-custom-pill inline-flex items-center gap-1.5 rounded-lg px-2 py-1 bg-[#FDF3E0] text-[#7D4E14] text-[11px] font-extrabold leading-none">
+      <span
+        className="kc-custom-pill inline-flex items-center gap-1.5 rounded-lg px-2 py-1 bg-[#FDF3E0] text-[#7D4E14] text-[11px] font-extrabold leading-none"
+        title={latest.bristol ? `${sizeLabel(latest.size)} · B${latest.bristol}` : sizeLabel(latest.size)}
+        aria-label={latest.bristol ? `${sizeLabel(latest.size)} · B${latest.bristol}` : sizeLabel(latest.size)}
+      >
         <span className="inline-flex items-end gap-[1.5px] h-3 mr-0.5" aria-hidden="true">
           <span className={`w-0.5 h-1 rounded-full ${sizeBarCount(latest.size) >= 1 ? 'bg-current' : 'bg-current/25'}`} />
           <span className={`w-0.5 h-1.5 rounded-full ${sizeBarCount(latest.size) >= 2 ? 'bg-current' : 'bg-current/25'}`} />
@@ -107,6 +111,14 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
             <div key={p.id} className="py-2 flex items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-xs sm:text-sm min-w-0 flex-wrap">
                 <PoopIcon size={15} className="text-[var(--muted)] shrink-0" />
+                {settings.ultraMinimal && (
+                  <span className="inline-flex items-end gap-[1.5px] h-3" title={sizeLabel(p.size)} aria-hidden="true">
+                    <span className={`w-0.5 h-1 rounded-full ${sizeBarCount(p.size) >= 1 ? 'bg-current' : 'bg-current/25'}`} />
+                    <span className={`w-0.5 h-1.5 rounded-full ${sizeBarCount(p.size) >= 2 ? 'bg-current' : 'bg-current/25'}`} />
+                    <span className={`w-0.5 h-2 rounded-full ${sizeBarCount(p.size) >= 3 ? 'bg-current' : 'bg-current/25'}`} />
+                    <span className={`w-0.5 h-2.5 rounded-full ${sizeBarCount(p.size) >= 4 ? 'bg-current' : 'bg-current/25'}`} />
+                  </span>
+                )}
                 <span className={`font-bold text-[var(--text)] ${settings.ultraMinimal ? 'sr-only' : ''}`}>{sizeLabel(p.size)}</span>
                 {p.bristol && (
                   <span className="kc-custom-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-protein text-protein-ink text-[10px] font-extrabold tabular-nums">
@@ -122,7 +134,7 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
               <button
                 type="button"
                 onClick={() => removePoop(p.id)}
-                className="pressable size-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
+                className="kc-danger-icon-hover pressable size-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center shrink-0"
                 title={t.common.delete}
                 aria-label={t.common.delete}
               >

@@ -97,7 +97,7 @@ export const MealSlotBody: React.FC<MealSlotBodyProps> = ({ slotId, date, items,
                       onClick={() => (isEditing ? saveEdit(item) : startEdit(item))}
                       className={`pressable w-8 h-8 rounded-full flex items-center justify-center ${
                         isEditing
-                          ? 'bg-[#C9EFD3] text-[#1A5632]'
+                          ? 'kc-action-pill bg-[#C9EFD3] text-[#1A5632]'
                           : 'text-[var(--muted)] hover:bg-[var(--inset)] hover:text-[var(--text)]'
                       }`}
                       title={isEditing ? t.common.save : t.common.edit}
@@ -111,7 +111,7 @@ export const MealSlotBody: React.FC<MealSlotBodyProps> = ({ slotId, date, items,
                         if (isEditing) setEditingItemId(null);
                         removeLoggedFoodItem(slotId, item.id, date);
                       }}
-                      className="pressable w-8 h-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
+                      className="kc-danger-icon-hover pressable w-8 h-8 rounded-full text-[var(--muted)] hover:text-[#8C2D32] hover:bg-[#F6D0D0] flex items-center justify-center"
                       title={t.common.delete}
                       aria-label={t.common.delete}
                     >
@@ -145,7 +145,7 @@ export const MealSlotBody: React.FC<MealSlotBodyProps> = ({ slotId, date, items,
                       <button
                         type="button"
                         onClick={() => saveEdit(item)}
-                        className="pressable px-3.5 py-1.5 rounded-xl bg-[#C9EFD3] text-[#174A2B] text-[11px] font-extrabold inline-flex items-center gap-1"
+                        className="kc-primary-btn pressable px-3.5 py-1.5 rounded-xl bg-[#C9EFD3] text-[#174A2B] text-[11px] font-extrabold inline-flex items-center gap-1"
                       >
                         <Check size={13} strokeWidth={2.5} />
                         {t.common.save}

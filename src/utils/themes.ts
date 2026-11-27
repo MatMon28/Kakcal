@@ -133,7 +133,8 @@ export function getBestContrastText(bgHex: string): string {
   const lum = getRelativeLuminance(bgHex);
   const onDark = (lum + 0.05) / (getRelativeLuminance('#090e17') + 0.05);
   const onWhite = 1.05 / (lum + 0.05);
-  return onDark >= onWhite ? '#090e17' : '#ffffff';
+  if (onDark >= onWhite) return onDark >= 4.5 ? '#090e17' : '#000000';
+  return '#ffffff';
 }
 
 export function getMonoVariables(baseHex: string, mode: Theme): Record<string, string> {

@@ -98,7 +98,7 @@ export const WeightModal: React.FC = () => {
       maxWidth="max-w-md"
     >
       <div className="space-y-4">
-        <div className="bg-weight rounded-2xl p-4 flex items-center justify-between gap-2">
+        <div className="kc-modal-banner bg-weight rounded-2xl p-4 flex items-center justify-between gap-2">
           <span className="flex items-center gap-2.5 text-sm font-extrabold text-weight-ink">
             <span className="w-9 h-9 rounded-full bg-weight-soft flex items-center justify-center shrink-0">
               <Scale size={17} />
@@ -181,7 +181,7 @@ export const WeightModal: React.FC = () => {
           type="button"
           onClick={handleSave}
           disabled={!Number.isFinite(kg) || kg < 20}
-          className="pressable w-full py-3 bg-weight hover:brightness-95 text-weight-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
+          className="kc-primary-btn pressable w-full py-3 bg-weight hover:brightness-95 text-weight-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm tabular-nums disabled:opacity-40"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>

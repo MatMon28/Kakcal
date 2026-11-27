@@ -23,7 +23,8 @@ export function SaveAsMeal({
   items: LoggedFoodItem[];
   variant?: 'secondary' | 'row';
 }) {
-  const { allFoods, addPreBuiltMeal, language } = useApp();
+  const { allFoods, addPreBuiltMeal, language, settings } = useApp();
+  const ultraMinimal = variant === 'row' && settings.ultraMinimal;
   const { label } = useMealSlots();
   const j = useJournalText();
   const [open, setOpen] = useState(false);
@@ -59,9 +60,10 @@ export function SaveAsMeal({
         className={variant === 'row' ? 'journal-save-meal-row' : 'journal-secondary-button'}
         onClick={start}
         title={j('Add to Meals', 'Aggiungi ai Pasti')}
+        aria-label={j('Add to Meals', 'Aggiungi ai Pasti')}
       >
         <BookmarkPlus size={15} />
-        {j('Add to Meals', 'Aggiungi ai Pasti')}
+        <span className={ultraMinimal ? 'sr-only' : ''}>{j('Add to Meals', 'Aggiungi ai Pasti')}</span>
       </button>
       <Modal
         isOpen={open}

@@ -93,7 +93,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
               <div key={tracker.id} className="py-2 flex items-center justify-between gap-2">
                 <button type="button" onClick={() => setCustomButtonOpenId(tracker.id)} className="min-w-0 flex-1 text-left flex items-center gap-2">
                   <TrackerIcon icon={tracker.icon} size={14} className="text-[var(--muted)] shrink-0" />
-                  <span className={`font-bold text-[var(--text)] truncate text-xs sm:text-sm ${settings.ultraMinimal ? 'sr-only' : ''}`}>{tracker.name}</span>
+                  <span className="font-bold text-[var(--text)] truncate text-xs sm:text-sm">{tracker.name}</span>
                 </button>
                 <button
                   type="button"
@@ -125,7 +125,7 @@ export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
             >
               <TrackerIcon icon={tracker.icon} size={14} className="text-[var(--muted)] shrink-0" />
               <span className="min-w-0 flex-1">
-                  <span className={`block font-bold text-xs sm:text-sm text-[var(--text)] truncate ${settings.ultraMinimal ? 'sr-only' : ''}`}>{tracker.name}</span>
+                  <span className="block font-bold text-xs sm:text-sm text-[var(--text)] truncate">{tracker.name}</span>
                   {!settings.ultraMinimal && count > 0 && (
                   <span className="block text-[11px] font-medium text-[var(--muted)]">
                     {count === 1 ? t.tracker.countOne : t.tracker.count.replace('{count}', String(count))}

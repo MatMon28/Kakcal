@@ -44,7 +44,7 @@ export const InstallApp: React.FC = () => {
   return (
     <Collapsible title={t.pwa.title} icon={<Smartphone size={15} />} tone={TONE.teal}>
       <div className="flex items-start gap-2.5">
-        <span className="w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
+        <span className="kc-action-pill w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
           {state === 'installed' ? <CheckCircle size={15} /> : <Smartphone size={15} />}
         </span>
         <p className="flex-1 text-[11px] font-medium leading-relaxed text-[var(--muted)]" role="status">
@@ -58,7 +58,7 @@ export const InstallApp: React.FC = () => {
           className={`pressable flex-1 py-2.5 px-3 rounded-xl font-extrabold text-xs flex items-center justify-center gap-1.5 ${
             state === 'available'
               ? 'bg-[var(--surface)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)]'
-              : 'bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B]'
+              : 'kc-primary-btn bg-[#C9EFD3] hover:bg-[#B8E6C4] text-[#174A2B]'
           }`}
         >
           <Download size={15} />
@@ -69,7 +69,7 @@ export const InstallApp: React.FC = () => {
           <button
             type="button"
             onClick={() => void handleInstall()}
-            className="pressable flex-1 py-2.5 px-3 rounded-xl bg-[#1E5E3A] hover:bg-[#174A2B] text-[#EAF7EE] font-extrabold text-xs flex items-center justify-center gap-1.5"
+            className="kc-primary-btn pressable flex-1 py-2.5 px-3 rounded-xl bg-[#1E5E3A] hover:bg-[#174A2B] text-[#EAF7EE] font-extrabold text-xs flex items-center justify-center gap-1.5"
           >
             <Smartphone size={15} />
             <span>{t.pwa.installBtn}</span>

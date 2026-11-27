@@ -78,7 +78,11 @@ export function SecondaryNutrientCard({ nutrient, value, average = false }: {
         {ultraMinimal ? <Icon size={15} aria-hidden="true" /> : labels[nutrient]}
       </span>
       <span className="whitespace-nowrap text-base sm:text-lg font-extrabold leading-tight">{value}
-        {(!ultraMinimal || average) && <small className="ml-0.5 text-xs font-semibold">{ultraMinimal ? '/day' : 'g'}</small>}
+        {(!ultraMinimal || average) && (
+          <small className="ml-0.5 text-xs font-semibold">
+            {ultraMinimal ? t.stats.perDay.replace(/\s+/g, '') : 'g'}
+          </small>
+        )}
       </span>
       {/* Settings > Advanced: perimeter ring + bottom-right readout (daily totals only, not period averages). */}
       {!average && <TileGoalOverlay goal={nutrient} amount={value} unit="g" ultraMinimal={ultraMinimal} />}
@@ -92,7 +96,7 @@ export function SecondaryNutrientRow({ fiber, salt, sugar, average = false }: {
   const { settings } = useApp();
   const values = { fiber, salt, sugar };
   return (
-    <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5 sm:gap-3.5 tabular-nums`}>
+    <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} ${settings.ultraMinimal ? 'gap-2' : 'gap-2.5 sm:gap-3.5'} tabular-nums`}>
       {(['fiber', 'salt', 'sugar'] as const).filter((key) => key !== 'sugar' || settings.trackSugar).map((key) => (
         <SecondaryNutrientCard key={key} nutrient={key} value={values[key]} average={average} />
       ))}

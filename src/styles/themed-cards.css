@@ -11,14 +11,9 @@ html[data-style]:not([data-style="classic"]) .kc-themed-card {
   clip-path: var(--clip-md, none);
 }
 
-html[data-style="aurora"] [data-meal-slot],
-html[data-style="aurora"] [data-tracker],
-html[data-style="aurora"] [data-library-section],
-html[data-style="aurora"] .kc-themed-card,
-html[data-style="aurora"] .kc-nav-pill,
-html[data-style="aurora"] .kc-icon-btn {
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+html[data-style="aurora"] :is(.kc-nav-pill, .kc-dock) {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 html[data-style]:not([data-style="classic"]) [data-meal-slot] .kc-meal-icon,
@@ -200,7 +195,8 @@ html[data-style]:not([data-style="classic"]) [data-period-cell="predicted"] .kc-
 html[data-style]:not([data-style="classic"]) .kc-period-pill,
 html[data-style]:not([data-style="classic"]) .kc-period-chip,
 html[data-style]:not([data-style="classic"]) .kc-action-pill,
-html[data-style]:not([data-style="classic"]) .kc-chip-active {
+html[data-style]:not([data-style="classic"]) .kc-chip-active,
+html[data-style]:not([data-style="classic"]) .kc-chip-pressable[aria-pressed="true"] {
   background: var(--nav-active-bg) !important;
   color: var(--nav-active-color) !important;
   border-color: transparent !important;
@@ -222,6 +218,39 @@ html[data-style]:not([data-style="classic"]) .kc-primary-btn {
   clip-path: var(--clip-sm, none);
 }
 
+html[data-style]:not([data-style="classic"]) .kc-danger-btn {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
+  border: var(--card-border, none) !important;
+  box-shadow: var(--card-shadow, none) !important;
+  border-radius: var(--micro-radius, 16px) !important;
+  clip-path: var(--clip-sm, none);
+}
+
+html[data-style]:not([data-style="classic"]) .kc-danger-icon-hover:hover {
+  background: var(--burned-bg) !important;
+  color: var(--burned-text) !important;
+}
+
+html[data-style]:not([data-style="classic"]) [data-favorite-btn="active"] {
+  background: var(--pill-p-bg, var(--protein-bg)) !important;
+  color: var(--pill-p-text, var(--protein-text)) !important;
+  border-color: var(--border) !important;
+}
+html[data-style]:not([data-style="classic"]) [data-favorite-btn="idle"]:hover {
+  color: var(--pill-p-text, var(--protein-text)) !important;
+  border-color: var(--border) !important;
+}
+
+html[data-style]:not([data-style="classic"]) .kc-toast {
+  background: var(--surface-solid, var(--surface)) !important;
+  color: var(--text) !important;
+  border: var(--card-border, 1px solid var(--border)) !important;
+  box-shadow: var(--dock-shadow, var(--card-shadow, none)) !important;
+  border-radius: min(var(--micro-radius, 16px), 18px) !important;
+  clip-path: var(--clip-sm, none);
+}
+
 /* Bottom Action Dock & Quick-Add Buttons (Today, Custom, Period) */
 html[data-style]:not([data-style="classic"]) .kc-dock {
   background: var(--dock-bg, var(--surface)) !important;
@@ -235,14 +264,15 @@ html[data-style="aurora"] .kc-dock {
   -webkit-backdrop-filter: blur(18px);
 }
 @media (prefers-reduced-transparency: reduce) {
-  html[data-style="aurora"] :is([data-meal-slot], [data-tracker], [data-library-section], .kc-themed-card, [data-kc-tone], .kc-nav-pill, .kc-icon-btn, .kc-dock) {
+  html[data-style="aurora"] * {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
   }
-  html[data-style="aurora"][data-theme="light"] { --surface: #ffffff; --header-btn-bg: #ffffff; --nav-bg: #ffffff; --dock-bg: #ffffff; }
-  html[data-style="aurora"][data-theme="lite-dark"] { --surface: #322f50; --header-btn-bg: #322f50; --nav-bg: #322f50; --dock-bg: #2d2a48; }
-  html[data-style="aurora"][data-theme="dark"] { --surface: #1b1630; --header-btn-bg: #1b1630; --nav-bg: #1b1630; --dock-bg: #18142c; }
   html[data-style="aurora"][data-theme="light"] {
+    --surface: #ffffff; --inset: #f3f0ff; --hover: #e9e4fc; --border: #cbd5e1;
+    --header-btn-bg: #ffffff; --nav-bg: #ffffff; --dock-bg: #ffffff;
+    --card-border: 1px solid #cbd5e1; --dock-border: 1px solid #cbd5e1;
+    --intake-track: #a7f3d0; --burned-track: #fecdd3;
     --tone-diary: #fceea8; --tone-diary-in: #fef6d0;
     --tone-meals: #fcddb8; --tone-meals-in: #feeed9;
     --tone-recipes: #e0d2fe; --tone-recipes-in: #efe8ff;
@@ -250,8 +280,15 @@ html[data-style="aurora"] .kc-dock {
     --tone-photo: #fcced8; --tone-photo-in: #fee6ec;
     --tone-foods: #c0f0da; --tone-foods-in: #def8ec;
     --tone-teal: #bcecec; --tone-teal-in: #dbf6f6;
+    --tone-pale: #f8f7ff;
   }
   html[data-style="aurora"][data-theme="lite-dark"] {
+    --surface: #322f50; --inset: #2a2746; --hover: #3e3a61; --border: #4d4875;
+    --header-btn-bg: #322f50; --nav-bg: #322f50; --dock-bg: #2d2a48;
+    --card-border: 1px solid #4d4875; --dock-border: 1px solid #4d4875;
+    --carbs-bg: #322f50; --protein-bg: #322f50; --fat-bg: #322f50;
+    --pill-c-bg: #2a3d66; --pill-p-bg: #523e24; --pill-f-bg: #402f66;
+    --intake-track: #115e59; --burned-track: #881337;
     --tone-diary: #4d4534; --tone-diary-in: #5d543e;
     --tone-meals: #503d3c; --tone-meals-in: #614a47;
     --tone-recipes: #443967; --tone-recipes-in: #53467d;
@@ -259,15 +296,23 @@ html[data-style="aurora"] .kc-dock {
     --tone-photo: #52354f; --tone-photo-in: #644160;
     --tone-foods: #2c4a52; --tone-foods-in: #375c66;
     --tone-teal: #2b4a59; --tone-teal-in: #365c6e;
+    --tone-pale: #3d395e;
   }
   html[data-style="aurora"][data-theme="dark"] {
-    --tone-diary: #352d26; --tone-diary-in: #44392f;
+    --surface: #1b1630; --inset: #161128; --hover: #251f40; --border: #2f2850;
+    --header-btn-bg: #1b1630; --nav-bg: #1b1630; --dock-bg: #18142c;
+    --card-border: 1px solid #2f2850; --dock-border: 1px solid #2f2850;
+    --carbs-bg: #1b1630; --protein-bg: #1b1630; --fat-bg: #1b1630;
+    --pill-c-bg: #1e2e4f; --pill-p-bg: #3d2e17; --pill-f-bg: #2f214f;
+    --intake-track: #064e3b; --burned-track: #4c0519;
+    --tone-diary: #352d26; --tone-diary-in: #3a3026;
     --tone-meals: #372528; --tone-meals-in: #473033;
     --tone-recipes: #2c214a; --tone-recipes-in: #3a2c60;
     --tone-planner: #1e2a4a; --tone-planner-in: #283860;
     --tone-photo: #381e34; --tone-photo-in: #482843;
     --tone-foods: #183238; --tone-foods-in: #21424a;
     --tone-teal: #17313d; --tone-teal-in: #204150;
+    --tone-pale: #241e3d;
   }
 }
 
@@ -281,26 +326,26 @@ html[data-style="minimal"] [data-settings-badge] {
   background: var(--dock-1, var(--inset)) !important;
   border: var(--dock-btn-border, 1px solid var(--border)) !important;
 }
-html[data-style="minimal"] [data-settings-badge][class~="bg-[#CFE7FE]"] { color: var(--tone-ink-planner) !important; }
-html[data-style="minimal"] [data-settings-badge][class~="bg-[#E2D6FF]"] { color: var(--tone-ink-recipes) !important; }
-html[data-style="minimal"] [data-settings-badge][class~="bg-[#F7E9AA]"] { color: var(--tone-ink-diary) !important; }
-html[data-style="minimal"] [data-settings-badge][class~="bg-[#C9EFD3]"] { color: var(--tone-ink-foods) !important; }
-html[data-style="minimal"] [data-settings-badge][class~="bg-[#FAE0B4]"] { color: var(--tone-ink-meals) !important; }
-html[data-style="minimal"] [data-settings-badge][class~="bg-[#BFE9E4]"] { color: var(--tone-ink-teal) !important; }
-html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#F4C6D8]"], [class~="bg-[#F6D0D0]"]) { color: var(--tone-ink-photo) !important; }
-html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#EDE6D6]"], [class~="bg-[#D9DEE8]"]) { color: var(--muted) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#CFE7FE]"], [data-settings-badge="water"]) { color: var(--tone-ink-planner) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#E2D6FF]"], [class~="bg-weight"], [class~="bg-[#E4D9F8]"], [data-settings-badge="weight"]) { color: var(--tone-ink-recipes) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#F7E9AA]"], [data-settings-badge="diary"]) { color: var(--tone-ink-diary) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#C9EFD3]"], [class~="bg-intake"], [data-settings-badge="intake"]) { color: var(--tone-ink-foods) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#FAE0B4]"], [data-settings-badge="meals"]) { color: var(--tone-ink-meals) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#BFE9E4]"], [data-settings-badge="teal"]) { color: var(--tone-ink-teal) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#F4C6D8]"], [class~="bg-[#F6D0D0]"], [class~="bg-activity"], [data-settings-badge="activity"]) { color: var(--tone-ink-photo) !important; }
+html[data-style="minimal"] [data-settings-badge]:is([class~="bg-[#EDE6D6]"], [class~="bg-[#D9DEE8]"], [data-settings-badge="neutral"]) { color: var(--muted) !important; }
 html[data-style="mono"] [data-settings-badge] {
   background: var(--dock-1, var(--carbs-bg)) !important;
   color: var(--dock-icon-1, var(--carbs-text)) !important;
 }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#CFE7FE]"] { background: var(--dock-3) !important; color: var(--dock-icon-3) !important; }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#E2D6FF]"] { background: var(--dock-5) !important; color: var(--dock-icon-5) !important; }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#F7E9AA]"] { background: var(--dock-6) !important; color: var(--dock-icon-6) !important; }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#C9EFD3]"] { background: var(--dock-1) !important; color: var(--dock-icon-1) !important; }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#FAE0B4]"] { background: var(--dock-4) !important; color: var(--dock-icon-4) !important; }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#F4C6D8]"], [class~="bg-[#F6D0D0]"]) { background: var(--dock-2) !important; color: var(--dock-icon-2) !important; }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge][class~="bg-[#BFE9E4]"] { background: var(--tone-teal, var(--dock-3)) !important; color: var(--text) !important; }
-html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#EDE6D6]"], [class~="bg-[#D9DEE8]"]) { background: var(--surface) !important; color: var(--text) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#CFE7FE]"], [data-settings-badge="water"]) { background: var(--dock-3) !important; color: var(--dock-icon-3) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#E2D6FF]"], [class~="bg-weight"], [class~="bg-[#E4D9F8]"], [data-settings-badge="weight"]) { background: var(--dock-5) !important; color: var(--dock-icon-5) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#F7E9AA]"], [data-settings-badge="diary"]) { background: var(--dock-6) !important; color: var(--dock-icon-6) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#C9EFD3]"], [class~="bg-intake"], [data-settings-badge="intake"]) { background: var(--dock-1) !important; color: var(--dock-icon-1) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#FAE0B4]"], [data-settings-badge="meals"]) { background: var(--dock-4) !important; color: var(--dock-icon-4) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#F4C6D8]"], [class~="bg-[#F6D0D0]"], [class~="bg-activity"], [data-settings-badge="activity"]) { background: var(--dock-2) !important; color: var(--dock-icon-2) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#BFE9E4]"], [data-settings-badge="teal"]) { background: var(--tone-teal, var(--dock-3)) !important; color: var(--text) !important; }
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]):not([data-style="mono"]) [data-settings-badge]:is([class~="bg-[#EDE6D6]"], [class~="bg-[#D9DEE8]"], [data-settings-badge="neutral"]) { background: var(--surface) !important; color: var(--text) !important; }
 
 html[data-style]:not([data-style="classic"]) [data-settings-switch] {
   border-radius: var(--bar-radius, 999px) !important;
@@ -405,8 +450,12 @@ html[data-style]:not([data-style="classic"]) :is(.journal-date-field, .journal-m
 html[data-style]:not([data-style="classic"]) .journal-date-field svg {
   color: var(--header-icon-color, var(--text));
 }
-html[data-style]:not([data-style="classic"]) :is(.journal-weekdays button, .journal-day-grid button, .journal-food-chip, .journal-save-meal-row, .journal-draft-continue, .journal-plan-nav > button, .journal-tone-badge) {
+html[data-style]:not([data-style="classic"]) :is(.journal-weekdays button, .journal-food-chip, .journal-save-meal-row, .journal-draft-continue, .journal-plan-nav > button, .journal-tone-badge) {
   border-radius: var(--pill-radius, 999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .journal-day-grid button {
+  border-radius: min(var(--micro-radius, 14px), 16px) !important;
   clip-path: var(--clip-xs, none);
 }
 html[data-style]:not([data-style="classic"]) .journal-plan-nav > button {
@@ -423,8 +472,8 @@ html[data-style]:not([data-style="classic"]) .journal-day-grid button.is-on {
   border: var(--pill-border, 1px solid transparent) !important;
 }
 html[data-style]:not([data-style="classic"]) .journal-meal-card.is-open {
-  border-color: var(--nav-active-bg, var(--text)) !important;
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--nav-active-bg, var(--text)) 28%, transparent) !important;
+  border-color: var(--nav-active-accent, var(--nav-active-bg, var(--text))) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--nav-active-accent, var(--nav-active-bg, var(--text))) 28%, transparent) !important;
 }
 html[data-style]:not([data-style="classic"]) :is(.journal-pending-banner, .journal-shopping-notice) {
   background: var(--pill-c-bg, var(--carbs-bg)) !important;
@@ -519,6 +568,26 @@ html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="cust
 html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="fast-note"] {
   background: var(--dock-6) !important;
   color: var(--dock-icon-6) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="meal"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="lower"] {
+  background: var(--dock-4) !important;
+  color: var(--dock-icon-4) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="recipe"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="recipe-import"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="body-custom"] {
+  background: var(--dock-5) !important;
+  color: var(--dock-icon-5) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="plan"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="upper"] {
+  background: var(--dock-3) !important;
+  color: var(--dock-icon-3) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="photo"] {
+  background: var(--dock-2) !important;
+  color: var(--dock-icon-2) !important;
 }
 
 /* Modals / Dialog Sheets */
@@ -638,7 +707,8 @@ html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="pill
   background: var(--dock-5) !important;
   color: var(--dock-icon-5) !important;
 }
-html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="pill"][aria-pressed="true"] {
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="pill"][aria-pressed="true"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="intercourse"][aria-pressed="true"] {
   background: var(--dock-1) !important;
   color: var(--dock-icon-1) !important;
 }

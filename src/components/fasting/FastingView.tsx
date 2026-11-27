@@ -2,8 +2,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import {
   CalendarDays,
+  CheckCircle2,
+  Clock,
   Droplets,
+  Flame,
   Footprints,
+  Gauge,
   History,
   NotebookPen,
   Pencil,
@@ -11,6 +15,7 @@ import {
   Scale,
   Sparkles,
   Square,
+  Timer,
   Trash2,
 } from 'lucide-react';
 import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
@@ -482,7 +487,7 @@ export const FastingView: React.FC = () => {
               ] as const
             ).map(([label, value, setter]) => (
               <label key={label} className="flex items-center gap-2 text-xs font-bold text-[var(--muted)]">
-                <span>{label}</span>
+                <span className={ultra ? 'sr-only' : ''}>{label}</span>
                 <input
                   type="date"
                   aria-label={label}
@@ -495,10 +500,15 @@ export const FastingView: React.FC = () => {
           </div>
         )}
 
-        <p className="text-center text-xs font-bold text-[var(--muted)] tabular-nums">
-          {ft.range.daysLogged
-            .replace('{logged}', String(stats.daysLogged))
-            .replace('{total}', String(stats.daysInPeriod))}
+        <p
+          className="text-center text-xs font-bold text-[var(--muted)] tabular-nums"
+          aria-label={ft.range.daysLogged.replace('{logged}', String(stats.daysLogged)).replace('{total}', String(stats.daysInPeriod))}
+        >
+          {ultra
+            ? `${stats.daysLogged}/${stats.daysInPeriod}`
+            : ft.range.daysLogged
+                .replace('{logged}', String(stats.daysLogged))
+                .replace('{total}', String(stats.daysInPeriod))}
         </p>
       </div>
 
@@ -506,10 +516,12 @@ export const FastingView: React.FC = () => {
       <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
         <div
           data-kc-tone="foods"
-          className="rounded-3xl bg-intake text-intake-ink p-3.5 sm:p-4"
+          title={ft.stats.avgDuration}
+          className={`rounded-3xl bg-intake text-intake-ink ${ultra ? 'p-2.5' : 'p-3.5 sm:p-4'}`}
         >
-          <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80">
-            {ft.stats.avgDuration}
+          <div data-kc-tone-ink className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider opacity-80">
+            {ultra && <Timer size={12} aria-hidden="true" />}
+            <span className={ultra ? 'sr-only' : ''}>{ft.stats.avgDuration}</span>
           </div>
           <div className="mt-1 text-xl sm:text-2xl font-extrabold tabular-nums">
             {stats.totalCount > 0 ? formatDurationCompact(stats.avgDurationMs) : '–'}
@@ -524,11 +536,13 @@ export const FastingView: React.FC = () => {
 
         <div
           data-kc-tone="photo"
-          className="rounded-3xl bg-activity text-activity-ink p-3.5 sm:p-4"
+          title={ft.stats.completionRate}
+          className={`rounded-3xl bg-activity text-activity-ink ${ultra ? 'p-2.5' : 'p-3.5 sm:p-4'}`}
         >
           <div className="flex items-center justify-between gap-1">
-            <span data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
-              {ft.stats.completionRate}
+            <span data-kc-tone-ink className="flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
+              {ultra && <CheckCircle2 size={12} aria-hidden="true" />}
+              <span className={ultra ? 'sr-only' : ''}>{ft.stats.completionRate}</span>
             </span>
             <span className="kc-fast-badge rounded-full bg-activity-ink text-[#FBF8F2] px-2 py-0.5 text-[10px] font-extrabold tabular-nums shrink-0">
               {stats.completionRate}%
@@ -538,7 +552,7 @@ export const FastingView: React.FC = () => {
             <span className="text-xl sm:text-2xl font-extrabold">
               {ft.stats.fastsFraction.replace('{done}', String(stats.completedCount)).replace('{total}', String(stats.totalCount))}
             </span>
-            <span className="text-xs font-bold opacity-80">{ft.stats.fastsUnit}</span>
+            {!ultra && <span className="text-xs font-bold opacity-80">{ft.stats.fastsUnit}</span>}
           </div>
           <div className="kc-fast-track mt-2 h-1.5 w-full rounded-full bg-[#FBF8F2]/60 overflow-hidden">
             <div className="kc-fast-fill h-full rounded-full bg-[#904149]" style={{ width: `${stats.completionRate}%` }} />
@@ -549,13 +563,17 @@ export const FastingView: React.FC = () => {
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         <div
           data-kc-tone="planner"
-          className="rounded-3xl bg-carbs text-carbs-ink p-3 text-center"
+          title={ft.stats.currentStreak}
+          className={`rounded-3xl bg-carbs text-carbs-ink ${ultra ? 'p-2.5' : 'p-3'} text-center`}
         >
-          <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
-            {ft.stats.currentStreak}
+          <div data-kc-tone-ink className="flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
+            {ultra && <Flame size={12} aria-hidden="true" />}
+            <span className={ultra ? 'sr-only' : ''}>{ft.stats.currentStreak}</span>
           </div>
           <div className="mt-1 text-base sm:text-lg font-extrabold tabular-nums">
-            {stats.currentStreak === 1
+            {ultra
+              ? stats.currentStreak
+              : stats.currentStreak === 1
               ? ft.stats.dayUnit
               : ft.stats.daysUnit.replace('{count}', String(stats.currentStreak))}
           </div>
@@ -563,20 +581,24 @@ export const FastingView: React.FC = () => {
 
         <div
           data-kc-tone="meals"
-          className="rounded-3xl bg-protein text-protein-ink p-3 text-center"
+          title={ft.stats.totalHours}
+          className={`rounded-3xl bg-protein text-protein-ink ${ultra ? 'p-2.5' : 'p-3'} text-center`}
         >
-          <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
-            {ft.stats.totalHours}
+          <div data-kc-tone-ink className="flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
+            {ultra && <Clock size={12} aria-hidden="true" />}
+            <span className={ultra ? 'sr-only' : ''}>{ft.stats.totalHours}</span>
           </div>
-          <div className="mt-1 text-base sm:text-lg font-extrabold tabular-nums">{stats.totalHours} h</div>
+          <div className="mt-1 text-base sm:text-lg font-extrabold tabular-nums">{stats.totalHours}{ultra ? '' : ' h'}</div>
         </div>
 
         <div
           data-kc-tone="recipes"
-          className="rounded-3xl bg-fat text-fat-ink p-3 text-center"
+          title={ft.stats.peakHungerHr}
+          className={`rounded-3xl bg-fat text-fat-ink ${ultra ? 'p-2.5' : 'p-3'} text-center`}
         >
-          <div data-kc-tone-ink className="text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
-            {ft.stats.peakHungerHr}
+          <div data-kc-tone-ink className="flex items-center justify-center gap-1 text-[10px] font-extrabold uppercase tracking-wider opacity-80 truncate">
+            {ultra && <Gauge size={12} aria-hidden="true" />}
+            <span className={ultra ? 'sr-only' : ''}>{ft.stats.peakHungerHr}</span>
           </div>
           <div className="mt-1 text-base sm:text-lg font-extrabold tabular-nums">
             {stats.peakHungerHour
@@ -603,7 +625,7 @@ export const FastingView: React.FC = () => {
           type="button"
           aria-expanded={notesOpen}
           onClick={() => setNotesOpen((v) => !v)}
-          className="pressable w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-[var(--hover)] transition-colors"
+          className={`pressable w-full flex items-center justify-between gap-3 ${ultra ? 'px-3 py-2.5' : 'px-4 py-3.5'} text-left hover:bg-[var(--hover)] transition-colors`}
         >
           <span className="flex items-center gap-2 min-w-0">
             <NotebookPen size={16} className="text-[var(--muted)] shrink-0" aria-hidden="true" />
@@ -631,7 +653,7 @@ export const FastingView: React.FC = () => {
                         {formatDurationCompact(n.elapsedMs)}
                       </span>
                       <span data-fast-pill="hunger" className="px-2 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14]">
-                        {ft.notes.hungerBadge.replace('{value}', String(n.hunger))}
+                        {ultra ? `${n.hunger}/5` : ft.notes.hungerBadge.replace('{value}', String(n.hunger))}
                       </span>
                       <span data-fast-mood={n.mood} className={`px-2 py-0.5 rounded-full ${MOOD_TONE[n.mood]}`}>
                         {ft.moods[n.mood]}
@@ -679,7 +701,7 @@ export const FastingView: React.FC = () => {
           type="button"
           aria-expanded={historyOpen}
           onClick={() => setHistoryOpen((v) => !v)}
-          className="pressable w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left hover:bg-[var(--hover)] transition-colors"
+          className={`pressable w-full flex items-center justify-between gap-3 ${ultra ? 'px-3 py-2.5' : 'px-4 py-3.5'} text-left hover:bg-[var(--hover)] transition-colors`}
         >
           <span className="flex items-center gap-2 min-w-0">
             <History size={16} className="text-[var(--muted)] shrink-0" aria-hidden="true" />
