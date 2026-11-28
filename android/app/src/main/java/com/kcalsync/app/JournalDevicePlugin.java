@@ -6,12 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Base64;
 import android.util.Log;
 import android.widget.Toast;
 import androidx.core.content.FileProvider;
+import androidx.health.connect.client.HealthConnectClient;
 import com.getcapacitor.Bridge;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
@@ -25,7 +27,10 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicReference;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 @CapacitorPlugin(name = "JournalDevice")
@@ -307,5 +312,106 @@ public class JournalDevicePlugin extends Plugin {
             ? (italian ? "File salvato" : "File saved") + (outcome.filename != null ? ": " + outcome.filename : "") + " (" + outcome.bytes + " B)"
             : (italian ? "Esportazione non riuscita. Apri Impostazioni > Backup per i dettagli." : "Export failed. Open Settings > Data Backup for details.");
         new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, text, Toast.LENGTH_LONG).show());
+    }
+
+    // ---- Health Connect (read-only movement & workouts) ---------------------------------------------------------
+    private static final AtomicReference<PluginCall> HEALTH_PERMISSION_CALL = new AtomicReference<>();
+
+    private static void resolveJson(PluginCall call, JSONObject json) {
+        try {
+            call.resolve(JSObject.fromJSONObject(json));
+        } catch (JSONException error) {
+            call.reject("Invalid Health Connect response", error);
+        }
+    }
+
+    @PluginMethod
+    public void getHealthConnectStatus(PluginCall call) {
+        HealthConnectReader.getStatus(
+            getContext(),
+            json -> resolveJson(call, json),
+            err -> call.reject("Failed to check Health Connect status: " + err.getMessage())
+        );
+    }
+
+    @PluginMethod
+    public void requestHealthConnectPermissions(PluginCall call) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O
+                || HealthConnectReader.getSdkStatusCode(getContext()) != HealthConnectClient.SDK_AVAILABLE
+                || !(getActivity() instanceof MainActivity)) {
+            JSObject res = new JSObject();
+            res.put("granted", false);
+            call.resolve(res);
+            return;
+        }
+        PluginCall previous = HEALTH_PERMISSION_CALL.getAndSet(call);
+        if (previous != null) {
+            JSObject cancelled = new JSObject();
+            cancelled.put("granted", false);
+            previous.resolve(cancelled);
+        }
+        ((MainActivity) getActivity()).launchHealthPermissions(
+            HealthConnectReader.getREAD_PERMISSIONS(),
+            error -> {
+                HEALTH_PERMISSION_CALL.compareAndSet(call, null);
+                call.reject("Could not open Health Connect permissions: " + error.getMessage());
+            }
+        );
+    }
+
+    static void deliverHealthPermissions(Set<String> granted) {
+        PluginCall call = HEALTH_PERMISSION_CALL.getAndSet(null);
+        if (call == null) return;
+        boolean allGranted = granted != null && granted.containsAll(HealthConnectReader.getREAD_PERMISSIONS());
+        JSObject res = new JSObject();
+        res.put("granted", allGranted);
+        call.resolve(res);
+    }
+
+    @PluginMethod
+    public void openHealthConnectSettings(PluginCall call) {
+        Activity activity = getActivity();
+        if (activity == null) { call.reject("No activity available"); return; }
+        int sdkStatus = HealthConnectReader.getSdkStatusCode(getContext());
+        Intent intent;
+        if (sdkStatus == HealthConnectClient.SDK_AVAILABLE) {
+            intent = new Intent(HealthConnectReader.getSettingsAction());
+        } else {
+            intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=com.google.android.apps.healthdata"));
+        }
+        activity.runOnUiThread(() -> {
+            try {
+                activity.startActivity(intent);
+                call.resolve();
+            } catch (RuntimeException error) {
+                try {
+                    activity.startActivity(new Intent(
+                        Intent.ACTION_VIEW,
+                        Uri.parse("https://play.google.com/store/apps/details?id=com.google.android.apps.healthdata")
+                    ));
+                    call.resolve();
+                } catch (RuntimeException fallbackError) {
+                    call.reject("Could not open Health Connect settings: " + fallbackError.getMessage());
+                }
+            }
+        });
+    }
+
+    @PluginMethod
+    public void readHealthConnectMovement(PluginCall call) {
+        String fromDate = call.getString("fromDate");
+        String toDate = call.getString("toDate");
+        if (fromDate == null || !fromDate.matches("\\d{4}-\\d{2}-\\d{2}")
+                || toDate == null || !toDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            call.reject("Expected YYYY-MM-DD fromDate and toDate");
+            return;
+        }
+        HealthConnectReader.readMovement(
+            getContext(),
+            fromDate,
+            toDate,
+            json -> resolveJson(call, json),
+            err -> call.reject("Failed to read Health Connect data: " + err.getMessage())
+        );
     }
 }

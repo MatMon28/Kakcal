@@ -39,7 +39,13 @@ export interface AppContextType {
     date?: string
   ) => void;
   logActivity: (activity: Omit<ActivityLog, 'id' | 'timestamp'>, date?: string) => void;
+  updateActivity: (activityId: string, updates: Partial<Omit<ActivityLog, 'id'>>, date?: string) => void;
   removeActivity: (activityId: string, date?: string) => void;
+  editingActivity: { date: string; activity: ActivityLog } | null;
+  setEditingActivity: (entry: { date: string; activity: ActivityLog } | null) => void;
+  isHealthConnectSyncing: boolean;
+  healthConnectSyncMessage: string | null;
+  syncHealthConnect: (options?: { manual?: boolean }) => Promise<void>;
   copyYesterdayMeals: (targetDate?: string) => { success: boolean; count: number };
   logItemsToSlot: (slot: MealSlotId, items: LoggedFoodItem[], date?: string) => void;
   preBuiltMeals: PreBuiltMeal[];

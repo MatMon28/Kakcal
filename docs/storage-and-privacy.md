@@ -49,3 +49,7 @@ Photo normalization/export retains legacy `/images/` references as well as base-
 ## Settings restructure round (keys)
 
 `kcalsync_settings` gains four keys, all with defaults and all part of the normal settings object (JSON backup included): `hideCustomPage`, `hideStatisticsPage`, `hideCustomButtons` and `hideCustomFields`. No new storage key was added. *Delete data* (Settings > Delete data) changes existing keys only: `kcalsync_meal_journal` (plans, shopping lists, photos, meal notes), `kcalsync_prebuilt_meals`, `kcalsync_custom_foods` (recipes), `kcak_planner_draft`, the day records (`replaceAllDays`, IndexedDB or localStorage), `kcalsync_body` and `kf_period_data`, and the IndexedDB `photos` store. See [settings-update.md](settings-update.md).
+
+## Health Connect (Android APK only)
+
+`kcalsync_settings` adds optional `healthConnectSyncEnabled` (boolean, default `false`), `healthConnectLastSyncedAt` (ISO timestamp), and `healthConnectDismissedIds` (capped at 200 `externalId`s deleted locally so 7-day re-syncs do not re-import them). Imported `ActivityLog` items carry `source: 'health_connect'`, `externalId`, optional `steps`, and `editedLocally` when modified in Kakcal. Syncing is strictly read-only from Android Health Connect (no data is ever written back to Health Connect or sent over the network).

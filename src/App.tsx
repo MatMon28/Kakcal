@@ -248,6 +248,25 @@ function WidgetAppBridge() {
     });
   }, [today, app.allDayLogs, app.language, app.userProfile, app.settings.widgetStyle, app.settings.themeStyle, app.settings.monoHue, app.settings.widgetCustomButton, app.settings.customButtons]);
 
+  // Android Health Connect: auto-sync last 7 days on boot (when idle) and when returning to foreground.
+  const syncHealthConnectRef = useRef(app.syncHealthConnect);
+  syncHealthConnectRef.current = app.syncHealthConnect;
+  useEffect(() => {
+    if (!isAndroidApp() || !app.settings.healthConnectSyncEnabled) return;
+    const cancelIdle = whenIdle(() => {
+      void syncHealthConnectRef.current();
+    });
+    let removed = false;
+    const handlePromise = AndroidApp.addListener('appStateChange', ({ isActive }) => {
+      if (isActive && !removed) void syncHealthConnectRef.current();
+    });
+    return () => {
+      removed = true;
+      cancelIdle();
+      void handlePromise.then((h) => h.remove());
+    };
+  }, [app.settings.healthConnectSyncEnabled]);
+
   useEffect(() => {
     if (window.parent === window) return;
     const post = (message: object) => window.parent.postMessage(message, targetOrigin());

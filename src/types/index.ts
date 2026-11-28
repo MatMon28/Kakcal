@@ -126,6 +126,10 @@ export interface ActivityLog {
   customName?: string; // custom activities; for 'other' it is an English-name fallback
   activityId?: string; // 'other': id in the activities database
   met?: number; // 'other': MET value used for the calculation (kept so old logs never change)
+  source?: 'health_connect';
+  externalId?: string;
+  steps?: number;
+  editedLocally?: boolean;
 }
 
 /** User-created activity. Saved from Activity → Custom and offered again under Activity → Other. */
@@ -306,6 +310,9 @@ export interface Settings {
   widgetStyle: 'light' | 'dark'; // home-screen widgets: light, or a darker translucent look
   widgetCustomButton: boolean; // add the custom-tracker button to the Small and Large widgets
   notifications: NotificationSettings; // reminders: water, custom buttons, weight, general log, meals
+  healthConnectSyncEnabled?: boolean;
+  healthConnectLastSyncedAt?: string;
+  healthConnectDismissedIds?: string[];
 }
 
 export type PeriodFlow = 'none' | 'light' | 'medium' | 'heavy';

@@ -51,6 +51,50 @@ interface JournalDevicePlugin {
   takeLastExport(): Promise<{ exports?: NativeExportRecord[] }>;
   /** Tells the native launch surfaces (system launch screen, window, WebView) the current app background `#rrggbb`. */
   setLaunchBackground(data: { color: string }): Promise<void>;
+  /** Health Connect (Android only): check SDK availability and permission state. */
+  getHealthConnectStatus(): Promise<HealthConnectStatus>;
+  /** Health Connect (Android only): open the system Health Connect permission sheet. */
+  requestHealthConnectPermissions(): Promise<{ granted: boolean }>;
+  /** Health Connect (Android only): open Health Connect settings or Play Store listing. */
+  openHealthConnectSettings(): Promise<void>;
+  /** Health Connect (Android only): read workouts and non-workout daily movement in [fromDate, toDate]. */
+  readHealthConnectMovement(data: { fromDate: string; toDate: string }): Promise<HealthConnectReadResult>;
+}
+
+export type HealthConnectStatusState = 'unsupported' | 'needs_install' | 'available';
+
+export interface HealthConnectStatus {
+  status: HealthConnectStatusState;
+  granted: boolean;
+  grantedPermissions?: string[];
+}
+
+export interface HealthConnectWorkout {
+  externalId: string;
+  date: string;
+  timestamp: string;
+  exerciseType: number;
+  title?: string;
+  durationMin: number;
+  distanceKm?: number;
+  caloriesBurned: number;
+  startEpochMs: number;
+  endEpochMs: number;
+}
+
+export interface HealthConnectDailyMovement {
+  externalId: string;
+  date: string;
+  steps: number;
+  distanceKm?: number;
+  durationMin?: number;
+  caloriesBurned: number;
+}
+
+export interface HealthConnectReadResult {
+  workouts: HealthConnectWorkout[];
+  daily: HealthConnectDailyMovement[];
+  error?: string;
 }
 
 export const JournalDevice = registerPlugin<JournalDevicePlugin>('JournalDevice');
@@ -60,5 +104,50 @@ export function syncLaunchBackground(color: string): void {
   if (!isAndroidApp() || !/^#[0-9a-fA-F]{6}$/.test(color)) return;
   // An older native build without this method just rejects; nothing to do then.
   JournalDevice.setLaunchBackground({ color }).catch(() => undefined);
+}
+
+export async function getHealthConnectStatus(): Promise<HealthConnectStatus> {
+  if (!isAndroidApp()) return { status: 'unsupported', granted: false };
+  try {
+    return await JournalDevice.getHealthConnectStatus();
+  } catch {
+    return { status: 'unsupported', granted: false };
+  }
+}
+
+export async function requestHealthConnectPermissions(): Promise<boolean> {
+  if (!isAndroidApp()) return false;
+  try {
+    const res = await JournalDevice.requestHealthConnectPermissions();
+    return Boolean(res?.granted);
+  } catch {
+    return false;
+  }
+}
+
+export async function openHealthConnectSettings(): Promise<void> {
+  if (!isAndroidApp()) return;
+  try {
+    await JournalDevice.openHealthConnectSettings();
+  } catch {
+    // Ignore on unsupported / older APKs
+  }
+}
+
+export async function readHealthConnectMovement(
+  fromDate: string,
+  toDate: string,
+): Promise<HealthConnectReadResult> {
+  if (!isAndroidApp()) return { workouts: [], daily: [] };
+  try {
+    const res = await JournalDevice.readHealthConnectMovement({ fromDate, toDate });
+    return {
+      workouts: Array.isArray(res?.workouts) ? res.workouts : [],
+      daily: Array.isArray(res?.daily) ? res.daily : [],
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    return { workouts: [], daily: [], error: message };
+  }
 }
 

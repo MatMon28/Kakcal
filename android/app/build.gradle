@@ -52,6 +52,8 @@ dependencies {
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     // Installs src/main/baseline-prof.txt (ahead-of-time compiled startup code) on first launch, also for sideloaded APKs.
     implementation "androidx.profileinstaller:profileinstaller:$profileInstallerVersion"
+    implementation "androidx.health.connect:connect-client:1.1.0"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
     implementation project(':capacitor-android')
     testImplementation "junit:junit:$junitVersion"
     // Local JVM tests of the export copy loop against a stub ContentProvider (src/test/java/com/kcalsync/app).

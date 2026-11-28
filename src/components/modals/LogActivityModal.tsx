@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { NumericInput } from '../common/NumericInput';
@@ -6,6 +6,7 @@ import { FavoriteButton } from '../common/FavoriteButton';
 import { ActivitySearch } from './ActivitySearch';
 import { ActivityType, ActivityLogMethod } from '../../types';
 import { ActivityInfo, activityName, categoryLabel } from '../../data/activities';
+import { activityLogLabel } from '../../utils/activityLabel';
 import { calculateActivityCalories, calculateMetCalories, restingKcalPerHour } from '../../utils/calculations';
 import { getLastAmount, setLastAmount } from '../../utils/amountMemory';
 import { Footprints, Flame, Dumbbell, Search, Check, Minus, Plus, ArrowLeft } from 'lucide-react';
@@ -16,13 +17,34 @@ export const LogActivityModal: React.FC = () => {
   const {
     isLogActivityOpen,
     setIsLogActivityOpen,
+    editingActivity,
+    setEditingActivity,
     logActivity,
+    updateActivity,
     customActivities,
     addCustomActivity,
     userProfile,
     language,
     t,
   } = useApp();
+
+  const [editName, setEditName] = useState('');
+  const [editMethod, setEditMethod] = useState<ActivityLogMethod>('duration');
+  const [editDistance, setEditDistance] = useState<number>(0);
+  const [editDuration, setEditDuration] = useState<number>(0);
+  const [editCalories, setEditCalories] = useState<number>(0);
+  const [editNotes, setEditNotes] = useState('');
+
+  useEffect(() => {
+    if (!editingActivity) return;
+    const act = editingActivity.activity;
+    setEditName(activityLogLabel(act, language, t.activities));
+    setEditMethod(act.method);
+    setEditDistance(act.distanceKm ?? 0);
+    setEditDuration(act.durationMin ?? 0);
+    setEditCalories(act.caloriesBurned);
+    setEditNotes(act.notes ?? '');
+  }, [editingActivity, language, t.activities]);
 
   const [activityType, setActivityType] = useState<ActivityType>('walking');
   const [method, setMethod] = useState<ActivityLogMethod>('distance'); // distance selected by default
@@ -144,11 +166,124 @@ export const LogActivityModal: React.FC = () => {
       ? customName.trim().length > 0
       : inputValue > 0;
 
+  const handleClose = () => {
+    if (editingActivity) setEditingActivity(null);
+    else setIsLogActivityOpen(false);
+  };
+
+  const handleSaveEdit = () => {
+    if (!editingActivity) return;
+    updateActivity(
+      editingActivity.activity.id,
+      {
+        customName: editName.trim() || undefined,
+        method: editMethod,
+        distanceKm: editDistance > 0 ? Math.round(editDistance * 100) / 100 : undefined,
+        durationMin: editDuration > 0 ? Math.round(editDuration) : undefined,
+        caloriesBurned: Math.max(0, Math.round(editCalories)),
+        notes: editNotes.trim() || undefined,
+      },
+      editingActivity.date,
+    );
+    setEditingActivity(null);
+  };
+
+  if (editingActivity) {
+    return (
+      <Modal
+        dockId="activity"
+        isOpen
+        onClose={handleClose}
+        title={t.activities.editActivity}
+        maxWidth="max-w-md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-1.5">
+              {t.activities.customName}
+            </label>
+            <input
+              type="text"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold text-[var(--text)] focus:outline-none focus:border-[var(--muted)]"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-1.5">
+                {t.activities.distance} ({t.activities.km})
+              </label>
+              <NumericInput
+                value={editDistance}
+                onChange={(v) => {
+                  setEditDistance(v);
+                  if (v > 0) setEditMethod('distance');
+                }}
+                min={0}
+                className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold tabular-nums text-[var(--text)] focus:outline-none focus:border-[var(--muted)]"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-1.5">
+                {t.activities.durationMin}
+              </label>
+              <NumericInput
+                value={editDuration}
+                onChange={(v) => {
+                  setEditDuration(v);
+                  if (v > 0 && editDistance <= 0) setEditMethod('duration');
+                }}
+                min={0}
+                className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold tabular-nums text-[var(--text)] focus:outline-none focus:border-[var(--muted)]"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-1.5">
+              {t.activities.calories}
+            </label>
+            <NumericInput
+              value={editCalories}
+              onChange={setEditCalories}
+              min={0}
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-bold tabular-nums text-[var(--text)] focus:outline-none focus:border-[var(--muted)]"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs font-extrabold uppercase tracking-wider text-[var(--muted)] block mb-1.5">
+              {t.activities.activityNotes}
+            </label>
+            <input
+              type="text"
+              value={editNotes}
+              onChange={(e) => setEditNotes(e.target.value)}
+              placeholder={t.activities.notesPlaceholder}
+              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl px-3.5 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSaveEdit}
+            className="kc-primary-btn pressable w-full py-3 bg-activity hover:bg-activity-hover text-activity-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+          >
+            <Check size={18} strokeWidth={2.5} />
+            <span>{t.activityModal.saveBtn}</span>
+          </button>
+        </div>
+      </Modal>
+    );
+  }
+
   return (
     <Modal
       dockId="activity"
       isOpen={isLogActivityOpen}
-      onClose={() => setIsLogActivityOpen(false)}
+      onClose={handleClose}
       title={t.activityModal.title}
       maxWidth="max-w-md"
     >

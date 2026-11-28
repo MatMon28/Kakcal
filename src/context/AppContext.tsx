@@ -7,7 +7,8 @@ import { addDaysToDateString, getTodayDateString } from '../utils/formatters';
 import { translations } from '../i18n/translations';
 import { getCustomEntries, migrateCustomEntries, withCustomEntries } from '../utils/customTrackers';
 import { getDefaultPeriodTags, periodTagListKey, periodTagSelectionKey, prunePeriodTags, type PeriodTagGroup } from '../utils/period';
-import { syncLaunchBackground } from '../utils/android';
+import { isAndroidApp, readHealthConnectMovement, syncLaunchBackground } from '../utils/android';
+import { getHealthConnectWindowDates, HEALTH_CONNECT_DISMISSED_LIMIT, mergeHealthConnectData } from '../utils/healthConnectSync';
 import { whenIdle } from '../utils/idle';
 import { DEFAULT_PAGE_ORDER, isPageHiddenBySettings, normalizePageOrder } from '../utils/pageVisibility';
 import { exportAdvanced, importAdvanced } from '../utils/advancedStore';
@@ -512,6 +513,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           widgetStyle: p.widgetStyle === 'dark' ? 'dark' : 'light',
           widgetCustomButton: Boolean(p.widgetCustomButton),
           notifications: normalizeNotificationSettings(p.notifications),
+          healthConnectSyncEnabled: Boolean(p.healthConnectSyncEnabled),
+          healthConnectLastSyncedAt: typeof p.healthConnectLastSyncedAt === 'string' ? p.healthConnectLastSyncedAt : undefined,
+          healthConnectDismissedIds: Array.isArray(p.healthConnectDismissedIds)
+            ? p.healthConnectDismissedIds.filter((id: unknown): id is string => typeof id === 'string').slice(-HEALTH_CONNECT_DISMISSED_LIMIT)
+            : [],
         };
       } catch (e) {
         console.error('Failed to parse settings', e);
@@ -544,6 +550,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       widgetStyle: 'light',
       widgetCustomButton: false,
       notifications: DEFAULT_NOTIFICATION_SETTINGS,
+      healthConnectSyncEnabled: false,
+      healthConnectDismissedIds: [],
     };
   });
 
@@ -748,9 +756,97 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  // Update activity (marks Health Connect entries as editedLocally so future syncs preserve user edits)
+  const updateActivity = (
+    activityId: string,
+    updates: Partial<Omit<ActivityLog, 'id'>>,
+    date: string = selectedDate,
+  ) => {
+    mutateDay(date, (day) => ({
+      ...day,
+      activities: (day.activities ?? []).map((act) => {
+        if (act.id !== activityId) return act;
+        return {
+          ...act,
+          ...updates,
+          ...(act.source === 'health_connect' ? { editedLocally: true } : {}),
+        };
+      }),
+    }));
+  };
+
   // Remove activity
   const removeActivity = (activityId: string, date: string = selectedDate) => {
+    const target = (dayLogs[date]?.activities ?? []).find((a) => a.id === activityId);
+    if (target?.source === 'health_connect' && target.externalId) {
+      const extId = target.externalId;
+      setSettingsState((prev) => {
+        const existing = prev.healthConnectDismissedIds ?? [];
+        if (existing.includes(extId)) return prev;
+        return {
+          ...prev,
+          healthConnectDismissedIds: [...existing, extId].slice(-HEALTH_CONNECT_DISMISSED_LIMIT),
+        };
+      });
+    }
     removeDayItem(date, activityId, (day) => day.activities ?? [], (day, items) => ({ ...day, activities: items }));
+  };
+
+  // Health Connect 7-day sync
+  const [editingActivity, setEditingActivity] = useState<{ date: string; activity: ActivityLog } | null>(null);
+  const [isHealthConnectSyncing, setIsHealthConnectSyncing] = useState(false);
+  const [healthConnectSyncMessage, setHealthConnectSyncMessage] = useState<string | null>(null);
+  const inFlightHcSyncRef = useRef(false);
+  const lastHcSyncAttemptRef = useRef(0);
+  const dayLogsRef = useRef(dayLogs);
+  dayLogsRef.current = dayLogs;
+  const userProfileRef = useRef(userProfile);
+  userProfileRef.current = userProfile;
+  const settingsRef = useRef(settings);
+  settingsRef.current = settings;
+
+  const syncHealthConnect = async (options?: { manual?: boolean }) => {
+    if (!isAndroidApp() || inFlightHcSyncRef.current) return;
+    const manual = Boolean(options?.manual);
+    if (!manual && !settingsRef.current.healthConnectSyncEnabled) return;
+    const now = Date.now();
+    if (!manual && now - lastHcSyncAttemptRef.current < 5 * 60 * 1000) return;
+    inFlightHcSyncRef.current = true;
+    lastHcSyncAttemptRef.current = now;
+    setIsHealthConnectSyncing(true);
+    try {
+      const windowDates = getHealthConnectWindowDates();
+      const fromDate = windowDates[0];
+      const toDate = windowDates[windowDates.length - 1];
+      const data = await readHealthConnectMovement(fromDate, toDate);
+      if (data.error) {
+        setHealthConnectSyncMessage(data.error);
+        return;
+      }
+      const { updatedDays, changedDates, addedCount, updatedCount } = mergeHealthConnectData({
+        dayLogs: dayLogsRef.current,
+        data,
+        userProfile: userProfileRef.current,
+        dismissedIds: settingsRef.current.healthConnectDismissedIds ?? [],
+        windowDates,
+      });
+      if (changedDates.length > 0) {
+        setDayLogs((prev) => ({ ...prev, ...updatedDays }));
+      }
+      setSettingsState((prev) => ({ ...prev, healthConnectLastSyncedAt: new Date().toISOString() }));
+      if (manual) {
+        const found = `${data.workouts.length} workouts, ${data.daily.length} daily`;
+        setHealthConnectSyncMessage(`${found} (+${addedCount}, ~${updatedCount})`);
+      } else {
+        setHealthConnectSyncMessage(null);
+      }
+    } catch (err) {
+      console.warn('Health Connect sync failed:', err);
+      setHealthConnectSyncMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      inFlightHcSyncRef.current = false;
+      setIsHealthConnectSyncing(false);
+    }
   };
 
   // Log a water entry (each addition is its own voice/block)
@@ -1073,7 +1169,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const settingsActions = useStableActions({ setLanguage, updateUserProfile, updateSettings, toggleFavoriteFood, toggleFavoriteActivity });
   const journalActions = useStableActions({
     addCustomFood, deleteCustomFood, rememberFood, logFoodItem, removeLoggedFoodItem, updateLoggedFoodItemAmount,
-    logActivity, removeActivity, copyYesterdayMeals, logItemsToSlot, addPreBuiltMeal, updatePreBuiltMeal,
+    logActivity, updateActivity, removeActivity, syncHealthConnect, copyYesterdayMeals, logItemsToSlot, addPreBuiltMeal, updatePreBuiltMeal,
     deletePreBuiltMeal, logPreBuiltMealToSlot, updatePeriodSettings, updatePeriodDay, clearPeriodDay,
     markPeriodStart, markPeriodEnd, addPeriodTag, deletePeriodTag, resetPeriodTags, addCustomActivity,
     removeCustomActivity, logWater, removeWaterEntry, logCustom, removeCustomEntry, waterTotalFor, logWeight,
@@ -1083,6 +1179,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const ui = useMemo<UiSlice>(() => ({
     selectedDate, setSelectedDate, targetMealSlot, setTargetMealSlot,
     isAddFoodOpen, setIsAddFoodOpen, foodLogSeed, setFoodLogSeed, isLogActivityOpen, setIsLogActivityOpen,
+    editingActivity, setEditingActivity,
     isBarcodeOpen, setIsBarcodeOpen, isProfileOpen, setIsProfileOpen,
     isSettingsOpen, setIsSettingsOpen, isWaterOpen, setIsWaterOpen,
     isPoopOpen, setIsPoopOpen, isWeightOpen, setIsWeightOpen,
@@ -1090,7 +1187,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     isCustomPickerOpen, setIsCustomPickerOpen, isPeriodSheetOpen, setIsPeriodSheetOpen,
     periodSelectedDate, setPeriodSelectedDate,
   }), [
-    selectedDate, targetMealSlot, isAddFoodOpen, foodLogSeed, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
+    selectedDate, targetMealSlot, isAddFoodOpen, foodLogSeed, isLogActivityOpen, editingActivity, isBarcodeOpen, isProfileOpen, isSettingsOpen,
     isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId, isCustomPickerOpen,
     isPeriodSheetOpen, periodSelectedDate,
   ]);
@@ -1108,8 +1205,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     currentIntakeCalories: derived.intake,
     currentExpenditure: derived.expenditure,
     netBalance: derived.net,
+    isHealthConnectSyncing,
+    healthConnectSyncMessage,
     ...journalActions,
-  }), [allFoods, currentDayLog, preBuiltMeals, periodData, customActivities, dayLogs, derived, journalActions]);
+  }), [allFoods, currentDayLog, preBuiltMeals, periodData, customActivities, dayLogs, derived, isHealthConnectSyncing, healthConnectSyncMessage, journalActions]);
 
   return (
     <NavContext.Provider value={navValue}>

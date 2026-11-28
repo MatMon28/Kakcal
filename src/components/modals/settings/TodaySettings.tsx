@@ -10,6 +10,7 @@ import type { FoodItem, Settings } from '../../../types';
 import { PoopIcon } from '../../common/PoopIcon';
 import { SubSection, TONE, ToggleRow } from './SettingsParts';
 import { CustomButtonsSettings } from './CustomButtonsSettings';
+import { HealthConnectSettings } from './HealthConnectSettings';
 
 /**
  * Settings > Today. Sub-sections, in order: Quick-add buttons (the Today dock), Tracking (log water, log poop,
@@ -213,6 +214,8 @@ export const TodaySettings: React.FC = () => {
       <SubSection title={t.settings.customButtons}>
         <CustomButtonsSettings />
       </SubSection>
+
+      <HealthConnectSettings />
     </div>
   );
 };

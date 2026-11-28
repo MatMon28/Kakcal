@@ -6,10 +6,18 @@ interface ActivityLabels {
   running: string;
   custom: string;
   other: string;
+  dailyMovement?: string;
 }
 
 /** Display name of a logged activity (Today card, day overview). Database activities are localized. */
 export function activityLogLabel(act: ActivityLog, language: Language, labels: ActivityLabels): string {
+  if (act.externalId?.startsWith('hc-daily:')) {
+    if (act.editedLocally && act.customName) return act.customName;
+    return labels.dailyMovement || act.customName || labels.walking;
+  }
+  if (act.editedLocally && act.customName) {
+    return act.customName;
+  }
   switch (act.type) {
     case 'walking':
       return labels.walking;

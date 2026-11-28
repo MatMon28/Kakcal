@@ -17,6 +17,7 @@ import type { ActiveTab } from '../types';
 export type UiSlice = Pick<AppContextType,
   | 'selectedDate' | 'setSelectedDate' | 'targetMealSlot' | 'setTargetMealSlot'
   | 'isAddFoodOpen' | 'setIsAddFoodOpen' | 'foodLogSeed' | 'setFoodLogSeed' | 'isLogActivityOpen' | 'setIsLogActivityOpen'
+  | 'editingActivity' | 'setEditingActivity'
   | 'isBarcodeOpen' | 'setIsBarcodeOpen' | 'isProfileOpen' | 'setIsProfileOpen'
   | 'isSettingsOpen' | 'setIsSettingsOpen' | 'isWaterOpen' | 'setIsWaterOpen'
   | 'isPoopOpen' | 'setIsPoopOpen' | 'isWeightOpen' | 'setIsWeightOpen'

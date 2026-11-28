@@ -1,7 +1,8 @@
 import React from 'react';
-import { Flame, Footprints, Route, Trash2, Zap } from 'lucide-react';
+import { Activity, Flame, Footprints, Pencil, RefreshCw, Route, Trash2, Zap } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import { activityLogLabel } from '../../utils/activityLabel';
+import { isAndroidApp } from '../../utils/android';
 import { TrackerCard } from './TrackerCard';
 
 interface Props {
@@ -13,7 +14,18 @@ interface Props {
 const pill = 'inline-flex items-center rounded-lg px-2 py-1 text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap';
 
 export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, onToggle }) => {
-  const { currentDayLog, currentExpenditure, settings, removeActivity, setIsLogActivityOpen, language, t } = useApp();
+  const {
+    currentDayLog,
+    currentExpenditure,
+    settings,
+    removeActivity,
+    setIsLogActivityOpen,
+    setEditingActivity,
+    syncHealthConnect,
+    isHealthConnectSyncing,
+    language,
+    t,
+  } = useApp();
 
   const activities = currentDayLog.activities;
   const ultraMinimal = settings.ultraMinimal;
@@ -68,7 +80,7 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
       compact={compact}
     >
       <div className="space-y-2">
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           <span className={`${pill} bg-[var(--inset)] text-[var(--muted)] gap-1`} aria-label={`${t.energy.bmrShort}: ${currentExpenditure.bmr}`} title={t.energy.bmrShort}>
             {ultraMinimal ? <><Flame size={11} aria-hidden="true" /><span className="sr-only">{t.energy.bmrShort}</span> {currentExpenditure.bmr}</> : `${t.energy.bmrShort} ${currentExpenditure.bmr}`}
           </span>
@@ -78,6 +90,19 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
           <span className={`${pill} bg-[var(--inset)] text-[var(--muted)] gap-1`} aria-label={`${t.energy.tefShort}: ${currentExpenditure.tef}`} title={t.energy.tefShort}>
             {ultraMinimal ? <><Zap size={11} aria-hidden="true" /><span className="sr-only">{t.energy.tefShort}</span> {currentExpenditure.tef}</> : `${t.energy.tefShort} ${currentExpenditure.tef}`}
           </span>
+          {settings.healthConnectSyncEnabled && isAndroidApp() && (
+            <button
+              type="button"
+              onClick={() => void syncHealthConnect({ manual: true })}
+              disabled={isHealthConnectSyncing}
+              className={`${pill} ml-auto bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--text)] gap-1 pressable disabled:opacity-50`}
+              title={isHealthConnectSyncing ? t.activities.syncing : t.activities.syncNow}
+              aria-label={isHealthConnectSyncing ? t.activities.syncing : t.activities.syncNow}
+            >
+              <RefreshCw size={11} className={isHealthConnectSyncing ? 'animate-spin' : ''} aria-hidden="true" />
+              {!ultraMinimal && <span>{isHealthConnectSyncing ? t.activities.syncing : t.activities.syncNow}</span>}
+            </button>
+          )}
         </div>
 
         {activities.length === 0 && ultraMinimal ? (
@@ -94,21 +119,36 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
         ) : (
           <div className="divide-y divide-[var(--border)]">
             {activities.map((act) => {
-              const detail =
-                act.method === 'distance' && act.distanceKm !== undefined
-                  ? `${act.distanceKm} ${t.activities.km}`
-                  : act.durationMin !== undefined
-                  ? `${act.durationMin} ${t.activities.min}`
+              const stepText =
+                act.steps && act.steps > 0
+                  ? `${act.steps.toLocaleString(language === 'it' ? 'it-IT' : 'en-US')} ${t.activities.steps}`
                   : '';
+              const distText = act.distanceKm !== undefined && act.distanceKm > 0 ? `${act.distanceKm} ${t.activities.km}` : '';
+              const durText = act.durationMin !== undefined && act.durationMin > 0 ? `${act.durationMin} ${t.activities.min}` : '';
+              const detail = [stepText, distText, durText, act.notes].filter(Boolean).join(' · ');
               return (
                 <div key={act.id} className="py-2 flex items-center justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <span className="block text-xs sm:text-sm font-bold text-[var(--text)] truncate">{name(act)}</span>
-                    {!ultraMinimal && (detail || act.notes) && (
+                    <span className="flex items-center gap-1.5 text-xs sm:text-sm font-bold text-[var(--text)]">
+                      <span className="truncate">{name(act)}</span>
+                      {act.source === 'health_connect' && (
+                        <span
+                          className="shrink-0 inline-flex text-[var(--muted)]"
+                          aria-label={t.activities.syncedBadge}
+                          title={t.activities.syncedBadge}
+                        >
+                          <Activity size={11} aria-hidden="true" />
+                        </span>
+                      )}
+                    </span>
+                    {!ultraMinimal && detail && (
                       <span className="block text-[11px] font-medium tabular-nums text-[var(--muted)] truncate">
                         {detail}
-                        {detail && act.notes ? ' · ' : ''}
-                        {act.notes || ''}
+                      </span>
+                    )}
+                    {ultraMinimal && act.steps && act.steps > 0 && (
+                      <span className="block text-[11px] font-medium tabular-nums text-[var(--muted)] truncate">
+                        {act.steps.toLocaleString(language === 'it' ? 'it-IT' : 'en-US')}
                       </span>
                     )}
                   </div>
@@ -119,6 +159,15 @@ export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, on
                   >
                     {act.caloriesBurned}{!compact && ' kcal'}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => setEditingActivity({ date: currentDayLog.date, activity: act })}
+                    className="pressable size-8 rounded-full text-[var(--muted)] hover:text-[var(--text)] hover:bg-[var(--hover)] flex items-center justify-center shrink-0"
+                    title={t.activities.editActivity}
+                    aria-label={`${t.activities.editActivity}: ${name(act)}`}
+                  >
+                    <Pencil size={13} />
+                  </button>
                   <button
                     type="button"
                     onClick={() => removeActivity(act.id)}
