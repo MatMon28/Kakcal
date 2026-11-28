@@ -149,8 +149,10 @@ export function TileGoalOverlay({
         aria-label={ariaLabel}
         style={isMinReached || isMaxExceeded ? { color: 'var(--ring-fill, currentColor)' } : undefined}
         className={`pointer-events-none absolute ${
-          ultraMinimal ? 'bottom-2 right-2.5 text-[10px]' : 'bottom-[11px] right-3.5 text-[11px]'
-        } inline-flex max-w-[calc(100%-24px)] items-center gap-1 whitespace-nowrap font-bold tabular-nums leading-none ${
+          ultraMinimal ? 'bottom-[11px] right-3.5 text-[10px]' : 'bottom-[15px] right-[18px] text-[11px]'
+        } inline-flex ${
+          ultraMinimal ? 'max-w-[calc(100%-28px)]' : 'max-w-[calc(100%-36px)]'
+        } items-center gap-1 whitespace-nowrap font-bold tabular-nums leading-none ${
           isMinReached || isMaxExceeded ? '' : 'opacity-[0.78]'
         }`}
       >

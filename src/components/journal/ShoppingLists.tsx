@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Check, ChevronRight, Pencil, Plus, RefreshCw, ShoppingCart, Trash2 } from 'lucide-react';
 import { useJournalData, useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
@@ -20,6 +20,7 @@ import { Modal } from '../common/Modal';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import { JournalEmpty, JournalSection } from './JournalUI';
 import { planRange } from './PlanLibrary';
+import { OPEN_SHOPPING_LIST_EVENT } from './CustomShortcuts';
 
 /** Looks a food up by id (all foods, recipes and the offline index the app already keeps in memory). */
 function useFoodLookup() {
@@ -35,7 +36,7 @@ function useFoodLookup() {
  * plan needs (recipes are broken down into their ingredients) with the total quantity. Open a list to tick what was
  * bought; the pencil switches to editing, where lines can be removed and new ones added.
  */
-export function ShoppingLists() {
+export function ShoppingLists({ sectionHidden = false }: { sectionHidden?: boolean }) {
   const { language, settings } = useSettings();
   const { plans, planGroups, shoppingLists } = useMealJournal();
   const j = useJournalText();
@@ -43,6 +44,12 @@ export function ShoppingLists() {
   const foodById = useFoodLookup();
   const [picking, setPicking] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onOpen = () => setPicking(true);
+    window.addEventListener(OPEN_SHOPPING_LIST_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_SHOPPING_LIST_EVENT, onOpen);
+  }, []);
   const { current, past } = useMemo(() => splitPlans(planGroupViews(plans, planGroups), today), [plans, planGroups, today]);
   const named = useMemo(() => new Map([...current, ...past].map((g) => [g.id, g])), [current, past]);
   const lists = shoppingLists.filter((l) => named.has(l.planId));
@@ -74,6 +81,7 @@ export function ShoppingLists() {
 
   return (
     <>
+      {!sectionHidden && (
       <JournalSection
         tone="teal"
         className="journal-shopping"
@@ -116,9 +124,10 @@ export function ShoppingLists() {
           </ul>
         )}
       </JournalSection>
+      )}
 
       {picking && (
-        <Modal isOpen onClose={() => setPicking(false)} title={j('Which plan?', 'Quale programma?')} subtitle={j('The list is made from the foods of the plan you choose', 'La lista nasce dagli alimenti del programma scelto')} maxWidth="max-w-lg">
+        <Modal isOpen dockId="shopping" onClose={() => setPicking(false)} title={j('Which plan?', 'Quale programma?')} subtitle={j('The list is made from the foods of the plan you choose', 'La lista nasce dagli alimenti del programma scelto')} maxWidth="max-w-lg">
           <div className="journal-form" data-shopping-picker>
             {named.size === 0 ? (
               <JournalEmpty>{j('There is no plan yet. Plan some meals first.', 'Non c\'e ancora nessun programma. Pianifica prima dei pasti.')}</JournalEmpty>

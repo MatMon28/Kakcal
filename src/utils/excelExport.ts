@@ -18,6 +18,7 @@ import type { translations } from '../i18n/translations';
 import { activityLogLabel } from './activityLabel';
 import { DEFAULT_MEASURES, isPairedMeasure, seriesKeysOf } from './advancedStore';
 import { computeFastTiming, toLocalDateString } from './fastingStore';
+import { getTodayDateString } from './formatters';
 import {
   calculateBMR,
   calculateMacros,
@@ -367,6 +368,13 @@ function stylesXml(): string {
   );
 }
 
+function toLocalTimeString(iso?: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 /** Builds the workbook file. Exported separately from the data collection so it can be tested on its own. */
 export function buildWorkbook(sheets: Sheet[]): Blob {
   const used = new Set<string>();
@@ -517,6 +525,8 @@ export function buildExcelExport({
 
   let sumIntake = 0;
   let sumBurned = 0;
+  let sumActExp = 0;
+  let sumTef = 0;
   let sumCarbs = 0;
   let sumProtein = 0;
   let sumFat = 0;
@@ -544,6 +554,8 @@ export function buildExcelExport({
       const r = days.length + 2;
       sumIntake += intake;
       sumBurned += burned;
+      sumActExp += actExp;
+      sumTef += tef;
       sumCarbs += macros.carbsGrams;
       sumProtein += macros.proteinGrams;
       sumFat += macros.fatGrams;
@@ -597,7 +609,7 @@ export function buildExcelExport({
         : a.customName || a.type;
       activities.push([
         { date },
-        a.timestamp ? a.timestamp.slice(11, 16) : null,
+        toLocalTimeString(a.timestamp),
         label,
         a.durationMin ?? null,
         a.distanceKm == null ? null : { value: round(a.distanceKm, 2), numFmt: 'dec2' },
@@ -606,12 +618,12 @@ export function buildExcelExport({
       ]);
     }
     for (const w of log.waterEntries ?? []) {
-      water.push([{ date }, w.timestamp ? w.timestamp.slice(11, 16) : null, { value: w.ml, numFmt: 'int' }]);
+      water.push([{ date }, toLocalTimeString(w.timestamp), { value: w.ml, numFmt: 'int' }]);
     }
     for (const p of poops) {
       poopRows.push([
         { date },
-        p.timestamp ? p.timestamp.slice(11, 16) : null,
+        toLocalTimeString(p.timestamp),
         poopSizeLabel(p.size, text, t),
         p.bristol ?? null,
         p.description ?? null,
@@ -634,7 +646,7 @@ export function buildExcelExport({
       for (const entry of getCustomEntries(log, id)) {
         trackerRows.push([
           { date },
-          entry.timestamp ? entry.timestamp.slice(11, 16) : null,
+          toLocalTimeString(entry.timestamp),
           btn?.name ?? id,
           text('Quantity', 'Quantita'),
           { value: round(entry.amount, 2), numFmt: 'dec2' },
@@ -822,8 +834,8 @@ export function buildExcelExport({
           { formula: `SUM(B2:B${daysEndRow})`, value: round(sumIntake, 0), numFmt: 'int', bold: true },
           { formula: `SUM(C2:C${daysEndRow})`, value: round(sumBurned, 0), numFmt: 'int', bold: true },
           { formula: `SUM(D2:D${daysEndRow})`, value: round(bmr * days.length, 0), numFmt: 'int', bold: true },
-          { formula: `SUM(E2:E${daysEndRow})`, value: round(sumBurned - bmr * days.length, 0), numFmt: 'int', bold: true },
-          { formula: `SUM(F2:F${daysEndRow})`, numFmt: 'int', bold: true },
+          { formula: `SUM(E2:E${daysEndRow})`, value: round(sumActExp, 0), numFmt: 'int', bold: true },
+          { formula: `SUM(F2:F${daysEndRow})`, value: round(sumTef, 0), numFmt: 'int', bold: true },
           { formula: `SUM(G2:G${daysEndRow})`, value: round(sumIntake - sumBurned, 0), numFmt: 'signed', bold: true },
           { formula: `SUM(H2:H${daysEndRow})`, value: round(sumCarbs), numFmt: 'dec1', bold: true },
           { formula: `SUM(I2:I${daysEndRow})`, value: round(sumProtein), numFmt: 'dec1', bold: true },
@@ -840,8 +852,8 @@ export function buildExcelExport({
           { formula: `AVERAGE(B2:B${daysEndRow})`, value: round(sumIntake / days.length, 0), numFmt: 'int', bold: true },
           { formula: `AVERAGE(C2:C${daysEndRow})`, value: round(sumBurned / days.length, 0), numFmt: 'int', bold: true },
           { formula: `AVERAGE(D2:D${daysEndRow})`, value: round(bmr, 0), numFmt: 'int', bold: true },
-          { formula: `AVERAGE(E2:E${daysEndRow})`, numFmt: 'int', bold: true },
-          { formula: `AVERAGE(F2:F${daysEndRow})`, numFmt: 'int', bold: true },
+          { formula: `AVERAGE(E2:E${daysEndRow})`, value: round(sumActExp / days.length, 0), numFmt: 'int', bold: true },
+          { formula: `AVERAGE(F2:F${daysEndRow})`, value: round(sumTef / days.length, 0), numFmt: 'int', bold: true },
           { formula: `AVERAGE(G2:G${daysEndRow})`, value: round((sumIntake - sumBurned) / days.length, 0), numFmt: 'signed', bold: true },
           { formula: `AVERAGE(H2:H${daysEndRow})`, value: round(sumCarbs / days.length), numFmt: 'dec1', bold: true },
           { formula: `AVERAGE(I2:I${daysEndRow})`, value: round(sumProtein / days.length), numFmt: 'dec1', bold: true },
@@ -870,7 +882,7 @@ export function buildExcelExport({
   const summaryRows: Row[] = [
     [{ text: text('Kakcal — Nutrition & Health Report', 'Kakcal — Report Nutrizione e Salute'), style: 'title' }],
     [{ text: text('Period', 'Periodo'), style: 'kpiLabel' }, periodRangeText, null],
-    [{ text: text('Exported', 'Esportato'), style: 'kpiLabel' }, { date: new Date().toISOString().slice(0, 10) }, null],
+    [{ text: text('Exported', 'Esportato'), style: 'kpiLabel' }, { date: getTodayDateString() }, null],
     [],
     [{ text: text('Profile', 'Profilo'), style: 'section' }, { text: '', style: 'section' }, { text: '', style: 'section' }],
     [{ text: text('Weight', 'Peso'), style: 'kpiLabel' }, { value: profile.weightKg, numFmt: 'dec1' }, 'kg'],
@@ -1128,9 +1140,9 @@ export function buildExcelExport({
           .join(' | ');
         return [
           { date: toLocalDateString(s.startedAt) },
-          s.startedAt.slice(11, 16),
-          s.endedAt ? s.endedAt.slice(0, 10) : null,
-          s.endedAt ? s.endedAt.slice(11, 16) : null,
+          toLocalTimeString(s.startedAt),
+          s.endedAt ? { date: toLocalDateString(s.endedAt) } : null,
+          toLocalTimeString(s.endedAt),
           s.protocol.toUpperCase(),
           { value: Math.round((timing.elapsedMs / 3_600_000) * 10) / 10, numFmt: 'dec1' },
           { value: s.targetFastingHours, numFmt: 'dec1' },

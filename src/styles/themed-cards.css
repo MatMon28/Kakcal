@@ -17,8 +17,8 @@ html[data-style="aurora"] :is(.kc-nav-pill, .kc-dock) {
 }
 
 html[data-style]:not([data-style="classic"]) [data-meal-slot] .kc-meal-icon,
-html[data-style]:not([data-style="classic"]) [data-tracker] .kc-tracker-icon,
-html[data-style]:not([data-style="classic"]) .kc-period-header-icon {
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) [data-tracker] .kc-tracker-icon,
+html[data-style]:not([data-style="classic"]):not([data-style="minimal"]) .kc-period-header-icon {
   color: var(--meal-icon-color, var(--text)) !important;
 }
 
@@ -145,7 +145,7 @@ html[data-style]:not([data-style="classic"]) .kc-custom-stat-bar-empty {
 
 /* Period page, Calendar, Day Overview & Shared Action/Chip controls */
 html[data-style]:not([data-style="classic"]) [data-period-card],
-html[data-style]:not([data-style="classic"]) [data-day-overview-card],
+html[data-style]:not([data-style="classic"]) [data-day-overview-card]:not([data-kc-tone]),
 html[data-style]:not([data-style="classic"]) .kc-modal-banner {
   background: var(--inset) !important;
   color: var(--text) !important;
@@ -155,6 +155,28 @@ html[data-style]:not([data-style="classic"]) .kc-modal-banner {
 }
 html[data-style]:not([data-style="classic"]) .kc-modal-banner * {
   color: inherit !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-modal-banner [data-modal-banner-icon] {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--icon-btn-radius, 9999px) !important;
+  clip-path: var(--clip-xs, none);
+}
+html[data-style]:not([data-style="classic"]) .kc-modal-banner [data-modal-banner-icon="water"] {
+  background: var(--dock-3, var(--surface)) !important;
+  color: var(--dock-icon-3, var(--text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-modal-banner [data-modal-banner-icon="weight"] {
+  background: var(--dock-5, var(--surface)) !important;
+  color: var(--dock-icon-5, var(--text)) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-modal-banner [data-modal-banner-icon] svg {
+  color: inherit !important;
+}
+html[data-style]:not([data-style="classic"]) [data-profile-choice] {
+  border-radius: var(--pill-radius, 12px) !important;
+  clip-path: var(--clip-xs, none);
 }
 html[data-style]:not([data-style="classic"]) [data-period-card] [data-period-value],
 html[data-style]:not([data-style="classic"]) [data-day-overview-card] [data-period-value] {
@@ -569,21 +591,27 @@ html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="fast
   background: var(--dock-6) !important;
   color: var(--dock-icon-6) !important;
 }
-html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="meal"],
-html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="lower"] {
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="meal"] {
   background: var(--dock-4) !important;
   color: var(--dock-icon-4) !important;
 }
 html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="recipe"],
-html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="recipe-import"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="upper"],
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="lower"],
 html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="body-custom"] {
   background: var(--dock-5) !important;
   color: var(--dock-icon-5) !important;
 }
-html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="plan"],
-html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="upper"] {
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="plan"] {
   background: var(--dock-3) !important;
   color: var(--dock-icon-3) !important;
+}
+html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="shopping"] {
+  background: var(--dock-1) !important;
+  color: var(--dock-icon-1) !important;
+}
+html[data-style="minimal"] .kc-dock-btn[data-dock-action="shopping"] {
+  color: var(--tone-ink-teal) !important;
 }
 html[data-style]:not([data-style="classic"]) .kc-dock-btn[data-dock-action="photo"] {
   background: var(--dock-2) !important;

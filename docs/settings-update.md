@@ -15,9 +15,10 @@ Settings has one collapsible group per area. Every group has its own colour badg
 | Language | sky | English / Italiano |
 | Appearance | lilac | Theme, widget style, style presets (+ Mono hue), Ultra minimal |
 | **Today** | butter | **Quick-add buttons** (Food, Movement, Weight, Custom) -> **Tracking** (Log water, Log poop, Track sugar) -> **Meal notes & photos** (Meal notes in Today, Photo diary in Today) -> **Quick food shortcuts** -> **Custom buttons** (list, add / edit, widget switch; moved here from the old group) |
-| **Custom page** | mint | **Quick buttons** (New meal, New recipe, New food, Plan meals, Photo diary button) -> **Sections** (Meal diary, Meals, Recipes, Meal planner, Shopping lists, Photo diary, Foods) |
+| **Custom page** | mint | **Quick buttons** (New meal, New recipe, Plan meals, Shopping list, Photo diary button) -> **Sections** (Meal diary, Meals, Recipes, Meal planner, Shopping lists, Photo diary, Foods) |
 | **Pages** | peach | **Pages**: Today (always shown, reorderable), Custom, Statistics, Track period, Body measurements — each row has up/down reorder buttons (plus *Reset page order* when customized). Body on = a *body profile* shortcut appears under the list |
-| Advanced | sand | Goals & limits, Advanced layout (body measurements moved to Pages) |
+| **Goals & limits** | mint | Master *Goals & limits* switch and per-nutrient / energy-balance targets (extracted from Advanced) |
+| Advanced | sand | Advanced layout + Restore original layout (body measurements moved to Pages; Goals & limits moved to its own top-level group) |
 | Notifications | rose | Reminders as before; **the *Send a test notification* button is removed** |
 | Data backup | slate | unchanged |
 | Install app | teal | unchanged (browser only) |
@@ -38,6 +39,7 @@ Rules that matter:
 | `hideCustomPage` | boolean | `false` | Custom page hidden (Settings > Pages) |
 | `hideStatisticsPage` | boolean | `false` | Statistics page hidden (Settings > Pages) |
 | `pageOrder` | `MainTabId[]` | `['today','prebuilt','period','body','history']` | Display and swipe order of the main pages (Settings > Pages) |
+| `showShoppingButton` | boolean | `true` | Show the Shopping list button in Custom's bottom bar (Settings > Custom page) |
 | `hideCustomButtons` | `{ meal?, recipe?, food? }` | `{}` | Hidden creation buttons of the Custom bottom bar |
 | `hideCustomFields` | `Partial<Record<CustomFieldId, boolean>>` | `{}` | Hidden Custom sections: `diary`, `meals`, `recipes`, `planner`, `shopping`, `photos`, `foods` |
 | `photoDiaryInToday` | boolean | `false` (`DEMO_MODE`) | Show meal camera actions and photo strips in Today meal cards (Settings > Today; older saved settings inherit `photoDiary`) |
@@ -63,6 +65,7 @@ Existing keys are unchanged (`quickAdd`, `hidePoop`, `trackSugar`, `inlineMealNo
 | All custom tracker entries | `custom` and `customEntries` of every day (the buttons stay) |
 | All body measurements | `kcalsync_body` |
 | All period records | `logs` of `kf_period_data` (cycle settings stay) |
+| All fasting records | `activeSession`, `sessions` and `notes` of `kcalsync_fasting` (`config` stays) |
 
 Delete all data is unchanged: `src/components/common/DeleteAllData.tsx` and `src/utils/deleteAllData.ts`.
 
@@ -82,6 +85,7 @@ Delete all data is unchanged: `src/components/common/DeleteAllData.tsx` and `src
 | `src/components/modals/settings/CustomButtonsSettings.tsx` | Custom buttons list / form / widget switch (inside Today) |
 | `src/components/modals/settings/CustomPageSettings.tsx` | Custom page group |
 | `src/components/modals/settings/PagesSettings.tsx` | Pages group (hide switches, body profile shortcut) |
+| `src/components/modals/settings/GoalsSettings.tsx` | Goals & limits top-level group (master switch, per-nutrient targets, intake/burned difference) |
 | `src/components/modals/settings/DeleteDataSettings.tsx` | Delete data group |
 | `src/components/common/Collapsible.tsx` | Group header now takes an `icon` and a `tone` (badge) |
 | `src/utils/pageVisibility.ts` | `isPageHiddenBySettings(tab, settings)` |

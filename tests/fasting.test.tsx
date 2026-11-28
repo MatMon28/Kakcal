@@ -1,7 +1,11 @@
 import { act, cleanup, renderHook } from '@testing-library/react';
 import { StrictMode, type ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AppProvider, useApp } from '../src/context/AppContext';
+import * as FastingInterruptModule from '../src/components/fasting/FastingInterruptModal';
+import { VERIFIED_FOODS } from '../src/data/verifiedFoods';
+import { deleteCategory } from '../src/utils/deleteData';
+import { addDaysToDateString, getTodayDateString } from '../src/utils/formatters';
 import { deleteDatabase, resetDbForTests } from '../src/storage/idb';
 import { resetBootForTests } from '../src/storage/boot';
 import { flushWrites } from '../src/storage/writeQueue';
@@ -180,5 +184,51 @@ describe('Intermittent Fasting store & logic', () => {
     expect(getFasting().config.enabled).toBe(true);
     expect(getFasting().activeSession?.id).toBe(s.id);
     expect(exportFasting().notes).toHaveLength(1);
+  });
+
+  it('only triggers fast interrupt when logging or copying meals for today', () => {
+    setFastingEnabled(true);
+    startFast(new Date(Date.now() - 3_600_000).toISOString());
+    const spy = vi.spyOn(FastingInterruptModule, 'requestFastInterrupt').mockImplementation((_kcal, commit) => commit());
+    const { result } = renderHook(() => useApp(), { wrapper });
+    const food = VERIFIED_FOODS[0];
+    const today = getTodayDateString();
+    const yesterday = addDaysToDateString(today, -1);
+    const tomorrow = addDaysToDateString(today, 1);
+
+    act(() => {
+      result.current.logFoodItem('lunch', food, 100, yesterday);
+      result.current.logFoodItem('lunch', food, 100, tomorrow);
+    });
+    expect(spy).not.toHaveBeenCalled();
+
+    act(() => {
+      result.current.logFoodItem('lunch', food, 100, today);
+    });
+    expect(spy).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      const res = result.current.copyYesterdayMeals(today);
+      expect(res.success).toBe(true);
+    });
+    expect(spy).toHaveBeenCalledTimes(2);
+    spy.mockRestore();
+  });
+
+  it('deleteCategory("fasting") preserves config while clearing sessions and notes', async () => {
+    setFastingEnabled(true);
+    setFastingProtocol('18:6');
+    const s = startFast('2026-11-20T20:00:00.000Z');
+    addFastingNote({ sessionId: s.id, mood: 'calm', hunger: 2, text: 'Easy' });
+    endFast('2026-11-21T14:00:00.000Z');
+    startFast('2026-11-21T20:00:00.000Z');
+
+    await deleteCategory('fasting');
+    const stored = JSON.parse(localStorage.getItem('kcalsync_fasting')!);
+    expect(stored.config.enabled).toBe(true);
+    expect(stored.config.protocol).toBe('18:6');
+    expect(stored.activeSession).toBeNull();
+    expect(stored.sessions).toEqual([]);
+    expect(stored.notes).toEqual([]);
   });
 });

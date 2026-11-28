@@ -39,21 +39,21 @@ html[data-style="minimal"][data-theme="dark"] {
   --meal-icon-color: #3b82f6;
 
   --card-border: 1px solid #1e293b;
-  --intake-bg: #0d1320; --intake-text: #bfdbfe; --intake-label: #93c5fd;
-  --intake-track: #1e293b; --intake-fill: #60a5fa;
-  --intake-badge-bg: #172554; --intake-badge-text: #bfdbfe;
+  --intake-bg: #0d1320; --intake-text: #34d399; --intake-label: #34d399;
+  --intake-track: #1e293b; --intake-fill: #34d399;
+  --intake-badge-bg: #064e3b; --intake-badge-text: #a7f3d0;
 
   --burned-bg: #0d1320; --burned-text: #fecaca; --burned-label: #fca5a5;
   --burned-track: #1e293b; --burned-fill: #f87171;
   --badge-bg: #450a0a; --badge-text: #fecaca;
 
   --carbs-bg: #0d1320; --carbs-text: #bfdbfe;
-  --protein-bg: #0d1320; --protein-text: #fde68a;
+  --protein-bg: #0d1320; --protein-text: #fdba74;
   --fat-bg: #0d1320; --fat-text: #e9d5ff;
   --water-fill: #60a5fa;
 
   --pill-c-bg: #060911; --pill-c-text: #93c5fd;
-  --pill-p-bg: #060911; --pill-p-text: #fde047;
+  --pill-p-bg: #060911; --pill-p-text: #fdba74;
   --pill-f-bg: #060911; --pill-f-text: #d8b4fe;
 
   --dock-bg: #0d1320;
@@ -66,9 +66,9 @@ html[data-style="minimal"][data-theme="dark"] {
   --dock-5: #060911; --dock-icon-5: #d8b4fe;
   --dock-6: #060911; --dock-icon-6: #f8fafc;
 
-  --fiber-bg: #060911; --fiber-text: #f8fafc;
-  --salt-bg: #060911; --salt-text: #f8fafc;
-  --sugar-bg: #060911; --sugar-text: #f8fafc;
+  --fiber-bg: #0d1320; --fiber-text: #fde047;
+  --salt-bg: #0d1320; --salt-text: #fde047;
+  --sugar-bg: #0d1320; --sugar-text: #fde047;
 
   /* Minimal keeps cards neutral --surface and tints only header text & icons. */
   --tone-ink-diary: #fde047;
@@ -99,21 +99,21 @@ html[data-style="minimal"][data-theme="lite-dark"] {
 
   --card-border: 1px solid #475569;
   --card-shadow: none;
-  --intake-bg: #263347; --intake-text: #dbeafe; --intake-label: #93c5fd;
-  --intake-track: #475569; --intake-fill: #93c5fd;
-  --intake-badge-bg: #1e3a8a; --intake-badge-text: #dbeafe;
+  --intake-bg: #263347; --intake-text: #6ee7b7; --intake-label: #6ee7b7;
+  --intake-track: #475569; --intake-fill: #6ee7b7;
+  --intake-badge-bg: #065f46; --intake-badge-text: #d1fae5;
 
   --burned-bg: #263347; --burned-text: #fee2e2; --burned-label: #fca5a5;
   --burned-track: #475569; --burned-fill: #fca5a5;
   --badge-bg: #991b1b; --badge-text: #fee2e2;
 
   --carbs-bg: #263347; --carbs-text: #dbeafe;
-  --protein-bg: #263347; --protein-text: #fef08a;
+  --protein-bg: #263347; --protein-text: #fed7aa;
   --fat-bg: #263347; --fat-text: #f3e8ff;
   --water-fill: #93c5fd;
 
   --pill-c-bg: #172030; --pill-c-text: #bfdbfe;
-  --pill-p-bg: #172030; --pill-p-text: #fde68a;
+  --pill-p-bg: #172030; --pill-p-text: #fed7aa;
   --pill-f-bg: #172030; --pill-f-text: #e9d5ff;
 
   --dock-bg: #263347;
@@ -126,9 +126,9 @@ html[data-style="minimal"][data-theme="lite-dark"] {
   --dock-5: #172030; --dock-icon-5: #e9d5ff;
   --dock-6: #172030; --dock-icon-6: #ffffff;
 
-  --fiber-bg: #172030; --fiber-text: #ffffff;
-  --salt-bg: #172030; --salt-text: #ffffff;
-  --sugar-bg: #172030; --sugar-text: #ffffff;
+  --fiber-bg: #263347; --fiber-text: #fef08a;
+  --salt-bg: #263347; --salt-text: #fef08a;
+  --sugar-bg: #263347; --sugar-text: #fef08a;
 
   --tone-ink-diary: #fef08a;
   --tone-ink-meals: #fed7aa;
@@ -158,21 +158,21 @@ html[data-style="minimal"][data-theme="light"] {
 
   --card-border: 1px solid #cbd5e1;
   --card-shadow: none;
-  --intake-bg: #ffffff; --intake-text: #172554; --intake-label: #1d4ed8;
-  --intake-track: #e2e8f0; --intake-fill: #1d4ed8;
-  --intake-badge-bg: #dbeafe; --intake-badge-text: #172554;
+  --intake-bg: #ffffff; --intake-text: #15803d; --intake-label: #15803d;
+  --intake-track: #e2e8f0; --intake-fill: #15803d;
+  --intake-badge-bg: #dcfce7; --intake-badge-text: #14532d;
 
   --burned-bg: #ffffff; --burned-text: #7f1d1d; --burned-label: #dc2626;
   --burned-track: #e2e8f0; --burned-fill: #dc2626;
   --badge-bg: #fee2e2; --badge-text: #7f1d1d;
 
   --carbs-bg: #ffffff; --carbs-text: #172554;
-  --protein-bg: #ffffff; --protein-text: #713f12;
+  --protein-bg: #ffffff; --protein-text: #9a3412;
   --fat-bg: #ffffff; --fat-text: #3b0764;
   --water-fill: #2563eb;
 
   --pill-c-bg: #e2e8f0; --pill-c-text: #172554;
-  --pill-p-bg: #e2e8f0; --pill-p-text: #713f12;
+  --pill-p-bg: #e2e8f0; --pill-p-text: #9a3412;
   --pill-f-bg: #e2e8f0; --pill-f-text: #3b0764;
 
   --dock-bg: #ffffff;
@@ -180,14 +180,14 @@ html[data-style="minimal"][data-theme="light"] {
   --dock-btn-border: 1px solid #cbd5e1;
   --dock-1: #f1f5f9; --dock-icon-1: #15803d;
   --dock-2: #f1f5f9; --dock-icon-2: #9f1239;
-  --dock-3: #f1f5f9; --dock-icon-3: #172554;
-  --dock-4: #f1f5f9; --dock-icon-4: #713f12;
-  --dock-5: #f1f5f9; --dock-icon-5: #3b0764;
-  --dock-6: #f1f5f9; --dock-icon-6: #090e17;
+  --dock-3: #f1f5f9; --dock-icon-3: #1d4ed8;
+  --dock-4: #f1f5f9; --dock-icon-4: #9a3412;
+  --dock-5: #f1f5f9; --dock-icon-5: #5b21b6;
+  --dock-6: #f1f5f9; --dock-icon-6: #854d0e;
 
-  --fiber-bg: #f1f5f9; --fiber-text: #090e17;
-  --salt-bg: #f1f5f9; --salt-text: #090e17;
-  --sugar-bg: #f1f5f9; --sugar-text: #090e17;
+  --fiber-bg: #ffffff; --fiber-text: #854d0e;
+  --salt-bg: #ffffff; --salt-text: #854d0e;
+  --sugar-bg: #ffffff; --sugar-text: #854d0e;
   --color-intake-accent: #15803d;
   --color-activity-accent: #b91c1c;
   --color-weight-accent: #4c1d95;

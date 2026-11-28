@@ -214,6 +214,16 @@ describe('Excel export', () => {
     expect(entries['xl/worksheets/sheet10.xml']).toContain('Morning bowl'); // Meals & Recipes
     expect(entries['xl/worksheets/sheet11.xml']).toContain('Left'); // Body
     expect(entries['xl/worksheets/sheet12.xml']).toContain('happy'); // Period
+
+    // Days footer caches exact Activity (E) and TEF (F) sums & averages (not sumBurned - BMR).
+    expect(daysXml).toContain('<f>SUM(E2:E3)</f><v>320</v>');
+    expect(daysXml).toContain('<f>SUM(F2:F3)</f><v>47</v>');
+    expect(daysXml).toContain('<f>AVERAGE(E2:E3)</f><v>160</v>');
+    expect(daysXml).toContain('<f>AVERAGE(F2:F3)</f><v>24</v>');
+
+    // Activities sheet uses local time HH:MM rather than raw UTC slice.
+    const expectedActTime = `${String(new Date('2026-11-20T18:10:00Z').getHours()).padStart(2, '0')}:${String(new Date('2026-11-20T18:10:00Z').getMinutes()).padStart(2, '0')}`;
+    expect(entries['xl/worksheets/sheet4.xml']).toContain(expectedActTime);
   });
 
   it('filters records by dateRange and respects sheet selection', async () => {

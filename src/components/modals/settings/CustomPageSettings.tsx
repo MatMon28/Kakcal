@@ -49,18 +49,18 @@ export const CustomPageSettings: React.FC = () => {
           onToggle={() => setButton('recipe', Boolean(settings.hideCustomButtons.recipe))}
         />
         <ToggleRow
-          icon={<BookOpen size={14} />}
-          tone={TONE.mint}
-          title={j('New food', 'Nuovo alimento')}
-          on={!settings.hideCustomButtons.food}
-          onToggle={() => setButton('food', Boolean(settings.hideCustomButtons.food))}
-        />
-        <ToggleRow
           icon={<CalendarDays size={14} />}
           tone={TONE.sky}
           title={j('Plan meals', 'Pianifica i pasti')}
           on={settings.showPlannerButton}
           onToggle={() => updateSettings({ showPlannerButton: !settings.showPlannerButton })}
+        />
+        <ToggleRow
+          icon={<ShoppingCart size={14} />}
+          tone={TONE.teal}
+          title={j('Shopping list', 'Lista della spesa')}
+          on={settings.showShoppingButton}
+          onToggle={() => updateSettings({ showShoppingButton: !settings.showShoppingButton })}
         />
         <ToggleRow
           icon={<Camera size={14} />}

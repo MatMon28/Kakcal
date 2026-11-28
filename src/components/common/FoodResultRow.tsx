@@ -32,7 +32,7 @@ export const FoodResultRow: React.FC<FoodResultRowProps> = ({ food, onClick, fav
         <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate block">
           {name}
           {food.isRecipe && (
-            <span className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582] align-middle">
+            <span data-macro="fat" className="ml-1.5 text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-fat text-fat-ink align-middle">
               {t.prebuilt.savedAsRecipe}
             </span>
           )}

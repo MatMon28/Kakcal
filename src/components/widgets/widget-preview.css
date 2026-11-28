@@ -175,6 +175,8 @@ html[data-style='pop'] .widget-large {
 html[data-style='pop'] .quick-widget {
   border: var(--dock-border) !important;
   box-shadow: var(--dock-shadow) !important;
+  margin-right: 4px;
+  margin-bottom: 4px;
 }
 html[data-style='pop'] .widget-large :is(.kc-hero-intake, .kc-hero-burned, .kc-macro-carbs, .kc-macro-protein, .kc-macro-fat) {
   border: var(--card-border) !important;

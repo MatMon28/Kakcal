@@ -345,9 +345,9 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         } else if ("minimal".equals(themeStyle)) {
             surface = Color.parseColor(dark ? "#F20d1320" : "#F2eef2f6");
             divider = Color.parseColor(dark ? "#1e293b" : "#cbd5e1");
-            inBg = Color.parseColor(dark ? "#151d2e" : "#f1f5f9"); inText = Color.parseColor(dark ? "#bfdbfe" : "#172554");
-            inTrack = divider; inFill = Color.parseColor(dark ? "#60a5fa" : "#1d4ed8");
-            inBadgeBg = Color.parseColor(dark ? "#172554" : "#dbeafe"); inBadgeText = inText;
+            inBg = Color.parseColor(dark ? "#151d2e" : "#f1f5f9"); inText = Color.parseColor(dark ? "#34d399" : "#15803d");
+            inTrack = divider; inFill = inText;
+            inBadgeBg = Color.parseColor(dark ? "#064e3b" : "#dcfce7"); inBadgeText = Color.parseColor(dark ? "#a7f3d0" : "#14532d");
             burnBg = inBg; burnText = Color.parseColor(dark ? "#fecaca" : "#7f1d1d");
             burnTrack = divider; burnFill = Color.parseColor(dark ? "#f87171" : "#dc2626");
             burnBadgeBg = Color.parseColor(dark ? "#450a0a" : "#fee2e2"); burnBadgeText = burnText;
@@ -430,7 +430,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
         int macroPad = Math.round(4 * d);
         if ("pop".equals(themeStyle)) {
             // Pop uses multi-layer 3D offset-shadow drawables directly (no tint overwrite so border + hard shadow stay crisp).
-            setLayeredBackground(view, R.id.widget_root, dark ? R.drawable.widget_surface_pop_dark : R.drawable.widget_surface_pop, rootPad, rootPad, rootPad + Math.round(3 * d), rootPad + Math.round(3 * d));
+            setLayeredBackground(view, R.id.widget_root, dark ? R.drawable.widget_surface_pop_dark : R.drawable.widget_surface_pop, rootPad, rootPad, rootPad + Math.round(4 * d), rootPad + Math.round(4 * d));
             setLayeredBackground(view, R.id.widget_intake_card, dark ? R.drawable.widget_card_pop_intake_dark : R.drawable.widget_card_pop_intake, cardPadH, cardPadV, cardPadH + Math.round(3 * d), cardPadV + Math.round(3 * d));
             setLayeredBackground(view, R.id.widget_burned_card, dark ? R.drawable.widget_card_pop_burned_dark : R.drawable.widget_card_pop_burned, cardPadH, cardPadV, cardPadH + Math.round(3 * d), cardPadV + Math.round(3 * d));
             setLayeredBackground(view, R.id.widget_carbs_card, dark ? R.drawable.widget_card_pop_carbs_dark : R.drawable.widget_card_pop_carbs, macroPad, macroPad, macroPad + Math.round(3 * d), macroPad + Math.round(3 * d));
@@ -567,7 +567,7 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
                     border = Color.parseColor("#1e293b");
                 } else {
                     fill = Color.parseColor("#f1f5f9");
-                    String[] inks = { "#15803d", "#9f1239", "#172554", "#713f12", "#3b0764", "#090e17" };
+                    String[] inks = { "#15803d", "#9f1239", "#1d4ed8", "#9a3412", "#5b21b6", "#854d0e" };
                     ink = Color.parseColor(inks[index]);
                     border = Color.parseColor("#cbd5e1");
                 }

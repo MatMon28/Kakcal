@@ -54,3 +54,4 @@
 | File | Role |
 | --- | --- |
 | `scripts/check-food-workflows.mjs` | Runs import, recipe/meal builder (quantity step, icon-only pencil, Swap, quick-add tiles), food batch, diary edit and Undo checks in Chromium against a demo Vite build. See [verification](../verification.md#food-workflow-regressions). |
+| `scripts/export-agent-context.mjs` | Aggregates understanding-critical code and docs into category-named `.txt` bundles (`<= 250 KB` each) plus `README.md` under gitignored `exports/agent-context/`; `--check` verifies no new code/doc files are uncategorized. |

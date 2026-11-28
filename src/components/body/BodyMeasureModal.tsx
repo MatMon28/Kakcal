@@ -40,7 +40,7 @@ export function useTrackedMeasures(group?: BodyGroup): MeasureInfo[] {
 }
 
 /** Value + date form for one measure. Mounted per selection, so its state starts fresh. */
-const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack: () => void }> = ({ measure, onSaved, onBack }) => {
+const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack?: () => void }> = ({ measure, onSaved, onBack }) => {
   const { language } = useApp();
   const text = useAdvancedText();
   const all = useBodyEntries();
@@ -73,14 +73,16 @@ const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack:
 
   return (
     <div className="space-y-4">
-      <button
-        type="button"
-        onClick={onBack}
-        className="pressable inline-flex items-center gap-1 text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)]"
-      >
-        <ChevronLeft size={14} />
-        <span>{text.body.back}</span>
-      </button>
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="pressable inline-flex items-center gap-1 text-xs font-extrabold text-[var(--muted)] hover:text-[var(--text)]"
+        >
+          <ChevronLeft size={14} />
+          <span>{text.body.back}</span>
+        </button>
+      )}
 
       <div className="flex items-center gap-3">
         <span data-body-icon className="size-12 rounded-2xl bg-weight text-weight-ink flex items-center justify-center shrink-0">
@@ -170,10 +172,11 @@ const MeasureForm: React.FC<{ measure: MeasureInfo; onSaved: () => void; onBack:
   );
 };
 
-/** Pop-up opened by the Upper body / Lower body / Custom buttons: pick the body part, then update it. */
-export const BodyMeasureModal: React.FC<{ group: BodyGroup | null; onClose: () => void }> = ({ group, onClose }) => {
+/** Pop-up opened by the Upper body / Lower body / Custom buttons (group) or a tile's `+` button (measureId). */
+export const BodyMeasureModal: React.FC<{ group: BodyGroup | null; measureId?: string | null; onClose: () => void }> = ({ group, measureId = null, onClose }) => {
   const text = useAdvancedText();
   const measures = useTrackedMeasures(group ?? undefined);
+  const allMeasures = useTrackedMeasures();
   const entries = useBodyEntries();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -183,23 +186,31 @@ export const BodyMeasureModal: React.FC<{ group: BodyGroup | null; onClose: () =
     setSavedId(null);
     onClose();
   };
-  const selected = measures.find((m) => m.id === selectedId) ?? null;
+  const directMeasure = measureId ? allMeasures.find((m) => m.id === measureId) ?? null : null;
+  const selected = directMeasure ?? measures.find((m) => m.id === selectedId) ?? null;
 
   return (
     <Modal
-      isOpen={group !== null}
+      isOpen={group !== null || measureId !== null}
       onClose={close}
-      title={group ? text.group[group] : text.body.updateTitle}
+      title={directMeasure ? directMeasure.name : group ? text.group[group] : text.body.updateTitle}
       subtitle={selected ? undefined : text.body.pickPrompt}
       maxWidth="max-w-md"
-      dockId={group ?? undefined}
+      dockId={group === 'custom' ? 'body-custom' : group ?? undefined}
     >
       {selected ? (
         <MeasureForm
           key={selected.id}
           measure={selected}
-          onBack={() => setSelectedId(null)}
-          onSaved={() => { setSavedId(selected.id); setSelectedId(null); }}
+          onBack={directMeasure ? undefined : () => setSelectedId(null)}
+          onSaved={() => {
+            if (directMeasure) {
+              close();
+            } else {
+              setSavedId(selected.id);
+              setSelectedId(null);
+            }
+          }}
         />
       ) : (
         <div className="grid grid-cols-2 gap-2">

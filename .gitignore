@@ -14,3 +14,4 @@ scripts/smoke.bundle.js
 *.log
 coverage/
 public/downloads/
+exports/

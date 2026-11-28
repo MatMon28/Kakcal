@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { CalendarDays, Ruler, User } from 'lucide-react';
+import { CalendarDays, Plus, Ruler, User } from 'lucide-react';
 import { useSettings, useUiState } from '../../context/AppContext';
 import { DeferredBody } from '../common/DeferredBody';
 import { useAdvancedText } from '../../i18n/advanced';
@@ -30,11 +30,11 @@ function monthsAgo(date: string, months: number): string {
   return `${target.getFullYear()}-${pad(target.getMonth() + 1)}-${pad(target.getDate())}`;
 }
 
-const GROUP_ICON: Record<BodyGroup, string> = { upper: 'chest', lower: 'thighs', custom: 'custom' };
+const GROUP_ICON: Record<BodyGroup, string> = { upper: 'chest', lower: 'hips', custom: 'custom' };
 const GROUP_TONE: Record<BodyGroup, string> = {
-  upper: 'bg-[#CFE7FE] text-[#183F66]',
-  lower: 'bg-[#FAE0B4] text-[#7D4E14]',
-  custom: 'bg-[#E2D6FF] text-[#4D3582]',
+  upper: 'bg-weight text-weight-ink',
+  lower: 'bg-weight text-weight-ink',
+  custom: 'bg-weight text-weight-ink',
 };
 
 /** Legend mark of a side: same shape as its chart markers (circle for the first, diamond for the second). */
@@ -51,7 +51,7 @@ const SideMark: React.FC<{ alt?: boolean }> = ({ alt }) => (
  * calves) show the left and the right side together: two legend chips with the latest value of each side, and one
  * chart with two lines.
  */
-const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: string; to: string }> = ({ id, name, unit, from, to }) => {
+const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: string; to: string; onAdd: () => void }> = ({ id, name, unit, from, to, onAdd }) => {
   const { language, settings } = useSettings();
   const text = useAdvancedText();
   const allEntries = useBodyEntries();
@@ -104,14 +104,25 @@ const MeasureCard: React.FC<{ id: string; name: string; unit: string; from: stri
           </span>
           <span className={`text-sm font-extrabold text-[var(--text)] truncate ${ultra && isDefaultMeasure(id) ? 'sr-only' : ''}`}>{name}</span>
         </span>
-        {!paired && (
-          <span className="flex items-center gap-2 tabular-nums shrink-0">
-            {deltaChip(deltaOf(sides[0].inRange))}
-            <span className="text-base font-extrabold text-[var(--weight-on-surface)]">
-              {latestOf(sides[0]) ? `${latestOf(sides[0])!.value}${ultra ? '' : ` ${unit}`}` : '–'}
+        <span className="flex items-center gap-2 shrink-0">
+          {!paired && (
+            <span className="flex items-center gap-2 tabular-nums shrink-0">
+              {deltaChip(deltaOf(sides[0].inRange))}
+              <span className="text-base font-extrabold text-[var(--weight-on-surface)]">
+                {latestOf(sides[0]) ? `${latestOf(sides[0])!.value}${ultra ? '' : ` ${unit}`}` : '–'}
+              </span>
             </span>
-          </span>
-        )}
+          )}
+          <button
+            type="button"
+            onClick={onAdd}
+            aria-label={`${text.body.updateTitle}: ${name}`}
+            title={`${text.body.updateTitle}: ${name}`}
+            className="pressable size-8 rounded-full bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] text-[var(--text)] flex items-center justify-center shrink-0"
+          >
+            <Plus size={15} strokeWidth={2.4} />
+          </button>
+        </span>
       </div>
 
       {/* Left and right side: one chip each, with the latest value and the change over the period. */}
@@ -189,6 +200,7 @@ export const BodyView: React.FC = () => {
   const [customFrom, setCustomFrom] = useState(monthsAgo(today, 3));
   const [customTo, setCustomTo] = useState(today);
   const [group, setGroup] = useState<BodyGroup | null>(null);
+  const [measureId, setMeasureId] = useState<string | null>(null);
 
   const { from, to } = useMemo(() => {
     if (range === 'custom') {
@@ -272,7 +284,7 @@ export const BodyView: React.FC = () => {
     ...measures.map((m): LayoutItem => ({
       id: `measure:${m.id}`,
       label: m.name,
-      node: <MeasureCard id={m.id} name={m.name} unit={m.unit} from={from} to={to} />,
+      node: <MeasureCard id={m.id} name={m.name} unit={m.unit} from={from} to={to} onAdd={() => setMeasureId(m.id)} />,
       span: 'col-span-6',
     })),
   ] : [];
@@ -304,16 +316,22 @@ export const BodyView: React.FC = () => {
       ) : (
         !layoutEnabled && measures.map((m, index) => (
           index < 3
-            ? <MeasureCard key={m.id} id={m.id} name={m.name} unit={m.unit} from={from} to={to} />
+            ? <MeasureCard key={m.id} id={m.id} name={m.name} unit={m.unit} from={from} to={to} onAdd={() => setMeasureId(m.id)} />
             : (
               <DeferredBody key={m.id}>
-                <MeasureCard id={m.id} name={m.name} unit={m.unit} from={from} to={to} />
+                <MeasureCard id={m.id} name={m.name} unit={m.unit} from={from} to={to} onAdd={() => setMeasureId(m.id)} />
               </DeferredBody>
             )
         ))
       )}
 
-      {group && <BodyMeasureModal group={group} onClose={() => setGroup(null)} />}
+      {(group || measureId) && (
+        <BodyMeasureModal
+          group={group}
+          measureId={measureId}
+          onClose={() => { setGroup(null); setMeasureId(null); }}
+        />
+      )}
       <ActionDock activeOn="body" label={text.body.dock} actions={actions} />
     </div>
   );

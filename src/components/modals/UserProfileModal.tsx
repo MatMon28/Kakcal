@@ -136,7 +136,7 @@ export const UserProfileModal: React.FC = () => {
         <button
           type="button"
           onClick={handleSave}
-          className="pressable w-full py-3 bg-intake hover:bg-intake-hover text-intake-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
+          className="kc-primary-btn pressable w-full py-3 bg-intake hover:bg-intake-hover text-intake-ink font-extrabold rounded-2xl flex items-center justify-center gap-2 text-sm"
         >
           <Check size={18} strokeWidth={2.5} />
           <span>{t.profile.saveBtn}</span>
@@ -148,6 +148,7 @@ export const UserProfileModal: React.FC = () => {
         <div className="grid grid-cols-2 gap-2">
           <button
             type="button"
+            data-profile-choice
             aria-pressed={sex === 'male'}
             onClick={() => setSex('male')}
             className={`pressable py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center ${
@@ -160,6 +161,7 @@ export const UserProfileModal: React.FC = () => {
           </button>
           <button
             type="button"
+            data-profile-choice
             aria-pressed={sex === 'female'}
             onClick={() => setSex('female')}
             className={`pressable py-2.5 px-3 rounded-2xl border text-xs font-extrabold text-center ${
@@ -245,6 +247,7 @@ export const UserProfileModal: React.FC = () => {
 
           {/* Mode Switcher */}
           <div
+            data-range-switch
             className="bg-[var(--inset)] border border-[var(--border)] p-1 rounded-full grid grid-cols-2 gap-1"
             role="tablist"
             aria-label={t.profile.dailyBurnTitle}
@@ -252,6 +255,8 @@ export const UserProfileModal: React.FC = () => {
             <button
               type="button"
               role="tab"
+              data-range-btn
+              data-active={!useCustomBmr ? 'true' : undefined}
               aria-selected={!useCustomBmr}
               onClick={() => handleSelectMode(false)}
               className={`pressable py-1.5 px-2.5 rounded-full text-xs font-extrabold transition-colors flex items-center justify-center gap-1.5 ${
@@ -265,6 +270,8 @@ export const UserProfileModal: React.FC = () => {
             <button
               type="button"
               role="tab"
+              data-range-btn
+              data-active={useCustomBmr ? 'true' : undefined}
               aria-selected={useCustomBmr}
               onClick={() => handleSelectMode(true)}
               className={`pressable py-1.5 px-2.5 rounded-full text-xs font-extrabold transition-colors flex items-center justify-center gap-1.5 ${
@@ -380,6 +387,7 @@ export const UserProfileModal: React.FC = () => {
                       <button
                         key={preset.key}
                         type="button"
+                        data-profile-choice
                         onClick={() => setCustomBmrKcal(preset.value)}
                         className={`pressable px-2.5 py-1 rounded-full text-[11px] font-bold tabular-nums border transition-colors ${
                           active

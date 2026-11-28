@@ -61,7 +61,7 @@ export const WaterModal: React.FC = () => {
         <div className="kc-modal-banner bg-carbs rounded-2xl p-4 space-y-3">
           <div className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-2.5 text-sm font-extrabold text-[#183B5E]">
-              <span className="w-9 h-9 rounded-full bg-[#E8F3FF] flex items-center justify-center shrink-0">
+              <span data-modal-banner-icon="water" className="w-9 h-9 rounded-full bg-[#E8F3FF] flex items-center justify-center shrink-0">
                 <Droplets size={17} />
               </span>
               {t.water.totalToday}

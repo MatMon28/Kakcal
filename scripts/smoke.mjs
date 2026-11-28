@@ -48,8 +48,8 @@ try {
   page.on('pageerror', (e) => errors.push(e.message));
   ctx.on('request', (r) => { if (/^https?:/.test(r.url()) && !r.url().startsWith(base + '/')) external.push(r.url()); });
 
-  // 1. The tour opens by default, with the transparent wordmark and the kept links.
-  await page.goto(base + '/');
+  // 1. The tour opens with the transparent wordmark and the kept links.
+  await page.goto(base + '/?view=tour');
   await page.getByRole('heading', { level: 1, name: 'See how Kakcal works' }).waitFor();
   assert.equal(await page.locator('header svg rect[fill="#F9F3E6"]').count(), 0, 'Wordmark still has its cream plate');
   assert.equal(await page.locator('header svg rect.kc-plate').count(), 0, 'Wordmark still has its plate');
@@ -64,8 +64,8 @@ try {
   const openLinks = page.getByRole('link', { name: 'Open full app', exact: true });
   assert.equal(await openLinks.count(), 2);
   for (const link of await openLinks.all()) assert.equal(await link.getAttribute('href'), `${base}/?view=app`);
-  assert.equal(await page.getByRole('link', { name: 'Android project', exact: true }).getAttribute('href'), './downloads/Kakcalculator-Android-Studio.zip');
-  console.log('PASS: the tour opens on the welcome page, with a transparent wordmark, Open full app and the Android project link.');
+  await page.getByRole('button', { name: 'Install app', exact: true }).waitFor();
+  console.log('PASS: the tour opens on the welcome page, with a transparent wordmark, Open full app and the Install app button.');
 
   // 2. Every page is explained, in the order of the step list.
   const titles = ['How Kakcal works', 'Today', 'Meals', 'Add food', 'Activity', 'Water', 'Poop', 'Weight',
@@ -101,7 +101,7 @@ try {
   await chips.nth(titles.indexOf('Home-screen widgets')).click();
   await page.getByRole('button', { name: 'Small widget: Food', exact: true }).waitFor();
   const shortcuts = {
-    Food: 'Add Food', Movement: 'Log Activity', Water: 'Add Water', Poop: 'Log Poop', Weight: 'Log Weight',
+    Food: 'Log Food', Movement: 'Log Activity', Water: 'Log Water', Poop: 'Log Poop', Weight: 'Log Weight',
   };
   for (const [name, actions] of [['Small widget', Object.keys(shortcuts)], ['Extra-small widget', ['Food', 'Water', 'Poop']], ['Medium widget', Object.keys(shortcuts)], ['Large widget', Object.keys(shortcuts)]]) {
     for (const action of actions) {
@@ -138,7 +138,7 @@ try {
   await page.goto(base + '/#widgets');
   await page.getByRole('button', { name: 'Small widget: Water', exact: true }).waitFor();
   await page.getByRole('button', { name: 'Small widget: Water', exact: true }).click();
-  await frame.getByRole('dialog', { name: 'Add Water', exact: true }).getByRole('button', { name: /Add water.*250 ml/i }).click();
+  await frame.getByRole('dialog', { name: 'Log Water', exact: true }).getByRole('button', { name: /Save water.*250 ml/i }).click();
   await page.reload();
   await page.getByRole('button', { name: 'Extra-small widget: Water', exact: true }).click();
   assert.match(await frame.getByRole('dialog').innerText(), /1000\s*\//);
@@ -220,7 +220,7 @@ try {
   await app.getByRole('dialog').waitFor({ state: 'hidden' });
   await app.getByRole('button', { name: 'Previous day', exact: true }).click();
   await app.evaluate(() => { window.widgetFixture.pending = 'food'; window.widgetFixture.emit('widgetActionAvailable'); });
-  await app.getByRole('dialog', { name: 'Add Food', exact: true }).getByRole('button', { name: /White Bread Roll/ }).click();
+  await app.getByRole('dialog', { name: 'Log Food', exact: true }).getByRole('button', { name: /White Bread Roll/ }).click();
   await app.getByRole('dialog').getByRole('button', { name: /Add another item/ }).click();
   await app.getByRole('dialog').getByRole('button', { name: /Log all/ }).click();
   await app.waitForFunction(() => Object.values(window.widgetFixture.daily.days).some((day) => day.calories === 272));

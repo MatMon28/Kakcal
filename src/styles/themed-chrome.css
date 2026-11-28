@@ -246,6 +246,11 @@ html[data-style]:not([data-style="classic"]) [data-macro="sugar"] {
   border-radius: var(--pill-radius, 8px) !important;
   clip-path: var(--clip-xs, none);
 }
+html[data-style="minimal"] [data-macro="fiber"],
+html[data-style="minimal"] [data-macro="salt"],
+html[data-style="minimal"] [data-macro="sugar"] {
+  background: var(--pill-c-bg) !important;
+}
 
 /* Today summary tiles: perimeter border progress ring tokens & smooth dash transition */
 .kc-hero-intake {

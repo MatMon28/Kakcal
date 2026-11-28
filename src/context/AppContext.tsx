@@ -482,6 +482,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           inlineMealNotes: Boolean(p.inlineMealNotes),
           photoDiaryInToday: typeof p.photoDiaryInToday === 'boolean' ? p.photoDiaryInToday : Boolean(p.photoDiary),
           showPlannerButton: p.showPlannerButton !== false,
+          showShoppingButton: p.showShoppingButton !== false,
           showPhotoButton: p.showPhotoButton !== false,
           hidePeriod: resolvedHidePeriod,
           hidePeriodCustomized: customized,
@@ -535,6 +536,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       inlineMealNotes: DEMO_MODE,
       photoDiaryInToday: DEMO_MODE,
       showPlannerButton: true,
+      showShoppingButton: true,
       showPhotoButton: true,
       hidePeriod: defaultHidePeriod,
       hidePeriodCustomized: false,
@@ -707,7 +709,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
 
     const fasting = getFasting();
-    if (fasting.config.enabled && fasting.activeSession) {
+    if (date === getTodayDateString() && fasting.config.enabled && fasting.activeSession) {
       const kcal = Math.round((food.calories * amount) / 100);
       requestFastInterrupt(kcal, commit);
       return;
@@ -777,9 +779,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Remove activity
   const removeActivity = (activityId: string, date: string = selectedDate) => {
-    const target = (dayLogs[date]?.activities ?? []).find((a) => a.id === activityId);
-    if (target?.source === 'health_connect' && target.externalId) {
-      const extId = target.externalId;
+    const activities = dayLogs[date]?.activities ?? [];
+    const index = activities.findIndex((a) => a.id === activityId);
+    if (index < 0) return;
+    const target = activities[index];
+    const extId = target.source === 'health_connect' && target.externalId ? target.externalId : null;
+    const wasAlreadyDismissed = extId ? (settings.healthConnectDismissedIds ?? []).includes(extId) : false;
+    if (extId && !wasAlreadyDismissed) {
       setSettingsState((prev) => {
         const existing = prev.healthConnectDismissedIds ?? [];
         if (existing.includes(extId)) return prev;
@@ -789,7 +795,22 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
       });
     }
-    removeDayItem(date, activityId, (day) => day.activities ?? [], (day, items) => ({ ...day, activities: items }));
+    mutateDay(date, (day) => ({
+      ...day,
+      activities: (day.activities ?? []).filter((a) => a.id !== activityId),
+    }));
+    offerRemovalUndo(() => {
+      mutateDay(date, (day) => ({
+        ...day,
+        activities: restoreAt(day.activities ?? [], target, index, (a, b) => a.id === b.id),
+      }));
+      if (extId && !wasAlreadyDismissed) {
+        setSettingsState((prev) => ({
+          ...prev,
+          healthConnectDismissedIds: (prev.healthConnectDismissedIds ?? []).filter((id) => id !== extId),
+        }));
+      }
+    });
   };
 
   // Health Connect 7-day sync
@@ -961,7 +982,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       meals: newMeals,
     };
 
-    setDayLogs((prev) => ({ ...prev, [targetDate]: updatedDay }));
+    const commit = () => setDayLogs((prev) => ({ ...prev, [targetDate]: updatedDay }));
+    const fasting = getFasting();
+    if (targetDate === getTodayDateString() && fasting.config.enabled && fasting.activeSession) {
+      let totalKcal = 0;
+      for (const slot of slots) {
+        for (const it of yesterdayLog.meals[slot] || []) {
+          totalKcal += (it.calories * it.amount) / 100;
+        }
+      }
+      requestFastInterrupt(Math.round(totalKcal), commit);
+      return { success: true, count: copiedCount };
+    }
+    commit();
 
     return { success: true, count: copiedCount };
   };
@@ -1011,7 +1044,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
 
     const fasting = getFasting();
-    if (fasting.config.enabled && fasting.activeSession && cloned.length > 0) {
+    if (date === getTodayDateString() && fasting.config.enabled && fasting.activeSession && cloned.length > 0) {
       const kcal = Math.round(cloned.reduce((sum, it) => sum + (it.calories * it.amount) / 100, 0));
       requestFastInterrupt(kcal, commit);
       return;

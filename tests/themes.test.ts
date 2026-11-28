@@ -285,7 +285,7 @@ describe('Cross-style consistency and WCAG contrast guards', () => {
       expect(css, file).toContain('--water-fill:');
     }
     const cardsCss = read('themed-cards.css');
-    for (const action of ['food', 'activity', 'water', 'poop', 'weight', 'custom', 'fast-note', 'meal', 'recipe', 'recipe-import', 'plan', 'photo', 'upper', 'lower', 'body-custom', 'cycle', 'intercourse', 'pill']) {
+    for (const action of ['food', 'activity', 'water', 'poop', 'weight', 'custom', 'fast-note', 'meal', 'recipe', 'plan', 'shopping', 'photo', 'upper', 'lower', 'body-custom', 'cycle', 'intercourse', 'pill']) {
       expect(cardsCss, action).toContain(`[data-dock-action="${action}"]`);
     }
     expect(cardsCss).not.toContain('border-color: var(--nav-active-bg');

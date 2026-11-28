@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent">
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="4dp" android:clipChildren="false" android:clipToPadding="false">
     <LinearLayout android:id="@+id/widget_tray" android:layout_width="match_parent" android:layout_height="wrap_content"
         android:layout_gravity="center" android:orientation="vertical" android:padding="4dp" android:background="@drawable/widget_tray_dark">
         <include layout="@layout/widget_actions_three" />

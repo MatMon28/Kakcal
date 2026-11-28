@@ -13,6 +13,7 @@ import { SwitchVisual, TONE } from './settings/SettingsParts';
 import { TodaySettings } from './settings/TodaySettings';
 import { CustomPageSettings } from './settings/CustomPageSettings';
 import { PagesSettings } from './settings/PagesSettings';
+import { GoalsSettings } from './settings/GoalsSettings';
 import { DeleteDataSettings } from './settings/DeleteDataSettings';
 
 /**
@@ -214,7 +215,10 @@ export const SettingsModal: React.FC = () => {
           <PagesSettings />
         </Collapsible>
 
-        {/* Advanced personalisation: goals / limits and the advanced layout (each opt-in) */}
+        {/* Goals & limits */}
+        <GoalsSettings />
+
+        {/* Advanced personalisation: advanced layout (opt-in) */}
         <AdvancedSettings />
 
         {/* Reminders: water, meals, custom buttons, weight, daily log */}

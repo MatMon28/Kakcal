@@ -38,7 +38,7 @@ html[data-style]:not([data-style='classic']) .journal-search {
   background: color-mix(in srgb, var(--surface) 78%, transparent);
   color: var(--feature-ink);
 }
-html:is([data-theme='dark'], [data-theme='lite-dark']) .journal-feature .journal-chip {
+html:is([data-theme='dark'], [data-theme='lite-dark']) .journal-feature .journal-chip:not(.is-active) {
   background: var(--surface);
   color: var(--muted);
 }

@@ -141,6 +141,7 @@ export function Tabs() {
         </span>
         {items.map(({ id, label, icon: Icon }, i) => (
           <button key={id} ref={(node) => { buttons.current[i] = node; }} type="button"
+            data-tab-id={id}
             className={`kc-following-tab pressable ${settings.ultraMinimal ? 'is-ultra' : ''}`}
             aria-label={label} title={label} aria-current={displayTab === id ? 'page' : undefined}
             onPointerDown={() => preloadTabScreen(id as ActiveTab)}

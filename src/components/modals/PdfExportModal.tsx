@@ -88,7 +88,7 @@ export const PdfExportModal: React.FC<PdfExportModalProps> = ({
         <button
           type="button"
           onClick={handleConfirm}
-          className="pressable w-full py-3 rounded-2xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold text-sm flex items-center justify-center gap-2"
+          className="kc-primary-btn pressable w-full py-3 rounded-2xl bg-intake hover:bg-intake-hover text-intake-ink font-extrabold text-sm flex items-center justify-center gap-2"
         >
           <FileText size={16} />
           <span>{j('Export .pdf', 'Esporta .pdf')}</span>

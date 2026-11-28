@@ -169,6 +169,7 @@ export function usePreBuiltMealsState() {
   const [pendingIngredient, setPendingIngredient] = useState<PreBuiltMealIngredient | null>(null);
 
   // Recipe builder (saves a multi-ingredient dish to the food database, per 100g)
+  const [isRecipeChoiceOpen, setIsRecipeChoiceOpen] = useState(false);
   const [isRecipeOpen, setIsRecipeOpen] = useState(false);
   const [editingRecipeId, setEditingRecipeId] = useState<string | null>(null);
   const [recipeName, setRecipeName] = useState('');
@@ -408,6 +409,9 @@ export function usePreBuiltMealsState() {
     };
   }, [recipeIngs, foodById]);
 
+  const openRecipeChoiceModal = () => setIsRecipeChoiceOpen(true);
+  const closeRecipeChoiceModal = () => setIsRecipeChoiceOpen(false);
+
   const openRecipeModal = () => {
     setEditingRecipeId(null);
     setRecipeName('');
@@ -600,6 +604,9 @@ export function usePreBuiltMealsState() {
     handleConfirmAndAddAnother,
     handleSaveMeal,
     recipeTotals,
+    isRecipeChoiceOpen,
+    openRecipeChoiceModal,
+    closeRecipeChoiceModal,
     openRecipeModal,
     closeRecipeModal,
     requestCloseRecipeModal,

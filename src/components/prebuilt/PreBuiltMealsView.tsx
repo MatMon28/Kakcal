@@ -14,6 +14,7 @@ import { LogMealToSlotModal, LogRecipeToSlotModal } from './LogToSlotModals';
 import { CreateMealModal } from './CreateMealModal';
 import { RecipeBuilderModal } from './RecipeBuilderModal';
 import { RecipeImportModal } from './RecipeImportModal';
+import { Modal } from '../common/Modal';
 import { LazyBody } from '../common/LazyBody';
 import { usePreBuiltMealsState } from './usePreBuiltMealsState';
 import { useApp } from '../../context/AppContext';
@@ -25,16 +26,14 @@ export const PreBuiltMealsView: React.FC = () => {
   const {
     deleteCustomFood, deletePreBuiltMeal, setTargetMealSlot, setActiveTab, t, autoMealSlot,
     journalDockActions, openBarcode, openCustomFood, ultraMinimal, sectionsOpen, toggleSection,
-    pendingDelete, setPendingDelete, openNewMealModal, openRecipeModal, openImportModal, j,
+    pendingDelete, setPendingDelete, openNewMealModal, openRecipeChoiceModal, openRecipeModal, openImportModal, j,
   } = s;
-  // Settings > Custom page: hidden sections and hidden creation buttons (the Plan / Photo buttons are in journalDockActions).
+  // Settings > Custom page: hidden sections and hidden creation buttons (the Plan / Shopping / Photo buttons are in journalDockActions).
   const { settings } = useApp();
   const hideField = (key: CustomFieldId) => Boolean(settings.hideCustomFields[key]);
   const dockActions: DockAction[] = [
-    ...(settings.hideCustomButtons.meal ? [] : [{ id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-[#FAE0B4] text-[#7D4E14]', onClick: openNewMealModal }]),
-    ...(settings.hideCustomButtons.recipe ? [] : [{ id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openRecipeModal }]),
-    ...(settings.hideCustomButtons.recipe ? [] : [{ id: 'recipe-import', icon: <Link2 size={20} />, label: j('Import recipe', 'Importa ricetta'), tone: 'bg-[#E2D6FF] text-[#4D3582]', onClick: openImportModal }]),
-    ...(settings.hideCustomButtons.food ? [] : [{ id: 'food', icon: <BookOpen size={20} />, label: t.database.createCustom, tone: 'bg-[#C9EFD3] text-[#174A2B]', onClick: openCustomFood }]),
+    ...(settings.hideCustomButtons.meal ? [] : [{ id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-protein text-protein-ink', onClick: openNewMealModal }]),
+    ...(settings.hideCustomButtons.recipe ? [] : [{ id: 'recipe', icon: <ChefHatIcon size={20} />, label: t.prebuilt.createRecipe, tone: 'bg-fat text-fat-ink', onClick: openRecipeChoiceModal }]),
     ...journalDockActions,
   ];
   return (
@@ -48,7 +47,7 @@ export const PreBuiltMealsView: React.FC = () => {
       {!hideField('recipes') && <RecipesSection s={s} />}
 
       {!hideField('planner') && <MealPlanner />}
-      {!hideField('shopping') && <ShoppingLists />}
+      {(!hideField('shopping') || settings.showShoppingButton) && <ShoppingLists sectionHidden={hideField('shopping')} />}
       {(!hideField('photos') || settings.showPhotoButton) && <PhotoDiary sectionHidden={hideField('photos')} />}
 
       {/* ============ FOODS ============ */}
@@ -139,6 +138,42 @@ export const PreBuiltMealsView: React.FC = () => {
 
       {s.isCreateOpen && <CreateMealModal s={s} />}
 
+      <Modal
+        isOpen={s.isRecipeChoiceOpen}
+        onClose={s.closeRecipeChoiceModal}
+        title={t.prebuilt.createRecipe}
+        dockId="recipe"
+        maxWidth="max-w-sm"
+      >
+        <div className="space-y-2.5">
+          <button
+            type="button"
+            onClick={() => { s.closeRecipeChoiceModal(); openRecipeModal(); }}
+            className="pressable w-full flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] px-4 py-3.5 text-left"
+          >
+            <span className="size-10 rounded-2xl bg-fat text-fat-ink flex items-center justify-center shrink-0">
+              <ChefHatIcon size={18} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-extrabold text-[var(--text)]">{j('Create my own recipe', 'Crea la mia ricetta')}</span>
+              <span className="block text-[11px] font-medium text-[var(--muted)]">{j('Build a dish from ingredients and portions.', 'Componi un piatto con ingredienti e porzioni.')}</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => { s.closeRecipeChoiceModal(); openImportModal(); }}
+            className="pressable w-full flex items-center gap-3 rounded-2xl border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] px-4 py-3.5 text-left"
+          >
+            <span className="size-10 rounded-2xl bg-fat text-fat-ink flex items-center justify-center shrink-0">
+              <Link2 size={18} />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-extrabold text-[var(--text)]">{j('Paste a recipe link', 'Incolla un link ricetta')}</span>
+              <span className="block text-[11px] font-medium text-[var(--muted)]">{j('Import ingredients automatically from a web page.', 'Importa gli ingredienti automaticamente da una pagina web.')}</span>
+            </span>
+          </button>
+        </div>
+      </Modal>
       {s.isRecipeOpen && <RecipeBuilderModal s={s} />}
       <RecipeImportModal s={s} />
     </div>

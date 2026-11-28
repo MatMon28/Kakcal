@@ -1,7 +1,7 @@
 import React from 'react';
 import { getDefaultAmount } from '../../utils/amountMemory';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
-import { Plus, Trash2, Edit2, ChefHat as ChefHatIcon, ChevronDown, Link2 } from 'lucide-react';
+import { Plus, Trash2, Edit2, ChefHat as ChefHatIcon, ChevronDown } from 'lucide-react';
 import { MacroPills } from '../common/MacroPills';
 import { LibraryPhoto } from '../journal/PhotoDiary';
 import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
@@ -12,8 +12,8 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
   const {
     foodById, t, autoMealSlot, ultraMinimal, savedRecipes, recipeQuery, setRecipeQuery,
     setActiveRecipeToLog, setRecipeLogSlot, setRecipeLogAmount, openRecipes, setOpenRecipes,
-    sectionsOpen, toggleSection, setPendingDelete, nameOf, openRecipeModal, openEditRecipeModal,
-    visibleRecipes, openImportModal, j,
+    sectionsOpen, toggleSection, setPendingDelete, nameOf, openRecipeChoiceModal, openEditRecipeModal,
+    visibleRecipes,
   } = s;
   return (
     <>
@@ -24,19 +24,7 @@ export const RecipesSection: React.FC<{ s: LibraryState }> = ({ s }) => {
           icon={<ChefHatIcon size={16} />}
           count={savedRecipes.length}
           createLabel={t.prebuilt.createRecipe}
-          onCreate={openRecipeModal}
-          extraActions={
-            <button
-              type="button"
-              data-recipe-import-btn
-              className="library-browse-search"
-              aria-label={j('Import a recipe from a link', 'Importa una ricetta da un link')}
-              title={j('Import a recipe from a link', 'Importa una ricetta da un link')}
-              onClick={openImportModal}
-            >
-              <Link2 size={16} />
-            </button>
-          }
+          onCreate={openRecipeChoiceModal}
           searchLabel={t.prebuilt.searchRecipes}
           query={recipeQuery}
           setQuery={setRecipeQuery}

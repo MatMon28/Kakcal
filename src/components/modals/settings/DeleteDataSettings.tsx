@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Camera, CalendarDays, ChefHat, Droplet, Footprints, NotebookPen, Ruler, Scale, Sparkles, Trash2, UtensilsCrossed, Utensils } from 'lucide-react';
+import { Camera, CalendarDays, ChefHat, Droplet, Footprints, NotebookPen, Ruler, Scale, Sparkles, Timer, Trash2, UtensilsCrossed, Utensils } from 'lucide-react';
 import { scheduleRemoval } from '../../../utils/undoRemoval';
 import { useJournalText } from '../../../i18n/journal';
 import { deleteCategory, type DeleteCategory } from '../../../utils/deleteData';
@@ -114,8 +114,8 @@ export const DeleteDataSettings: React.FC = () => {
       ],
     },
     {
-      title: j('Body and period', 'Corpo e ciclo'),
-      hint: j('Measurements and period records.', 'Misurazioni e registri del ciclo.'),
+      title: j('Body, period and fasting', 'Corpo, ciclo e digiuno'),
+      hint: j('Measurements, period and fasting records.', 'Misurazioni, ciclo e registri del digiuno.'),
       rows: [
         {
           id: 'body', icon: <Ruler size={14} />, tone: TONE.slate,
@@ -128,6 +128,12 @@ export const DeleteDataSettings: React.FC = () => {
           title: j('All period records', 'Tutti i registri del ciclo'),
           description: j('Daily period, mood and symptom entries. Cycle settings stay.', 'Registri giornalieri di ciclo, umore e sintomi. Le impostazioni restano.'),
           confirm: j('Delete every period record? Your cycle settings stay.', 'Eliminare tutti i registri del ciclo? Le impostazioni restano.'),
+        },
+        {
+          id: 'fasting', icon: <Timer size={14} />, tone: TONE.butter,
+          title: j('All fasting records', 'Tutti i registri del digiuno'),
+          description: j('Fasting sessions and notes. Your protocol and settings stay.', 'Sessioni e note del digiuno. Protocollo e impostazioni restano.'),
+          confirm: j('Delete every fasting session and note? Your fasting settings stay.', 'Eliminare tutte le sessioni e note del digiuno? Le impostazioni restano.'),
         },
       ],
     },

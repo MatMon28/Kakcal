@@ -3,6 +3,7 @@ import { loadDayLogs, replaceAllDays } from '../storage/dayStore';
 import { STORE_PHOTOS, withStores } from '../storage/idb';
 import { flushWrites } from '../storage/writeQueue';
 import type { DayLog } from '../types';
+import { FASTING_STORAGE_KEY } from './fastingStore';
 import { JOURNAL_KEY } from './journalStore';
 
 /**
@@ -23,7 +24,8 @@ export type DeleteCategory =
   | 'poop'
   | 'customTrackers'
   | 'period'
-  | 'body';
+  | 'body'
+  | 'fasting';
 
 const PLANNER_DRAFT_KEY = 'kcak_planner_draft';
 const BODY_KEY = 'kcalsync_body';
@@ -130,5 +132,13 @@ export async function deleteCategory(category: DeleteCategory, dayLogs?: Record<
     case 'body':
       localStorage.removeItem(BODY_KEY);
       return;
+    case 'fasting': {
+      // Fasting settings (enabled switch and protocol) are kept; only sessions and notes go.
+      const fasting = readObject(FASTING_STORAGE_KEY);
+      if (fasting) {
+        localStorage.setItem(FASTING_STORAGE_KEY, JSON.stringify({ ...fasting, activeSession: null, sessions: [], notes: [] }));
+      }
+      return;
+    }
   }
 }

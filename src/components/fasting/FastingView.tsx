@@ -28,6 +28,7 @@ import {
   computeFastingStats,
   computeFastTiming,
   endFast,
+  toLocalDateString,
   FASTING_PROTOCOLS,
   filterFastingByPeriod,
   formatDurationCompact,
@@ -743,7 +744,7 @@ export const FastingView: React.FC = () => {
                         </span>
                       </div>
                       <div className="text-[11px] font-bold text-[var(--muted)] mt-0.5 truncate">
-                        {formatDateDisplay(s.startedAt.slice(0, 10), language)} · {formatClock(Date.parse(s.startedAt), language)}
+                        {formatDateDisplay(toLocalDateString(s.startedAt), language)} · {formatClock(Date.parse(s.startedAt), language)}
                       </div>
                     </div>
                     <span className="text-sm font-extrabold text-[var(--text)] tabular-nums shrink-0">

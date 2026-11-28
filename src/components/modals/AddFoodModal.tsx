@@ -515,10 +515,16 @@ export const AddFoodModal: React.FC = () => {
               >
                 <ScanBarcode size={17} />
               </button>
+              <button
+                type="button"
+                onClick={() => setChild('custom')}
+                className="pressable px-3.5 bg-[var(--inset)] hover:bg-[var(--hover)] border border-[var(--border)] rounded-2xl text-[var(--text)] flex items-center justify-center shrink-0"
+                title={t.foodModal.addCustomFood}
+                aria-label={t.foodModal.addCustomFood}
+              >
+                <PlusCircle size={17} />
+              </button>
             </div>
-            <button type="button" onClick={() => setChild('custom')} className="pressable px-3 min-h-9 inline-flex items-center gap-1.5 rounded-full bg-[var(--inset)] border border-[var(--border)] text-xs font-bold">
-              <PlusCircle size={14} /> {t.foodModal.addCustomFood}
-            </button>
             {trimmedQuery.length === 1 && (
               <p className="text-[11px] font-medium text-[var(--muted)] px-1">
                 {t.foodModal.minCharsHint}

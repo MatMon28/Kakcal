@@ -291,6 +291,7 @@ export interface Settings {
   photoDiaryInToday: boolean;
   /** Custom page shortcut buttons (Settings > Custom page). Both default to on. */
   showPlannerButton: boolean;
+  showShoppingButton: boolean;
   showPhotoButton: boolean;
   hidePeriod: boolean;
   hidePeriodCustomized?: boolean;

@@ -5,7 +5,7 @@ import { useApp } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { addDaysToDateString } from '../../utils/formatters';
-import { journalId, saveMealPlans } from '../../utils/journalStore';
+import { journalId, savePlanGroup } from '../../utils/journalStore';
 import { createPlanLink, createPlanText, saveLocalFile, parsePlanInput } from '../../utils/planSharing';
 import { captureIncomingPlan, clearIncomingPlan, peekIncomingPlan } from '../../utils/incomingPlan';
 import { Modal } from '../common/Modal';
@@ -25,6 +25,7 @@ export function PlanTransfer({ plans, weekStart }: { plans: MealPlan[]; weekStar
   const [scope, setScope] = useState('week');
   const [preview, setPreview] = useState<MealPlan[]>([]);
   const [startDate, setStartDate] = useState('');
+  const [planName, setPlanName] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const file = useRef<HTMLInputElement>(null);
@@ -55,7 +56,14 @@ export function PlanTransfer({ plans, weekStart }: { plans: MealPlan[]; weekStar
   const inspect = async (text = input) => {
     try {
       const parsed = (await parsePlanInput(text)).sort((a, b) => a.date.localeCompare(b.date));
-      setPreview(parsed); setStartDate(parsed[0].date); setError(''); setStatus('');
+      const firstDate = journalDate(parsed[0].date, language);
+      const lastDate = journalDate(parsed[parsed.length - 1].date, language);
+      const range = firstDate === lastDate ? firstDate : `${firstDate} – ${lastDate}`;
+      setPreview(parsed);
+      setStartDate(parsed[0].date);
+      setPlanName(j(`Imported plan · ${range}`, `Programma importato · ${range}`));
+      setError('');
+      setStatus('');
     } catch { setPreview([]); setError(j('This is not a valid Kakcal meal-plan link or text export.', 'Link o testo del programma Kakcal non valido.')); }
   };
   const share = async () => {
@@ -85,13 +93,18 @@ export function PlanTransfer({ plans, weekStart }: { plans: MealPlan[]; weekStar
           <input ref={file} className="sr-only" type="file" accept=".txt,.json,text/plain,application/json" aria-label={j('Import meal plan file', 'Importa file programma')} onChange={async (e) => { const f = e.target.files?.[0]; e.target.value = ''; if (!f) return; if (f.size > 1000000) { setError(j('Choose a file smaller than 1 MB.', 'Scegli un file sotto 1 MB.')); return; } try { const text = await f.text(); setInput(text); void inspect(text); } catch { setError(j('Could not read this file.', 'Impossibile leggere il file.')); } }} />
           {preview.length > 0 && <>
             <div className="plan-import-preview">{preview.slice(0, 10).map((p) => <div key={p.id}><MealSlotIcon slot={p.slot} /><span><small>{journalDate(p.date, language)} / {label(p.slot)}</small><strong>{p.title}</strong></span></div>)}{preview.length > 10 && <p>+ {preview.length - 10} {j('more meals', 'altri pasti')}</p>}</div>
+            <label>{j('Plan name', 'Nome del programma')}<input type="text" maxLength={80} value={planName} onChange={(e) => setPlanName(e.target.value)} placeholder={j('e.g. Mediterranean week', 'es. Settimana mediterranea')} /></label>
             <label>{j('Start this plan on', 'Inizia il programma il')}<input required aria-label={j('Import starting date', 'Data inizio importazione')} type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} /></label>
             {preview.some((p) => !options.some((slot) => slot.id === p.slot)) && <p>{j('Unrecognized meal categories will be added to Lunch.', 'Categorie non riconosciute verranno aggiunte a Pranzo.')}</p>}
             <p className="plan-transfer-hint">{j('Your existing plans stay exactly as they are. Nothing is logged to Today.', 'I tuoi programmi rimangono intatti. Nessun alimento registrato in Oggi.')}</p>
             <button type="button" className="journal-primary-button" disabled={!startDate} onClick={() => {
               try {
                 const offset = Math.round((new Date(`${startDate}T12:00:00Z`).getTime() - new Date(`${preview[0].date}T12:00:00Z`).getTime()) / 86400000);
-                saveMealPlans(preview.map((p) => ({ ...p, id: journalId(), date: addDaysToDateString(p.date, offset), slot: options.some((slot) => slot.id === p.slot) ? p.slot : 'lunch', read: false, loggedAt: undefined })));
+                const finalName = planName.trim() || j('Imported plan', 'Programma importato');
+                savePlanGroup(
+                  { id: journalId(), name: finalName, createdAt: new Date().toISOString() },
+                  preview.map((p) => ({ ...p, id: journalId(), date: addDaysToDateString(p.date, offset), slot: options.some((slot) => slot.id === p.slot) ? p.slot : 'lunch', read: false, loggedAt: undefined })),
+                );
                 setStatus(j(`${preview.length} meals imported. Make them your own!`, `${preview.length} pasti importati.`)); setPreview([]); setInput('');
                 clearIncomingPlan();
               } catch { setError(j('Could not save. Free some device storage and try again.', 'Spazio insufficiente. Libera memoria e riprova.')); }

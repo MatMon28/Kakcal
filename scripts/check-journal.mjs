@@ -115,8 +115,8 @@ try {
   console.log('PASS: sheet cancel/dismiss, unchanged page, dock and scroll position, reduced motion');
 
   await button('Settings').tap();
-  await sheet.getByRole('button', { name: /today & pages/i }).tap();
-  await button('Track sugar intake').tap();
+  await sheet.getByRole('button', { name: /^Today$/i }).tap();
+  await button('Track sugar').tap();
   await button('Close').tap();
   await ctx.route('**/data/off-foods.bin', (route) => route.fulfill({ status: 404, body: '' }), { times: 1 });
   await button('Browse Foods').tap();
@@ -152,7 +152,7 @@ try {
   await product.getByRole('button', { name: 'Add to favourites' }).tap();
   await button('Favourites').tap();
   assert.equal(await count(), 1, 'A remembered catalogue product must not be counted twice');
-  await product.getByRole('button', { name: 'Add Food' }).tap();
+  await product.getByRole('button', { name: 'Log Food' }).tap();
   for (const key of ['fiber', 'salt', 'sugar']) {
     const field = sheet.locator(`[data-nutrient="${key}"]`);
     assert.equal(await field.locator('svg').count(), 1);

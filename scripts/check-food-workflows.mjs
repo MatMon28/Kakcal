@@ -37,7 +37,8 @@ try {
   const leave = () => page.getByRole('dialog').waitFor({ state: 'hidden' });
   await page.goto(`${origin}/index.html?view=app&intro=0`);
   await tab('Custom').click();
-  await dock('recipe-import').click();
+  await dock('recipe').click();
+  await sheet().getByRole('button', { name: /Paste a recipe link/i }).click();
   await sheet().getByLabel('Recipe link', { exact: true }).fill(link);
   await button('Import recipe').click();
   await sheet().getByRole('heading', { name: 'Review ingredients', exact: true }).waitFor();

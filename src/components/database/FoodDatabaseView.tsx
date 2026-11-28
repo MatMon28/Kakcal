@@ -431,7 +431,7 @@ export const FoodDatabaseView: React.FC = () => {
                             {primaryName}
                           </h4>
                           {food.isRecipe && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E2D6FF] text-[#4D3582]">
+                            <span data-macro="fat" className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-fat text-fat-ink">
                               {t.prebuilt.savedAsRecipe}
                             </span>
                           )}

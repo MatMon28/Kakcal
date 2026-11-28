@@ -6,7 +6,7 @@
 >
 > **Related:** [journal-pages.md](journal-pages.md), [storage-and-privacy.md](storage-and-privacy.md), [file-map/components-pages.md](file-map/components-pages.md)
 
-Everything is **off by default** and is switched on in **Settings > Advanced** (a collapsible group below *Custom buttons*). The state lives in its own store, `src/utils/advancedStore.ts` (`useSyncExternalStore`, no changes to `kcalsync_settings`).
+Everything is **off by default** and is switched on in **Settings > Goals & limits** (goals/limits) and **Settings > Pages** (Body measurements). The state lives in its own store, `src/utils/advancedStore.ts` (`useSyncExternalStore`, no changes to `kcalsync_settings`).
 
 ## Goals and limits
 
@@ -21,8 +21,8 @@ Everything is **off by default** and is switched on in **Settings > Advanced** (
 - Switch *Body measurements* in Settings > Advanced. It adds the **Body** page (pill-bar tab with a person icon, **immediately left of Statistics**) and the **Profile > Body measurements** section. Switching it off hides both and returns to Today if you were on the page; recorded values are kept.
 - Default measures (labels follow the language): waist/Vita, neck/Collo, hips/Fianchi, chest/Petto, forearms/Avambracci, biceps/Bicipiti, thighs/Cosce, calves/Polpacci. Groups: **upper body** = neck, chest, forearms, biceps; **lower body** = waist, hips, thighs, calves; **custom** = your own.
 - **Profile** (`modals/BodyMeasuresProfile.tsx`): tick which measures to track (applies at once, no need to press Save), and add a personalised measure (name + unit, default cm); remove it again after a confirmation (its values are deleted too). Un-ticking a default measure keeps its values.
-- **Body page** (`components/body/BodyView.tsx`): range chips *3M / 6M / 1Y / Custom* (custom shows two date pickers; the choice is remembered in `kcalsync_body_range`), then one card per tracked measure: icon, name, latest value, change over the period and a line chart (`BodyChart.tsx`, time-scaled x axis, tap/hover a point to read it). Without tracked measures a card sends you to the Profile.
-- **Bottom buttons** (the shared `ActionDock`): *Upper body*, *Lower body*, *Custom*. A button exists only if at least one tracked measure belongs to that group. A button opens a pop-up (`BodyMeasureModal.tsx`) listing those tracked measures; pick one, enter value and date (default today, no future dates), Save. The last five values can be deleted there. One value per measure per day (saving again replaces it).
+- **Body page** (`components/body/BodyView.tsx`): range chips *3M / 6M / 1Y / Custom* (custom shows two date pickers; the choice is remembered in `kcalsync_body_range`), then one card per tracked measure: icon, name, latest value, change over the period, a direct `+` button in the tile header (opens `BodyMeasureModal` straight on that measure's form), and a line chart (`BodyChart.tsx`, time-scaled x axis, tap/hover a point to read it). Without tracked measures a card sends you to the Profile.
+- **Bottom buttons** (the shared `ActionDock`): *Upper body*, *Lower body* (hips icon), *Custom* — all violet-coherent. A button exists only if at least one tracked measure belongs to that group. A button opens a pop-up (`BodyMeasureModal.tsx`) listing those tracked measures; pick one, enter value and date (default today, no future dates), Save. The last five values can be deleted there. One value per measure per day (saving again replaces it).
 
 ## Body-part icons
 

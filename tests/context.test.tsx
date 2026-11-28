@@ -1,7 +1,12 @@
-import { act, cleanup, render, renderHook } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
 import { StrictMode, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { AppProvider, useApp, useNav, useNavActions, useSettings } from '../src/context/AppContext';
+import { PlanTransfer } from '../src/components/journal/PlanTransfer';
+import { JOURNAL_KEY } from '../src/utils/journalStore';
+import type { MealPlan, PlanGroup } from '../src/types/journal';
+import { createPlanText } from '../src/utils/planSharing';
+import { getRemovals, undoRemoval } from '../src/utils/undoRemoval';
 import { VERIFIED_FOODS } from '../src/data/verifiedFoods';
 import { deleteDatabase, resetDbForTests } from '../src/storage/idb';
 import { flushWrites } from '../src/storage/writeQueue';
@@ -93,5 +98,71 @@ describe('context split (item 1)', () => {
     expect(renders).toBe(before);
     act(() => api!.updateSettings({ ultraMinimal: true }));
     expect(renders).toBeGreaterThan(before);
+  });
+});
+
+describe('Health Connect activity undo', () => {
+  it('un-dismisses externalId when undoing deletion of a Health Connect activity', () => {
+    const { result } = renderHook(() => useApp(), { wrapper });
+    act(() => {
+      result.current.logActivity({
+        type: 'running',
+        method: 'duration',
+        durationMin: 30,
+        caloriesBurned: 280,
+        source: 'health_connect',
+        externalId: 'hc-ext-42',
+      });
+    });
+    const beforeRemovals = getRemovals().length;
+    const actId = result.current.currentDayLog.activities[0].id;
+    act(() => result.current.removeActivity(actId));
+    expect(result.current.currentDayLog.activities).toHaveLength(0);
+    expect(result.current.settings.healthConnectDismissedIds).toContain('hc-ext-42');
+
+    const removals = getRemovals();
+    expect(removals).toHaveLength(beforeRemovals + 1);
+    act(() => undoRemoval(removals[0].id));
+
+    expect(result.current.currentDayLog.activities).toHaveLength(1);
+    expect(result.current.currentDayLog.activities[0].externalId).toBe('hc-ext-42');
+    expect(result.current.settings.healthConnectDismissedIds).not.toContain('hc-ext-42');
+  });
+});
+
+describe('PlanTransfer group import', () => {
+  it('imports shared meal plans as a named PlanGroup', async () => {
+    const sample = createPlanText([
+      {
+        id: 'p1',
+        date: '2026-11-24',
+        slot: 'lunch',
+        title: 'Pasta',
+        kind: 'food',
+        items: [{ food, amount: 100 }],
+        note: '',
+        read: false,
+      },
+    ]);
+    render(
+      <AppProvider>
+        <PlanTransfer plans={[]} weekStart="2026-11-23" />
+      </AppProvider>,
+    );
+    const trigger = screen.getByRole('button', { name: 'Share or import meal plans' });
+    fireEvent.pointerDown(trigger);
+    fireEvent.click(trigger);
+    fireEvent.click(screen.getByRole('button', { name: 'Import a plan' }));
+    fireEvent.change(screen.getByLabelText('Paste a meal-plan link or exported text'), { target: { value: sample } });
+    fireEvent.click(screen.getByRole('button', { name: 'Preview plan' }));
+
+    await waitFor(() => expect(screen.getByLabelText('Plan name')).toBeTruthy());
+    fireEvent.change(screen.getByLabelText('Plan name'), { target: { value: 'Shared Week' } });
+    fireEvent.click(screen.getByRole('button', { name: /Import 1 meals/i }));
+
+    await flushWrites();
+    const journal = JSON.parse(localStorage.getItem(JOURNAL_KEY)!) as { planGroups: PlanGroup[]; plans: MealPlan[] };
+    expect(journal.planGroups.some((g) => g.name === 'Shared Week')).toBe(true);
+    expect(journal.plans.some((p) => p.title === 'Pasta' && p.groupId)).toBe(true);
   });
 });

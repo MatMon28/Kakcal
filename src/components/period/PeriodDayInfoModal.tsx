@@ -155,40 +155,40 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
 
         {/* Poop */}
         {!settings.hidePoop && (
-          <div data-day-overview-card className="bg-[#FAE0B4] rounded-2xl p-3.5 space-y-2">
+          <div data-day-overview-card data-kc-tone="meals" className="bg-protein rounded-2xl p-3.5 space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <span data-period-value className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-[#7D4E14]">
-                <span className="kc-period-header-icon size-7 rounded-full bg-transparent text-[#8A5A2B] flex items-center justify-center shrink-0">
+              <span data-period-value data-kc-tone-ink className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-protein-ink">
+                <span className="size-7 rounded-full bg-transparent flex items-center justify-center shrink-0">
                   <PoopIcon size={15} />
                 </span>
                 {t.quickAdd.poop}
               </span>
-              <span data-period-value className="text-xs font-extrabold tabular-nums text-[#7D4E14]">
+              <span data-period-value className="text-xs font-extrabold tabular-nums text-protein-ink">
                 {poops.length}
               </span>
             </div>
             {poops.length === 0 ? (
-              <p data-period-label className="text-xs font-medium text-[#9B6E32] pl-0.5">{t.period.noPoopEntries}</p>
+              <p data-period-label className="text-xs font-medium text-protein-muted pl-0.5">{t.period.noPoopEntries}</p>
             ) : (
               <div className="space-y-1.5">
                 {poops.map((p) => (
                   <div
                     key={p.id}
                     data-day-overview-row
-                    className="px-3 py-2 rounded-xl bg-[#FDF3E0] flex items-center gap-2 text-xs"
+                    className="px-3 py-2 rounded-xl bg-protein-soft flex items-center gap-2 text-xs"
                   >
-                    <PoopIcon size={13} className="kc-period-header-icon text-[#8A5A2B] shrink-0" />
-                    <span data-period-value className="font-bold text-[#7D4E14] shrink-0">{sizeLabel(p.size)}</span>
+                    <PoopIcon size={13} className="text-protein-ink shrink-0" />
+                    <span data-period-value className="font-bold text-protein-ink shrink-0">{sizeLabel(p.size)}</span>
                     {p.bristol && (
-                      <span className="kc-custom-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-[#FAE0B4] text-[#7D4E14] text-[10px] font-extrabold shrink-0">
+                      <span className="kc-custom-pill inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full bg-protein text-protein-ink text-[10px] font-extrabold shrink-0">
                         <BristolIcon type={p.bristol} size={12} className="text-current" />
                         B{p.bristol}
                       </span>
                     )}
                     {p.description && (
-                      <span data-period-label className="text-[#9B6E32] font-medium truncate">{p.description}</span>
+                      <span data-period-label className="text-protein-muted font-medium truncate">{p.description}</span>
                     )}
-                    <span data-period-label className="text-[#9B6E32] font-medium tabular-nums shrink-0 ml-auto">
+                    <span data-period-label className="text-protein-muted font-medium tabular-nums shrink-0 ml-auto">
                       {new Date(p.timestamp).toLocaleTimeString(language === 'it' ? 'it-IT' : 'en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -202,10 +202,10 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
         )}
 
         {/* Activity */}
-        <div data-day-overview-card className="bg-activity rounded-2xl p-3.5 space-y-2">
+        <div data-day-overview-card data-kc-tone="photo" className="bg-activity rounded-2xl p-3.5 space-y-2">
           <div className="flex items-center justify-between gap-2">
-            <span data-period-value className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-activity-ink">
-              <span className="kc-period-header-icon size-7 rounded-full bg-transparent flex items-center justify-center shrink-0">
+            <span data-period-value data-kc-tone-ink className="flex items-center gap-2 text-xs sm:text-sm font-extrabold text-activity-ink">
+              <span className="size-7 rounded-full bg-transparent flex items-center justify-center shrink-0">
                 <Footprints size={14} />
               </span>
               {t.activities.title}
@@ -254,12 +254,12 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
 
         {/* Weight (& Water if active/logged) */}
         <div className={`grid gap-2.5 ${showWater ? 'grid-cols-2' : 'grid-cols-1'}`}>
-          <div data-day-overview-card className="bg-weight rounded-2xl p-3.5 flex items-center gap-2.5">
-            <span className="kc-period-header-icon size-8 rounded-full bg-transparent text-weight-ink flex items-center justify-center shrink-0">
+          <div data-day-overview-card data-kc-tone="recipes" className="bg-weight rounded-2xl p-3.5 flex items-center gap-2.5">
+            <span data-kc-tone-ink className="size-8 rounded-full bg-transparent text-weight-ink flex items-center justify-center shrink-0">
               <Scale size={15} />
             </span>
             <div className="min-w-0">
-              <span data-period-label className="block text-[11px] font-bold text-weight-accent">{t.quickAdd.weight}</span>
+              <span data-period-label data-kc-tone-ink className="block text-[11px] font-bold text-weight-accent">{t.quickAdd.weight}</span>
               <span data-period-value className="block text-sm font-extrabold tabular-nums text-weight-ink truncate">
                 {typeof weightKg === 'number' ? `${weightKg.toFixed(1)} kg` : t.period.notRecorded}
               </span>
@@ -267,13 +267,13 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
           </div>
 
           {showWater && (
-            <div data-day-overview-card className="bg-[#CFE7FE] rounded-2xl p-3.5 flex items-center gap-2.5">
-              <span className="kc-period-header-icon size-8 rounded-full bg-transparent text-[#183B5E] flex items-center justify-center shrink-0">
+            <div data-day-overview-card data-kc-tone="planner" className="bg-carbs rounded-2xl p-3.5 flex items-center gap-2.5">
+              <span data-kc-tone-ink className="size-8 rounded-full bg-transparent text-carbs-ink flex items-center justify-center shrink-0">
                 <Droplets size={15} />
               </span>
               <div className="min-w-0">
-                <span data-period-label className="block text-[11px] font-bold text-[#436B94]">{t.quickAdd.water}</span>
-                <span data-period-value className="block text-sm font-extrabold tabular-nums text-[#183B5E] truncate">
+                <span data-period-label data-kc-tone-ink className="block text-[11px] font-bold text-carbs-muted">{t.quickAdd.water}</span>
+                <span data-period-value className="block text-sm font-extrabold tabular-nums text-carbs-ink truncate">
                   {waterMl} ml
                 </span>
               </div>
@@ -283,8 +283,8 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
 
         {/* Custom trackers logged that day */}
         {loggedTrackers.length > 0 && (
-          <div data-day-overview-card className="bg-[#F7E9AA] rounded-2xl p-3.5 space-y-1.5">
-            <span data-period-value className="flex items-center gap-1.5 text-xs font-extrabold text-[#6E5B14]">
+          <div data-day-overview-card data-kc-tone="diary" className="bg-nutrient rounded-2xl p-3.5 space-y-1.5">
+            <span data-period-value data-kc-tone-ink className="flex items-center gap-1.5 text-xs font-extrabold text-nutrient-ink">
               <Sparkles size={13} />
               {t.quickAdd.custom}
             </span>
@@ -292,7 +292,7 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
               <div
                 key={tracker.id}
                 data-day-overview-row
-                className="px-3 py-1.5 rounded-xl bg-[#FCF4D6] flex items-center justify-between gap-2 text-xs text-[#6E5B14]"
+                className="px-3 py-1.5 rounded-xl bg-nutrient-soft flex items-center justify-between gap-2 text-xs text-nutrient-ink"
               >
                 <span className="flex items-center gap-2 font-bold truncate">
                   <TrackerIcon icon={tracker.icon} size={13} className="shrink-0" />

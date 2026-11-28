@@ -100,7 +100,7 @@ export const WeightModal: React.FC = () => {
       <div className="space-y-4">
         <div className="kc-modal-banner bg-weight rounded-2xl p-4 flex items-center justify-between gap-2">
           <span className="flex items-center gap-2.5 text-sm font-extrabold text-weight-ink">
-            <span className="w-9 h-9 rounded-full bg-weight-soft flex items-center justify-center shrink-0">
+            <span data-modal-banner-icon="weight" className="w-9 h-9 rounded-full bg-weight-soft flex items-center justify-center shrink-0">
               <Scale size={17} />
             </span>
             {typeof todayWeight === 'number' ? t.weight.loggedForDay : previous ? t.weight.lastRecorded : t.stats.profileWeight}

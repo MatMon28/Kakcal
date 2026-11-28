@@ -317,3 +317,10 @@ html[data-style="minimal"] [data-kc-tone] [data-kc-tone-ink],
 html[data-style="minimal"] [data-kc-tone][data-kc-tone-ink] {
   color: var(--tone-ink) !important;
 }
+html[data-style="minimal"] .kc-following-tab[data-tab-id="today"] svg { color: var(--tone-ink-photo); }
+html[data-style="minimal"] .kc-following-tab[data-tab-id="fasting"] svg { color: var(--tone-ink-diary); }
+html[data-style="minimal"] .kc-following-tab[data-tab-id="prebuilt"] svg { color: var(--tone-ink-meals); }
+html[data-style="minimal"] .kc-following-tab[data-tab-id="period"] svg { color: var(--tone-ink-photo); }
+html[data-style="minimal"] .kc-following-tab[data-tab-id="body"] svg { color: var(--tone-ink-recipes); }
+html[data-style="minimal"] .kc-following-tab[data-tab-id="history"] svg { color: var(--tone-ink-planner); }
+html[data-style="minimal"] .kc-following-tab[data-tab-id="database"] svg { color: var(--tone-ink-foods); }
