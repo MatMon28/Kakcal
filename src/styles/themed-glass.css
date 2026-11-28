@@ -47,13 +47,13 @@ html[data-style="glass"]:not([data-style="classic"]) .kc-header-surface[data-pil
 
 /* Header uses a constant blur radius (never animating blur radius per scroll pixel) while visible, and turns off
    backdrop-filter completely once scrolled down (`data-pill-floating="true"`). */
-html[data-style="glass"]:not([data-style="classic"]) .kc-header-surface {
-  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 72%), transparent);
+html[data-style="glass"]:not([data-style="classic"]) .kc-header-surface::before {
+  background: color-mix(in srgb, var(--bg) 72%, transparent);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
 }
-html[data-style="glass"]:not([data-style="classic"]) .kc-header-surface[data-pill-floating="true"] {
-  background: transparent;
+html[data-style="glass"]:not([data-style="classic"]) .kc-header-surface[data-pill-floating="true"]::before {
+  opacity: 0;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }

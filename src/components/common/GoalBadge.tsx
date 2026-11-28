@@ -1,7 +1,7 @@
 import { AlertTriangle, CircleCheck } from 'lucide-react';
 import { useAdvancedText } from '../../i18n/advanced';
 import { goalState, useAdvanced } from '../../utils/advancedStore';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import type { GoalKey } from '../../types/advanced';
 import type { ThemeStyle } from '../../types';
 import { BorderProgressRing } from './BorderProgressRing';
@@ -57,7 +57,7 @@ function Container({ shape }: { shape: Shape }) {
 export function GoalBadge({ goal, amount, className = '' }: { goal: GoalKey; amount: number; className?: string }) {
   const config = useAdvanced();
   const text = useAdvancedText();
-  const { settings, userProfile } = useApp();
+  const { settings, userProfile } = useSettings();
   const state = goalState(config, goal, amount, userProfile.weightKg);
   if (!state || !state.reached) return null;
 
@@ -125,7 +125,7 @@ export function TileGoalOverlay({
 }) {
   const config = useAdvanced();
   const text = useAdvancedText();
-  const { userProfile } = useApp();
+  const { userProfile } = useSettings();
   const state = goalState(config, goal, amount, userProfile.weightKg);
   if (!state) return null;
 

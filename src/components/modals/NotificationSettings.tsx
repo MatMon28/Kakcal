@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { BellRing, ClipboardCheck, Droplets, NotebookPen, Scale, Sparkles, Timer, UtensilsCrossed } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { useFastingText } from '../../i18n/fasting';
 import { Collapsible } from '../common/Collapsible';
 import { TONE } from './settings/SettingsParts';
@@ -76,28 +76,13 @@ const Row: React.FC<RowProps> = ({ icon, tone, title, desc, on, onToggle, disabl
   </div>
 );
 
-export const NotificationSettings: React.FC = () => {
-  const { settings, updateSettings, t } = useApp();
+const NotificationSettingsBody: React.FC = memo(() => {
+  const { settings, updateSettings, t } = useSettings();
   const ft = useFastingText();
   const n = settings.notifications;
   const f = n.fasting ?? DEFAULT_FASTING_NOTIFICATIONS;
   const copy = t.notifications;
   const [permission, setPermission] = useState<NotificationPermission>('prompt');
-  // The guided tour can ask for this group to be open (requestOpenNotificationSettings).
-  const [open, setOpen] = useState(consumeOpenNotificationRequest);
-  const anchorRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const reveal = () => {
-      if (!consumeOpenNotificationRequest()) return;
-      setOpen(true);
-      window.setTimeout(() => anchorRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 420);
-    };
-    window.addEventListener(OPEN_NOTIFICATION_SETTINGS_EVENT, reveal);
-    if (open) window.setTimeout(() => anchorRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 420);
-    return () => window.removeEventListener(OPEN_NOTIFICATION_SETTINGS_EVENT, reveal);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const refreshPermission = useCallback(() => { void getNotificationPermission().then(setPermission); }, []);
   useEffect(() => {
@@ -130,8 +115,7 @@ export const NotificationSettings: React.FC = () => {
     save({ ...n, fasting: { ...f, ...patch } });
 
   return (
-    <div ref={anchorRef} id="settings-notifications" className="scroll-mt-2">
-    <Collapsible title={copy.title} open={open} onOpenChange={setOpen} icon={<BellRing size={15} />} tone={TONE.rose}>
+    <>
       <p className="text-[11px] font-medium text-[var(--muted)] px-1">{copy.hint}</p>
 
       {permission === 'denied' && (
@@ -317,7 +301,33 @@ export const NotificationSettings: React.FC = () => {
       </Row>
 
       {!isAndroidApp() && <p className="text-[11px] font-medium text-[var(--muted)] px-1">{copy.webNote}</p>}
-    </Collapsible>
+    </>
+  );
+});
+
+export const NotificationSettings: React.FC = () => {
+  const { t } = useSettings();
+  // The guided tour can ask for this group to be open (requestOpenNotificationSettings).
+  const [open, setOpen] = useState(consumeOpenNotificationRequest);
+  const anchorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const reveal = () => {
+      if (!consumeOpenNotificationRequest()) return;
+      setOpen(true);
+      window.setTimeout(() => anchorRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 420);
+    };
+    window.addEventListener(OPEN_NOTIFICATION_SETTINGS_EVENT, reveal);
+    if (open) window.setTimeout(() => anchorRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' }), 420);
+    return () => window.removeEventListener(OPEN_NOTIFICATION_SETTINGS_EVENT, reveal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return (
+    <div ref={anchorRef} id="settings-notifications" className="scroll-mt-2">
+      <Collapsible title={t.notifications.title} open={open} onOpenChange={setOpen} icon={<BellRing size={15} />} tone={TONE.rose}>
+        <NotificationSettingsBody />
+      </Collapsible>
     </div>
   );
 };

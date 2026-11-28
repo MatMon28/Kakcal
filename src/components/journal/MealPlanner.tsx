@@ -30,7 +30,11 @@ import { MealSlotIcon } from '../common/mealSlotIcon';
 import { MealSummaryCard } from './MealSummaryCard';
 import { plannedMealName } from '../../utils/planMealName';
 import { PlanTransfer } from './PlanTransfer';
-import { PlanWizard } from './PlannerWizard';
+import { Suspense, lazy } from 'react';
+
+const LazyPlanWizard = lazy(() =>
+  import('./PlannerWizard').then((m) => ({ default: m.PlanWizard })),
+);
 import { PlanLibrary } from './PlanLibrary';
 import type { PlanGroupView } from '../../utils/planGroups';
 import { OPEN_PLANNER_EVENT } from './CustomShortcuts';
@@ -175,11 +179,13 @@ export function MealPlanner() {
         />
       )}
       {editing && (
-        <PlanWizard
-          initialDate={date}
-          plan={editing === 'new' ? undefined : editing}
-          onClose={() => setEditing(null)}
-        />
+        <Suspense fallback={null}>
+          <LazyPlanWizard
+            initialDate={date}
+            plan={editing === 'new' ? undefined : editing}
+            onClose={() => setEditing(null)}
+          />
+        </Suspense>
       )}
       {library && (
         <PlanLibrary
@@ -199,12 +205,14 @@ export function MealPlanner() {
         />
       )}
       {wizard && (
-        <PlanWizard
-          initialDate={date}
-          group={wizard.mode === 'edit' ? wizard.group : undefined}
-          reuse={wizard.mode === 'reuse' ? wizard.group : undefined}
-          onClose={() => setWizard(null)}
-        />
+        <Suspense fallback={null}>
+          <LazyPlanWizard
+            initialDate={date}
+            group={wizard.mode === 'edit' ? wizard.group : undefined}
+            reuse={wizard.mode === 'reuse' ? wizard.group : undefined}
+            onClose={() => setWizard(null)}
+          />
+        </Suspense>
       )}
     </>
   );

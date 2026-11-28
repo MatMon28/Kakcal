@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { CheckCircle, Download, Smartphone } from 'lucide-react';
 import { TONE } from '../modals/settings/SettingsParts';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { promptInstall, usePwaInstallState } from '../../utils/pwaInstall';
 import { isAndroidApp } from '../../utils/android';
 import { openInstallGuide } from './installGuideEvents';
@@ -12,12 +12,10 @@ import { Collapsible } from './Collapsible';
  * because manual installation never fires `beforeinstallprompt`. Opens the full guide with
  * iPhone/iPad, Android (PWA and APK) and desktop steps. Hidden inside the native APK.
  */
-export const InstallApp: React.FC = () => {
-  const { t, language } = useApp();
+const InstallAppBody: React.FC = memo(() => {
+  const { t, language } = useSettings();
   const state = usePwaInstallState();
   const [message, setMessage] = useState<string | null>(null);
-
-  if (isAndroidApp()) return null;
 
   const ui = language === 'it'
     ? {
@@ -42,7 +40,7 @@ export const InstallApp: React.FC = () => {
     state === 'installed' ? t.pwa.installed : state === 'ios' ? t.pwa.iosDesc : ui.manual;
 
   return (
-    <Collapsible title={t.pwa.title} icon={<Smartphone size={15} />} tone={TONE.teal}>
+    <>
       <div className="flex items-start gap-2.5">
         <span className="kc-action-pill w-8 h-8 rounded-full bg-[#C9EFD3] text-[#174A2B] flex items-center justify-center shrink-0">
           {state === 'installed' ? <CheckCircle size={15} /> : <Smartphone size={15} />}
@@ -76,6 +74,22 @@ export const InstallApp: React.FC = () => {
           </button>
         )}
       </div>
+    </>
+  );
+});
+
+/**
+ * "Install app" card for Settings. Always available in a browser (iOS and desktop included),
+ * because manual installation never fires `beforeinstallprompt`. Opens the full guide with
+ * iPhone/iPad, Android (PWA and APK) and desktop steps. Hidden inside the native APK.
+ */
+export const InstallApp: React.FC = () => {
+  const { t } = useSettings();
+  if (isAndroidApp()) return null;
+
+  return (
+    <Collapsible title={t.pwa.title} icon={<Smartphone size={15} />} tone={TONE.teal}>
+      <InstallAppBody />
     </Collapsible>
   );
 };

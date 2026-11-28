@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNav, useNavActions, useShell } from '../../context/AppContext';
+import { useNav, useNavActions, useSettings, useUiActions } from '../../context/AppContext';
 import { afterPaint } from '../../utils/idle';
 import { User, Settings } from 'lucide-react';
 import { Tabs } from './Tabs';
@@ -19,7 +19,8 @@ const smoothstep = (value: number) => {
 };
 
 export const Header: React.FC = () => {
-  const { t, setIsProfileOpen, setIsSettingsOpen } = useShell();
+  const { t } = useSettings();
+  const { setIsProfileOpen, setIsSettingsOpen } = useUiActions();
   const { activeTab } = useNav();
   const { setActiveTab } = useNavActions();
   const surfaceRef = React.useRef<HTMLDivElement>(null);
@@ -50,9 +51,7 @@ export const Header: React.FC = () => {
     const topP = clamp01(topProgress);
     const tabsP = clamp01(tabsProgress);
     const easedTabsP = smoothstep(tabsP);
-    const barVisibility = Math.max(topP, easedTabsP);
 
-    topRow.style.height = `${(topP * TOP_ROW_HEIGHT_PX).toFixed(2)}px`;
     topRow.style.opacity = topP.toFixed(3);
     topRow.style.transform = `translate3d(0, ${((1 - topP) * -12).toFixed(2)}px, 0)`;
     topRow.style.pointerEvents = topP > 0.45 ? 'auto' : 'none';
@@ -60,23 +59,15 @@ export const Header: React.FC = () => {
     // While the row collapses it clips, so the buttons do not spill over the page bar.
     topRow.style.overflow = topP >= 0.999 ? 'visible' : 'hidden';
 
-    // Keep full pill height so borders/shadows are never clipped; animate smoothly via opacity & transform.
-    tabsRow.style.height = `${TABS_ROW_HEIGHT_PX}px`;
+    // Keep full pill height and slide upward into the collapsed top-row space via compositor-only transform & opacity.
     tabsRow.style.opacity = easedTabsP.toFixed(3);
-    tabsRow.style.transform = `translate3d(0, ${((1 - easedTabsP) * -8).toFixed(2)}px, 0) scale(${(0.97 + 0.03 * easedTabsP).toFixed(3)})`;
+    tabsRow.style.transform = `translate3d(0, ${((topP - 1) * TOP_ROW_HEIGHT_PX + (1 - easedTabsP) * -8).toFixed(2)}px, 0) scale(${(0.97 + 0.03 * easedTabsP).toFixed(3)})`;
     tabsRow.style.pointerEvents = tabsP > 0.15 ? 'auto' : 'none';
 
     // Header background and bottom border follow ONLY topP so that when scrolling back up
     // down the page, only the page pill reappears (with transparency), never the header background.
     surface.style.setProperty('--header-bg-progress', topP.toFixed(3));
     surface.dataset.pillFloating = topP < 0.85 ? 'true' : 'false';
-
-    const topPadRem = 0.25 + 0.5 * topP;
-    surface.style.paddingTop =
-      barVisibility > 0.02
-        ? `calc(max(${topPadRem.toFixed(3)}rem, env(safe-area-inset-top)) * ${barVisibility.toFixed(3)})`
-        : '0px';
-    surface.style.paddingBottom = `${(0.25 * topP).toFixed(3)}rem`;
     surface.style.pointerEvents = topP > 0.2 ? 'auto' : 'none';
   }, []);
 
@@ -194,13 +185,13 @@ export const Header: React.FC = () => {
     <header data-mobile-journal-header className="sticky top-0 z-40 h-[calc(max(0.75rem,env(safe-area-inset-top))+6.25rem)] pointer-events-none">
       <div
         ref={surfaceRef}
-        className="kc-header-surface pointer-events-auto border-b border-transparent px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1"
+        className="kc-header-surface relative pointer-events-auto px-4 sm:px-6 pt-[max(0.75rem,env(safe-area-inset-top))] pb-1"
       >
         <div className="max-w-4xl mx-auto">
           {/* Profile (left) · app name (top center) · settings (right) */}
           <div
             ref={topRowRef}
-            className="grid grid-cols-[1fr_auto_1fr] items-center will-change-[height,opacity,transform]"
+            className="grid grid-cols-[1fr_auto_1fr] items-center will-change-[opacity,transform]"
             style={{ height: `${TOP_ROW_HEIGHT_PX}px` }}
           >
             <div className="flex items-center">

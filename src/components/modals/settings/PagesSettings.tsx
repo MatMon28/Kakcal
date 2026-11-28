@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { CalendarDays, ChevronDown, ChevronUp, Droplet, LayoutGrid, RotateCcw, Ruler, Timer, TrendingUp, User } from 'lucide-react';
-import { useApp, useNav, useNavActions } from '../../../context/AppContext';
+import { useNav, useNavActions, useSettings, useUiState } from '../../../context/AppContext';
 import { useAdvancedText } from '../../../i18n/advanced';
 import { useFastingText } from '../../../i18n/fasting';
 import { useJournalText } from '../../../i18n/journal';
@@ -14,13 +14,14 @@ import { SubSection, SwitchVisual, TONE } from './SettingsParts';
  * Settings > Pages: hide any page except Today and reorder all main pages (including Today).
  * Hidden pages leave the tab bar and the swipe order, and hiding the active page returns to Today.
  */
-export const PagesSettings: React.FC = () => {
+export const PagesSettings: React.FC = memo(() => {
   const j = useJournalText();
   const text = useAdvancedText();
   const ft = useFastingText();
   const { activeTab } = useNav();
   const { setActiveTab } = useNavActions();
-  const { t, settings, updateSettings, setIsSettingsOpen, setIsProfileOpen } = useApp();
+  const { t, settings, updateSettings } = useSettings();
+  const { setIsSettingsOpen, setIsProfileOpen } = useUiState();
   const bodyOn = useAdvanced().body.enabled;
   const fastingOn = useFasting().config.enabled;
 
@@ -205,4 +206,4 @@ export const PagesSettings: React.FC = () => {
       )}
     </div>
   );
-};
+});

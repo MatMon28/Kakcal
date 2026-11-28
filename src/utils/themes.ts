@@ -336,26 +336,48 @@ export function applyThemeAttributes(
   monoHue: string = DEFAULT_MONO_HUE
 ): void {
   const root = document.documentElement;
-  root.setAttribute('data-theme', theme);
-  root.setAttribute('data-style', themeStyle);
+  const prevTheme = root.getAttribute('data-theme');
+  const prevStyle = root.getAttribute('data-style');
+  const prevMono = root.dataset.monoHue;
+  const normalizedMono = themeStyle === 'mono' ? monoHue : '';
+
+  if (
+    prevTheme === theme &&
+    prevStyle === themeStyle &&
+    (themeStyle !== 'mono' || prevMono === normalizedMono) &&
+    !root.style.backgroundColor
+  ) {
+    return;
+  }
+
+  if (prevTheme !== theme) root.setAttribute('data-theme', theme);
+  if (prevStyle !== themeStyle) root.setAttribute('data-style', themeStyle);
 
   if (themeStyle === 'mono') {
+    root.dataset.monoHue = monoHue;
     const vars = getMonoVariables(monoHue, theme);
     for (const [k, v] of Object.entries(vars)) {
       root.style.setProperty(k, v);
     }
   } else {
-    for (const k of MONO_VAR_KEYS) {
-      root.style.removeProperty(k);
+    if (prevMono !== undefined) delete root.dataset.monoHue;
+    if (prevStyle === 'mono' || root.style.getPropertyValue(MONO_VAR_KEYS[0]) !== '') {
+      for (const k of MONO_VAR_KEYS) {
+        root.style.removeProperty(k);
+      }
     }
   }
 
   // Clear any inline backgroundColor left by pre-paint script so CSS rules govern --bg.
-  root.style.removeProperty('background-color');
+  if (root.style.backgroundColor) {
+    root.style.removeProperty('background-color');
+  }
 
   const meta = document.querySelector('meta[name="theme-color"]');
   if (meta) {
     const computedBg = getComputedStyle(root).getPropertyValue('--bg').trim();
-    if (computedBg) meta.setAttribute('content', computedBg);
+    if (computedBg && meta.getAttribute('content') !== computedBg) {
+      meta.setAttribute('content', computedBg);
+    }
   }
 }

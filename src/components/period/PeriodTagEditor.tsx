@@ -1,6 +1,6 @@
 import { useId, useState } from 'react';
 import { Plus, RotateCcw, SlidersHorizontal, X } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { getDefaultPeriodTags, tagDefs, tagLabel, type PeriodTagGroup } from '../../utils/period';
 import { Modal } from '../common/Modal';
 
@@ -9,7 +9,8 @@ export function PeriodTagEditor({ group, selected, onChange }: {
   selected: string[];
   onChange: (ids: string[]) => void;
 }) {
-  const { t, periodData, addPeriodTag, deletePeriodTag, resetPeriodTags } = useApp();
+  const { t } = useSettings();
+  const { periodData, addPeriodTag, deletePeriodTag, resetPeriodTags } = useJournalData();
   const headingId = useId();
   const inputId = useId();
   const [managing, setManaging] = useState(false);

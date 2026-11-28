@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { Pencil, Plus, Sparkles, Trash2 } from 'lucide-react';
-import { useApp } from '../../../context/AppContext';
+import { useSettings } from '../../../context/AppContext';
 import { Modal } from '../../common/Modal';
 import { ConfirmDialog } from '../../common/ConfirmDialog';
 import { IconPicker } from '../../common/IconPicker';
@@ -11,8 +11,8 @@ import { SwitchVisual } from './SettingsParts';
  * Settings > Today > Custom buttons: the user's own quick-add trackers (list, add / edit form, delete) and the
  * switch that puts one of them in the home-screen widgets. Moved here from the old Custom buttons group.
  */
-export const CustomButtonsSettings: React.FC = () => {
-  const { t, settings, updateSettings } = useApp();
+export const CustomButtonsSettings: React.FC = memo(() => {
+  const { t, settings, updateSettings } = useSettings();
   const [creatingBtn, setCreatingBtn] = useState(false);
   const [newBtnName, setNewBtnName] = useState('');
   const [newBtnType, setNewBtnType] = useState<'quantity' | 'toggle'>('quantity');
@@ -106,114 +106,118 @@ export const CustomButtonsSettings: React.FC = () => {
           </div>
         ))}
 
-        <Modal
-          isOpen={creatingBtn}
-          onClose={resetBtnForm}
-          title={editingBtnId ? t.settings.editCustomBtn : t.settings.newCustomBtn}
-          maxWidth="max-w-md"
-        >
-          <div className="space-y-3">
-            <input
-              type="text"
-              value={newBtnName}
-              onChange={(e) => setNewBtnName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && newBtnName.trim()) finishBtnForm();
-              }}
-              placeholder={t.settings.customNamePlaceholder}
-              aria-label={t.settings.customName}
-              maxLength={40}
-              autoFocus
-              className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
-            />
-
-            <IconPicker value={newBtnIcon} onChange={setNewBtnIcon} />
-
-            <div className="grid grid-cols-2 gap-1.5">
-              <button
-                type="button"
-                onClick={() => setNewBtnType('quantity')}
-                className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
-                  newBtnType === 'quantity'
-                    ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
-                }`}
-              >
-                {t.settings.typeQuantity}
-              </button>
-              <button
-                type="button"
-                onClick={() => setNewBtnType('toggle')}
-                className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
-                  newBtnType === 'toggle'
-                    ? 'kc-chip-active bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
-                    : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
-                }`}
-              >
-                {t.settings.typeToggle}
-              </button>
-            </div>
-
-            {newBtnType === 'quantity' && (
+        {creatingBtn && (
+          <Modal
+            isOpen={creatingBtn}
+            onClose={resetBtnForm}
+            title={editingBtnId ? t.settings.editCustomBtn : t.settings.newCustomBtn}
+            maxWidth="max-w-md"
+          >
+            <div className="space-y-3">
               <input
                 type="text"
-                value={newBtnUnit}
-                onChange={(e) => setNewBtnUnit(e.target.value)}
+                value={newBtnName}
+                onChange={(e) => setNewBtnName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && newBtnName.trim()) finishBtnForm();
                 }}
-                placeholder={t.settings.customUnitPlaceholder}
-                aria-label={t.settings.customUnit}
-                maxLength={12}
-                className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
+                placeholder={t.settings.customNamePlaceholder}
+                aria-label={t.settings.customName}
+                maxLength={40}
+                autoFocus
+                className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-sm font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
               />
-            )}
 
-            {/* Statistics question */}
-            <button
-              type="button"
-              role="switch"
-              aria-checked={newBtnStats}
-              onClick={() => setNewBtnStats((v) => !v)}
-              className="pressable w-full flex items-center justify-between gap-2 bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-left"
-            >
-              <span className="text-xs font-bold text-[var(--text)]">{t.settings.showStatsQ}</span>
-              <SwitchVisual on={newBtnStats} />
-            </button>
+              <IconPicker value={newBtnIcon} onChange={setNewBtnIcon} />
 
-            <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setNewBtnType('quantity')}
+                  className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
+                    newBtnType === 'quantity'
+                      ? 'kc-chip-active bg-[#C9EFD3] text-[#174A2B] border-[#9ADBB0]'
+                      : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                  }`}
+                >
+                  {t.settings.typeQuantity}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setNewBtnType('toggle')}
+                  className={`pressable py-2 rounded-xl text-xs font-extrabold border ${
+                    newBtnType === 'toggle'
+                      ? 'kc-chip-active bg-[#E2D6FF] text-[#4D3582] border-[#C9B8F2]'
+                      : 'bg-[var(--inset)] text-[var(--muted)] border-[var(--border)]'
+                  }`}
+                >
+                  {t.settings.typeToggle}
+                </button>
+              </div>
+
+              {newBtnType === 'quantity' && (
+                <input
+                  type="text"
+                  value={newBtnUnit}
+                  onChange={(e) => setNewBtnUnit(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newBtnName.trim()) finishBtnForm();
+                  }}
+                  placeholder={t.settings.customUnitPlaceholder}
+                  aria-label={t.settings.customUnit}
+                  maxLength={12}
+                  className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-xs font-bold text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
+                />
+              )}
+
+              {/* Statistics question */}
               <button
                 type="button"
-                onClick={resetBtnForm}
-                className="pressable flex-1 py-2.5 rounded-xl bg-[var(--inset)] border border-[var(--border)] text-xs font-extrabold text-[var(--muted)]"
+                role="switch"
+                aria-checked={newBtnStats}
+                onClick={() => setNewBtnStats((v) => !v)}
+                className="pressable w-full flex items-center justify-between gap-2 bg-[var(--inset)] border border-[var(--border)] rounded-xl px-3 py-2 text-left"
               >
-                {t.common.cancel}
+                <span className="text-xs font-bold text-[var(--text)]">{t.settings.showStatsQ}</span>
+                <SwitchVisual on={newBtnStats} />
               </button>
-              <button
-                type="button"
-                disabled={!newBtnName.trim()}
-                onClick={finishBtnForm}
-                className="kc-primary-btn pressable flex-1 py-2.5 rounded-xl bg-intake hover:bg-intake-hover text-intake-ink text-xs font-extrabold disabled:opacity-40"
-              >
-                {t.common.save}
-              </button>
+
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={resetBtnForm}
+                  className="pressable flex-1 py-2.5 rounded-xl bg-[var(--inset)] border border-[var(--border)] text-xs font-extrabold text-[var(--muted)]"
+                >
+                  {t.common.cancel}
+                </button>
+                <button
+                  type="button"
+                  disabled={!newBtnName.trim()}
+                  onClick={finishBtnForm}
+                  className="kc-primary-btn pressable flex-1 py-2.5 rounded-xl bg-intake hover:bg-intake-hover text-intake-ink text-xs font-extrabold disabled:opacity-40"
+                >
+                  {t.common.save}
+                </button>
+              </div>
             </div>
-          </div>
-        </Modal>
+          </Modal>
+        )}
 
-        <ConfirmDialog
-          open={deletingBtnId !== null}
-          title={t.settings.deleteCustomBtn}
-          message={settings.customButtons.find((x) => x.id === deletingBtnId)?.name ?? ''}
-          confirmLabel={t.common.delete}
-          onCancel={() => setDeletingBtnId(null)}
-          onConfirm={() => {
-            if (deletingBtnId) {
-              updateSettings({ customButtons: settings.customButtons.filter((x) => x.id !== deletingBtnId) });
-            }
-            setDeletingBtnId(null);
-          }}
-        />
+        {deletingBtnId !== null && (
+          <ConfirmDialog
+            open={deletingBtnId !== null}
+            title={t.settings.deleteCustomBtn}
+            message={settings.customButtons.find((x) => x.id === deletingBtnId)?.name ?? ''}
+            confirmLabel={t.common.delete}
+            onCancel={() => setDeletingBtnId(null)}
+            onConfirm={() => {
+              if (deletingBtnId) {
+                updateSettings({ customButtons: settings.customButtons.filter((x) => x.id !== deletingBtnId) });
+              }
+              setDeletingBtnId(null);
+            }}
+          />
+        )}
 
         <button
           type="button"
@@ -247,4 +251,4 @@ export const CustomButtonsSettings: React.FC = () => {
       </button>
     </div>
   );
-};
+});

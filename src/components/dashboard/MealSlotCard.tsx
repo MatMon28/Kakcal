@@ -1,5 +1,5 @@
 import React from 'react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSelection, useSettings, useUiActions } from '../../context/AppContext';
 import { MealSlotId, LoggedFoodItem } from '../../types';
 import { calculateMacros, calculateTotalCalories } from '../../utils/calculations';
 import { formatKcal } from '../../utils/formatters';
@@ -40,15 +40,10 @@ export const MealSlotCard: React.FC<MealSlotCardProps> = ({
   compact = false,
   ultraMinimal = false,
 }) => {
-  const {
-    currentDayLog,
-    allDayLogs,
-    selectedDate,
-    setSelectedDate,
-    setIsAddFoodOpen,
-    setTargetMealSlot,
-    t,
-  } = useApp();
+  const { currentDayLog, allDayLogs } = useJournalData();
+  const { selectedDate } = useSelection();
+  const { setSelectedDate, setIsAddFoodOpen, setTargetMealSlot } = useUiActions();
+  const { t } = useSettings();
 
   const { label: slotLabel } = useMealSlots();
 

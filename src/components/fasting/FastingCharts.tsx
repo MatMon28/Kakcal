@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Timer } from 'lucide-react';
 import { useSettings } from '../../context/AppContext';
 import { useFastingText } from '../../i18n/fasting';
-import { formatDateDisplay } from '../../utils/formatters';
+import { dateFormatter, formatDateDisplay } from '../../utils/formatters';
 import { formatDurationCompact, type FastingDayBar, type HungerHourPoint } from '../../utils/fastingStore';
 
 export const FastingDaysBarChart: React.FC<{
@@ -66,10 +66,10 @@ export const FastingDaysBarChart: React.FC<{
         {bars.map((bar) => {
           const hPct = bar.hours > 0 ? Math.max(8, Math.min(100, (bar.hours / maxHours) * 100)) : 3;
           const active = selectedDate === bar.date;
-          const dayChar = new Date(`${bar.date}T12:00:00`).toLocaleDateString(
+          const dayChar = dateFormatter(
             language === 'it' ? 'it-IT' : 'en-US',
             { weekday: 'narrow' },
-          );
+          ).format(new Date(`${bar.date}T12:00:00`));
           return (
             <button
               key={bar.date}

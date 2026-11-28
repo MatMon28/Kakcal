@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Clock, Star } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
@@ -19,7 +19,8 @@ const MAX = 20;
  * quick-log pop-up as Foods > Add (meal chips, amount, macros). Recipes with a standard portion start from it.
  */
 export const CustomFoodsQuick: React.FC = () => {
-  const { allFoods, allDayLogs, favoriteFoods, logFoodItem, rememberFood, language, settings, t } = useApp();
+  const { allFoods, allDayLogs, logFoodItem, rememberFood } = useJournalData();
+  const { favoriteFoods, language, settings, t } = useSettings();
   const { options: mealSlots, label: slotLabel } = useMealSlots();
   const autoMealSlot = useAutoMealSlot();
   const j = useJournalText();

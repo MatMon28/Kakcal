@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { Activity, ChevronRight, Download, RefreshCw, Shield } from 'lucide-react';
-import { useApp } from '../../../context/AppContext';
+import { useJournalData, useSettings } from '../../../context/AppContext';
 import {
   getHealthConnectStatus,
   isAndroidApp,
@@ -10,16 +10,9 @@ import {
 } from '../../../utils/android';
 import { ActionRow, SubSection, TONE, ToggleRow } from './SettingsParts';
 
-export const HealthConnectSettings: React.FC = () => {
-  const {
-    t,
-    language,
-    settings,
-    updateSettings,
-    syncHealthConnect,
-    isHealthConnectSyncing,
-    healthConnectSyncMessage,
-  } = useApp();
+export const HealthConnectSettings: React.FC = memo(() => {
+  const { t, language, settings, updateSettings } = useSettings();
+  const { syncHealthConnect, isHealthConnectSyncing, healthConnectSyncMessage } = useJournalData();
   const [hcStatus, setHcStatus] = useState<HealthConnectStatus | null>(null);
 
   useEffect(() => {
@@ -119,4 +112,4 @@ export const HealthConnectSettings: React.FC = () => {
       )}
     </SubSection>
   );
-};
+});

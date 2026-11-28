@@ -14,16 +14,23 @@ import type { ActiveTab } from '../types';
  * `useApp()` still returns everything (it subscribes to all three) so existing components keep working;
  * hot components should move to the narrow hooks.
  */
-export type UiSlice = Pick<AppContextType,
-  | 'selectedDate' | 'setSelectedDate' | 'targetMealSlot' | 'setTargetMealSlot'
-  | 'isAddFoodOpen' | 'setIsAddFoodOpen' | 'foodLogSeed' | 'setFoodLogSeed' | 'isLogActivityOpen' | 'setIsLogActivityOpen'
-  | 'editingActivity' | 'setEditingActivity'
-  | 'isBarcodeOpen' | 'setIsBarcodeOpen' | 'isProfileOpen' | 'setIsProfileOpen'
-  | 'isSettingsOpen' | 'setIsSettingsOpen' | 'isWaterOpen' | 'setIsWaterOpen'
-  | 'isPoopOpen' | 'setIsPoopOpen' | 'isWeightOpen' | 'setIsWeightOpen'
-  | 'isCustomFoodOpen' | 'setIsCustomFoodOpen' | 'customButtonOpenId' | 'setCustomButtonOpenId'
-  | 'isCustomPickerOpen' | 'setIsCustomPickerOpen' | 'isPeriodSheetOpen' | 'setIsPeriodSheetOpen'
-  | 'periodSelectedDate' | 'setPeriodSelectedDate'>;
+export type SelectionSlice = Pick<AppContextType,
+  | 'selectedDate' | 'targetMealSlot' | 'periodSelectedDate'>;
+
+export type ModalStateSlice = Pick<AppContextType,
+  | 'isAddFoodOpen' | 'foodLogSeed' | 'isLogActivityOpen' | 'editingActivity'
+  | 'isBarcodeOpen' | 'isProfileOpen' | 'isSettingsOpen' | 'isWaterOpen'
+  | 'isPoopOpen' | 'isWeightOpen' | 'isCustomFoodOpen' | 'customButtonOpenId'
+  | 'isCustomPickerOpen' | 'isPeriodSheetOpen'>;
+
+export type UiActionsSlice = Pick<AppContextType,
+  | 'setSelectedDate' | 'setTargetMealSlot' | 'setPeriodSelectedDate'
+  | 'setIsAddFoodOpen' | 'setFoodLogSeed' | 'setIsLogActivityOpen' | 'setEditingActivity'
+  | 'setIsBarcodeOpen' | 'setIsProfileOpen' | 'setIsSettingsOpen' | 'setIsWaterOpen'
+  | 'setIsPoopOpen' | 'setIsWeightOpen' | 'setIsCustomFoodOpen' | 'setCustomButtonOpenId'
+  | 'setIsCustomPickerOpen' | 'setIsPeriodSheetOpen'>;
+
+export type UiSlice = SelectionSlice & ModalStateSlice & UiActionsSlice;
 
 export type SettingsSlice = Pick<AppContextType,
   | 'language' | 'setLanguage' | 't' | 'userProfile' | 'updateUserProfile' | 'settings' | 'updateSettings'
@@ -31,7 +38,9 @@ export type SettingsSlice = Pick<AppContextType,
 
 export type JournalSlice = Omit<AppContextType, keyof UiSlice | keyof SettingsSlice>;
 
-export const UiContext = createContext<UiSlice | undefined>(undefined);
+export const SelectionContext = createContext<SelectionSlice | undefined>(undefined);
+export const ModalStateContext = createContext<ModalStateSlice | undefined>(undefined);
+export const UiActionsContext = createContext<UiActionsSlice | undefined>(undefined);
 export const SettingsContext = createContext<SettingsSlice | undefined>(undefined);
 export const JournalDataContext = createContext<JournalSlice | undefined>(undefined);
 
@@ -52,8 +61,19 @@ function need<T>(value: T | undefined, hook: string): T {
   return value;
 }
 
-/** Dialog / navigation state only. */
-export const useUiState = () => need(useContext(UiContext), 'useUiState');
+/** Selected date, target meal slot, and period selected date only. */
+export const useSelection = () => need(useContext(SelectionContext), 'useSelection');
+/** Modal open flags and modal payloads only. */
+export const useModalState = () => need(useContext(ModalStateContext), 'useModalState');
+/** Stable UI setters (date/slot selection and modal open/close). Never re-renders on state changes. */
+export const useUiActions = () => need(useContext(UiActionsContext), 'useUiActions');
+/** Dialog / selection state composed for backward compatibility. */
+export function useUiState(): UiSlice {
+  const selection = useSelection();
+  const modals = useModalState();
+  const actions = useUiActions();
+  return useMemo(() => ({ ...selection, ...modals, ...actions }), [selection, modals, actions]);
+}
 /** Language, strings, profile and settings only. */
 export const useSettings = () => need(useContext(SettingsContext), 'useSettings');
 /** Journal data, derived totals and logging actions only. */

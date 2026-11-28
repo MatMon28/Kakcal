@@ -5,27 +5,43 @@ html[data-style]:not([data-style="classic"]) body,
 html[data-style]:not([data-style="classic"]) [data-journal-root] {
   font-family: var(--font-family, var(--font-sans));
   background: var(--app-bg-image, var(--bg));
-  background-attachment: fixed;
   color: var(--text);
 }
 
-/* Header surface & buttons */
+/* Header surface & buttons (background/border/blur live on ::before so opacity animates on the compositor) */
 .kc-header-surface {
-  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 94%), transparent);
-  border-bottom-color: color-mix(in srgb, var(--border) calc(var(--header-bg-progress, 1) * 100%), transparent);
-  backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 12px));
-  -webkit-backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 12px));
+  position: relative;
+}
+.kc-header-surface::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: var(--header-bg-progress, 1);
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+.kc-header-surface[data-pill-floating="true"]::before {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-html[data-style]:not([data-style="classic"]) .kc-header-surface {
-  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 90%), transparent);
-  border-bottom-color: color-mix(in srgb, var(--border) calc(var(--header-bg-progress, 1) * 100%), transparent);
-  backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 14px));
-  -webkit-backdrop-filter: blur(calc(var(--header-bg-progress, 1) * 14px));
+html[data-style]:not([data-style="classic"]) .kc-header-surface::before {
+  background: color-mix(in srgb, var(--bg) 90%, transparent);
+  border-bottom-color: var(--border);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+html[data-style]:not([data-style="classic"]) .kc-header-surface[data-pill-floating="true"]::before {
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
-html:is([data-style="angular"], [data-style="pop"], [data-style="playful"], [data-style="minimal"], [data-style="mono"]) .kc-header-surface {
-  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 96%), transparent);
+html:is([data-style="angular"], [data-style="pop"], [data-style="playful"], [data-style="minimal"], [data-style="mono"]) .kc-header-surface::before {
+  background: color-mix(in srgb, var(--bg) 96%, transparent);
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }

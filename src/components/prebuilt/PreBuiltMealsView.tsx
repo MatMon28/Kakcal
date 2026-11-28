@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { ActionDock } from '../common/ActionDock';
 import { UtensilsCrossed, Plus, Search, ChefHat as ChefHatIcon, BookOpen, ScanBarcode, Link2 } from 'lucide-react';
 import { ConfirmDialog } from '../common/ConfirmDialog';
@@ -11,13 +11,20 @@ import { LibrarySectionHeader } from '../common/LibrarySectionHeader';
 import { MealsSection } from './MealsSection';
 import { RecipesSection } from './RecipesSection';
 import { LogMealToSlotModal, LogRecipeToSlotModal } from './LogToSlotModals';
-import { CreateMealModal } from './CreateMealModal';
-import { RecipeBuilderModal } from './RecipeBuilderModal';
-import { RecipeImportModal } from './RecipeImportModal';
 import { Modal } from '../common/Modal';
+
+const CreateMealModal = lazy(() =>
+  import('./CreateMealModal').then((m) => ({ default: m.CreateMealModal })),
+);
+const RecipeBuilderModal = lazy(() =>
+  import('./RecipeBuilderModal').then((m) => ({ default: m.RecipeBuilderModal })),
+);
+const RecipeImportModal = lazy(() =>
+  import('./RecipeImportModal').then((m) => ({ default: m.RecipeImportModal })),
+);
 import { LazyBody } from '../common/LazyBody';
 import { usePreBuiltMealsState } from './usePreBuiltMealsState';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import type { DockAction } from '../common/ActionDock';
 import type { CustomFieldId } from '../../types';
 
@@ -29,7 +36,7 @@ export const PreBuiltMealsView: React.FC = () => {
     pendingDelete, setPendingDelete, openNewMealModal, openRecipeChoiceModal, openRecipeModal, openImportModal, j,
   } = s;
   // Settings > Custom page: hidden sections and hidden creation buttons (the Plan / Shopping / Photo buttons are in journalDockActions).
-  const { settings } = useApp();
+  const { settings } = useSettings();
   const hideField = (key: CustomFieldId) => Boolean(settings.hideCustomFields[key]);
   const dockActions: DockAction[] = [
     ...(settings.hideCustomButtons.meal ? [] : [{ id: 'meal', icon: <UtensilsCrossed size={20} />, label: t.prebuilt.createNew, tone: 'bg-protein text-protein-ink', onClick: openNewMealModal }]),
@@ -136,7 +143,11 @@ export const PreBuiltMealsView: React.FC = () => {
 
       <LogRecipeToSlotModal s={s} />
 
-      {s.isCreateOpen && <CreateMealModal s={s} />}
+      {s.isCreateOpen && (
+        <Suspense fallback={null}>
+          <CreateMealModal s={s} />
+        </Suspense>
+      )}
 
       <Modal
         isOpen={s.isRecipeChoiceOpen}
@@ -174,8 +185,16 @@ export const PreBuiltMealsView: React.FC = () => {
           </button>
         </div>
       </Modal>
-      {s.isRecipeOpen && <RecipeBuilderModal s={s} />}
-      <RecipeImportModal s={s} />
+      {s.isRecipeOpen && (
+        <Suspense fallback={null}>
+          <RecipeBuilderModal s={s} />
+        </Suspense>
+      )}
+      {s.isImportOpen && (
+        <Suspense fallback={null}>
+          <RecipeImportModal s={s} />
+        </Suspense>
+      )}
     </div>
     </>
   );

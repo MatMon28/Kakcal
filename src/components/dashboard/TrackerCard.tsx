@@ -1,6 +1,6 @@
 import React from 'react';
 import { ChevronDown, Plus } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { LazyBody } from '../common/LazyBody';
 
 const palettes = {
@@ -43,7 +43,7 @@ export const TrackerCard: React.FC<TrackerCardProps> = ({
   compact = false,
   children,
 }) => {
-  const { t, settings } = useApp();
+  const { t, settings } = useSettings();
   const palette = palettes[tone];
   // In Classic theme, scope the pastel palette to this card; in the 6 new themes, inherit the coherent theme tokens.
   const style =

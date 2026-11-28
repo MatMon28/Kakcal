@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { whenIdle } from './idle';
-import { useApp } from '../context/AppContext';
+import { useSettings } from '../context/AppContext';
 import { isAndroidApp } from './android';
 import { useFasting } from './fastingStore';
 import {
@@ -18,7 +18,7 @@ import { isTourScreen, type TourScreen } from '../components/widgets/widgetContr
  * and the custom-button names. Runs once, in the top-level journal only (not in the tour's embedded copy).
  */
 export function useNotificationScheduler(onOpen: (screen: TourScreen) => void) {
-  const { settings, t } = useApp();
+  const { settings, t } = useSettings();
   const fasting = useFasting();
   const onOpenRef = useRef(onOpen);
   onOpenRef.current = onOpen;
@@ -26,17 +26,26 @@ export function useNotificationScheduler(onOpen: (screen: TourScreen) => void) {
 
   const customNames = settings.customButtons.map((b) => b.name);
   const customKey = customNames.join('\u0000');
+  const fastingConfig = fasting.config;
+  const fastingActiveSession = fasting.activeSession;
+  const fastingLastEndedAt = fasting.sessions[0]?.endedAt;
+  const fastingForPlan = useMemo(
+    () => ({ ...fasting, notes: [] }),
+    // Only recompute when scheduling-relevant fasting fields change (not on fasting note edits).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fastingConfig, fastingActiveSession, fastingLastEndedAt],
+  );
   const plan = useMemo(
     () => buildNotificationPlan(
       settings.notifications,
       t.notifications,
       Object.fromEntries(MEAL_REMINDER_SLOTS.map((slot) => [slot, t.mealSlots[slot]])) as Record<(typeof MEAL_REMINDER_SLOTS)[number], string>,
       customNames,
-      fasting,
+      fastingForPlan,
     ),
     // customKey stands in for the names array, which is a new object on every render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [settings.notifications, t, customKey, fasting],
+    [settings.notifications, t, customKey, fastingForPlan],
   );
   const planKey = JSON.stringify(plan);
   const planRef = useRef(plan);
@@ -50,7 +59,6 @@ export function useNotificationScheduler(onOpen: (screen: TourScreen) => void) {
   useEffect(() => {
     if (!standalone || !isAndroidApp()) return;
     return listenForNotificationTaps(open);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [standalone]);
 
   useEffect(() => {

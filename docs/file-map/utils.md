@@ -77,7 +77,8 @@ android.ts declares the local exportBackup / exportFile / takeLastExport bridge 
 | `src/utils/deleteData.ts` | `deleteCategory(category, allDayLogs)`: removes one kind of record (plans, saved meals, recipes, photos, meal notes, logged food, activities, water, weight, poop, custom tracker entries, body measurements, period records). See [settings-update.md](../settings-update.md). |
 | `src/utils/pageVisibility.ts` | `isPageHiddenBySettings(tab, settings)`, `DEFAULT_PAGE_ORDER`, `normalizePageOrder(raw)`: page visibility & custom page order; used by `App.tsx`, `AppContext.tsx`, `Tabs.tsx`, `PagesSettings.tsx`. |
 | `src/utils/preloadableLazy.tsx`, `src/utils/lazyScreens.ts` | Synchronous-on-ready lazy loader (`preloadableLazy`), staggered visible-tab idle preloading (`scheduleLazyScreenPreload`), and pointerdown/swipe preloading (`preloadTabScreen`). |
-| `src/utils/dayMetricsCache.ts` | `getDayBaseMetrics(log)`: `WeakMap<DayLog, DayBaseMetrics>` caching meal/macro/activity/TEF sums across Statistics and CycleNutrition. |
+| `src/utils/dayMetricsCache.ts` | `getDayBaseMetrics(log)`: `WeakMap<DayLog, DayBaseMetrics>` caching meal/macro/activity/TEF sums across Statistics, CycleNutrition, and `makeWidgetSnapshot`. |
+| `src/utils/foodLookupCache.ts` | `getFoodByIdMap`, `getSavedRecipes`, `getMealNutritionMap`, `computeMealNutrition`: `WeakMap` caches for O(1) food/meal lookups shared by `TodaySettings`, `AddFoodModal`, `MealSlotBody`, `PlannerWizard`, and `usePreBuiltMealsState`. |
 | `src/utils/notifications.ts` | `sendTestNotification` removed (Send a test notification button is gone). |
 
 ## Food workflows

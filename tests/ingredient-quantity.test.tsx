@@ -19,7 +19,7 @@ const base = {
 const t: unknown = new Proxy(base, { get: (target, key: string) => (key in target ? (target as Record<string, unknown>)[key] : labels) });
 const app = { t, language: 'en', settings: { trackSugar: false, quickFoods: ['rice', 'oil'] }, allFoods: [rice, oil], allDayLogs: {}, selectedDate: '2099-03-02', favoriteFoods: [] };
 
-vi.mock('../src/context/AppContext', () => ({ useApp: () => app, useSettings: () => app }));
+vi.mock('../src/context/AppContext', () => ({ useApp: () => app, useSettings: () => app, useJournalData: () => app }));
 vi.mock('../src/utils/useCatalogueSearch', () => ({ useCatalogueSearch: () => ({ foods: [], pending: false }) }));
 
 import { IngredientPicker } from '../src/components/common/IngredientPicker';

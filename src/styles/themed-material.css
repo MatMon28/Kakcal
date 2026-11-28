@@ -2,8 +2,9 @@
 /* ---- Material specifics (all three modes) ---- */
 
 /* Floating things get the elevation; cards, tiles and chips stay flat and tonal. */
-html[data-style="material"]:not([data-style="classic"]) .kc-header-surface {
-  background: color-mix(in srgb, var(--bg) calc(var(--header-bg-progress, 1) * 96%), transparent);
+html[data-style="material"]:not([data-style="classic"]) .kc-header-surface::before {
+  background: color-mix(in srgb, var(--bg) 96%, transparent);
+  border-bottom: none;
   backdrop-filter: none;
   -webkit-backdrop-filter: none;
 }

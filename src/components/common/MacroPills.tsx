@@ -1,4 +1,4 @@
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 
 interface MacroPillsProps {
   carbs: number | null | undefined;
@@ -12,7 +12,7 @@ interface MacroPillsProps {
 
 /** Numeric-only macro pills. Colours/order identify macros visually; labels retain the names and units. */
 export function MacroPills({ carbs, protein, fat, stretch = false, sugar }: MacroPillsProps) {
-  const { t, settings } = useApp();
+  const { t, settings } = useSettings();
   const macros = [
     { id: 'carbs', label: t.macros.carbs, value: carbs, tone: 'bg-[#CFE7FE] text-[#1A4670]' },
     { id: 'protein', label: t.macros.protein, value: protein, tone: 'bg-[#FAE0B4] text-[#7D4E14]' },

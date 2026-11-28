@@ -23,7 +23,7 @@ import { loadPlannerDraft, parsePlannerDraft, savePlannerDraft } from '../utils/
 import { bootedDays } from '../storage/boot';
 import { persistDayChanges, replaceAllDays } from '../storage/dayStore';
 import { usePersistLocal } from '../storage/usePersist';
-import { JournalDataContext, NavActionsContext, NavContext, SettingsContext, UiContext, useStableActions, type JournalSlice, type NavSlice, type SettingsSlice, type UiSlice } from './contexts';
+import { JournalDataContext, ModalStateContext, NavActionsContext, NavContext, SelectionContext, SettingsContext, UiActionsContext, useStableActions, type JournalSlice, type ModalStateSlice, type NavSlice, type SelectionSlice, type SettingsSlice } from './contexts';
 
 /** One empty day per date (C4): a new object on every read would defeat memoisation. Never written into state. */
 const emptyDays = new Map<string, DayLog>();
@@ -1209,20 +1209,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     logPoop, removePoop, exportDataJson, importDataJson,
   });
 
-  const ui = useMemo<UiSlice>(() => ({
-    selectedDate, setSelectedDate, targetMealSlot, setTargetMealSlot,
-    isAddFoodOpen, setIsAddFoodOpen, foodLogSeed, setFoodLogSeed, isLogActivityOpen, setIsLogActivityOpen,
-    editingActivity, setEditingActivity,
-    isBarcodeOpen, setIsBarcodeOpen, isProfileOpen, setIsProfileOpen,
-    isSettingsOpen, setIsSettingsOpen, isWaterOpen, setIsWaterOpen,
-    isPoopOpen, setIsPoopOpen, isWeightOpen, setIsWeightOpen,
-    isCustomFoodOpen, setIsCustomFoodOpen, customButtonOpenId, setCustomButtonOpenId,
-    isCustomPickerOpen, setIsCustomPickerOpen, isPeriodSheetOpen, setIsPeriodSheetOpen,
-    periodSelectedDate, setPeriodSelectedDate,
+  const uiActions = useStableActions({
+    setSelectedDate, setTargetMealSlot, setPeriodSelectedDate,
+    setIsAddFoodOpen, setFoodLogSeed, setIsLogActivityOpen, setEditingActivity,
+    setIsBarcodeOpen, setIsProfileOpen, setIsSettingsOpen, setIsWaterOpen,
+    setIsPoopOpen, setIsWeightOpen, setIsCustomFoodOpen, setCustomButtonOpenId,
+    setIsCustomPickerOpen, setIsPeriodSheetOpen,
+  });
+
+  const selectionValue = useMemo<SelectionSlice>(() => ({
+    selectedDate, targetMealSlot, periodSelectedDate,
+  }), [selectedDate, targetMealSlot, periodSelectedDate]);
+
+  const modalStateValue = useMemo<ModalStateSlice>(() => ({
+    isAddFoodOpen, foodLogSeed, isLogActivityOpen, editingActivity,
+    isBarcodeOpen, isProfileOpen, isSettingsOpen, isWaterOpen,
+    isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId,
+    isCustomPickerOpen, isPeriodSheetOpen,
   }), [
-    selectedDate, targetMealSlot, isAddFoodOpen, foodLogSeed, isLogActivityOpen, editingActivity, isBarcodeOpen, isProfileOpen, isSettingsOpen,
-    isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId, isCustomPickerOpen,
-    isPeriodSheetOpen, periodSelectedDate,
+    isAddFoodOpen, foodLogSeed, isLogActivityOpen, editingActivity,
+    isBarcodeOpen, isProfileOpen, isSettingsOpen, isWaterOpen,
+    isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId,
+    isCustomPickerOpen, isPeriodSheetOpen,
   ]);
 
   const settingsValue = useMemo<SettingsSlice>(() => ({
@@ -1246,14 +1254,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <NavContext.Provider value={navValue}>
     <NavActionsContext.Provider value={navActions}>
-    <UiContext.Provider value={ui}>
+    <UiActionsContext.Provider value={uiActions}>
+    <SelectionContext.Provider value={selectionValue}>
+    <ModalStateContext.Provider value={modalStateValue}>
       <SettingsContext.Provider value={settingsValue}>
         <JournalDataContext.Provider value={journal}>{children}</JournalDataContext.Provider>
       </SettingsContext.Provider>
-    </UiContext.Provider>
+    </ModalStateContext.Provider>
+    </SelectionContext.Provider>
+    </UiActionsContext.Provider>
     </NavActionsContext.Provider>
     </NavContext.Provider>
   );
 };
 
-export { useApp, useJournalData, useNav, useNavActions, useSettings, useShell, useUiState } from './contexts';
+export { useApp, useJournalData, useModalState, useNav, useNavActions, useSelection, useSettings, useShell, useUiActions, useUiState } from './contexts';

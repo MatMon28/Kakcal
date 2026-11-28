@@ -3,6 +3,7 @@ import { Search, X } from 'lucide-react';
 import { useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { usePersistentState } from '../../utils/usePersistentState';
+import { dateFormatter } from '../../utils/formatters';
 import { LibrarySectionHeader, libraryIconButton } from '../common/LibrarySectionHeader';
 import { LazyBody } from '../common/LazyBody';
 
@@ -172,8 +173,8 @@ export function JournalEmpty({ children }: { children: ReactNode }) {
 }
 
 export function journalDate(date: string, language: string, options?: Intl.DateTimeFormatOptions) {
-  return new Date(`${date}T12:00:00`).toLocaleDateString(
+  return dateFormatter(
     language === 'it' ? 'it-IT' : 'en-GB',
     options ?? { day: 'numeric', month: 'short' },
-  );
+  ).format(new Date(`${date}T12:00:00`));
 }

@@ -369,7 +369,9 @@ export function parseOffCatalog(buffer: ArrayBuffer): OffCatalog {
       };
     }
 
-    let matches: Uint32Array | number[];
+    let matches: Uint32Array | number[] = [];
+    let prefSlice: Uint32Array | null = null;
+    let otherSlice: Uint32Array | null = null;
     let total = 0;
 
     if (exactCode !== null) {
@@ -389,11 +391,9 @@ export function parseOffCatalog(buffer: ArrayBuffer): OffCatalog {
         matches = other.subarray(0, oLen);
         total = oLen;
       } else {
-        const merged = new Uint32Array(pLen + oLen);
-        merged.set(pref.subarray(0, pLen), 0);
-        merged.set(other.subarray(0, oLen), pLen);
-        matches = merged;
-        total = merged.length;
+        prefSlice = pref.subarray(0, pLen);
+        otherSlice = other.subarray(0, oLen);
+        total = pLen + oLen;
       }
     } else if (tokens.length) {
       const matched = matchTokens(tokens);
@@ -440,6 +440,13 @@ export function parseOffCatalog(buffer: ArrayBuffer): OffCatalog {
       page(offset, limit) {
         const start = Math.max(0, offset);
         const end = Math.min(total, start + limit);
+        if (prefSlice && otherSlice) {
+          const pLen = prefSlice.length;
+          return Array.from({ length: Math.max(0, end - start) }, (_, n) => {
+            const idx = start + n;
+            return food(idx < pLen ? prefSlice![idx] : otherSlice![idx - pLen]);
+          });
+        }
         return Array.from({ length: Math.max(0, end - start) }, (_, n) => food(matches[start + n]));
       },
     };

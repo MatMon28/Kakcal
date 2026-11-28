@@ -65,9 +65,7 @@ export function BorderProgressRing({
   const { settings } = useSettings();
   const { themeStyle, ultraMinimal } = settings;
   const svgRef = useRef<SVGSVGElement>(null);
-  const fillRef = useRef<SVGPathElement>(null);
   const [geom, setGeom] = useState<RingGeometry | null>(null);
-  const [measuredLen, setMeasuredLen] = useState<number>(0);
 
   const measure = useCallback(() => {
     const svg = svgRef.current;
@@ -122,15 +120,8 @@ export function BorderProgressRing({
     };
   }, [measure, themeStyle, ultraMinimal]);
 
-  useEffect(() => {
-    const path = fillRef.current;
-    if (!path || !geom) return;
-    const len = typeof path.getTotalLength === 'function' ? path.getTotalLength() : geom.fallbackLen;
-    if (Number.isFinite(len) && len > 0) setMeasuredLen(len);
-  }, [geom]);
-
   const ratio = target > 0 ? Math.max(0, Math.min(1, value / target)) : 0;
-  const totalLen = measuredLen > 0 ? measuredLen : geom?.fallbackLen ?? 0;
+  const totalLen = geom?.fallbackLen ?? 0;
 
   return (
     <svg
@@ -151,7 +142,6 @@ export function BorderProgressRing({
             strokeLinejoin="round"
           />
           <path
-            ref={fillRef}
             d={geom.d}
             fill="none"
             stroke="var(--ring-fill, currentColor)"

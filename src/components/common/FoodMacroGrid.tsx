@@ -1,6 +1,6 @@
 import { Candy, Wheat } from 'lucide-react';
 import type { FoodItem } from '../../types';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { SaltCrystalIcon } from './SaltCrystalIcon';
 import { TileGoalOverlay } from './GoalBadge';
 
@@ -19,7 +19,7 @@ export function FoodMacroGrid({ food, amount, mode = 'portion', dense = false }:
   /** Smaller fields, used for the items listed inside an expanded meal. */
   dense?: boolean;
 }) {
-  const { t, settings } = useApp();
+  const { t, settings } = useSettings();
   return (
     <div data-food-macros className={`grid ${settings.trackSugar ? 'grid-cols-6' : 'grid-cols-5'} gap-1.5 text-center tabular-nums`}>
       {keys.filter((key) => key !== 'sugar' || settings.trackSugar).map((key) => {
@@ -53,7 +53,7 @@ export type SecondaryNutrient = 'fiber' | 'salt' | 'sugar';
 export function SecondaryNutrientCard({ nutrient, value, average = false }: {
   nutrient: SecondaryNutrient; value: number; average?: boolean;
 }) {
-  const { t, settings } = useApp();
+  const { t, settings } = useSettings();
   const labels = average ? { fiber: t.stats.avgFiber, salt: t.stats.avgSalt, sugar: t.stats.avgSugar } : t.macros;
   const Icon = extraIcons[nutrient];
   const ultraMinimal = settings.ultraMinimal;
@@ -93,7 +93,7 @@ export function SecondaryNutrientCard({ nutrient, value, average = false }: {
 export function SecondaryNutrientRow({ fiber, salt, sugar, average = false }: {
   fiber: number; salt: number; sugar: number; average?: boolean;
 }) {
-  const { settings } = useApp();
+  const { settings } = useSettings();
   const values = { fiber, salt, sugar };
   return (
     <div className={`grid ${settings.trackSugar ? 'grid-cols-3' : 'grid-cols-2'} ${settings.ultraMinimal ? 'gap-2' : 'gap-2.5 sm:gap-3.5'} tabular-nums`}>

@@ -1,8 +1,9 @@
 import React from 'react';
 import { Trash2 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings, useUiActions } from '../../context/AppContext';
 import { PoopIcon } from '../common/PoopIcon';
 import { BristolIcon } from '../common/BristolIcon';
+import { dateFormatter } from '../../utils/formatters';
 import { PoopSize } from '../../types';
 import { TrackerCard } from './TrackerCard';
 
@@ -13,7 +14,9 @@ interface Props {
 }
 
 export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) => {
-  const { currentDayLog, settings, setIsPoopOpen, removePoop, t } = useApp();
+  const { currentDayLog, removePoop } = useJournalData();
+  const { settings, t } = useSettings();
+  const { setIsPoopOpen } = useUiActions();
 
   if (settings.hidePoop) return null;
 
@@ -128,7 +131,7 @@ export const PoopCard: React.FC<Props> = ({ compact = false, open, onToggle }) =
                 )}
                 {p.description && !settings.ultraMinimal && <span className="text-[var(--muted)] font-medium truncate max-w-[120px]">{p.description}</span>}
                 <span className="text-[var(--muted)] font-medium tabular-nums">
-                  {new Date(p.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  {dateFormatter(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(p.timestamp))}
                 </span>
               </span>
               <button

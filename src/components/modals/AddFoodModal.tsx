@@ -16,6 +16,7 @@ import { catalogueScore } from '../../data/offCatalog';
 import { calculateTotalCalories } from '../../utils/calculations';
 import { addDaysToDateString, formatDateDisplay } from '../../utils/formatters';
 import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
+import { getFoodByIdMap, getMealNutritionMap } from '../../utils/foodLookupCache';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { FavoriteButton } from '../common/FavoriteButton';
 import { SaveBeforeCloseDialog } from '../common/SaveBeforeCloseDialog';
@@ -105,13 +106,16 @@ export const AddFoodModal: React.FC = () => {
 
   const kcalOf = (f: FoodItem, amt: number) => Math.round((f.calories * amt) / 100);
 
+  const foodById = useMemo(() => getFoodByIdMap(allFoods), [allFoods]);
+  const mealNutrition = useMemo(() => getMealNutritionMap(preBuiltMeals, foodById), [preBuiltMeals, foodById]);
+
   // Quick shortcut foods configured in Settings (default: salt, bread, olive oil)
   const quickFoods = useMemo(
     () =>
       settings.quickFoods
-        .map((id) => allFoods.find((f) => f.id === id))
+        .map((id) => foodById.get(id))
         .filter((f): f is FoodItem => Boolean(f)),
-    [settings.quickFoods, allFoods]
+    [settings.quickFoods, foodById]
   );
 
   const trimmedQuery = searchTerm.trim();
@@ -128,9 +132,9 @@ export const AddFoodModal: React.FC = () => {
   const favoriteItems = useMemo(
     () =>
       favoriteIds
-        .map((id) => allFoods.find((f) => f.id === id))
+        .map((id) => foodById.get(id))
         .filter((f): f is FoodItem => Boolean(f)),
-    [favoriteIds, allFoods]
+    [favoriteIds, foodById]
   );
   const oneCharMatches = useMemo(
     () => (trimmedQuery.length === 1 ? favoriteItems.filter((f) => matchesFirstChar(f, trimmedQuery)) : []),
@@ -191,13 +195,13 @@ export const AddFoodModal: React.FC = () => {
       const items = allDayLogs[d]?.meals[targetMealSlot] || [];
       for (const it of items) {
         if (!seen.has(it.foodId)) {
-          const f = allFoods.find((x) => x.id === it.foodId);
+          const f = foodById.get(it.foodId);
           if (f) seen.set(it.foodId, f);
         }
       }
     }
     return [...seen.values()].slice(0, RECENT_SHOWN + RECENT_MORE);
-  }, [allDayLogs, selectedDate, targetMealSlot, allFoods]);
+  }, [allDayLogs, selectedDate, targetMealSlot, foodById]);
 
   const previousMeals = useMemo(() => {
     const out: { date: string; items: LoggedFoodItem[] }[] = [];
@@ -259,7 +263,7 @@ export const AddFoodModal: React.FC = () => {
   const queueMeal = (meal: PreBuiltMeal) => {
     const entries: QueuedEntry[] = [];
     for (const ingredient of meal.ingredients) {
-      const food = allFoods.find((item) => item.id === ingredient.foodId);
+      const food = foodById.get(ingredient.foodId);
       if (!food) continue;
       rememberFood(food);
       entries.push({ key: `${meal.id}-${ingredient.foodId}-${Date.now()}-${entries.length}`, food, amount: ingredient.amount });
@@ -275,7 +279,7 @@ export const AddFoodModal: React.FC = () => {
     const entries = items.map((item, index): QueuedEntry => ({
       key: `previous-${item.id}-${Date.now()}-${index}`,
       amount: item.amount,
-      food: allFoods.find((food) => food.id === item.foodId) ?? {
+      food: foodById.get(item.foodId) ?? {
         id: item.foodId,
         name_de: item.name,
         name_it: item.name,
@@ -575,12 +579,7 @@ export const AddFoodModal: React.FC = () => {
                         </span>
                       </span>
                       <span className="text-xs font-extrabold tabular-nums text-[var(--text)] shrink-0">
-                        {Math.round(
-                          res.m.ingredients.reduce((s, ing) => {
-                            const f = allFoods.find((x) => x.id === ing.foodId);
-                            return s + (f ? (f.calories * ing.amount) / 100 : 0);
-                          }, 0)
-                        )}{' '}
+                        {mealNutrition.get(res.m.id)?.totalKcal ?? 0}{' '}
                         kcal
                       </span>
                     </button>
@@ -619,12 +618,7 @@ export const AddFoodModal: React.FC = () => {
                   </span>
                   <div className="space-y-1.5">
                     {slotMeals.map((m) => {
-                      const kcal = Math.round(
-                        m.ingredients.reduce((s, ing) => {
-                          const f = allFoods.find((x) => x.id === ing.foodId);
-                          return s + (f ? (f.calories * ing.amount) / 100 : 0);
-                        }, 0)
-                      );
+                      const kcal = mealNutrition.get(m.id)?.totalKcal ?? 0;
                       return (
                         <button
                           key={m.id}

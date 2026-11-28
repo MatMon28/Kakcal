@@ -12,7 +12,7 @@ import { CustomButtonsCard } from './CustomButtonsCard';
 import { PeriodDayInfoModal } from '../period/PeriodDayInfoModal';
 import { EditableGrid, type LayoutItem } from '../layout/EditableGrid';
 import { LayoutPencil, LayoutToolbar } from '../layout/LayoutToolbar';
-import { useApp } from '../../context/AppContext';
+import { useSelection, useSettings } from '../../context/AppContext';
 import { useLayoutText } from '../../i18n/layout';
 import { useJournalText } from '../../i18n/journal';
 import { usePersistentState } from '../../utils/usePersistentState';
@@ -30,7 +30,8 @@ type TrackerId = 'activity' | 'water' | 'poop' | 'custom';
 const TRACKERS: TrackerId[] = ['activity', 'water', 'poop', 'custom'];
 
 export const TodayView: React.FC = () => {
-  const { settings, t, selectedDate } = useApp();
+  const { settings, t } = useSettings();
+  const { selectedDate } = useSelection();
   const layoutState = useLayout();
   const editingToday = useEditingPage() === 'today';
   const layoutText = useLayoutText();

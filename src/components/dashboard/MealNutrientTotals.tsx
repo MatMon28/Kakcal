@@ -1,6 +1,6 @@
 import React from 'react';
 import { Candy, Wheat } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings } from '../../context/AppContext';
 import { SaltCrystalIcon } from '../common/SaltCrystalIcon';
 
 const icons = { fiber: Wheat, salt: SaltCrystalIcon, sugar: Candy };
@@ -23,7 +23,7 @@ interface MealNutrientTotalsProps {
  * `currentColor`. The name stays available as `title` and `aria-label`.
  */
 export const MealNutrientTotals: React.FC<MealNutrientTotalsProps> = ({ fiber, salt, sugar, compact = false }) => {
-  const { t, settings } = useApp();
+  const { t, settings } = useSettings();
   const values = { fiber, salt, sugar };
   const keys = (['fiber', 'salt', 'sugar'] as const).filter((key) => key !== 'sugar' || settings.trackSugar);
   const showUnit = !compact && !settings.ultraMinimal;

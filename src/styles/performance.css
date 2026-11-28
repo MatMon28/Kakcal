@@ -72,3 +72,9 @@
   content-visibility: auto;
   contain-intrinsic-size: auto 240px;
 }
+
+/* Off-screen photo diary thumbnails skip layout/paint in large grids. */
+.journal-photo-preview {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 160px;
+}

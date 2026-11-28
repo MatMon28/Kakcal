@@ -29,7 +29,11 @@ function setFlag(el: HTMLElement, name: 'data-fade-start' | 'data-fade-end', on:
 export function attachScrollFade(el: HTMLElement, axis: FadeAxis): () => void {
   el.setAttribute('data-scroll-fade', axis);
 
+  let rafId: number | null = null;
+  let needsObserve = false;
+
   const update = () => {
+    if (!el.isConnected) return;
     const pos = axis === 'x' ? el.scrollLeft : el.scrollTop;
     const size = axis === 'x' ? el.scrollWidth : el.scrollHeight;
     const view = axis === 'x' ? el.clientWidth : el.clientHeight;
@@ -39,28 +43,47 @@ export function attachScrollFade(el: HTMLElement, axis: FadeAxis): () => void {
 
   // The element's own box rarely changes (fixed height / max-height), so its children are observed too: a growing or
   // animating child changes the scrollable size.
-  const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(update);
+  const resizeObserver = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => scheduleUpdate());
   const observeChildren = () => {
     if (!resizeObserver) return;
     resizeObserver.disconnect();
     resizeObserver.observe(el);
     for (const child of Array.from(el.children)) resizeObserver.observe(child);
   };
+
+  const scheduleUpdate = (reobserve = false) => {
+    if (reobserve) needsObserve = true;
+    if (rafId !== null) return;
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      if (needsObserve) {
+        needsObserve = false;
+        observeChildren();
+      }
+      update();
+    });
+  };
+
   const mutationObserver =
     typeof MutationObserver === 'undefined'
       ? null
       : new MutationObserver(() => {
-          observeChildren();
-          update();
+          scheduleUpdate(true);
         });
 
+  const onScroll = () => scheduleUpdate();
+
   observeChildren();
-  mutationObserver?.observe(el, { childList: true, subtree: true, characterData: true });
-  el.addEventListener('scroll', update, { passive: true });
+  mutationObserver?.observe(el, { childList: true });
+  el.addEventListener('scroll', onScroll, { passive: true });
   update();
 
   return () => {
-    el.removeEventListener('scroll', update);
+    if (rafId !== null) {
+      cancelAnimationFrame(rafId);
+      rafId = null;
+    }
+    el.removeEventListener('scroll', onScroll);
     resizeObserver?.disconnect();
     mutationObserver?.disconnect();
     el.removeAttribute('data-scroll-fade');

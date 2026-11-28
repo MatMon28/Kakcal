@@ -70,17 +70,18 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
 
     static void refresh(Context context, boolean includeShortcuts) {
         AppWidgetManager manager = AppWidgetManager.getInstance(context);
+        Bitmap[] cachedBitmaps = new Bitmap[ACTIONS.length];
         if (includeShortcuts) {
-            refreshType(context, manager, Small.class);
-            refreshType(context, manager, Essential.class);
+            refreshType(context, manager, Small.class, cachedBitmaps);
+            refreshType(context, manager, Essential.class, cachedBitmaps);
         }
-        refreshType(context, manager, Large.class);
-        refreshType(context, manager, Medium.class);
+        refreshType(context, manager, Large.class, cachedBitmaps);
+        refreshType(context, manager, Medium.class, cachedBitmaps);
     }
 
-    private static void refreshType(Context context, AppWidgetManager manager, Class<?> type) {
+    private static void refreshType(Context context, AppWidgetManager manager, Class<?> type, Bitmap[] cachedBitmaps) {
         int[] ids = manager.getAppWidgetIds(new ComponentName(context, type));
-        if (ids.length != 0) manager.updateAppWidget(ids, views(context, type));
+        if (ids.length != 0) manager.updateAppWidget(ids, views(context, type, cachedBitmaps));
     }
 
     @Override
@@ -136,6 +137,10 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
     }
 
     private static RemoteViews views(Context context, Class<?> type) {
+        return views(context, type, null);
+    }
+
+    private static RemoteViews views(Context context, Class<?> type, Bitmap[] cachedBitmaps) {
         // "large" here means a day-total widget: Large or Medium.
         boolean large = type == Large.class || type == Medium.class;
         boolean medium = type == Medium.class;
@@ -167,7 +172,11 @@ public abstract class JournalWidgetProvider extends AppWidgetProvider {
             if ("classic".equals(themeStyle)) {
                 view.setImageViewResource(BUTTONS[i], ICONS[i]);
             } else {
-                Bitmap bmp = renderStyledActionBitmap(context, i, themeStyle, dark, monoHue);
+                Bitmap bmp = cachedBitmaps != null ? cachedBitmaps[i] : null;
+                if (bmp == null) {
+                    bmp = renderStyledActionBitmap(context, i, themeStyle, dark, monoHue);
+                    if (cachedBitmaps != null) cachedBitmaps[i] = bmp;
+                }
                 if (bmp != null) view.setImageViewBitmap(BUTTONS[i], bmp);
                 else view.setImageViewResource(BUTTONS[i], ICONS[i]);
             }

@@ -2,6 +2,7 @@ import { Droplets, Flame, Footprints, Scale, Sparkles, Utensils } from 'lucide-r
 import { PoopIcon } from '../common/PoopIcon';
 import type { TourLang, TourUi } from '../tour/tourContent';
 import { BASE_WIDGET_ACTIONS, WIDGET_ACTIONS, readWidgetAppearance, type WidgetAction, type WidgetSnapshot } from './widgetContract';
+import { numberFormatter } from '../../utils/formatters';
 import './widget-preview.css';
 
 interface GalleryProps {
@@ -168,8 +169,8 @@ function LargeWidget({ ui, lang, snapshot, onAction, compact = false }: GalleryP
   const look = readWidgetAppearance();
   const letters = lang === 'it' ? ['C', 'P', 'G'] : ['C', 'P', 'F'];
   const locale = lang === 'it' ? 'it-IT' : 'en-US';
-  const whole = new Intl.NumberFormat(locale, { maximumFractionDigits: 0 });
-  const tenth = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+  const whole = numberFormatter(locale, { maximumFractionDigits: 0 });
+  const tenth = numberFormatter(locale, { maximumFractionDigits: 1 });
 
   const intake = snapshot?.calories ?? 0;
   const burned = snapshot?.burnedCalories ?? 0;

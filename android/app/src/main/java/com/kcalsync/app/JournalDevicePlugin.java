@@ -94,16 +94,20 @@ public class JournalDevicePlugin extends Plugin {
             }
             SharedPreferences store = JournalWidgetProvider.store(getContext());
             String json = clean.toString();
-            String signature = language + "|" + bmr + "|" + style + "|" + themeStyle + "|" + monoHue + "|" + customButton + "|" + json;
+            String shortcutSignature = language + "|" + style + "|" + themeStyle + "|" + monoHue + "|" + customButton;
+            String signature = shortcutSignature + "|" + bmr + "|" + json;
             if (!signature.equals(store.getString("signature", ""))) {
+                boolean shortcutChanged = !shortcutSignature.equals(store.getString("shortcutSignature", ""));
                 if (!store.edit().putString("days", json).putString("language", language)
                         .putFloat("bmr", (float) bmr).putString("widgetStyle", style)
                         .putString("themeStyle", themeStyle).putString("monoHue", monoHue)
-                        .putBoolean("widgetCustomButton", customButton).putString("signature", signature).commit()) {
+                        .putBoolean("widgetCustomButton", customButton)
+                        .putString("shortcutSignature", shortcutSignature)
+                        .putString("signature", signature).commit()) {
                     call.reject("Could not save widget data");
                     return;
                 }
-                JournalWidgetProvider.refresh(getContext(), true);
+                JournalWidgetProvider.refresh(getContext(), shortcutChanged);
             }
             call.resolve();
         } catch (Exception error) {

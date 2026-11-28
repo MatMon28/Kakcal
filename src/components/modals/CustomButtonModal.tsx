@@ -4,7 +4,7 @@ import { useApp } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { AmountStepper } from '../common/AmountStepper';
 import { TrackerIcon } from '../common/TrackerIcon';
-import { addDaysToDateString, formatDateDisplay } from '../../utils/formatters';
+import { addDaysToDateString, dateFormatter, formatDateDisplay } from '../../utils/formatters';
 import { formatTrackerAmount, getCustomEntries, getTrackerValue } from '../../utils/customTrackers';
 
 const PRESET_AMOUNTS = [50, 100, 200, 400];
@@ -23,7 +23,7 @@ export function CustomButtonModal() {
   const dayValue = getTrackerValue(currentDayLog, def);
   const entries = isQuantity ? getCustomEntries(currentDayLog, def.id) : [];
   const formatQty = (amount: number) => `${formatTrackerAmount(amount, language)}${def.unit ? ` ${def.unit}` : ''}`;
-  const formatTime = (timestamp: string) => new Date(timestamp).toLocaleTimeString(language === 'it' ? 'it-IT' : 'en-US', { hour: 'numeric', minute: '2-digit' });
+  const formatTime = (timestamp: string) => dateFormatter(language === 'it' ? 'it-IT' : 'en-US', { hour: 'numeric', minute: '2-digit' }).format(new Date(timestamp));
   const canSave = !isQuantity || (Number.isFinite(qty) && qty > 0);
   const close = () => setCustomButtonOpenId(null);
 

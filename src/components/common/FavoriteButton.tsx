@@ -1,6 +1,6 @@
 import React from 'react';
 import { Star } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import type { FoodItem } from '../../types';
 
 interface FavoriteButtonProps {
@@ -16,7 +16,8 @@ interface FavoriteButtonProps {
 
 /** Star toggle for the favourite-food / favourite-activity lists. Results reorder so these appear first. */
 export const FavoriteButton: React.FC<FavoriteButtonProps> = ({ foodId, variant = 'row', kind = 'food', food }) => {
-  const { favoriteFoods, toggleFavoriteFood, favoriteActivities, toggleFavoriteActivity, rememberFood, t } = useApp();
+  const { favoriteFoods, toggleFavoriteFood, favoriteActivities, toggleFavoriteActivity, t } = useSettings();
+  const { rememberFood } = useJournalData();
   const active = (kind === 'activity' ? favoriteActivities : favoriteFoods).includes(foodId);
   const toggle = kind === 'activity' ? toggleFavoriteActivity : toggleFavoriteFood;
   const size = variant === 'card' ? 'size-7' : 'size-8';

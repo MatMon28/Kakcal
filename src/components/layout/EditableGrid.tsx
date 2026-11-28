@@ -98,13 +98,28 @@ function cardRadius(box: HTMLElement | null): number {
 const Outline: React.FC<{ solid: boolean }> = ({ solid }) => {
   const ref = useRef<SVGSVGElement>(null);
   const [radius, setRadius] = useState(OUTLINE_FALLBACK_RADIUS);
-  useLayoutEffect(() => {
+  const syncRadius = () => {
     const parent = ref.current?.parentElement ?? null;
     // An SVG corner is elliptical when the radius is larger than half of a side, so it is clamped to a circle.
     const limit = parent ? Math.min(parent.offsetWidth, parent.offsetHeight) / 2 : OUTLINE_FALLBACK_RADIUS;
     const next = Math.max(0, Math.min(cardRadius(parent), limit));
     setRadius((current) => (current === next ? current : next));
-  });
+  };
+  useLayoutEffect(syncRadius, [solid]);
+  useEffect(() => {
+    const parent = ref.current?.parentElement;
+    if (!parent || typeof ResizeObserver === 'undefined') return;
+    let raf = 0;
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(syncRadius);
+    });
+    ro.observe(parent);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, []);
   return (
     <svg
       ref={ref}
@@ -417,9 +432,9 @@ export const EditableGrid: React.FC<{
     });
     setGap((prev) => (Math.abs(prev - g) < 0.01 ? prev : g));
   };
-  useLayoutEffect(measure);
-
   const idsKey = shown.map((item) => item.id).join('|');
+  useLayoutEffect(measure, [mode, idsKey]);
+
   useEffect(() => {
     const grid = gridRef.current;
     if (mode !== 'free' || !grid) return;

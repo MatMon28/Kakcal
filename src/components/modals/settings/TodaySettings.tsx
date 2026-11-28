@@ -1,34 +1,26 @@
-import React, { useDeferredValue, useMemo, useState } from 'react';
+import React, { memo, useDeferredValue, useMemo, useState } from 'react';
 import { ArrowLeft, Camera, Candy, ChevronRight, Droplets, Footprints, NotebookPen, Scale, Search, Sparkles, Utensils, X } from 'lucide-react';
-import { useApp } from '../../../context/AppContext';
+import { useJournalData, useSettings } from '../../../context/AppContext';
 import { useJournalText } from '../../../i18n/journal';
 import { searchFoods } from '../../../utils/foodSearchIndex';
 import { useCatalogueSearch } from '../../../utils/useCatalogueSearch';
 import { catalogueScore } from '../../../data/offCatalog';
 import { scrollFadeY } from '../../../utils/scrollFade';
+import { getFoodByIdMap } from '../../../utils/foodLookupCache';
 import type { FoodItem, Settings } from '../../../types';
 import { PoopIcon } from '../../common/PoopIcon';
 import { SubSection, TONE, ToggleRow } from './SettingsParts';
 import { CustomButtonsSettings } from './CustomButtonsSettings';
 import { HealthConnectSettings } from './HealthConnectSettings';
 
-/**
- * Settings > Today. Sub-sections, in order: Quick-add buttons (the Today dock), Tracking (log water, log poop,
- * track sugar), Meal notes & photos (Meal notes in Today, Photo diary in Today), Quick food shortcuts, and
- * Custom buttons (moved here from the old Custom buttons group).
- */
-export const TodaySettings: React.FC = () => {
-  const j = useJournalText();
-  const { t, settings, updateSettings, language, allFoods, rememberFood } = useApp();
-  const [pickerIdx, setPickerIdx] = useState<number | null>(null);
+const QuickFoodPicker: React.FC<{ pickerIdx: number; onClose: () => void }> = ({ pickerIdx, onClose }) => {
+  const { t, settings, updateSettings, language } = useSettings();
+  const { allFoods, rememberFood } = useJournalData();
   const [query, setQuery] = useState('');
 
   const nameOf = (f: FoodItem) => (language === 'it' ? f.name_it : f.name_en || f.name_de);
-  const foodById = (id: string) => allFoods.find((x) => x.id === id);
-
-  // Food picker results, same behaviour as the Add Food search (type to find, typos OK)
   const pickerQuery = useDeferredValue(query.trim());
-  const { foods: catalogue } = useCatalogueSearch(pickerQuery, pickerIdx !== null, 25, language);
+  const { foods: catalogue } = useCatalogueSearch(pickerQuery, true, 25, language);
   const pickerResults = useMemo(() => {
     const q = pickerQuery;
     if (q.length < 2) return [];
@@ -40,6 +32,85 @@ export const TodaySettings: React.FC = () => {
       .slice(0, 25)
       .map((x) => x.f);
   }, [allFoods, pickerQuery, catalogue]);
+
+  return (
+    <div className="space-y-3">
+      <button
+        type="button"
+        onClick={onClose}
+        className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
+      >
+        <ArrowLeft size={14} />
+        <span>{t.common.back}</span>
+      </button>
+
+      <div className="relative">
+        <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t.foodModal.typeToSearch}
+          autoFocus
+          className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
+        />
+        {query && (
+          <button
+            type="button"
+            onClick={() => setQuery('')}
+            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
+            aria-label={t.common.clear}
+          >
+            <X size={14} />
+          </button>
+        )}
+      </div>
+
+      {query.trim().length < 2 ? (
+        <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
+      ) : (
+        <div ref={scrollFadeY} className="max-h-72 overflow-y-auto divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
+          {pickerResults.length === 0 ? (
+            <div className="p-4 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
+          ) : (
+            pickerResults.map((food) => (
+              <button
+                key={food.id}
+                type="button"
+                onClick={() => {
+                  const next = [...settings.quickFoods];
+                  rememberFood(food);
+                  next[pickerIdx] = food.id;
+                  updateSettings({ quickFoods: next });
+                  onClose();
+                }}
+                className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] transition-colors"
+              >
+                <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate">{nameOf(food)}</span>
+                <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
+                  {food.calories} kcal/100{food.unit}
+                </span>
+              </button>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+/**
+ * Settings > Today. Sub-sections, in order: Quick-add buttons (the Today dock), Tracking (log water, log poop,
+ * track sugar), Meal notes & photos (Meal notes in Today, Photo diary in Today), Quick food shortcuts, and
+ * Custom buttons (moved here from the old Custom buttons group).
+ */
+export const TodaySettings: React.FC = memo(() => {
+  const j = useJournalText();
+  const { t, settings, updateSettings, language } = useSettings();
+  const { allFoods } = useJournalData();
+  const [pickerIdx, setPickerIdx] = useState<number | null>(null);
+
+  const nameOf = (f: FoodItem) => (language === 'it' ? f.name_it : f.name_en || f.name_de);
+  const foodById = useMemo(() => getFoodByIdMap(allFoods), [allFoods]);
 
   // Quick-add dock buttons. Water and poop are switched in the Tracking sub-section below, so they are not listed here.
   const quickRows = [
@@ -53,74 +124,7 @@ export const TodaySettings: React.FC = () => {
     updateSettings({ quickAdd: { ...settings.quickAdd, [key]: value } });
 
   if (pickerIdx !== null) {
-    /* ---------- Food picker for a quick-add shortcut ---------- */
-    return (
-      <div className="space-y-3">
-        <button
-          type="button"
-          onClick={() => {
-            setPickerIdx(null);
-            setQuery('');
-          }}
-          className="pressable inline-flex items-center gap-1.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--text)]"
-        >
-          <ArrowLeft size={14} />
-          <span>{t.common.back}</span>
-        </button>
-
-        <div className="relative">
-          <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[var(--muted)] pointer-events-none" />
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t.foodModal.typeToSearch}
-            autoFocus
-            className="w-full bg-[var(--inset)] border border-[var(--border)] rounded-2xl pl-9 pr-9 py-2.5 text-sm font-medium text-[var(--text)] placeholder-[var(--muted)] focus:outline-none focus:border-[var(--muted)]"
-          />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full text-[var(--muted)] hover:text-[var(--text)] flex items-center justify-center"
-              aria-label={t.common.clear}
-            >
-              <X size={14} />
-            </button>
-          )}
-        </div>
-
-        {query.trim().length < 2 ? (
-          <p className="text-[11px] font-medium text-[var(--muted)] px-1">{t.foodModal.minCharsHint}</p>
-        ) : (
-          <div ref={scrollFadeY} className="max-h-72 overflow-y-auto divide-y divide-[var(--border)] bg-[var(--inset)] border border-[var(--border)] rounded-2xl">
-            {pickerResults.length === 0 ? (
-              <div className="p-4 text-center text-xs text-[var(--muted)]">{t.foodModal.noResults}</div>
-            ) : (
-              pickerResults.map((food) => (
-                <button
-                  key={food.id}
-                  type="button"
-                  onClick={() => {
-                    const next = [...settings.quickFoods];
-                    rememberFood(food);
-                    next[pickerIdx] = food.id;
-                    updateSettings({ quickFoods: next });
-                    setPickerIdx(null);
-                    setQuery('');
-                  }}
-                  className="w-full p-3 flex items-center justify-between gap-3 text-left hover:bg-[var(--hover)] transition-colors"
-                >
-                  <span className="text-xs sm:text-sm font-bold text-[var(--text)] truncate">{nameOf(food)}</span>
-                  <span className="text-xs font-extrabold tabular-nums text-[var(--muted)] shrink-0">
-                    {food.calories} kcal/100{food.unit}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-    );
+    return <QuickFoodPicker pickerIdx={pickerIdx} onClose={() => setPickerIdx(null)} />;
   }
 
   return (
@@ -193,7 +197,7 @@ export const TodaySettings: React.FC = () => {
 
       <SubSection title={t.settings.quickFoodsLabel}>
         {settings.quickFoods.map((id, i) => {
-          const f = foodById(id);
+          const f = foodById.get(id);
           return (
             <button
               key={i}
@@ -218,4 +222,4 @@ export const TodaySettings: React.FC = () => {
       <HealthConnectSettings />
     </div>
   );
-};
+});

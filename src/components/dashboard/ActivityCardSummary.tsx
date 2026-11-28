@@ -1,6 +1,6 @@
 import React from 'react';
 import { Activity, Flame, Footprints, Pencil, RefreshCw, Route, Trash2, Zap } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings, useUiActions } from '../../context/AppContext';
 import { activityLogLabel } from '../../utils/activityLabel';
 import { isAndroidApp } from '../../utils/android';
 import { TrackerCard } from './TrackerCard';
@@ -14,18 +14,9 @@ interface Props {
 const pill = 'inline-flex items-center rounded-lg px-2 py-1 text-[11px] font-extrabold tabular-nums leading-none whitespace-nowrap';
 
 export const ActivityCardSummary: React.FC<Props> = ({ compact = false, open, onToggle }) => {
-  const {
-    currentDayLog,
-    currentExpenditure,
-    settings,
-    removeActivity,
-    setIsLogActivityOpen,
-    setEditingActivity,
-    syncHealthConnect,
-    isHealthConnectSyncing,
-    language,
-    t,
-  } = useApp();
+  const { currentDayLog, currentExpenditure, removeActivity, syncHealthConnect, isHealthConnectSyncing } = useJournalData();
+  const { settings, language, t } = useSettings();
+  const { setIsLogActivityOpen, setEditingActivity } = useUiActions();
 
   const activities = currentDayLog.activities;
   const ultraMinimal = settings.ultraMinimal;

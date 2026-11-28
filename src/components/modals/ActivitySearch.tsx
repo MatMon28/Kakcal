@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Search, X, PlusCircle, Trash2 } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 import type { AppContextType } from '../../context/appContextType';
@@ -78,6 +78,7 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
   );
 
   const trimmed = query.trim();
+  const deferredQuery = useDeferredValue(trimmed);
 
   // A new query or category starts at the top of the list.
   useEffect(() => {
@@ -99,21 +100,21 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
     let list: ActivityInfo[];
     let searching = false;
 
-    if (trimmed.length >= 2) {
+    if (deferredQuery.length >= 2) {
       searching = true;
-      const words = trimmed.split(/\s+/).length;
+      const words = deferredQuery.split(/\s+/).length;
       const scored = inCategory
         .filter((a) =>
-          fuzzyMatch(trimmed, [a.name_en, a.name_it, categoryLabel(a.category, 'en'), categoryLabel(a.category, 'it')])
+          fuzzyMatch(deferredQuery, [a.name_en, a.name_it, categoryLabel(a.category, 'en'), categoryLabel(a.category, 'it')])
         )
         .map((a) => ({
           a,
           // Name matches rank first; a category-name match ("cycling", "dance") ranks just behind them.
           score: Math.min(
-            fuzzyScore(trimmed, a.name_en),
-            fuzzyScore(trimmed, a.name_it),
-            fuzzyScore(trimmed, categoryLabel(a.category, 'en')) + 0.9,
-            fuzzyScore(trimmed, categoryLabel(a.category, 'it')) + 0.9
+            fuzzyScore(deferredQuery, a.name_en),
+            fuzzyScore(deferredQuery, a.name_it),
+            fuzzyScore(deferredQuery, categoryLabel(a.category, 'en')) + 0.9,
+            fuzzyScore(deferredQuery, categoryLabel(a.category, 'it')) + 0.9
           ),
         }))
         .sort((x, y) => x.score - y.score);
@@ -123,9 +124,9 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
       const direct = scored.filter((x) => x.score <= directLimit);
       const best = scored.length ? scored[0].score : 0;
       list = (direct.length > 0 ? direct : scored.filter((x) => x.score <= best + 0.5)).map((x) => x.a);
-    } else if (trimmed.length === 1) {
+    } else if (deferredQuery.length === 1) {
       searching = true;
-      list = inCategory.filter((a) => matchesFirstChar({ name_de: '', name_it: a.name_it, name_en: a.name_en }, trimmed));
+      list = inCategory.filter((a) => matchesFirstChar({ name_de: '', name_it: a.name_it, name_en: a.name_en }, deferredQuery));
     } else {
       list = inCategory;
     }
@@ -138,7 +139,7 @@ export const ActivitySearch: React.FC<ActivitySearchProps> = ({ onPick, onUseCus
       others: ordered.filter((a) => !favSet.has(a.id)),
       isSearch: searching,
     };
-  }, [trimmed, inCategory, favoriteActivities]);
+  }, [deferredQuery, inCategory, favoriteActivities]);
 
   const total = favorites.length + others.length;
 

@@ -13,6 +13,7 @@ import {
   removePastSession,
   updatePastSession,
 } from '../../utils/fastingStore';
+import { dateFormatter } from '../../utils/formatters';
 import { MOOD_TONE } from './FastingNoteModal';
 
 export function toLocalDateTimeInput(iso: string): string {
@@ -25,13 +26,13 @@ export function toLocalDateTimeInput(iso: string): string {
 function formatSessionTimestamp(iso: string, lang: 'en' | 'it'): string {
   const d = new Date(iso);
   if (!Number.isFinite(d.getTime())) return iso;
-  return d.toLocaleString(lang === 'it' ? 'it-IT' : 'en-US', {
+  return dateFormatter(lang === 'it' ? 'it-IT' : 'en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  });
+  }).format(d);
 }
 
 interface FastingSessionModalProps {

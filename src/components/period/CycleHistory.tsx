@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import {
   CycleInfo,
   cycleStats,
@@ -18,7 +18,8 @@ import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 const FLOW_RANK: Record<PeriodFlow, number> = { none: 0, light: 1, medium: 2, heavy: 3 };
 
 export const CycleHistory: React.FC<{ status: PeriodStatus }> = ({ status }) => {
-  const { t, language, periodData } = useApp();
+  const { t, language } = useSettings();
+  const { periodData } = useJournalData();
   const [allTime, setAllTime] = useState(false);
   const [openId, setOpenId] = useState<string | null>(null);
   const todayStr = getTodayDateString();

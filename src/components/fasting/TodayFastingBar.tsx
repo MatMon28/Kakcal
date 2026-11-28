@@ -20,9 +20,12 @@ export const TodayFastingBar: React.FC = () => {
   const ft = useFastingText();
   const fasting = useFasting();
   const [nowMs, setNowMs] = useState(() => Date.now());
+  const active = fasting.activeSession;
+  const eatingWindow = fasting.config.enabled && !active ? computeEatingWindow(fasting, nowMs) : null;
+  const shouldTick = fasting.config.enabled && (active !== null || (eatingWindow !== null && !eatingWindow.reached));
 
   useEffect(() => {
-    if (!fasting.config.enabled) return;
+    if (!shouldTick) return;
     const tick = () => setNowMs(Date.now());
     const id = window.setInterval(tick, 30_000);
     const onVis = () => {
@@ -33,12 +36,11 @@ export const TodayFastingBar: React.FC = () => {
       window.clearInterval(id);
       document.removeEventListener('visibilitychange', onVis);
     };
-  }, [fasting.config.enabled]);
+  }, [shouldTick]);
 
   if (!fasting.config.enabled) return null;
 
   const ultra = settings.ultraMinimal;
-  const active = fasting.activeSession;
 
   if (active) {
     const timing = computeFastTiming(active, nowMs);
@@ -92,7 +94,7 @@ export const TodayFastingBar: React.FC = () => {
   }
 
   // No active fast: show Eating Window progress bar + quick Start Fast button
-  const eating = computeEatingWindow(fasting, nowMs);
+  const eating = eatingWindow;
   const { eatingHours } = getProtocolHours(fasting.config);
   const protocolLabel = ft.protocols[fasting.config.protocol];
   const pct = eating ? Math.round(eating.progress * 100) : 0;

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Scale } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useAdvanced } from '../../utils/advancedStore';
 import { formatKcal } from '../../utils/formatters';
@@ -18,7 +18,7 @@ interface BalanceTargetCardProps {
  * difference gets closer to the target, and the line below says what is left or by how much it was passed.
  */
 export const BalanceTargetCard: React.FC<BalanceTargetCardProps> = ({ net, average = false }) => {
-  const { settings } = useApp();
+  const { settings } = useSettings();
   const { balance } = useAdvanced();
   const j = useJournalText();
   if (!balance.enabled || !(balance.kcal > 0)) return null;
@@ -80,6 +80,6 @@ export const BalanceTargetCard: React.FC<BalanceTargetCardProps> = ({ net, avera
 
 /** Today: the target for the selected day. */
 export const TodayBalanceTarget: React.FC = () => {
-  const { netBalance } = useApp();
+  const { netBalance } = useJournalData();
   return <BalanceTargetCard net={Math.round(netBalance)} />;
 };

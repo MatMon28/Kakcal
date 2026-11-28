@@ -50,7 +50,12 @@ class TestFileReader {
 beforeEach(() => { vi.stubGlobal('FileReader', TestFileReader); });
 afterEach(() => { vi.unstubAllGlobals(); });
 
-const renderBackup = () => render(<AppProvider><DataBackup /></AppProvider>);
+const renderBackup = () => {
+  const res = render(<AppProvider><DataBackup /></AppProvider>);
+  const toggle = screen.getByRole('button', { name: 'Data Backup' });
+  if (toggle.getAttribute('aria-expanded') !== 'true') fireEvent.click(toggle);
+  return res;
+};
 // In the APK every export first asks "Save or share?".
 const chooseSave = async () => { await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Save to device/ })); }); };
 
@@ -98,9 +103,11 @@ describe.each([
     renderBackup();
     await act(async () => { fireEvent.click(screen.getByText(click)); });
     if (kind === 'xlsx') {
-      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.xlsx/i })); });
+      const xlsxBtn = await screen.findByRole('button', { name: /Export \.xlsx/i });
+      await act(async () => { fireEvent.click(xlsxBtn); });
     } else if (kind === 'pdf') {
-      await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.pdf/i })); });
+      const pdfBtn = await screen.findByRole('button', { name: /Export \.pdf/i }, { timeout: 5000 });
+      await act(async () => { fireEvent.click(pdfBtn); });
     }
     await chooseSave();
   };
@@ -152,19 +159,19 @@ describe('Android APK: Export JSON never reports success without a byte count', 
 describe('Android APK: an export that finished while the app was away', () => {
   it('shows the saved size when the app starts after the picker returned', async () => {
     takeLastExport.mockResolvedValue({ exports: [{ id: 'a', status: 'saved', filename: 'kakcal_backup_2026-02-03.json', bytes: 12700 }] });
-    await act(async () => { renderBackup(); });
+    await act(async () => { render(<AppProvider><DataBackup /></AppProvider>); });
     expect(screen.getByRole('status').textContent).toMatch(/Saved after the app restarted: kakcal_backup_2026-02-03\.json\. \(12\.4 KB\)/);
   });
 
   it('shows the red error with the real cause when the recovered write failed', async () => {
     takeLastExport.mockResolvedValue({ exports: [{ id: 'b', status: 'failed', detail: 'Could not write the selected file: mode=wt SecurityException: gone [the empty document was removed]' }] });
-    await act(async () => { renderBackup(); });
+    await act(async () => { render(<AppProvider><DataBackup /></AppProvider>); });
     expect(screen.getByRole('alert').textContent).toMatch(/SecurityException/);
   });
 
   it('shows nothing when there is nothing to report (or an APK without takeLastExport)', async () => {
     takeLastExport.mockRejectedValue(new Error('not implemented'));
-    await act(async () => { renderBackup(); });
+    await act(async () => { render(<AppProvider><DataBackup /></AppProvider>); });
     expect(screen.queryByRole('status')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
   });
@@ -189,7 +196,8 @@ describe('Android APK: Save or share? -> Share', () => {
     shareFile.mockResolvedValue({ bytes: 12700 });
     renderBackup();
     await act(async () => { fireEvent.click(screen.getByText('Export PDF report')); });
-    await act(async () => { fireEvent.click(screen.getByRole('button', { name: /Export \.pdf/i })); });
+    const pdfBtn = await screen.findByRole('button', { name: /Export \.pdf/i }, { timeout: 5000 });
+    await act(async () => { fireEvent.click(pdfBtn); });
     await chooseShare();
     expect(exportFile).not.toHaveBeenCalled();
     expect(shareFile).toHaveBeenCalledTimes(1);

@@ -1,13 +1,6 @@
 import type { DayLog, Language, UserProfile } from '../../types';
-import {
-  calculateBMR,
-  calculateMacros,
-  calculateTEF,
-  calculateTotalActivityCalories,
-  calculateTotalCalories,
-} from '../../utils/calculations';
-
-import { allMealItems } from '../../utils/mealItems';
+import { calculateBMR } from '../../utils/calculations';
+import { getDayBaseMetrics } from '../../utils/dayMetricsCache';
 
 // One serialisable bridge shared by the guided tour, the widget gallery and the
 // native widgets. The same action IDs and nutrition fields feed every presentation.
@@ -96,21 +89,18 @@ export function makeWidgetSnapshot(
   day: DayLog | undefined,
   profile: UserProfile,
 ): WidgetSnapshot {
-  const foods = day ? allMealItems(day.meals) : [];
-  const macros = calculateMacros(foods);
-  const tef = calculateTEF(macros.carbsGrams, macros.proteinGrams, macros.fatGrams).totalTEF;
-  const activity = calculateTotalActivityCalories(day?.activities ?? []);
+  const metrics = day ? getDayBaseMetrics(day) : null;
   return {
     date,
     language,
-    calories: calculateTotalCalories(foods),
-    burnedCalories: Math.round(calculateBMR(profile) + activity + tef),
-    proteinGrams: macros.proteinGrams,
-    carbsGrams: macros.carbsGrams,
-    fatGrams: macros.fatGrams,
-    proteinPercent: macros.proteinPercent,
-    carbsPercent: macros.carbsPercent,
-    fatPercent: macros.fatPercent,
+    calories: metrics?.intake ?? 0,
+    burnedCalories: Math.round(calculateBMR(profile) + (metrics?.actExp ?? 0) + (metrics?.tef ?? 0)),
+    proteinGrams: metrics?.macros.proteinGrams ?? 0,
+    carbsGrams: metrics?.macros.carbsGrams ?? 0,
+    fatGrams: metrics?.macros.fatGrams ?? 0,
+    proteinPercent: metrics?.macros.proteinPercent ?? 0,
+    carbsPercent: metrics?.macros.carbsPercent ?? 0,
+    fatPercent: metrics?.macros.fatPercent ?? 0,
   };
 }
 

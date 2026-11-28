@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { BookmarkPlus, Check } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { useJournalText } from '../../i18n/journal';
 import { useMealSlots } from '../../utils/mealSlots';
 import { knownFoodIds } from '../../utils/knownFoods';
@@ -23,7 +23,8 @@ export function SaveAsMeal({
   items: LoggedFoodItem[];
   variant?: 'secondary' | 'row';
 }) {
-  const { allFoods, addPreBuiltMeal, language, settings } = useApp();
+  const { allFoods, addPreBuiltMeal } = useJournalData();
+  const { language, settings } = useSettings();
   const ultraMinimal = variant === 'row' && settings.ultraMinimal;
   const { label } = useMealSlots();
   const j = useJournalText();

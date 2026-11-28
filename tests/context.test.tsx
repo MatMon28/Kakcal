@@ -1,7 +1,9 @@
 import { act, cleanup, fireEvent, render, renderHook, screen, waitFor } from '@testing-library/react';
-import { StrictMode, type ReactNode } from 'react';
+import { Profiler, StrictMode, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { AppProvider, useApp, useNav, useNavActions, useSettings } from '../src/context/AppContext';
+import { AppProvider, useApp, useNav, useNavActions, useSettings, useUiActions } from '../src/context/AppContext';
+import { Header } from '../src/components/common/Header';
+import { TodayView } from '../src/components/dashboard/TodayView';
 import { PlanTransfer } from '../src/components/journal/PlanTransfer';
 import { JOURNAL_KEY } from '../src/utils/journalStore';
 import type { MealPlan, PlanGroup } from '../src/types/journal';
@@ -98,6 +100,44 @@ describe('context split (item 1)', () => {
     expect(renders).toBe(before);
     act(() => api!.updateSettings({ ultraMinimal: true }));
     expect(renders).toBeGreaterThan(before);
+  });
+
+  it('does not re-render Header, Tabs, or TodayView when opening/closing a modal', () => {
+    const prevRO = globalThis.ResizeObserver;
+    const prevMM = window.matchMedia;
+    const prevFonts = Object.getOwnPropertyDescriptor(document, 'fonts');
+    globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} } as unknown as typeof ResizeObserver;
+    window.matchMedia = (() => ({ matches: true, media: '', onchange: null, addListener() {}, removeListener() {}, addEventListener() {}, removeEventListener() {}, dispatchEvent() { return false; } })) as unknown as typeof window.matchMedia;
+    Object.defineProperty(document, 'fonts', { configurable: true, value: { ready: Promise.resolve() } });
+    try {
+      let headerCommits = 0;
+      let todayCommits = 0;
+      let actions: ReturnType<typeof useUiActions> | undefined;
+      const Actions = () => { actions = useUiActions(); return null; };
+      render(
+        <AppProvider>
+          <Profiler id="header" onRender={() => { headerCommits++; }}>
+            <Header />
+          </Profiler>
+          <Profiler id="today" onRender={() => { todayCommits++; }}>
+            <TodayView />
+          </Profiler>
+          <Actions />
+        </AppProvider>,
+      );
+      const headerBefore = headerCommits;
+      const todayBefore = todayCommits;
+      act(() => actions!.setIsWaterOpen(true));
+      act(() => actions!.setIsWaterOpen(false));
+      expect(headerCommits).toBe(headerBefore);
+      expect(todayCommits).toBe(todayBefore);
+      cleanup();
+    } finally {
+      globalThis.ResizeObserver = prevRO;
+      window.matchMedia = prevMM;
+      if (prevFonts) Object.defineProperty(document, 'fonts', prevFonts);
+      else delete (document as unknown as Record<string, unknown>).fonts;
+    }
   });
 });
 

@@ -1,5 +1,5 @@
 import { Utensils, Footprints, Droplets, Scale, Sparkles } from 'lucide-react';
-import { useNav, useShell } from '../../context/AppContext';
+import { useNav, useSettings, useUiActions } from '../../context/AppContext';
 import { ActionDock, type DockAction } from '../common/ActionDock';
 import { PoopIcon } from '../common/PoopIcon';
 import { useAutoMealSlot } from '../../utils/mealSlots';
@@ -7,10 +7,11 @@ import { TrackerIcon } from '../common/TrackerIcon';
 
 /** Food, activity and tracker shortcuts for the Today page only. */
 export function QuickAddBar() {
+  const { settings, t } = useSettings();
   const {
-    settings, t, setIsAddFoodOpen, setIsLogActivityOpen, setIsWaterOpen,
+    setIsAddFoodOpen, setIsLogActivityOpen, setIsWaterOpen,
     setIsPoopOpen, setIsWeightOpen, setCustomButtonOpenId, setIsCustomPickerOpen, setTargetMealSlot,
-  } = useShell();
+  } = useUiActions();
   const { activeTab } = useNav();
   const autoMealSlot = useAutoMealSlot();
   if (activeTab !== 'today') return null;

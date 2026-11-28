@@ -523,6 +523,7 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
+  const [limit, setLimit] = useState(24);
   const lo = from && to && from > to ? to : from;
   const hi = from && to && from > to ? from : to;
   const today = getTodayDateString();
@@ -533,15 +534,21 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
     { id: '365', label: j('1 year', '1 anno'), days: 364 },
   ];
   const activePreset = presets.find((preset) => to === today && from === addDaysToDateString(today, -preset.days))?.id;
-  const matching = photos
-    .filter(
-      (p) =>
-        p.note.toLowerCase().includes(query.toLowerCase()) &&
-        (!slot || p.slot === slot) &&
-        (!lo || p.date >= lo) &&
-        (!hi || p.date <= hi),
-    )
-    .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt));
+  const matching = useMemo(() => {
+    const q = query.toLowerCase();
+    return photos
+      .filter(
+        (p) =>
+          (!q || p.note.toLowerCase().includes(q)) &&
+          (!slot || p.slot === slot) &&
+          (!lo || p.date >= lo) &&
+          (!hi || p.date <= hi),
+      )
+      .sort((a, b) =>
+        b.date < a.date ? -1 : b.date > a.date ? 1 : b.createdAt < a.createdAt ? -1 : b.createdAt > a.createdAt ? 1 : 0,
+      );
+  }, [photos, query, slot, lo, hi]);
+  const visible = useMemo(() => matching.slice(0, limit), [matching, limit]);
   return (
     <>
       <Modal
@@ -599,7 +606,7 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
           </p>
           <div className="journal-slot-picker"><button type="button" aria-pressed={!slot} className={!slot ? 'is-selected' : ''} onClick={() => setSlot('')}>{j('All meals', 'Tutti i pasti')}</button>{options.map((meal) => <button type="button" key={meal.id} aria-pressed={slot === meal.id} className={slot === meal.id ? 'is-selected' : ''} onClick={() => setSlot(meal.id)}><MealSlotIcon slot={meal.id} size={16} />{meal.label}</button>)}</div>
           <div className="journal-full-photo-grid">
-            {matching.map((photo) => (
+            {visible.map((photo) => (
               <button
                 type="button"
                 className="journal-photo-preview"
@@ -614,6 +621,17 @@ function PhotoBrowser({ onClose }: { onClose: () => void }) {
               </button>
             ))}
           </div>
+          {matching.length > limit && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                className="journal-secondary-button"
+                onClick={() => setLimit((prev) => prev + 24)}
+              >
+                {j(`Show more (${matching.length - limit} left)`, `Mostra altri (${matching.length - limit} rimasti)`)}
+              </button>
+            </div>
+          )}
           {!matching.length && (
             <JournalEmpty>
               {j(

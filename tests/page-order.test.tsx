@@ -45,6 +45,26 @@ vi.mock('../src/context/AppContext', () => ({
       pageOrder: mockPageOrder,
     },
   }),
+  useSettings: () => ({
+    t: {
+      nav: { today: 'Today', prebuilt: 'Custom', history: 'Statistics', period: 'Period', body: 'Body', database: 'Foods' },
+      settings: { trackPeriod: 'Track period' },
+    },
+    settings: {
+      theme: 'light',
+      themeStyle: 'classic',
+      ultraMinimal: false,
+      hideCustomPage: false,
+      hideStatisticsPage: false,
+      hidePeriod: false,
+      pageOrder: mockPageOrder,
+    },
+    updateSettings,
+  }),
+  useUiState: () => ({
+    setIsSettingsOpen: vi.fn(),
+    setIsProfileOpen: vi.fn(),
+  }),
   useNav: () => ({ activeTab: 'today' }),
   useNavActions: () => ({ setActiveTab: vi.fn() }),
 }));
@@ -110,7 +130,7 @@ describe('Page order settings & navigation', () => {
     });
 
     mockPageOrder = ['history', 'today', 'fasting', 'prebuilt', 'period', 'body'];
-    view.rerender(<PagesSettings />);
+    view.rerender(<PagesSettings key="reordered" />);
     fireEvent.click(screen.getByRole('button', { name: /Reset page order/i }));
     expect(updateSettings).toHaveBeenCalledWith({ pageOrder: DEFAULT_PAGE_ORDER });
   });

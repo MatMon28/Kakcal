@@ -42,15 +42,15 @@ SettingsModal delegates custom button icons to common/IconPicker.tsx. LayoutTool
 
 | File | Role |
 | --- | --- |
-| `src/components/modals/SettingsModal.tsx` | Settings modal: composes Language, Appearance, Today, Custom page, Pages, Advanced, Notifications, Backup, Install app and Delete data. See [settings-update.md](../settings-update.md). |
+| `src/components/modals/SettingsModal.tsx` | Settings modal (narrow `useSettings()` + `useUiState()`, `if (!isSettingsOpen) return null;` guard, `useOptimistic` + `useTransition` for appearance toggles): composes Language, Appearance, Today, Custom page, Pages, Advanced, Notifications, Backup, Install app and Delete data. See [settings-update.md](../settings-update.md). |
 | `src/components/modals/settings/SettingsParts.tsx` | Shared Settings look: `TONE` badge colours, `SubSection`, `ToggleRow`, `ActionRow`, `SwitchVisual`. |
-| `src/components/modals/settings/TodaySettings.tsx` | Today group: quick-add buttons, Log water / Log poop / Track sugar, Meal notes, quick food shortcuts (picker), Custom buttons. |
-| `src/components/modals/settings/CustomButtonsSettings.tsx` | Custom buttons list, add / edit form and widget switch (inside Today). Moved unchanged from the old group. |
-| `src/components/modals/settings/CustomPageSettings.tsx` | Custom page group: bottom-bar buttons and sections (including independent Photo diary button and section toggles). |
-| `src/components/modals/settings/PagesSettings.tsx` | Pages group: show/hide and reorder pages (`pageOrder`), body profile shortcut. Reads the tab through `useNav()` and the setter through `useNavActions()` (not `useApp()`). |
+| `src/components/modals/settings/TodaySettings.tsx` | Today group (`React.memo`, `useSettings()` + `useJournalData()`, `getFoodByIdMap`): quick-add buttons, Log water / Log poop / Track sugar, Meal notes, quick food shortcuts (lazy-mounted `QuickFoodPicker`), Custom buttons. |
+| `src/components/modals/settings/CustomButtonsSettings.tsx` | Custom buttons list, conditionally mounted add/edit `<Modal>` / `<ConfirmDialog>`, and widget switch (`React.memo`, `useSettings()`). |
+| `src/components/modals/settings/CustomPageSettings.tsx` | Custom page group (`React.memo`, `useSettings()`): bottom-bar buttons and sections (including independent Photo diary button and section toggles). |
+| `src/components/modals/settings/PagesSettings.tsx` | Pages group (`React.memo`, `useSettings()` + `useUiState()` + `useNav()` / `useNavActions()`): show/hide and reorder pages (`pageOrder`), body profile shortcut. |
 | `src/components/modals/ExcelExportModal.tsx` | Excel export period (All time / 7d / 30d / 3m / 1y / Custom) and sheet selection dialog opened from `DataBackup.tsx`. |
-| `src/components/modals/settings/DeleteDataSettings.tsx` | Delete data group: one confirmed row per kind of record, then *Delete all data*. |
-| `src/components/modals/NotificationSettings.tsx` | Test notification button removed; group now has a bell icon and colour. |
-| `src/components/modals/AdvancedSettings.tsx` | Body measurements switch moved to Pages; group has an icon. |
+| `src/components/modals/settings/DeleteDataSettings.tsx` | Delete data group (`React.memo`, conditionally mounted `<ConfirmDialog>`): one confirmed row per kind of record, then *Delete all data*. |
+| `src/components/modals/NotificationSettings.tsx` | Notifications group: outer `<Collapsible>` shell + guided-tour event listener, lazy-mounted `NotificationSettingsBody` (`React.memo`, `useSettings()`). |
+| `src/components/modals/AdvancedSettings.tsx` | Advanced group: outer `<Collapsible>` shell, lazy-mounted `AdvancedSettingsBody` (`React.memo`, conditionally mounted `<ConfirmDialog>`). |
 
 **Food workflow round:** `AddFoodModal.tsx` keeps the batch and picker mounted while scanner/custom food is open and uses a fixed footer. `BarcodeLookupModal.tsx` and `CustomFoodModal.tsx` work both standalone and as child selectors; `DeleteDataSettings.tsx` uses the bulk erasure countdown. See [food workflows](../food-workflows-update.md).

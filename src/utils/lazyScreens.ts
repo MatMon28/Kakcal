@@ -2,6 +2,12 @@ import type { ActiveTab } from '../types';
 import { afterPaint, whenIdle } from './idle';
 import { preloadableLazy } from './preloadableLazy';
 
+export const LazyPreBuiltMealsView = preloadableLazy(() =>
+  import('../components/prebuilt/PreBuiltMealsView').then((m) => ({ default: m.PreBuiltMealsView })),
+);
+export const LazyFoodDatabaseView = preloadableLazy(() =>
+  import('../components/database/FoodDatabaseView').then((m) => ({ default: m.FoodDatabaseView })),
+);
 export const LazyPeriodView = preloadableLazy(() =>
   import('../components/period/PeriodView').then((m) => ({ default: m.PeriodView })),
 );
@@ -37,6 +43,12 @@ export const LazyAppTour = preloadableLazy(() =>
 /** Immediately warms the chunk for a lazy main tab (used on tab pointerdown/focus and horizontal swipe lock). */
 export function preloadTabScreen(tab: ActiveTab): void {
   switch (tab) {
+    case 'prebuilt':
+      void LazyPreBuiltMealsView.preload();
+      break;
+    case 'database':
+      void LazyFoodDatabaseView.preload();
+      break;
     case 'period':
       void LazyPeriodView.preload();
       break;
@@ -57,12 +69,14 @@ export function preloadTabScreen(tab: ActiveTab): void {
  * visible tabs first, then dialogs, skipping hidden pages so unused code stays unloaded.
  */
 export function scheduleLazyScreenPreload(opts: {
+  customShown?: boolean;
   periodShown: boolean;
   bodyShown: boolean;
   historyShown: boolean;
   fastingShown?: boolean;
 }): () => void {
   const queue: Array<() => Promise<void>> = [];
+  if (opts.customShown !== false && !LazyPreBuiltMealsView.isLoaded()) queue.push(LazyPreBuiltMealsView.preload);
   if (opts.fastingShown && !LazyFastingView.isLoaded()) queue.push(LazyFastingView.preload);
   if (opts.historyShown && !LazyHistoryView.isLoaded()) queue.push(LazyHistoryView.preload);
   if (opts.periodShown && !LazyPeriodView.isLoaded()) queue.push(LazyPeriodView.preload);

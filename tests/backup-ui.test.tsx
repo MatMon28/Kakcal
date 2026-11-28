@@ -19,7 +19,11 @@ beforeEach(async () => {
 });
 afterEach(async () => { cleanup(); vi.restoreAllMocks(); await flushWrites(); });
 
-const renderBackup = () => render(<AppProvider><DataBackup /></AppProvider>);
+const renderBackup = () => {
+  const res = render(<AppProvider><DataBackup /></AppProvider>);
+  fireEvent.click(screen.getByRole('button', { name: 'Data Backup' }));
+  return res;
+};
 
 describe('Settings > Data Backup warns that pictures are not included', () => {
   it('always shows the notice and exports at once when there are no pictures', async () => {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, useTransition } from 'react';
 import { Flame, UtensilsCrossed, TrendingUp, Droplet, BookOpen, PersonStanding, Timer } from 'lucide-react';
-import { useNav, useNavActions, useShell } from '../../context/AppContext';
+import { useNav, useNavActions, useSettings } from '../../context/AppContext';
 import type { ActiveTab, MainTabId } from '../../types';
 import { isPeriodShown } from '../../utils/tourPreview';
 import { normalizePageOrder } from '../../utils/pageVisibility';
@@ -11,7 +11,7 @@ import { preloadTabScreen } from '../../utils/lazyScreens';
 
 export function Tabs() {
   // Navigation + settings only: no journal data, so a logged meal does not re-render the tab bar.
-  const { t, settings } = useShell();
+  const { t, settings } = useSettings();
   const { activeTab } = useNav();
   const { setActiveTab } = useNavActions();
   const [isPending, startTabTransition] = useTransition();

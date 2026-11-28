@@ -25,6 +25,7 @@ import { addDaysToDateString, getTodayDateString } from '../../utils/formatters'
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
 import { plannedMealName } from '../../utils/planMealName';
 import { searchFoods, searchMeals } from '../../utils/foodSearchIndex';
+import { getFoodByIdMap } from '../../utils/foodLookupCache';
 import { matchesFirstChar, pinCoherentFavorites } from '../../utils/favorites';
 import { useCatalogueSearch } from '../../utils/useCatalogueSearch';
 import { catalogueScore } from '../../data/offCatalog';
@@ -261,8 +262,23 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
     });
   };
 
+  const existingPlanCounts = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of plans) {
+      if (p.id === plan?.id || (group && p.groupId === group.id)) continue;
+      const k = `${p.date}|${p.slot}`;
+      counts.set(k, (counts.get(k) ?? 0) + 1);
+    }
+    return counts;
+  }, [plans, plan?.id, group]);
+
   // ----- Earlier plans of the same meal, one tap away -----
-  const suggestionsFor = (target: PlanTarget): PlanSuggestion[] => {
+  const activeTarget = useMemo(
+    () => (activeKey ? targets.find((o) => o.key === activeKey) ?? null : null),
+    [activeKey, targets],
+  );
+  const activeSuggestions = useMemo<PlanSuggestion[]>(() => {
+    if (!activeTarget) return [];
     const found: PlanSuggestion[] = [];
     const seen = new Set<string>();
     const add = (key: string, date: string, entry: PlanEntry) => {
@@ -274,15 +290,15 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
     };
     // Meals of the same kind planned on earlier days, here in this plan first and then in the saved plans; newest first.
     targets
-      .filter((o) => o.slot === target.slot && o.date < target.date)
-      .sort((a, b) => b.date.localeCompare(a.date))
-      .forEach((o) => add(`draft-${o.key}`, o.date, entryFor(o.key)));
+      .filter((o) => o.slot === activeTarget.slot && o.date < activeTarget.date)
+      .sort((a, b) => (b.date < a.date ? -1 : b.date > a.date ? 1 : 0))
+      .forEach((o) => add(`draft-${o.key}`, o.date, entries[o.key] ?? emptyEntry()));
     plans
-      .filter((p) => p.slot === target.slot && p.date < target.date && p.id !== plan?.id && (!group || p.groupId !== group.id))
-      .sort((a, b) => b.date.localeCompare(a.date))
+      .filter((p) => p.slot === activeTarget.slot && p.date < activeTarget.date && p.id !== plan?.id && (!group || p.groupId !== group.id))
+      .sort((a, b) => (b.date < a.date ? -1 : b.date > a.date ? 1 : 0))
       .forEach((p) => add(`saved-${p.id}`, p.date, { kind: p.kind, items: p.items, title: plannedMealName(p), note: p.note }));
     return found.slice(0, 6);
-  };
+  }, [activeTarget, targets, entries, plans, plan?.id, group]);
 
   // ----- Draft and closing -----
   const hasContent = (e: PlanEntry) => e.items.length > 0 || e.note.trim().length > 0 || e.title.trim().length > 0;
@@ -562,7 +578,7 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
                 const done = entryValid(entry);
                 const open = activeKey === t.key;
                 const newDay = index === 0 || targets[index - 1].date !== t.date;
-                const already = plans.filter((p) => p.date === t.date && p.slot === t.slot && p.id !== plan?.id && (!group || p.groupId !== group.id)).length;
+                const already = existingPlanCounts.get(`${t.date}|${t.slot}`) ?? 0;
                 return (
                   <div key={t.key} className="journal-plan-item">
                     {newDay && !plan && (
@@ -601,7 +617,7 @@ export function PlanWizard({ initialDate, plan, group, reuse, onClose }: { initi
                             key={t.key}
                             entry={entry}
                             slot={t.slot}
-                            suggestions={suggestionsFor(t)}
+                            suggestions={activeSuggestions}
                             onChange={(next) => {
                               setPreferredKind(next.kind);
                               setEntries((prev) => ({ ...prev, [t.key]: next }));
@@ -721,32 +737,32 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
     };
   }, [resultsQuery, allFoods, catalogueFoods, favoriteFoods, preBuiltMeals]);
 
-  const favorites = useMemo(() => {
-    const byId = new Map(allFoods.map((f) => [f.id, f]));
-    return favoriteFoods.map((id) => byId.get(id)).filter((f): f is FoodItem => Boolean(f));
-  }, [allFoods, favoriteFoods]);
+  const foodById = useMemo(() => getFoodByIdMap(allFoods), [allFoods]);
+  const favorites = useMemo(
+    () => favoriteFoods.map((id) => foodById.get(id)).filter((f): f is FoodItem => Boolean(f)),
+    [foodById, favoriteFoods],
+  );
   const oneCharMatches = useMemo(() => (q.length === 1 ? favorites.filter((f) => matchesFirstChar(f, q)) : []), [favorites, q]);
   // The three quick food shortcuts of Settings (default salt, bread, olive oil), like in Add food.
   const quickFoods = useMemo(
-    () => settings.quickFoods.map((id) => allFoods.find((f) => f.id === id)).filter((f): f is FoodItem => Boolean(f)),
-    [settings.quickFoods, allFoods],
+    () => settings.quickFoods.map((id) => foodById.get(id)).filter((f): f is FoodItem => Boolean(f)),
+    [settings.quickFoods, foodById],
   );
   // Foods logged most recently in this meal: 5 are shown, the "..." chip reveals 10 more.
   const recent = useMemo(() => {
-    const byId = new Map(allFoods.map((f) => [f.id, f]));
     const seen = new Set<string>();
     const out: FoodItem[] = [];
     for (const date of Object.keys(allDayLogs).sort().reverse()) {
       for (const item of (allDayLogs[date].meals[slot] ?? []).slice().reverse()) {
         if (seen.has(item.foodId)) continue;
         seen.add(item.foodId);
-        const found = byId.get(item.foodId);
+        const found = foodById.get(item.foodId);
         if (found) out.push(found);
       }
       if (out.length >= RECENT_SHOWN + RECENT_MORE) break;
     }
     return out.slice(0, RECENT_SHOWN + RECENT_MORE);
-  }, [allDayLogs, allFoods, slot]);
+  }, [allDayLogs, foodById, slot]);
   const slotMeals = useMemo(() => preBuiltMeals.filter((m) => !m.slot || m.slot === slot).slice(0, 8), [preBuiltMeals, slot]);
   const sameKind = suggestions.filter((s) => s.entry.kind === kind);
   const entrySummary = (e: PlanEntry) =>
@@ -764,7 +780,7 @@ function MealEntryEditor({ entry, slot, suggestions, onChange, removeItem, name 
   };
   const addMeal = (meal: (typeof preBuiltMeals)[number]) => {
     const added = meal.ingredients.flatMap((i) => {
-      const food = allFoods.find((f) => f.id === i.foodId);
+      const food = foodById.get(i.foodId);
       return food ? [{ food, amount: i.amount }] : [];
     });
     if (!added.length) return;

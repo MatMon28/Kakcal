@@ -1,6 +1,6 @@
 import React from 'react';
 import { SecondaryNutrientCard, SecondaryNutrientRow, type SecondaryNutrient } from '../common/FoodMacroGrid';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { TileGoalOverlay } from '../common/GoalBadge';
 
 type MacroKey = 'carbs' | 'protein' | 'fat';
@@ -14,7 +14,8 @@ const MACRO_TONES: Record<MacroKey, { card: string; label: string; number: strin
 
 /** One macro card of Today (carbs, protein or fat): grams with the share of the day's energy below. */
 export const MacroCard: React.FC<{ macro: MacroKey }> = ({ macro }) => {
-  const { currentMacros, settings, t } = useApp();
+  const { currentMacros } = useJournalData();
+  const { settings, t } = useSettings();
   const ultraMinimal = settings.ultraMinimal;
   const tone = MACRO_TONES[macro];
   const grams = currentMacros[`${macro}Grams`];
@@ -54,19 +55,19 @@ export const MacroCard: React.FC<{ macro: MacroKey }> = ({ macro }) => {
 
 /** One of fibre, salt or sugar of the day, as a field of its own (advanced layout). */
 export const NutrientCard: React.FC<{ nutrient: SecondaryNutrient }> = ({ nutrient }) => {
-  const { currentMacros } = useApp();
+  const { currentMacros } = useJournalData();
   const value = { fiber: currentMacros.fiberGrams, salt: currentMacros.saltGrams, sugar: currentMacros.sugarGrams }[nutrient];
   return <SecondaryNutrientCard nutrient={nutrient} value={value} />;
 };
 
 /** Fibre, salt and (optional) sugar of the day. */
 export const NutrientsRow: React.FC = () => {
-  const { currentMacros } = useApp();
+  const { currentMacros } = useJournalData();
   return <SecondaryNutrientRow fiber={currentMacros.fiberGrams} salt={currentMacros.saltGrams} sugar={currentMacros.sugarGrams} />;
 };
 
 export const MacroNutrientsOverview: React.FC = () => {
-  const { settings } = useApp();
+  const { settings } = useSettings();
   const ultraMinimal = settings.ultraMinimal;
 
   return (

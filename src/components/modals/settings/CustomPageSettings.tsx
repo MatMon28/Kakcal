@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { BookOpen, Camera, CalendarDays, ChefHat, NotebookText, ShoppingCart, UtensilsCrossed } from 'lucide-react';
-import { useApp } from '../../../context/AppContext';
+import { useSettings } from '../../../context/AppContext';
 import { useJournalText } from '../../../i18n/journal';
 import type { CustomFieldId } from '../../../types';
 import { SubSection, TONE, ToggleRow } from './SettingsParts';
@@ -9,9 +9,9 @@ import { SubSection, TONE, ToggleRow } from './SettingsParts';
  * Settings > Custom page. Two sub-sections: the bottom-bar buttons of Custom (every button can be hidden)
  * and the sections of the page (every field can be hidden). "On" always means "shown".
  */
-export const CustomPageSettings: React.FC = () => {
+export const CustomPageSettings: React.FC = memo(() => {
   const j = useJournalText();
-  const { settings, updateSettings } = useApp();
+  const { settings, updateSettings } = useSettings();
 
   const setField = (key: CustomFieldId, shown: boolean) =>
     updateSettings({ hideCustomFields: { ...settings.hideCustomFields, [key]: !shown } });
@@ -88,4 +88,4 @@ export const CustomPageSettings: React.FC = () => {
       </SubSection>
     </div>
   );
-};
+});

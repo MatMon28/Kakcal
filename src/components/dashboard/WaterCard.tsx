@@ -1,8 +1,9 @@
 import React from 'react';
 import { Droplets, Trash2, Check } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings, useUiActions } from '../../context/AppContext';
 import { dailyWaterTargetMl } from '../../utils/waterTarget';
 import { GoalBadge } from '../common/GoalBadge';
+import { dateFormatter } from '../../utils/formatters';
 import { TrackerCard } from './TrackerCard';
 
 const BLOCK = 250; // one glass; the last block holds the remaining amount up to the goal
@@ -14,7 +15,9 @@ interface Props {
 }
 
 export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) => {
-  const { currentDayLog, currentExpenditure, userProfile, settings, setIsWaterOpen, removeWaterEntry, t } = useApp();
+  const { currentDayLog, currentExpenditure, removeWaterEntry } = useJournalData();
+  const { userProfile, settings, t } = useSettings();
+  const { setIsWaterOpen } = useUiActions();
 
   if (!settings.quickAdd.water) return null;
 
@@ -115,7 +118,7 @@ export const WaterCard: React.FC<Props> = ({ compact = false, open, onToggle }) 
                   <Droplets size={13} className="text-[var(--water-fill,var(--carbs-text))] shrink-0" />
                   <span className="font-bold text-[var(--text)]">{w.ml}{settings.ultraMinimal ? '' : ' ml'}</span>
                   <span className="text-[var(--muted)] font-medium">
-                    {new Date(w.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                    {dateFormatter(undefined, { hour: '2-digit', minute: '2-digit' }).format(new Date(w.timestamp))}
                   </span>
                 </span>
                 <button

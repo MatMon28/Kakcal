@@ -13,7 +13,7 @@ import {
   calculateTotalActivityCalories,
   calculateTotalCalories,
 } from '../../utils/calculations';
-import { formatFullDate, formatKcal } from '../../utils/formatters';
+import { dateFormatter, formatFullDate, formatKcal } from '../../utils/formatters';
 import { formatTrackerAmount, getCustomEntries, getTrackerValue } from '../../utils/customTrackers';
 import type { PoopSize } from '../../types';
 import { allMealItems } from '../../utils/mealItems';
@@ -189,10 +189,10 @@ export const PeriodDayInfoModal: React.FC<PeriodDayInfoModalProps> = ({ date, on
                       <span data-period-label className="text-protein-muted font-medium truncate">{p.description}</span>
                     )}
                     <span data-period-label className="text-protein-muted font-medium tabular-nums shrink-0 ml-auto">
-                      {new Date(p.timestamp).toLocaleTimeString(language === 'it' ? 'it-IT' : 'en-US', {
+                      {dateFormatter(language === 'it' ? 'it-IT' : 'en-US', {
                         hour: '2-digit',
                         minute: '2-digit',
-                      })}
+                      }).format(new Date(p.timestamp))}
                     </span>
                   </div>
                 ))}

@@ -32,7 +32,8 @@ vi.mock('../src/context/AppContext', () => ({
     allFoods: [],
     rememberFood: () => {},
   }),
-  useSettings: () => ({ settings: mockSettings, language: 'en' }),
+  useSettings: () => ({ t, settings: mockSettings, updateSettings, language: 'en' }),
+  useJournalData: () => ({ allFoods: [], rememberFood: () => {} }),
   useNavActions: () => ({ setActiveTab: () => {} }),
   useUiState: () => ({ selectedDate: '2099-03-02' }),
 }));

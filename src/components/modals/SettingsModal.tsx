@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useOptimistic, useTransition } from 'react';
 import { LayoutGrid, Languages, Minimize2, Palette, PanelsTopLeft, Sun, Trash2 } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useSettings, useUiState } from '../../context/AppContext';
 import { Modal } from '../common/Modal';
 import { DataBackup } from '../common/DataBackup';
 import { InstallApp } from '../common/InstallApp';
@@ -22,15 +22,36 @@ import { DeleteDataSettings } from './settings/DeleteDataSettings';
  */
 export const SettingsModal: React.FC = () => {
   const j = useJournalText();
+  const { isSettingsOpen, setIsSettingsOpen } = useUiState();
   const {
-    isSettingsOpen,
-    setIsSettingsOpen,
     language,
     setLanguage,
     settings,
     updateSettings,
     t,
-  } = useApp();
+  } = useSettings();
+  const [, startTransition] = useTransition();
+  const [optimisticAppearance, setOptimisticAppearance] = useOptimistic(
+    {
+      theme: settings.theme,
+      themeStyle: settings.themeStyle,
+      monoHue: settings.monoHue,
+      ultraMinimal: settings.ultraMinimal,
+    },
+    (state, patch: Partial<Pick<typeof settings, 'theme' | 'themeStyle' | 'monoHue' | 'ultraMinimal'>>) => ({
+      ...state,
+      ...patch,
+    }),
+  );
+
+  if (!isSettingsOpen) return null;
+
+  const updateAppearance = (patch: Partial<Pick<typeof settings, 'theme' | 'themeStyle' | 'monoHue' | 'ultraMinimal'>>) => {
+    startTransition(() => {
+      setOptimisticAppearance(patch);
+      updateSettings(patch);
+    });
+  };
 
   const seg = (active: boolean) =>
     `pressable flex-1 py-2.5 rounded-xl text-xs font-extrabold text-center border ${
@@ -69,9 +90,9 @@ export const SettingsModal: React.FC = () => {
                   <button
                     key={theme}
                     type="button"
-                    aria-pressed={settings.theme === theme}
-                    onClick={() => updateSettings({ theme })}
-                    className={seg(settings.theme === theme)}
+                    aria-pressed={optimisticAppearance.theme === theme}
+                    onClick={() => updateAppearance({ theme })}
+                    className={seg(optimisticAppearance.theme === theme)}
                   >
                     {label}
                   </button>
@@ -110,10 +131,10 @@ export const SettingsModal: React.FC = () => {
                 </span>
                 <button
                   type="button"
-                  aria-pressed={settings.themeStyle === 'classic'}
-                  onClick={() => updateSettings({ themeStyle: 'classic' })}
+                  aria-pressed={optimisticAppearance.themeStyle === 'classic'}
+                  onClick={() => updateAppearance({ themeStyle: 'classic' })}
                   className={`pressable px-2.5 py-1 rounded-lg text-[11px] font-extrabold border ${
-                    settings.themeStyle === 'classic'
+                    optimisticAppearance.themeStyle === 'classic'
                       ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
                       : 'bg-[var(--inset)] hover:bg-[var(--hover)] text-[var(--muted)] border-[var(--border)]'
                   }`}
@@ -123,10 +144,10 @@ export const SettingsModal: React.FC = () => {
               </div>
               <div className="grid grid-cols-2 gap-1.5" role="group" aria-label={t.settings.themeStyle}>
                 {SIX_NEW_THEMES.map((preset) => {
-                  const active = settings.themeStyle === preset.id;
+                  const active = optimisticAppearance.themeStyle === preset.id;
                   const swatches =
                     preset.id === 'mono'
-                      ? ['#0f172a', settings.monoHue, '#e2e8f0']
+                      ? ['#0f172a', optimisticAppearance.monoHue, '#e2e8f0']
                       : preset.swatches;
                   return (
                     <button
@@ -134,7 +155,7 @@ export const SettingsModal: React.FC = () => {
                       type="button"
                       data-theme-preset={preset.id}
                       aria-pressed={active}
-                      onClick={() => updateSettings({ themeStyle: preset.id })}
+                      onClick={() => updateAppearance({ themeStyle: preset.id })}
                       className={`pressable flex items-center justify-between gap-2 rounded-xl px-3 py-2.5 text-left border transition-colors ${
                         active
                           ? 'bg-[var(--text)] text-[var(--on-text)] border-[var(--text)]'
@@ -155,14 +176,14 @@ export const SettingsModal: React.FC = () => {
               </div>
             </div>
 
-            {settings.themeStyle === 'mono' && (
+            {optimisticAppearance.themeStyle === 'mono' && (
               <div className="bg-[var(--inset)] border border-[var(--border)] rounded-xl p-2.5">
                 <span className="block text-[10px] font-extrabold uppercase tracking-wider text-[var(--muted)] mb-2">
                   {t.settings.monoHue}
                 </span>
                 <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t.settings.monoHue}>
                   {MONO_HUES.map((hue) => {
-                    const active = settings.monoHue.toLowerCase() === hue.hex.toLowerCase();
+                    const active = optimisticAppearance.monoHue.toLowerCase() === hue.hex.toLowerCase();
                     return (
                       <button
                         key={hue.id}
@@ -170,7 +191,7 @@ export const SettingsModal: React.FC = () => {
                         title={hue.label[language]}
                         aria-label={hue.label[language]}
                         aria-pressed={active}
-                        onClick={() => updateSettings({ monoHue: hue.hex })}
+                        onClick={() => updateAppearance({ monoHue: hue.hex })}
                         className={`pressable size-6 rounded-full border-2 transition-transform ${
                           active ? 'scale-115 border-[var(--text)] ring-2 ring-[var(--surface)]' : 'border-transparent hover:scale-110'
                         }`}
@@ -186,9 +207,9 @@ export const SettingsModal: React.FC = () => {
           <button
             type="button"
             role="switch"
-            aria-checked={settings.ultraMinimal}
+            aria-checked={optimisticAppearance.ultraMinimal}
             aria-label={t.settings.ultraMinimal}
-            onClick={() => updateSettings({ ultraMinimal: !settings.ultraMinimal })}
+            onClick={() => updateAppearance({ ultraMinimal: !optimisticAppearance.ultraMinimal })}
             className="pressable w-full flex items-center justify-between gap-3 border border-[var(--border)] bg-[var(--inset)] hover:bg-[var(--hover)] rounded-2xl px-3 py-2.5 transition-colors text-left"
           >
             <span className="flex items-center gap-2.5 min-w-0">
@@ -199,7 +220,7 @@ export const SettingsModal: React.FC = () => {
                 <span className="block text-xs font-extrabold text-[var(--text)]">{t.settings.ultraMinimal}</span>
               </span>
             </span>
-            <SwitchVisual on={settings.ultraMinimal} />
+            <SwitchVisual on={optimisticAppearance.ultraMinimal} />
           </button>
         </Collapsible>
 

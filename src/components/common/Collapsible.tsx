@@ -1,5 +1,6 @@
 import React, { useId, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { LazyBody } from './LazyBody';
 
 interface CollapsibleProps {
   title: string;
@@ -56,7 +57,9 @@ export function Collapsible({ title, children, defaultOpen = false, open: contro
       </button>
       <div id={`${id}-panel`} className="accordion-grid" data-open={open} inert={!open}>
         <div className="accordion-inner">
-          <div className="px-4 pb-4 pt-1 space-y-5">{children}</div>
+          <LazyBody open={open}>
+            <div className="px-4 pb-4 pt-1 space-y-5">{children}</div>
+          </LazyBody>
         </div>
       </div>
     </section>

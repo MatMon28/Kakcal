@@ -1,6 +1,6 @@
 import { QuickLogFoodModal } from '../common/QuickLogFoodModal';
 import { useJournalText } from '../../i18n/journal';
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useDeferredValue } from 'react';
 import { useApp, useNavActions } from '../../context/AppContext';
 import { FOOD_CATEGORIES } from '../../data/foodCategories';
 import { catalogueScore } from '../../data/offCatalog';
@@ -9,7 +9,7 @@ import { FoodCategory, FoodItem, MealSlotId } from '../../types';
 import { FoodMacroGrid } from '../common/FoodMacroGrid';
 import { useAutoMealSlot, useMealSlots } from '../../utils/mealSlots';
 import { getDefaultAmount, setLastAmount } from '../../utils/amountMemory';
-import { fuzzyMatch, fuzzyScore } from '../../utils/fuzzy';
+import { searchFoods } from '../../utils/foodSearchIndex';
 import { FavoriteButton } from '../common/FavoriteButton';
 import { ConfirmDialog } from '../common/ConfirmDialog';
 import {
@@ -141,24 +141,39 @@ export const FoodDatabaseView: React.FC = () => {
     return codes;
   }, [library]);
 
+  const deferredSearch = useDeferredValue(search.trim());
+
   const localResults = useMemo(() => {
-    const q = search.trim();
-    const matched = library.filter((f) => {
-      const matchCategory =
-        selectedCategory === 'all'
-          ? true
-          : selectedCategory === 'custom'
-          ? Boolean(f.isCustom)
-          : selectedCategory === 'favorites'
-          ? favoriteSet.has(f.id)
-          : f.category === selectedCategory;
-      if (!matchCategory) return false;
-      if (!q) return true;
-      return f.barcode === q || fuzzyMatch(q, [f.name_de, f.name_it, f.name_en, f.brand || '']);
-    });
-    const ranked = matched.map((food) => ({ food, score: !q || food.barcode === q ? 0 : Math.min(
-      ...[food.name_en, food.name_it, food.name_de, food.brand || ''].map((name) => fuzzyScore(q, name)),
-    ) }));
+    const q = deferredSearch;
+    const matchCategory = (f: FoodItem) =>
+      selectedCategory === 'all'
+        ? true
+        : selectedCategory === 'custom'
+        ? Boolean(f.isCustom)
+        : selectedCategory === 'favorites'
+        ? favoriteSet.has(f.id)
+        : f.category === selectedCategory;
+
+    let ranked: { food: FoodItem; score: number }[];
+    if (!q) {
+      ranked = library.filter(matchCategory).map((food) => ({ food, score: 0 }));
+    } else {
+      const hits = searchFoods(library, q);
+      const seen = new Set<string>();
+      ranked = [];
+      for (const f of library) {
+        if (f.barcode === q && matchCategory(f)) {
+          seen.add(f.id);
+          ranked.push({ food: f, score: 0 });
+        }
+      }
+      for (const { f, score } of hits) {
+        if (!seen.has(f.id) && matchCategory(f)) {
+          seen.add(f.id);
+          ranked.push({ food: f, score });
+        }
+      }
+    }
     // Typing: only favourites that are a direct hit for the text go above the rest (see pinCoherentFavorites).
     // Browsing without a search keeps all favourites first.
     const directLimit = Math.max(1, q.split(/\s+/).length);
@@ -167,8 +182,8 @@ export const FoodDatabaseView: React.FC = () => {
     const first: FoodItem[] = [], last: FoodItem[] = [];
     const cutoff = catalogueScore(q);
     for (const { food, score } of ranked) (pinned(food, score) || score <= cutoff ? first : last).push(food);
-    return { first, last, matchedCount: matched.length };
-  }, [library, search, selectedCategory, favoriteSet]);
+    return { first, last, matchedCount: ranked.length };
+  }, [library, deferredSearch, selectedCategory, favoriteSet]);
 
   const needsOff = selectedCategory !== 'custom' && selectedCategory !== 'favorites';
   const offCount = needsOff ? offState.total : 0;
@@ -183,21 +198,29 @@ export const FoodDatabaseView: React.FC = () => {
   useEffect(() => {
     if (!needsOff) return;
     let current = true;
-    void browseCatalogue({
-      query: search.trim(),
-      category: selectedCategory === 'all' ? null : selectedCategory,
-      excluded,
-      offset: offOffset,
-      limit: offLimit,
-      lang: language,
-    }).then((res) => {
-      if (!current) return;
-      if (!res) {
-        setOffState((prev) => ({ ...prev, failed: true }));
-      } else {
-        setOffState({ ready: true, failed: false, total: res.total, foods: res.foods });
-      }
-    });
+    const trimmed = search.trim();
+    const run = () => {
+      void browseCatalogue({
+        query: trimmed,
+        category: selectedCategory === 'all' ? null : selectedCategory,
+        excluded,
+        offset: offOffset,
+        limit: offLimit,
+        lang: language,
+      }).then((res) => {
+        if (!current) return;
+        if (!res) {
+          setOffState((prev) => ({ ...prev, failed: true }));
+        } else {
+          setOffState({ ready: true, failed: false, total: res.total, foods: res.foods });
+        }
+      });
+    };
+    if (trimmed.length > 0) {
+      const timer = window.setTimeout(run, 90);
+      return () => { current = false; window.clearTimeout(timer); };
+    }
+    run();
     return () => { current = false; };
   }, [needsOff, search, selectedCategory, excluded, offOffset, offLimit, language, attempt]);
 

@@ -60,16 +60,21 @@ function useHideOnScroll(): boolean {
     const scroller = document.scrollingElement ?? document.documentElement;
     const read = () => Math.max(0, window.scrollY || scroller.scrollTop || 0);
     let lastY = read();
+    let maxY = Math.max(0, scroller.scrollHeight - window.innerHeight);
     let travel = 0; // signed distance since the direction last changed
     let state = false;
+    let rafId = 0;
     const apply = (next: boolean) => {
       if (next === state) return;
       state = next;
       setHidden(next);
     };
-    const onScroll = () => {
+    const updateMaxY = () => {
+      maxY = Math.max(0, scroller.scrollHeight - window.innerHeight);
+    };
+    const processScroll = () => {
+      rafId = 0;
       const y = read();
-      const maxY = Math.max(0, scroller.scrollHeight - window.innerHeight);
       const delta = y - lastY;
       lastY = y;
       // Rubber-banding past the ends is not a user scroll.
@@ -79,11 +84,29 @@ function useHideOnScroll(): boolean {
       if (travel >= HIDE_AFTER_DOWN) apply(true);
       else if (travel <= -SHOW_AFTER_UP) apply(false);
     };
+    const onScroll = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(processScroll);
+    };
     // A dialog always reveals the bar again: it is where the dialog will go when it closes.
-    const reveal = () => { lastY = read(); travel = 0; apply(false); };
+    const reveal = () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+        rafId = 0;
+      }
+      lastY = read();
+      travel = 0;
+      apply(false);
+    };
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateMaxY) : null;
+    ro?.observe(document.documentElement);
+    window.addEventListener('resize', updateMaxY, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
     document.addEventListener('kc:overlay-open', reveal);
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      ro?.disconnect();
+      window.removeEventListener('resize', updateMaxY);
       window.removeEventListener('scroll', onScroll);
       document.removeEventListener('kc:overlay-open', reveal);
     };

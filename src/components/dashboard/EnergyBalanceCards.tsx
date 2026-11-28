@@ -1,13 +1,14 @@
 import React from 'react';
 import { ArrowDownLeft, Flame } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { formatKcal } from '../../utils/formatters';
 import { TileGoalOverlay } from '../common/GoalBadge';
 import { TodayBalanceTarget } from './BalanceTargetCard';
 
 /** Numbers shared by the Intake and Burned cards. */
 function useEnergy() {
-  const { t, settings, currentIntakeCalories, currentExpenditure, netBalance } = useApp();
+  const { t, settings } = useSettings();
+  const { currentIntakeCalories, currentExpenditure, netBalance } = useJournalData();
   return {
     t,
     ultraMinimal: settings.ultraMinimal,

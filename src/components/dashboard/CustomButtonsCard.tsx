@@ -1,5 +1,5 @@
 import { Sparkles, ChevronRight, Check, X } from 'lucide-react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings, useUiActions } from '../../context/AppContext';
 import { TrackerIcon } from '../common/TrackerIcon';
 import { formatTrackerAmount, getCustomEntries, getTrackerValue } from '../../utils/customTrackers';
 import { TrackerCard } from './TrackerCard';
@@ -11,7 +11,9 @@ interface Props {
 }
 
 export function CustomButtonsCard({ compact = false, open, onToggle }: Props) {
-  const { settings, currentDayLog, language, logCustom, setCustomButtonOpenId, setIsCustomPickerOpen, t } = useApp();
+  const { settings, language, t } = useSettings();
+  const { currentDayLog, logCustom } = useJournalData();
+  const { setCustomButtonOpenId, setIsCustomPickerOpen } = useUiActions();
   if (!settings.customButtons.length) return null;
 
   const trackers = settings.customButtons.map((tracker) => ({ tracker, value: getTrackerValue(currentDayLog, tracker) }));

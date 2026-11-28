@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Candy, Droplets, Flame, Scale, Target, Wheat } from 'lucide-react';
-import { useApp } from '../../../context/AppContext';
+import { useSettings } from '../../../context/AppContext';
 import { useAdvancedText } from '../../../i18n/advanced';
 import { useJournalText } from '../../../i18n/journal';
 import {
@@ -43,8 +43,8 @@ const GOAL_ICON: Record<GoalKey, React.ReactNode> = {
 /**
  * Settings > Goals & limits: master switch for daily goals/limits and per-nutrient / energy-balance targets.
  */
-export const GoalsSettings: React.FC = () => {
-  const { t, settings, userProfile } = useApp();
+const GoalsSettingsBody: React.FC = memo(() => {
+  const { t, settings, userProfile } = useSettings();
   const text = useAdvancedText();
   const j = useJournalText();
   const advanced = useAdvanced();
@@ -60,8 +60,7 @@ export const GoalsSettings: React.FC = () => {
     key === 'calories' ? text.settings.calories : key === 'burned' ? text.settings.burned : key === 'water' ? text.settings.water : t.macros[key];
 
   return (
-    <Collapsible title={text.settings.goalsTitle} icon={<Target size={15} />} tone={TONE.mint}>
-      <div className="space-y-2.5">
+    <div className="space-y-2.5">
         <button
           type="button"
           role="switch"
@@ -208,6 +207,17 @@ export const GoalsSettings: React.FC = () => {
           </div>
         )}
       </div>
+  );
+});
+
+/**
+ * Settings > Goals & limits: master switch for daily goals/limits and per-nutrient / energy-balance targets.
+ */
+export const GoalsSettings: React.FC = () => {
+  const text = useAdvancedText();
+  return (
+    <Collapsible title={text.settings.goalsTitle} icon={<Target size={15} />} tone={TONE.mint}>
+      <GoalsSettingsBody />
     </Collapsible>
   );
 };

@@ -22,7 +22,7 @@ import { CollapseArrow, CollapseBody } from '../common/InlineCollapse';
 import { useSettings, useShell } from '../../context/AppContext';
 import { useFastingText } from '../../i18n/fasting';
 import type { FastingMood, FastingNote, FastingSession } from '../../types/fasting';
-import { addDaysToDateString, formatDateDisplay, getTodayDateString } from '../../utils/formatters';
+import { addDaysToDateString, dateFormatter, formatDateDisplay, getTodayDateString } from '../../utils/formatters';
 import {
   computeEatingWindow,
   computeFastingStats,
@@ -60,13 +60,13 @@ const MARKER_COLOR: Record<FastingMood, string> = {
 };
 
 function formatClock(ms: number, lang: 'en' | 'it'): string {
-  return new Date(ms).toLocaleString(lang === 'it' ? 'it-IT' : 'en-US', {
+  return dateFormatter(lang === 'it' ? 'it-IT' : 'en-US', {
     month: 'short',
     day: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
     hour12: false,
-  });
+  }).format(ms);
 }
 
 export const FastingView: React.FC = () => {
@@ -84,18 +84,6 @@ export const FastingView: React.FC = () => {
   const ultra = settings.ultraMinimal;
 
   const [nowMs, setNowMs] = useState(() => Date.now());
-  useEffect(() => {
-    const tick = () => setNowMs(Date.now());
-    const id = window.setInterval(tick, 15_000);
-    const onVis = () => {
-      if (document.visibilityState === 'visible') tick();
-    };
-    document.addEventListener('visibilitychange', onVis);
-    return () => {
-      window.clearInterval(id);
-      document.removeEventListener('visibilitychange', onVis);
-    };
-  }, []);
 
   // Timer card collapsed by default
   const [timerExpanded, setTimerExpanded] = useState(false);
@@ -148,6 +136,20 @@ export const FastingView: React.FC = () => {
     [active, fasting.notes],
   );
   const eatingWindow = !active ? computeEatingWindow(fasting, nowMs) : null;
+  const shouldTick = active !== null || (eatingWindow !== null && !eatingWindow.reached);
+  useEffect(() => {
+    if (!shouldTick) return;
+    const tick = () => setNowMs(Date.now());
+    const id = window.setInterval(tick, 15_000);
+    const onVis = () => {
+      if (document.visibilityState === 'visible') tick();
+    };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, [shouldTick]);
 
   // ActionDock: non-food only, Log Note next to Activity
   const quick = settings.quickAdd;

@@ -1,7 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { Suspense, lazy, memo, useEffect, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle, Download, Upload, Images, LoaderCircle, FileSpreadsheet, FileText, TriangleAlert, DatabaseBackup } from 'lucide-react';
 import { TONE } from '../modals/settings/SettingsParts';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSettings } from '../../context/AppContext';
 import { getTodayDateString } from '../../utils/formatters';
 import { isAndroidApp, type ExportResult, type NativeExportRecord } from '../../utils/android';
 import { onNativeExportFinished, takeNativeExports } from '../../utils/nativeExport';
@@ -10,16 +10,21 @@ import { useMealJournal } from '../../utils/journalStore';
 import { exportMealPictures } from '../../utils/photoExport';
 import { canShareFile, saveLocalFile, shareLocalFile, withSize } from '../../utils/planSharing';
 import { useJournalText } from '../../i18n/journal';
-import { buildExcelExport } from '../../utils/excelExport';
-import { buildPdfReport } from '../../utils/pdfExport';
 import { useMealSlots } from '../../utils/mealSlots';
 import { StorageInfo } from './StorageInfo';
 import { getLastImportReport } from '../../utils/backupFormat';
 import { useAdvanced, useBodyEntries } from '../../utils/advancedStore';
 import { getFasting } from '../../utils/fastingStore';
-import { ExcelExportModal, type ExcelExportSelection } from '../modals/ExcelExportModal';
-import { PdfExportModal, type PdfExportSelection } from '../modals/PdfExportModal';
+import type { ExcelExportSelection } from '../modals/ExcelExportModal';
+import type { PdfExportSelection } from '../modals/PdfExportModal';
 import { SaveOrShareModal } from '../modals/SaveOrShareModal';
+
+const LazyExcelExportModal = lazy(() =>
+  import('../modals/ExcelExportModal').then((m) => ({ default: m.ExcelExportModal })),
+);
+const LazyPdfExportModal = lazy(() =>
+  import('../modals/PdfExportModal').then((m) => ({ default: m.PdfExportModal })),
+);
 
 /** A built export file waiting for the "Save or share?" answer. */
 interface PendingFile { content: Blob | string; name: string; savedText: (bytes: number) => string; failedText: string }
@@ -40,9 +45,14 @@ const recoveredNotice = (record: NativeExportRecord | null, j: (en: string, it: 
   return { text: withDetail(j('An export could not be completed after the app restarted.', "Un'esportazione non e stata completata dopo il riavvio dell'app."), { message: record.detail }), error: true };
 };
 
-/** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
-export const DataBackup: React.FC = () => {
-  const { exportDataJson, importDataJson, allDayLogs, userProfile, preBuiltMeals, allFoods, settings, periodData, language, t } = useApp();
+interface DataBackupBodyProps {
+  recovered: NativeExportRecord | null;
+  onClearRecovered: () => void;
+}
+
+const DataBackupBody: React.FC<DataBackupBodyProps> = memo(({ recovered, onClearRecovered }) => {
+  const { userProfile, settings, language, t } = useSettings();
+  const { exportDataJson, importDataJson, allDayLogs, preBuiltMeals, allFoods, periodData } = useJournalData();
   const { label: slotLabel } = useMealSlots();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [message, setMessage] = useState<{ text: string; error: boolean } | null>(null);
@@ -56,16 +66,6 @@ export const DataBackup: React.FC = () => {
   const [pendingFile, setPendingFile] = useState<PendingFile | null>(null);
   // Shown before exporting when pictures exist on this device: the backup does not contain them.
   const [confirmExport, setConfirmExport] = useState(false);
-  // An export that finished while the app was away (activity re-created / process killed while the picker was open).
-  const [recovered, setRecovered] = useState<NativeExportRecord | null>(null);
-  useEffect(() => {
-    if (!isAndroidApp()) return undefined; // the browser downloads the Blob itself; there is nothing native to recover
-    let alive = true;
-    const consume = () => { void takeNativeExports().then((records) => { if (alive && records.length) setRecovered(records[records.length - 1]); }); };
-    consume();
-    const stopListening = onNativeExportFinished(consume);
-    return () => { alive = false; stopListening(); };
-  }, []);
 
   /**
    * One path for Export JSON, Export to Excel and Export meal pictures, one message grammar:
@@ -73,7 +73,7 @@ export const DataBackup: React.FC = () => {
    * A success without a byte count never reaches the screen (saveLocalFile throws instead).
    */
   const runExport = async (save: () => Promise<ExportResult>, savedText: (bytes: number) => string, failedText: string): Promise<void> => {
-    setMessage(null); setRecovered(null);
+    setMessage(null); onClearRecovered();
     try {
       const result = await save();
       if (result.cancelled || typeof result.bytes !== 'number') return;
@@ -86,7 +86,7 @@ export const DataBackup: React.FC = () => {
    * (always in the APK; in a browser only when the Web Share API accepts the file type). Otherwise it is saved directly.
    */
   const offerFile = async (build: () => Blob | string | Promise<Blob | string>, name: string, savedText: (bytes: number) => string, failedText: string): Promise<void> => {
-    setMessage(null); setRecovered(null);
+    setMessage(null); onClearRecovered();
     let content: Blob | string;
     try { content = await build(); } catch (error) { setMessage({ text: withDetail(failedText, error), error: true }); return; }
     if (canShareFile(content, name)) setPendingFile({ content, name, savedText, failedText });
@@ -114,7 +114,9 @@ export const DataBackup: React.FC = () => {
   const handleExcelExport = (selection: ExcelExportSelection) => {
     setExcelModalOpen(false);
     void offerFile(
-      () => buildExcelExport({
+      async () => {
+        const { buildExcelExport } = await import('../../utils/excelExport');
+        return buildExcelExport({
           dayLogs: allDayLogs,
           profile: userProfile,
           plans,
@@ -132,7 +134,8 @@ export const DataBackup: React.FC = () => {
           periodData,
           fastingData: getFasting(),
           t,
-        }),
+        });
+      },
       `kakcal_data_${selection.filenameSuffix}.xlsx`,
       (bytes) => withSize(j('Excel file exported.', 'File Excel esportato.'), bytes),
       j('Could not export the Excel file. Check device storage and try again.', 'Impossibile esportare il file Excel. Controlla lo spazio e riprova.'),
@@ -141,7 +144,9 @@ export const DataBackup: React.FC = () => {
   const handlePdfExport = (selection: PdfExportSelection) => {
     setPdfModalOpen(false);
     void offerFile(
-      () => buildPdfReport({
+      async () => {
+        const { buildPdfReport } = await import('../../utils/pdfExport');
+        return buildPdfReport({
           dayLogs: allDayLogs,
           profile: userProfile,
           slotLabel,
@@ -153,7 +158,8 @@ export const DataBackup: React.FC = () => {
           bodyEntries,
           bodyConfig: advanced.body,
           settings,
-        }),
+        });
+      },
       `kakcal_report_${selection.filenameSuffix}.pdf`,
       (bytes) => withSize(j('PDF report exported.', 'Report PDF esportato.'), bytes),
       j('Could not export the PDF report. Check device storage and try again.', 'Impossibile esportare il report PDF. Controlla lo spazio e riprova.'),
@@ -188,7 +194,7 @@ export const DataBackup: React.FC = () => {
 
   // With pictures on the device the user has to confirm once that the file will not contain them.
   const handleExportClick = () => {
-    setMessage(null); setRecovered(null);
+    setMessage(null); onClearRecovered();
     if (photos.length > 0) setConfirmExport(true);
     else void handleExport();
   };
@@ -227,7 +233,7 @@ export const DataBackup: React.FC = () => {
   const notice = message ?? recoveredNotice(recovered, j);
 
   return (
-    <Collapsible title={t.history.backupTitle} icon={<DatabaseBackup size={15} />} tone={TONE.slate}>
+    <>
       {notice && (
         <div
           role={notice.error ? 'alert' : 'status'}
@@ -291,12 +297,14 @@ export const DataBackup: React.FC = () => {
         <Download size={16} />
       </button>
       {pdfModalOpen && (
-        <PdfExportModal
-          isOpen={pdfModalOpen}
-          onClose={() => setPdfModalOpen(false)}
-          dayLogs={allDayLogs}
-          onExport={handlePdfExport}
-        />
+        <Suspense fallback={null}>
+          <LazyPdfExportModal
+            isOpen={pdfModalOpen}
+            onClose={() => setPdfModalOpen(false)}
+            dayLogs={allDayLogs}
+            onExport={handlePdfExport}
+          />
+        </Suspense>
       )}
       <button type="button" className="backup-photo-button" onClick={() => setExcelModalOpen(true)}>
         <FileSpreadsheet size={18} />
@@ -304,26 +312,28 @@ export const DataBackup: React.FC = () => {
         <Download size={16} />
       </button>
       {excelModalOpen && (
-        <ExcelExportModal
-          isOpen={excelModalOpen}
-          onClose={() => setExcelModalOpen(false)}
-          exportInput={{
-            dayLogs: allDayLogs,
-            profile: userProfile,
-            plans,
-            language,
-            customButtons: settings.customButtons,
-            memories,
-            preBuiltMeals,
-            allFoods,
-            bodyEntries,
-            bodyConfig: advanced.body,
+        <Suspense fallback={null}>
+          <LazyExcelExportModal
+            isOpen={excelModalOpen}
+            onClose={() => setExcelModalOpen(false)}
+            exportInput={{
+              dayLogs: allDayLogs,
+              profile: userProfile,
+              plans,
+              language,
+              customButtons: settings.customButtons,
+              memories,
+              preBuiltMeals,
+              allFoods,
+              bodyEntries,
+              bodyConfig: advanced.body,
             periodData,
             fastingData: getFasting(),
             t,
           }}
           onExport={handleExcelExport}
         />
+        </Suspense>
       )}
       <button type="button" className="backup-photo-button" disabled={!photos.length || exportingPhotos} onClick={() => void handlePhotoExport()}>
         {exportingPhotos ? <LoaderCircle size={18} className="animate-spin" /> : <Images size={18} />}
@@ -334,6 +344,36 @@ export const DataBackup: React.FC = () => {
       {pendingFile && (
         <SaveOrShareModal filename={pendingFile.name} bytes={pendingBytes} onSave={savePending} onShare={sharePending} onClose={() => setPendingFile(null)} />
       )}
+    </>
+  );
+});
+
+/** Local JSON backup controls (a collapsible Settings group, like the others). Kept in Settings so Statistics stays focused on charts. */
+export const DataBackup: React.FC = () => {
+  const { t } = useSettings();
+  const [open, setOpen] = useState(false);
+  // An export that finished while the app was away (activity re-created / process killed while the picker was open).
+  const [recovered, setRecovered] = useState<NativeExportRecord | null>(null);
+
+  useEffect(() => {
+    if (!isAndroidApp()) return undefined; // the browser downloads the Blob itself; there is nothing native to recover
+    let alive = true;
+    const consume = () => {
+      void takeNativeExports().then((records) => {
+        if (alive && records.length) {
+          setRecovered(records[records.length - 1]);
+          setOpen(true);
+        }
+      });
+    };
+    consume();
+    const stopListening = onNativeExportFinished(consume);
+    return () => { alive = false; stopListening(); };
+  }, []);
+
+  return (
+    <Collapsible title={t.history.backupTitle} open={open} onOpenChange={setOpen} icon={<DatabaseBackup size={15} />} tone={TONE.slate}>
+      <DataBackupBody recovered={recovered} onClearRecovered={() => setRecovered(null)} />
     </Collapsible>
   );
 };

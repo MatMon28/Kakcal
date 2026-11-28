@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { memo, useState } from 'react';
 import { Camera, CalendarDays, ChefHat, Droplet, Footprints, NotebookPen, Ruler, Scale, Sparkles, Timer, Trash2, UtensilsCrossed, Utensils } from 'lucide-react';
 import { scheduleRemoval } from '../../../utils/undoRemoval';
 import { useJournalText } from '../../../i18n/journal';
@@ -22,7 +22,7 @@ interface DeleteRow {
  * (custom buttons, quick foods, reminders, theme, goals) are never touched. After a deletion the page reloads, so
  * every screen shows the stored data again. "Delete all data" stays at the bottom.
  */
-export const DeleteDataSettings: React.FC = () => {
+export const DeleteDataSettings: React.FC = memo(() => {
   const j = useJournalText();
   const [pending, setPending] = useState<DeleteRow | null>(null);
   const [busy, setBusy] = useState(false);
@@ -178,17 +178,19 @@ export const DeleteDataSettings: React.FC = () => {
         </p>
       )}
 
-      <ConfirmDialog
-        open={pending !== null}
-        title={pending?.title}
-        message={pending ? `${pending.confirm} ${j('You can cancel for a few seconds after confirming.', 'Dopo la conferma puoi annullare per alcuni secondi.')}` : ''}
-        confirmLabel={j('Delete', 'Elimina')}
-        onCancel={() => setPending(null)}
-        onConfirm={() => void confirmDelete()}
-      />
+      {pending !== null && (
+        <ConfirmDialog
+          open={pending !== null}
+          title={pending?.title}
+          message={pending ? `${pending.confirm} ${j('You can cancel for a few seconds after confirming.', 'Dopo la conferma puoi annullare per alcuni secondi.')}` : ''}
+          confirmLabel={j('Delete', 'Elimina')}
+          onCancel={() => setPending(null)}
+          onConfirm={() => void confirmDelete()}
+        />
+      )}
 
       {/* Everything at once (two confirmations, see DeleteAllData) */}
       <DeleteAllData />
     </div>
   );
-};
+});

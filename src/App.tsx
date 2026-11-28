@@ -1,11 +1,9 @@
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState, type ReactElement } from 'react';
 import { App as AndroidApp } from '@capacitor/app';
-import { AppProvider, useApp, useNav, useNavActions, useShell } from './context/AppContext';
+import { AppProvider, useJournalData, useModalState, useNav, useNavActions, useSettings, useUiActions } from './context/AppContext';
 import { Header } from './components/common/Header';
 import { closeTopModal, getOpenModalCount, PageUndoRemoval } from './components/common/Modal';
 import { TodayView } from './components/dashboard/TodayView';
-import { PreBuiltMealsView } from './components/prebuilt/PreBuiltMealsView';
-import { FoodDatabaseView } from './components/database/FoodDatabaseView';
 import { AddFoodModal } from './components/modals/AddFoodModal';
 import { WaterModal } from './components/modals/WaterModal';
 import { WeightModal } from './components/modals/WeightModal';
@@ -55,16 +53,20 @@ import {
   LazyBarcodeLookupModal,
   LazyBodyView,
   LazyFastingView,
+  LazyFoodDatabaseView,
   LazyHistoryView,
   LazyLogActivityModal,
   LazyPeriodSheet,
   LazyPeriodView,
+  LazyPreBuiltMealsView,
   LazySettingsModal,
   LazyUserProfileModal,
   scheduleLazyScreenPreload,
 } from './utils/lazyScreens';
 
 // Optional screens load on demand (preloadableLazy) and warm up one-by-one in idle slices (visible tabs first).
+const PreBuiltMealsView = LazyPreBuiltMealsView.Component;
+const FoodDatabaseView = LazyFoodDatabaseView.Component;
 const PeriodView = LazyPeriodView.Component;
 const HistoryView = LazyHistoryView.Component;
 const BodyView = LazyBodyView.Component;
@@ -88,8 +90,8 @@ const ACTION_SCREEN: Record<WidgetAction, TourScreen> = {
 const targetOrigin = () => (window.location.origin === 'null' ? '*' : window.location.origin);
 
 function WidgetAppBridge() {
-  // The bridge only changes tabs (through the stable functions), so it does not re-render on a tab change.
-  const app = { ...useApp(), ...useNavActions() };
+  // The bridge only reads data/settings and dispatches actions, so it never re-renders on tab or modal changes.
+  const app = { ...useJournalData(), ...useSettings(), ...useUiActions(), ...useNavActions() };
   const autoMealSlot = useAutoMealSlot();
   const today = useToday();
   const snapshot = useMemo(
@@ -225,24 +227,24 @@ function WidgetAppBridge() {
 
   useEffect(() => {
     if (!isAndroidApp() || window.parent !== window) return;
-    const days: Record<string, NutritionValues> = {};
-    for (const date of widgetDates(today, app.allDayLogs)) {
-      days[date] = nutritionValues(makeWidgetSnapshot(date, app.language, app.allDayLogs[date], app.userProfile));
-    }
-    const payload = {
-      language: app.language,
-      bmr: calculateBMR(app.userProfile),
-      widgetStyle: app.settings.widgetStyle,
-      themeStyle: app.settings.themeStyle,
-      monoHue: app.settings.monoHue,
-      widgetCustomButton: app.settings.widgetCustomButton && app.settings.customButtons.length > 0,
-      days,
-    };
-    // Edits to older days produce the same payload: nothing to publish then.
-    const key = JSON.stringify(payload);
-    if (key === lastPublished.current) return;
-    // The widgets are not part of the first screen: publish once the app is idle (and only the latest change).
+    // The widgets are not part of the first screen: compute and publish once the app is idle (and only the latest change).
     return whenIdle(() => {
+      const days: Record<string, NutritionValues> = {};
+      for (const date of widgetDates(today, app.allDayLogs)) {
+        days[date] = nutritionValues(makeWidgetSnapshot(date, app.language, app.allDayLogs[date], app.userProfile));
+      }
+      const payload = {
+        language: app.language,
+        bmr: calculateBMR(app.userProfile),
+        widgetStyle: app.settings.widgetStyle,
+        themeStyle: app.settings.themeStyle,
+        monoHue: app.settings.monoHue,
+        widgetCustomButton: app.settings.widgetCustomButton && app.settings.customButtons.length > 0,
+        days,
+      };
+      // Edits to older days produce the same payload: nothing to publish then.
+      const key = JSON.stringify(payload);
+      if (key === lastPublished.current) return;
       lastPublished.current = key;
       void JournalDevice.publishNutrition(payload).catch(() => console.warn('Native widget refresh unavailable'));
     });
@@ -299,12 +301,12 @@ function WidgetAppBridge() {
 
 function MainContent() {
   const { activeTab, setActiveTab, returnFromDatabase } = useNav();
+  const { settings } = useSettings();
   const {
-    settings,
     isAddFoodOpen, isLogActivityOpen, isBarcodeOpen, isProfileOpen, isSettingsOpen,
     isWaterOpen, isPoopOpen, isWeightOpen, isCustomFoodOpen, customButtonOpenId,
     isCustomPickerOpen, isPeriodSheetOpen,
-  } = useShell();
+  } = useModalState();
 
   const anyModal = isAddFoodOpen || isLogActivityOpen || isBarcodeOpen || isProfileOpen ||
     isSettingsOpen || isWaterOpen || isPoopOpen || isWeightOpen || isCustomFoodOpen ||
@@ -332,10 +334,11 @@ function MainContent() {
   }, []);
 
   // Download visible optional screens first, staggered one per idle slice so startup & other pages stay fast.
+  const customShown = !settings.hideCustomPage;
   const historyShown = !settings.hideStatisticsPage;
   useEffect(
-    () => scheduleLazyScreenPreload({ periodShown, bodyShown, historyShown, fastingShown }),
-    [periodShown, bodyShown, historyShown, fastingShown],
+    () => scheduleLazyScreenPreload({ customShown, periodShown, bodyShown, historyShown, fastingShown }),
+    [customShown, periodShown, bodyShown, historyShown, fastingShown],
   );
 
   // Settings > Pages sets both page visibility and order.

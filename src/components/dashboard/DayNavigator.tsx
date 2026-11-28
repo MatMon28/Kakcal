@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { useApp } from '../../context/AppContext';
+import { useJournalData, useSelection, useSettings, useUiActions } from '../../context/AppContext';
 import { allMealItems } from '../../utils/mealItems';
 import { formatDateDisplay, addDaysToDateString, getTodayDateString, dateFormatter } from '../../utils/formatters';
 import { ChevronLeft, ChevronRight, ChevronDown, Calendar, CornerUpLeft } from 'lucide-react';
@@ -12,7 +12,10 @@ interface DayNavigatorProps {
 
 // Day changer for the Today view: prev/next arrows + date pill with calendar popover + back-to-today
 export const DayNavigator: React.FC<DayNavigatorProps> = ({ onInspectDay, trailing }) => {
-  const { language, t, settings, selectedDate, setSelectedDate, allDayLogs } = useApp();
+  const { language, t, settings } = useSettings();
+  const { selectedDate } = useSelection();
+  const { setSelectedDate } = useUiActions();
+  const { allDayLogs } = useJournalData();
 
   const todayStr = getTodayDateString();
   const isToday = selectedDate === todayStr;
